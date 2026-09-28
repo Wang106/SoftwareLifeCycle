@@ -1,1 +1,52 @@
-import Link from 'next/link'; const rows=[['Change Control','Required changes traced to approved SCR','PASS','PASS','SCR-142'],['Issue Control','Release-blocking issues resolved','PASS','PASS','Issue #310 verified'],['Verification','Battery verification complete','FAIL','EXCEPTION GRANTED','PEX-0018'],['Software Integrity','Tested snapshot equals current snapshot','PASS','PASS','SNAP-008'],['Artifact Control','SHA-256 complete','PASS','PASS','18 / 18'],['Distribution Control','Artifact policy complete','PASS','PASS','18 / 18'],['Governance','Approval package complete','PASS','PASS','APR-0121 ready']]; export default function Page(){return <><div className="readinessHero"><div><span className="eyebrow">RELEASE READINESS ASSESSMENT</span><h2>READY <small>with 1 governed exception</small></h2><p>Raw facts are preserved. Approved exceptions affect the effective decision without rewriting the original FAIL.</p></div><div className="score">6<span>/7 raw pass</span></div></div><section className="panel tablewrap"><table><thead><tr><th>Gate</th><th>Rule</th><th>Raw</th><th>Effective</th><th>Evidence</th></tr></thead><tbody>{rows.map(r=><tr key={r[0]}><td><b>{r[0]}</b></td><td>{r[1]}</td><td><span className={'status '+(r[2]==='PASS'?'pass':'warning')}>{r[2]}</span></td><td>{r[3]}</td><td>{r[4]}</td></tr>)}</tbody></table></section><section className="panel"><div className="sectiontitle"><div><h2>PEX-0018 · Battery verification exception</h2><p className="muted">Bound to SNAP-008. A new snapshot makes this exception non-applicable.</p></div><span className="status pass">APPROVED</span></div><div className="kv"><span>Rule</span><b>Battery verification complete</b><span>Reason</span><b>DVP-034 endurance test pending</b><span>Compensating control</span><b>Restricted initial production authorization</b><span>Approver</span><b>Quality Manager</b></div></section><div className="nextbar"><span>Assessment is ready for approval submission.</span><Link className="button" href="/releases/demo/approval">Continue to Approval →</Link></div></>}
+import Link from 'next/link';
+import { apiGet } from '../../../../lib/api';
+
+type Readiness={
+  overall:string;
+  coverage:{snapshot_no:string|null;dvp_execution_coverage:number};
+  rules:{group:string;rule:string;raw:string;effective:string;evidence:string}[];
+  exceptions:{exception_no:string;status:string;scope:string;reason:string;snapshot_no:string|null}[];
+};
+
+const fallback:Readiness={
+  overall:'READY',
+  coverage:{snapshot_no:'SNAP-008',dvp_execution_coverage:67},
+  rules:[
+    {group:'Change Control',rule:'Required changes linked to DVP',raw:'PASS',effective:'PASS',evidence:'2 / 2'},
+    {group:'Issue Control',rule:'Verification-required issues linked to DVP',raw:'PASS',effective:'PASS',evidence:'1 / 1'},
+    {group:'Verification',rule:'Required DVP executed on current snapshot',raw:'FAIL',effective:'EXCEPTION_GRANTED',evidence:'2 / 3'},
+    {group:'Software Integrity',rule:'Tested snapshot equals current snapshot',raw:'PASS',effective:'PASS',evidence:'SNAP-008'}
+  ],
+  exceptions:[
+    {exception_no:'PEX-0018',status:'APPROVED',scope:'Verification',reason:'DVP-034 endurance test pending',snapshot_no:'SNAP-008'}
+  ]
+};
+
+export default async function Page(){
+  const apiData=await apiGet<Readiness>('/api/v1/releases/application/2.3.4/readiness');
+  const d=apiData||fallback;
+  const rawPass=d.rules.filter(r=>r.raw==='PASS').length;
+  return <>
+    <div className="readinessHero">
+      <div>
+        <span className="eyebrow">RELEASE READINESS ASSESSMENT</span>
+        <h2>{d.overall} <small>{d.exceptions.length?'with '+d.exceptions.length+' governed exception':'without exception'}</small></h2>
+        <p>Raw facts are preserved. Approved exceptions affect the effective result without rewriting the raw result.</p>
+      </div>
+      <div className="score">{rawPass}<span>/{d.rules.length} raw pass</span></div>
+    </div>
+    <section className="panel tablewrap">
+      <table><thead><tr><th>Gate</th><th>Rule</th><th>Raw</th><th>Effective</th><th>Evidence</th></tr></thead>
+      <tbody>{d.rules.map(r=><tr key={r.group+r.rule}><td><b>{r.group}</b></td><td>{r.rule}</td><td><span className={'status '+(r.raw==='PASS'?'pass':'warning')}>{r.raw}</span></td><td>{r.effective}</td><td>{r.evidence}</td></tr>)}</tbody></table>
+    </section>
+    {d.exceptions.map(ex=><section className="panel" key={ex.exception_no}>
+      <div className="sectiontitle">
+        <div><h2>{ex.exception_no} · {ex.scope} exception</h2><p className="muted">Bound to {ex.snapshot_no||'current snapshot'}.</p></div>
+        <span className="status pass">{ex.status}</span>
+      </div>
+      <div className="kv"><span>Reason</span><b>{ex.reason}</b><span>Snapshot</span><b>{ex.snapshot_no||'—'}</b></div>
+    </section>)}
+    <div className="nextbar"><span>{d.overall==='READY'?'Assessment is ready for approval submission.':'Blocking rules remain.'}</span><Link className="button" href="/releases/demo/approval">Continue to Approval →</Link></div>
+    {!apiData&&<p className="datasource">Demo fallback active.</p>}
+  </>;
+}
