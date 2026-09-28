@@ -6,6 +6,7 @@ from app.models.change import SoftwareChangeRequest, AcceptanceCriterion, Change
 from app.models.testing import DvpPlan, DvpItem, ChangePointDvpItem, IssueDvpItem, TestRelease, DvpExecution
 from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
+from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 
 def h(name):
     return hashlib.sha256(name.encode()).hexdigest()
@@ -194,6 +195,55 @@ def run():
             approved_by="Quality Manager",
         )
         db.add(pex)
+
+    approval = db.query(ApprovalRequest).filter_by(approval_no="APR-0121").first()
+    if not approval:
+        approval = ApprovalRequest(
+            approval_no="APR-0121",
+            target_type="RELEASE",
+            target_id=asr.id,
+            snapshot_id=snap8.id,
+            status="PENDING",
+            submitted_by="Release Manager",
+        )
+        db.add(approval)
+        db.flush()
+
+        step_specs = [
+            (1, "Software Lead", "Software Lead", "APPROVED"),
+            (2, "Test Lead", "Test Lead", "APPROVED"),
+            (3, "Quality Manager", "Quality Manager", "PENDING"),
+            (4, "Release Manager", "Release Manager", "WAITING"),
+        ]
+        steps = {}
+        for order, role, approver, status in step_specs:
+            step = ApprovalStep(
+                approval_request_id=approval.id,
+                step_order=order,
+                role_name=role,
+                approver_name=approver,
+                status=status,
+            )
+            db.add(step)
+            db.flush()
+            steps[order] = step
+
+        db.add_all([
+            ApprovalAction(
+                approval_request_id=approval.id,
+                step_id=steps[1].id,
+                actor_name="Software Lead",
+                action="APPROVED",
+                comment="Change scope and release delta reviewed.",
+            ),
+            ApprovalAction(
+                approval_request_id=approval.id,
+                step_id=steps[2].id,
+                actor_name="Test Lead",
+                action="APPROVED",
+                comment="Current snapshot verification evidence confirmed.",
+            ),
+        ])
 
     db.commit()
 
