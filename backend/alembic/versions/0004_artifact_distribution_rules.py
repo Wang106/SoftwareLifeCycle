@@ -18,7 +18,10 @@ def upgrade():
         sa.Column("decision", sa.String(30), nullable=False),
         sa.Column("recipient_code", sa.String(80)),
         sa.Column("notes", sa.Text()),
-        sa.UniqueConstraint("artifact_id", "recipient_type", "purpose", name="uq_artifact_recipient_purpose"),
+        sa.UniqueConstraint(
+            "artifact_id", "recipient_type", "purpose", "recipient_code",
+            name="uq_artifact_recipient_purpose_code"
+        ),
     )
     op.create_index("ix_artifact_distribution_rules_artifact_id", "artifact_distribution_rules", ["artifact_id"])
 
