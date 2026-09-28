@@ -5,11 +5,12 @@ type ArtifactRow={id:string;filename:string;artifact_type:string;component_versi
 type ArtifactData={summary:{artifact_total:number;sha_complete:number;sha_completeness:number;policy_complete:number;policy_completeness:number;externally_eligible:number;approval_required:number;internal_only:number};artifacts:ArtifactRow[]};
 
 const fallback:ArtifactData={
- summary:{artifact_total:3,sha_complete:3,sha_completeness:100,policy_complete:3,policy_completeness:100,externally_eligible:1,approval_required:1,internal_only:1},
+ summary:{artifact_total:4,sha_complete:4,sha_completeness:100,policy_complete:4,policy_completeness:100,externally_eligible:2,approval_required:1,internal_only:1},
  artifacts:[
   {id:'1',filename:'CustomerA_BMS.hex',artifact_type:'HEX',component_version:'2.3.4',sha256:'9f8a…d12c',classification:'CONFIDENTIAL',distribution_level:'EXTERNAL',ai_access_policy:'DENY',policy_rules:[{recipient_type:'CUSTOMER',purpose:'PRODUCTION',recipient_code:'CUS-001',decision:'ALLOW'}]},
   {id:'2',filename:'BMS.elf',artifact_type:'ELF',component_version:'2.3.4',sha256:'a102…8bc1',classification:'STRICTLY_CONFIDENTIAL',distribution_level:'INTERNAL_ONLY',ai_access_policy:'LOCAL_ONLY',policy_rules:[]},
-  {id:'3',filename:'CustomerA_BMS.a2l',artifact_type:'A2L',component_version:'CAL-32',sha256:'7ac9…33ef',classification:'CONFIDENTIAL',distribution_level:'CONTROLLED_EXTERNAL',ai_access_policy:'LOCAL_ONLY',policy_rules:[{recipient_type:'CUSTOMER',purpose:'PRODUCTION',recipient_code:'CUS-001',decision:'APPROVAL_REQUIRED'}]}
+  {id:'3',filename:'CustomerA.dbc',artifact_type:'DBC',component_version:'2.3.4',sha256:'3a6e…079f',classification:'CONFIDENTIAL',distribution_level:'EXTERNAL',ai_access_policy:'DENY',policy_rules:[{recipient_type:'CUSTOMER',purpose:'PRODUCTION',recipient_code:'CUS-001',decision:'ALLOW'}]},
+  {id:'4',filename:'CustomerA_BMS.a2l',artifact_type:'A2L',component_version:'CAL-32',sha256:'7ac9…33ef',classification:'CONFIDENTIAL',distribution_level:'CONTROLLED_EXTERNAL',ai_access_policy:'LOCAL_ONLY',policy_rules:[{recipient_type:'CUSTOMER',purpose:'PRODUCTION',recipient_code:'CUS-001',decision:'APPROVAL_REQUIRED'}]}
  ]
 };
 

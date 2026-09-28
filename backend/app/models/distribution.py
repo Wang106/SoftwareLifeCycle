@@ -48,6 +48,9 @@ class SoftwareAuthorization(Base):
     __tablename__ = "software_authorizations"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uid)
     authorization_no: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    distribution_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("distributions.id"), nullable=True, index=True
+    )
     release_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("releases.id"), nullable=False, index=True)
     snapshot_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("release_snapshots.id"), nullable=False)
     customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"), nullable=False)

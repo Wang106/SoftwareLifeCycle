@@ -36,3 +36,28 @@ def test_approval_actions_are_append_only_history():
     text=Path('app/services/approval.py').read_text()
     assert 'ApprovalAction(' in text
     assert 'db.add(' in text
+
+def test_distribution_api_is_registered():
+    text=Path('app/main.py').read_text()
+    assert 'distribution_router' in text
+    assert 'app.include_router(distribution_router)' in text
+
+def test_delivery_uses_only_released_snapshot_artifacts():
+    text=Path('app/services/distribution.py').read_text()
+    assert 'Delivery requires an explicit RELEASE decision' in text
+    assert 'artifact.snapshot_id != snapshot.id' in text
+    assert 'Release decision approval is not valid for the frozen snapshot' in text
+
+def test_authorization_is_bound_to_distribution_chain():
+    service=Path('app/services/distribution.py').read_text()
+    model=Path('app/models/distribution.py').read_text()
+    assert 'distribution_id' in model
+    assert 'Distribution does not match the released snapshot' in service
+    assert 'Distribution recipient does not match authorization customer' in service
+
+def test_seed_contains_complete_release_distribution_chain():
+    text=Path('app/seed.py').read_text()
+    for reference in ('SNAP-008','APR-0121','RD-0081','DP-0226','DIST-0326','PA-0081'):
+        assert reference in text
+    assert 'freeze_snapshot_artifacts' in text
+    assert 'SnapshotArtifactDistributionRule' in text

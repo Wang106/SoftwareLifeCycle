@@ -19,8 +19,8 @@ const fallback:Readiness={
     {group:'Verification',rule:'Required DVP executed on current snapshot',raw:'FAIL',effective:'EXCEPTION_GRANTED',evidence:'2 / 3'},
     {group:'Software Integrity',rule:'Tested snapshot equals current snapshot',raw:'PASS',effective:'PASS',evidence:'SNAP-008'},
     {group:'Software Integrity',rule:'Current snapshot is frozen',raw:'PASS',effective:'PASS',evidence:'FROZEN'},
-    {group:'Artifact Control',rule:'SHA-256 complete for formal artifacts',raw:'PASS',effective:'PASS',evidence:'3 / 3'},
-    {group:'Distribution Control',rule:'Artifact distribution policy complete',raw:'PASS',effective:'PASS',evidence:'3 / 3'},
+    {group:'Artifact Control',rule:'SHA-256 complete for formal artifacts',raw:'PASS',effective:'PASS',evidence:'4 / 4'},
+    {group:'Distribution Control',rule:'Artifact distribution policy complete',raw:'PASS',effective:'PASS',evidence:'4 / 4'},
     {group:'Governance',rule:'Approved exceptions are bound to current snapshot',raw:'PASS',effective:'PASS',evidence:'1 current-snapshot exception'}
   ],
   exceptions:[

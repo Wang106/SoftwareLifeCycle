@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { apiGet } from '../../lib/api';
 
 type Approval={id:string;approval_no:string;target_type:string;target_id:string;snapshot_id:string|null;status:string;submitted_by:string|null};
-const fallback:Approval[]=[{id:'1',approval_no:'APR-0121',target_type:'RELEASE',target_id:'demo',snapshot_id:'SNAP-008',status:'PENDING',submitted_by:'Release Manager'}];
+const fallback:Approval[]=[{id:'1',approval_no:'APR-0121',target_type:'RELEASE',target_id:'demo',snapshot_id:'SNAP-008',status:'APPROVED',submitted_by:'Release Manager'}];
 
 export default async function Page(){
  const apiRows=await apiGet<Approval[]>('/api/v1/approvals');

@@ -1,15 +1,117 @@
 import hashlib
+import json
+from datetime import datetime, timezone
+
 from app.core.db import SessionLocal
 from app.models.core import *
-from app.models.snapshot import ReleaseSnapshot
+from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
+from app.models.snapshot_policy import SnapshotArtifactDistributionRule
 from app.models.change import SoftwareChangeRequest, AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation
 from app.models.testing import DvpPlan, DvpItem, ChangePointDvpItem, IssueDvpItem, TestRelease, DvpExecution
 from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
+from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distribution, SoftwareAuthorization
 
 def h(name):
     return hashlib.sha256(name.encode()).hexdigest()
+
+
+def freeze_snapshot_artifacts(db, snapshot, release):
+    """Materialize the demo release content and policy into an immutable snapshot."""
+    rows = db.query(Artifact, ReleaseComponent, ComponentDefinition).join(
+        ReleaseComponent, Artifact.release_component_id == ReleaseComponent.id
+    ).join(
+        ComponentDefinition,
+        ReleaseComponent.component_definition_id == ComponentDefinition.id,
+    ).filter(ReleaseComponent.release_id == release.id).all()
+
+    payload = []
+    frozen = {}
+    for artifact, component, definition in rows:
+        source_rules = db.query(ArtifactDistributionRule).filter_by(
+            artifact_id=artifact.id
+        ).all()
+        rule_payload = sorted(
+            [
+                {
+                    "recipient_type": rule.recipient_type,
+                    "purpose": rule.purpose,
+                    "decision": rule.decision,
+                    "recipient_code": rule.recipient_code,
+                }
+                for rule in source_rules
+            ],
+            key=lambda item: (
+                item["recipient_type"],
+                item["purpose"],
+                item["recipient_code"] or "",
+                item["decision"],
+            ),
+        )
+        payload.append(
+            {
+                "component": definition.code,
+                "component_version": component.version,
+                "filename": artifact.filename,
+                "sha256": artifact.sha256,
+                "classification": artifact.classification,
+                "distribution_level": artifact.distribution_level,
+                "ai_access_policy": artifact.ai_access_policy,
+                "distribution_rules": rule_payload,
+            }
+        )
+
+        row = db.query(SnapshotArtifact).filter_by(
+            snapshot_id=snapshot.id,
+            source_artifact_id=artifact.id,
+        ).first()
+        if not row:
+            row = SnapshotArtifact(snapshot_id=snapshot.id, source_artifact_id=artifact.id)
+            db.add(row)
+        row.component_code = definition.code
+        row.component_version = component.version
+        row.filename = artifact.filename
+        row.artifact_type = artifact.artifact_type
+        row.sha256 = artifact.sha256
+        row.classification = artifact.classification
+        row.distribution_level = artifact.distribution_level
+        row.ai_access_policy = artifact.ai_access_policy
+        row.storage_reference = artifact.storage_reference
+        db.flush()
+        frozen[artifact.filename] = row
+
+        for rule in source_rules:
+            frozen_rule = db.query(SnapshotArtifactDistributionRule).filter_by(
+                snapshot_artifact_id=row.id,
+                recipient_type=rule.recipient_type,
+                purpose=rule.purpose,
+                recipient_code=rule.recipient_code,
+            ).first()
+            if not frozen_rule:
+                frozen_rule = SnapshotArtifactDistributionRule(
+                    snapshot_artifact_id=row.id,
+                    recipient_type=rule.recipient_type,
+                    purpose=rule.purpose,
+                    recipient_code=rule.recipient_code,
+                )
+                db.add(frozen_rule)
+            frozen_rule.decision = rule.decision
+
+    payload.sort(key=lambda item: (item["component"], item["filename"]))
+    snapshot.release_metadata_json = {
+        "version": release.version,
+        "release_type": release.release_type,
+    }
+    snapshot.content_hash = hashlib.sha256(
+        json.dumps(
+            {"release": release.version, "artifacts": payload},
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    ).hexdigest()
+    snapshot.status = "FROZEN"
+    return frozen
 
 def run():
     db = SessionLocal()
@@ -69,18 +171,37 @@ def run():
         db.add(c2)
     db.flush()
 
-    if not db.query(Artifact).filter_by(filename="CustomerA_BMS.hex").first():
-        db.add_all([
-            Artifact(release_component_id=c1.id, artifact_type="HEX", filename="CustomerA_BMS.hex", storage_reference="managed://CustomerA_BMS.hex", sha256=h("hex"), controlled=True, classification="CONFIDENTIAL", distribution_level="EXTERNAL", ai_access_policy="DENY"),
-            Artifact(release_component_id=c1.id, artifact_type="ELF", filename="BMS.elf", storage_reference="managed://BMS.elf", sha256=h("elf"), controlled=True, classification="STRICTLY_CONFIDENTIAL", distribution_level="INTERNAL_ONLY", ai_access_policy="LOCAL_ONLY"),
-            Artifact(release_component_id=c2.id, artifact_type="A2L", filename="CustomerA_BMS.a2l", storage_reference="managed://CustomerA_BMS.a2l", sha256=h("a2l"), controlled=True, classification="CONFIDENTIAL", distribution_level="CONTROLLED_EXTERNAL", ai_access_policy="LOCAL_ONLY"),
-        ])
+    artifact_specs = [
+        (c1, "HEX", "CustomerA_BMS.hex", "hex", "CONFIDENTIAL", "EXTERNAL", "DENY"),
+        (c1, "ELF", "BMS.elf", "elf", "STRICTLY_CONFIDENTIAL", "INTERNAL_ONLY", "LOCAL_ONLY"),
+        (c1, "DBC", "CustomerA.dbc", "dbc", "CONFIDENTIAL", "EXTERNAL", "DENY"),
+        (c2, "A2L", "CustomerA_BMS.a2l", "a2l", "CONFIDENTIAL", "CONTROLLED_EXTERNAL", "LOCAL_ONLY"),
+    ]
+    for component, artifact_type, filename, digest_name, classification, distribution_level, ai_policy in artifact_specs:
+        artifact = db.query(Artifact).filter_by(
+            release_component_id=component.id,
+            filename=filename,
+        ).first()
+        if not artifact:
+            artifact = Artifact(
+                release_component_id=component.id,
+                artifact_type=artifact_type,
+                filename=filename,
+                storage_reference=f"managed://{filename}",
+                sha256=h(digest_name),
+                controlled=True,
+                classification=classification,
+                distribution_level=distribution_level,
+                ai_access_policy=ai_policy,
+            )
+            db.add(artifact)
 
     db.flush()
     artifacts = {a.filename: a for a in db.query(Artifact).join(ReleaseComponent, ReleaseComponent.id == Artifact.release_component_id).filter(ReleaseComponent.release_id == asr.id).all()}
     policy_specs = [
         ("CustomerA_BMS.hex", "CUSTOMER", "PRODUCTION", "ALLOW", "CUS-001"),
         ("CustomerA_BMS.a2l", "CUSTOMER", "PRODUCTION", "APPROVAL_REQUIRED", "CUS-001"),
+        ("CustomerA.dbc", "CUSTOMER", "PRODUCTION", "ALLOW", "CUS-001"),
     ]
     for filename, recipient_type, purpose, decision, recipient_code in policy_specs:
         artifact = artifacts.get(filename)
@@ -107,6 +228,9 @@ def run():
     if not snap8:
         snap8 = ReleaseSnapshot(snapshot_no="SNAP-008", release_id=asr.id, snapshot_number=8, status="FROZEN", release_metadata_json={"version":"2.3.4"}, content_hash=h("snap8"))
         db.add(snap8)
+    db.flush()
+
+    snapshot_artifacts = freeze_snapshot_artifacts(db, snap8, asr)
     db.flush()
 
     issue = db.query(Issue).filter_by(issue_no="310").first()
@@ -196,54 +320,143 @@ def run():
         )
         db.add(pex)
 
+    seeded_at = datetime.now(timezone.utc)
     approval = db.query(ApprovalRequest).filter_by(approval_no="APR-0121").first()
     if not approval:
-        approval = ApprovalRequest(
-            approval_no="APR-0121",
-            target_type="RELEASE",
-            target_id=asr.id,
-            snapshot_id=snap8.id,
-            status="PENDING",
-            submitted_by="Release Manager",
-        )
+        approval = ApprovalRequest(approval_no="APR-0121")
         db.add(approval)
-        db.flush()
+    approval.target_type = "RELEASE"
+    approval.target_id = asr.id
+    approval.snapshot_id = snap8.id
+    approval.status = "APPROVED"
+    approval.submitted_by = "Release Manager"
+    approval.submitted_at = approval.submitted_at or seeded_at
+    db.flush()
 
-        step_specs = [
-            (1, "Software Lead", "Software Lead", "APPROVED"),
-            (2, "Test Lead", "Test Lead", "APPROVED"),
-            (3, "Quality Manager", "Quality Manager", "PENDING"),
-            (4, "Release Manager", "Release Manager", "WAITING"),
-        ]
-        steps = {}
-        for order, role, approver, status in step_specs:
+    step_specs = [
+        (1, "Software Lead", "Software Lead", "Change scope and release delta reviewed."),
+        (2, "Test Lead", "Test Lead", "Current snapshot verification evidence confirmed."),
+        (3, "Quality Manager", "Quality Manager", "PEX-0018 and compensating control approved."),
+        (4, "Release Manager", "Release Manager", "Release approval completed for SNAP-008."),
+    ]
+    steps = {}
+    for order, role, approver, comment in step_specs:
+        step = db.query(ApprovalStep).filter_by(
+            approval_request_id=approval.id,
+            step_order=order,
+        ).first()
+        if not step:
             step = ApprovalStep(
                 approval_request_id=approval.id,
                 step_order=order,
                 role_name=role,
-                approver_name=approver,
-                status=status,
             )
             db.add(step)
-            db.flush()
-            steps[order] = step
+        step.role_name = role
+        step.approver_name = approver
+        step.status = "APPROVED"
+        step.decided_at = step.decided_at or seeded_at
+        db.flush()
+        steps[order] = step
+        if not db.query(ApprovalAction).filter_by(
+            approval_request_id=approval.id,
+            step_id=step.id,
+            action="APPROVED",
+        ).first():
+            db.add(
+                ApprovalAction(
+                    approval_request_id=approval.id,
+                    step_id=step.id,
+                    actor_name=approver,
+                    action="APPROVED",
+                    comment=comment,
+                )
+            )
 
-        db.add_all([
-            ApprovalAction(
-                approval_request_id=approval.id,
-                step_id=steps[1].id,
-                actor_name="Software Lead",
-                action="APPROVED",
-                comment="Change scope and release delta reviewed.",
-            ),
-            ApprovalAction(
-                approval_request_id=approval.id,
-                step_id=steps[2].id,
-                actor_name="Test Lead",
-                action="APPROVED",
-                comment="Current snapshot verification evidence confirmed.",
-            ),
-        ])
+    decision = db.query(ReleaseDecision).filter_by(decision_no="RD-0081").first()
+    if not decision:
+        decision = ReleaseDecision(decision_no="RD-0081")
+        db.add(decision)
+    decision.release_id = asr.id
+    decision.snapshot_id = snap8.id
+    decision.approval_request_id = approval.id
+    decision.readiness_status = "READY_WITH_EXCEPTION"
+    decision.decision = "RELEASE"
+    decision.decided_by = "Release Manager"
+    decision.decision_notes = "Released with PEX-0018 controlled initial-production restriction."
+    decision.decided_at = decision.decided_at or seeded_at
+    asr.status = "RELEASED"
+    db.flush()
+
+    package = db.query(DeliveryPackage).filter_by(
+        package_no="DP-0226",
+        revision=1,
+    ).first()
+    if not package:
+        package = DeliveryPackage(package_no="DP-0226", revision=1)
+        db.add(package)
+    package.release_id = asr.id
+    package.snapshot_id = snap8.id
+    package.recipient_type = "CUSTOMER"
+    package.recipient_code = customer.code
+    package.purpose = "PRODUCTION"
+    package.status = "DISTRIBUTED"
+    package.created_by = "Release Manager"
+    db.flush()
+
+    delivery_specs = [
+        ("CustomerA_BMS.hex", "ALLOW", None),
+        ("CustomerA_BMS.a2l", "APPROVAL_REQUIRED", approval.approval_no),
+        ("CustomerA.dbc", "ALLOW", None),
+    ]
+    for filename, policy_decision, control_reference in delivery_specs:
+        frozen_artifact = snapshot_artifacts[filename]
+        package_item = db.query(DeliveryPackageItem).filter_by(
+            delivery_package_id=package.id,
+            snapshot_artifact_id=frozen_artifact.id,
+        ).first()
+        if not package_item:
+            package_item = DeliveryPackageItem(
+                delivery_package_id=package.id,
+                snapshot_artifact_id=frozen_artifact.id,
+                policy_decision=policy_decision,
+            )
+            db.add(package_item)
+        package_item.policy_decision = policy_decision
+        package_item.exception_reference = control_reference
+
+    distribution = db.query(Distribution).filter_by(distribution_no="DIST-0326").first()
+    if not distribution:
+        distribution = Distribution(distribution_no="DIST-0326")
+        db.add(distribution)
+    distribution.delivery_package_id = package.id
+    distribution.recipient_type = "CUSTOMER"
+    distribution.recipient_code = customer.code
+    distribution.status = "ACKNOWLEDGED"
+    distribution.sent_at = distribution.sent_at or seeded_at
+    distribution.acknowledged_at = distribution.acknowledged_at or seeded_at
+    distribution.note = "DP-0226 Rev1 delivered and acknowledged by Customer A."
+    db.flush()
+
+    authorization = db.query(SoftwareAuthorization).filter_by(
+        authorization_no="PA-0081"
+    ).first()
+    if not authorization:
+        authorization = SoftwareAuthorization(authorization_no="PA-0081")
+        db.add(authorization)
+    authorization.distribution_id = distribution.id
+    authorization.release_id = asr.id
+    authorization.snapshot_id = snap8.id
+    authorization.customer_id = customer.id
+    authorization.project_id = project.id
+    authorization.site_code = "FACTORY-A"
+    authorization.line_code = "LINE-2"
+    authorization.purpose = "PRODUCTION"
+    authorization.status = "APPROVED"
+    authorization.restriction_note = (
+        "PEX-0018: controlled initial production batch only while DVP-034 remains incomplete."
+    )
+    authorization.approved_at = authorization.approved_at or seeded_at
 
     db.commit()
 
