@@ -5,3 +5,4 @@ from app.models.change import *
 from app.models.testing import *
 from app.models.governance import *
 from app.models.policy import *
+from app.models.approval import *
