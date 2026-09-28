@@ -1,0 +1,3 @@
+import Link from 'next/link';
+const rows=[['2.3.4','Customer A','Project X','5.1.12','92%','READY'],['2.3.3','Customer A','Project X','5.1.12','PASS','RELEASED'],['2.3.2','Customer A','Project X','5.1.11','PASS','SUPERSEDED']];
+export default function Page(){return <><div className="top"><div><h1>Application Releases</h1><p className="muted">Customer-specific application software releases.</p></div><button>+ New ASR</button></div><table><thead><tr><th>Version</th><th>Customer</th><th>Project</th><th>Base SSR</th><th>Verification</th><th>Status</th></tr></thead><tbody>{rows.map((r,i)=><tr key={r[0]}><td>{i===0?<Link href="/releases/demo"><b>{r[0]}</b></Link>:r[0]}</td>{r.slice(1).map(x=><td key={x}>{x}</td>)}</tr>)}</tbody></table></>}
