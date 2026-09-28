@@ -6,9 +6,11 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.change import Issue, IssueChangeRequestRelation, SoftwareChangeRequest
 from app.models.testing import DvpItem, DvpExecution
-from app.models.core import ApplicationReleaseDetail, Customer, Project, Release, SoftwareProduct
+from app.models.core import ApplicationReleaseDetail, Artifact, Customer, Project, Release, ReleaseComponent, SoftwareProduct
 from app.models.snapshot import ReleaseSnapshot
 from app.models.governance import PolicyException
+from app.models.policy import ArtifactDistributionRule
+from app.services.artifact_policy import ArtifactPolicyService
 from app.services.traceability import TraceabilityService
 
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
@@ -196,6 +198,52 @@ def release_verification(version: str, db: Session = Depends(get_db)):
     return {"coverage": coverage, "items": sorted(rows, key=lambda row: row["item_no"])}
 
 
+@router.get("/releases/application/{version}/artifacts")
+def release_artifacts(version: str, db: Session = Depends(get_db)):
+    release = _application_release(db, version)
+    if not release:
+        raise HTTPException(status_code=404, detail="release not found")
+
+    policy = ArtifactPolicyService(db)
+    summary = policy.summarize_release(release.id).as_dict()
+    artifacts = policy.release_artifacts(release.id)
+    artifact_ids = [a.id for a in artifacts]
+    rules = db.scalars(
+        select(ArtifactDistributionRule).where(
+            ArtifactDistributionRule.artifact_id.in_(artifact_ids)
+        )
+    ).all() if artifact_ids else []
+
+    rules_by_artifact = {}
+    for rule in rules:
+        rules_by_artifact.setdefault(rule.artifact_id, []).append(rule)
+
+    rows = []
+    for artifact in artifacts:
+        component = db.get(ReleaseComponent, artifact.release_component_id)
+        rows.append({
+            "id": str(artifact.id),
+            "filename": artifact.filename,
+            "artifact_type": artifact.artifact_type,
+            "component_version": component.version if component else None,
+            "sha256": artifact.sha256,
+            "classification": artifact.classification,
+            "distribution_level": artifact.distribution_level,
+            "ai_access_policy": artifact.ai_access_policy,
+            "policy_rules": [
+                {
+                    "recipient_type": rule.recipient_type,
+                    "purpose": rule.purpose,
+                    "recipient_code": rule.recipient_code,
+                    "decision": rule.decision,
+                }
+                for rule in rules_by_artifact.get(artifact.id, [])
+            ],
+        })
+
+    return {"summary": summary, "artifacts": rows}
+
+
 @router.get("/releases/application/{version}/readiness")
 def release_readiness(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
@@ -203,7 +251,9 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="release not found")
 
     coverage = TraceabilityService(db).release_coverage(release.id).as_dict()
+    artifact_summary = ArtifactPolicyService(db).summarize_release(release.id).as_dict()
     snapshot_id = uuid.UUID(coverage["snapshot_id"]) if coverage["snapshot_id"] else None
+    snapshot = db.get(ReleaseSnapshot, snapshot_id) if snapshot_id else None
 
     approved_exceptions = db.scalars(
         select(PolicyException).where(
@@ -221,6 +271,11 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
         else "FAIL"
     )
 
+    sha_ok = artifact_summary["artifact_total"] > 0 and artifact_summary["sha_completeness"] == 100
+    policy_ok = artifact_summary["artifact_total"] > 0 and artifact_summary["policy_completeness"] == 100
+    snapshot_frozen = bool(snapshot and snapshot.status == "FROZEN")
+    exception_scope_ok = all(x.snapshot_id == snapshot_id for x in approved_exceptions)
+
     rules = [
         {
             "group": "Change Control",
@@ -228,6 +283,7 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
             "raw": "PASS" if coverage["change_coverage"] == 100 else "FAIL",
             "effective": "PASS" if coverage["change_coverage"] == 100 else "FAIL",
             "evidence": f'{coverage["change_points_covered"]} / {coverage["change_points_total"]}',
+            "exception_allowed": True,
         },
         {
             "group": "Issue Control",
@@ -235,6 +291,7 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
             "raw": "PASS" if coverage["issue_verification_coverage"] == 100 else "FAIL",
             "effective": "PASS" if coverage["issue_verification_coverage"] == 100 else "FAIL",
             "evidence": f'{coverage["issues_covered"]} / {coverage["issues_total"]}',
+            "exception_allowed": True,
         },
         {
             "group": "Verification",
@@ -242,6 +299,7 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
             "raw": verification_raw,
             "effective": verification_effective,
             "evidence": f'{coverage["current_snapshot_executed"]} / {coverage["required_dvp_total"]}',
+            "exception_allowed": True,
         },
         {
             "group": "Software Integrity",
@@ -249,14 +307,50 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
             "raw": "PASS" if coverage["snapshot_match"] else "FAIL",
             "effective": "PASS" if coverage["snapshot_match"] else "FAIL",
             "evidence": coverage["snapshot_no"] or "No snapshot",
+            "exception_allowed": False,
+        },
+        {
+            "group": "Software Integrity",
+            "rule": "Current snapshot is frozen",
+            "raw": "PASS" if snapshot_frozen else "FAIL",
+            "effective": "PASS" if snapshot_frozen else "FAIL",
+            "evidence": snapshot.status if snapshot else "No snapshot",
+            "exception_allowed": False,
+        },
+        {
+            "group": "Artifact Control",
+            "rule": "SHA-256 complete for formal artifacts",
+            "raw": "PASS" if sha_ok else "FAIL",
+            "effective": "PASS" if sha_ok else "FAIL",
+            "evidence": f'{artifact_summary["sha_complete"]} / {artifact_summary["artifact_total"]}',
+            "exception_allowed": False,
+        },
+        {
+            "group": "Distribution Control",
+            "rule": "Artifact distribution policy complete",
+            "raw": "PASS" if policy_ok else "FAIL",
+            "effective": "PASS" if policy_ok else "FAIL",
+            "evidence": f'{artifact_summary["policy_complete"]} / {artifact_summary["artifact_total"]}',
+            "exception_allowed": False,
+        },
+        {
+            "group": "Governance",
+            "rule": "Approved exceptions are bound to current snapshot",
+            "raw": "PASS" if exception_scope_ok else "FAIL",
+            "effective": "PASS" if exception_scope_ok else "FAIL",
+            "evidence": f'{len(approved_exceptions)} current-snapshot exception(s)',
+            "exception_allowed": False,
         },
     ]
 
     hard_fail = any(r["effective"] == "FAIL" for r in rules)
+    overall = "NOT_READY" if hard_fail else "READY"
 
     return {
-        "overall": "NOT_READY" if hard_fail else "READY",
+        "overall": overall,
+        "approval_eligible": overall == "READY",
         "coverage": coverage,
+        "artifact_policy": artifact_summary,
         "rules": rules,
         "exceptions": [
             {
