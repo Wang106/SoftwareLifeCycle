@@ -61,3 +61,20 @@ def test_seed_contains_complete_release_distribution_chain():
         assert reference in text
     assert 'freeze_snapshot_artifacts' in text
     assert 'SnapshotArtifactDistributionRule' in text
+
+def test_production_api_is_registered():
+    text=Path('app/main.py').read_text()
+    assert 'production_router' in text
+    assert 'app.include_router(production_router)' in text
+
+def test_production_batch_requires_matching_authorized_software():
+    text=Path('app/services/production.py').read_text()
+    assert 'Production batch requires matching actual software' in text
+    assert 'Production batch requires an approved authorization' in text
+    assert 'Production batch changeover does not match deployment' in text
+    assert 'Production authorization batch limit has been reached' in text
+
+def test_seed_contains_production_traceability_chain():
+    text=Path('app/seed.py').read_text()
+    for reference in ('FACTORY-A','LINE-2','DEP-0081','CO-0032','PB-1005-A'):
+        assert reference in text

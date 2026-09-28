@@ -7,3 +7,4 @@ from app.models.governance import *
 from app.models.policy import *
 from app.models.approval import *
 from app.models.distribution import *
+from app.models.production import *

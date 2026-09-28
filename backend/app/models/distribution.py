@@ -59,5 +59,6 @@ class SoftwareAuthorization(Base):
     line_code: Mapped[str] = mapped_column(String(80), nullable=False)
     purpose: Mapped[str] = mapped_column(String(50), nullable=False, default="PRODUCTION")
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="DRAFT")
+    batch_limit: Mapped[int | None] = mapped_column(Integer)
     restriction_note: Mapped[str | None] = mapped_column(Text)
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

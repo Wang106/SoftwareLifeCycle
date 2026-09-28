@@ -1,6 +1,6 @@
 import uuid
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -41,6 +41,7 @@ class AuthorizationCreate(BaseModel):
     site_code: str
     line_code: str
     purpose: str = "PRODUCTION"
+    batch_limit: int | None = Field(default=None, ge=1)
     restriction_note: str | None = None
 
 
@@ -173,6 +174,7 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization):
         "site_code": row.site_code,
         "line_code": row.line_code,
         "purpose": row.purpose,
+        "batch_limit": row.batch_limit,
         "restriction_note": row.restriction_note,
         "approved_at": row.approved_at,
     }
@@ -282,6 +284,7 @@ def list_authorizations(db: Session = Depends(get_db)):
             "line_code": x.line_code,
             "purpose": x.purpose,
             "status": x.status,
+            "batch_limit": x.batch_limit,
             "restriction_note": x.restriction_note,
         } for x in rows
     ]
@@ -311,6 +314,7 @@ def create_authorization(payload: AuthorizationCreate, db: Session = Depends(get
             site_code=payload.site_code,
             line_code=payload.line_code,
             purpose=payload.purpose,
+            batch_limit=payload.batch_limit,
             restriction_note=payload.restriction_note,
         )
         return {"id": str(row.id), "authorization_no": row.authorization_no, "status": row.status}

@@ -161,11 +161,14 @@ class DistributionService:
         site_code: str,
         line_code: str,
         purpose: str = "PRODUCTION",
+        batch_limit: int | None = None,
         restriction_note: str | None = None,
     ):
         release = self.db.get(Release, release_id)
         if not release:
             raise DistributionError("Release not found")
+        if batch_limit is not None and batch_limit < 1:
+            raise DistributionError("Authorization batch limit must be at least one")
 
         if self.db.scalars(
             select(SoftwareAuthorization).where(
@@ -219,6 +222,7 @@ class DistributionService:
             line_code=line_code,
             purpose=purpose,
             status="DRAFT",
+            batch_limit=batch_limit,
             restriction_note=restriction_note,
         )
         self.db.add(row)

@@ -15,6 +15,7 @@ type AuthorizationDetail = {
   site_code: string;
   line_code: string;
   purpose: string;
+  batch_limit: number | null;
   restriction_note: string | null;
   approved_at: string | null;
 };
@@ -31,6 +32,7 @@ const fallback: AuthorizationDetail = {
   site_code: 'FACTORY-A',
   line_code: 'LINE-2',
   purpose: 'PRODUCTION',
+  batch_limit: 1,
   restriction_note: 'PEX-0018: controlled initial production batch only while DVP-034 remains incomplete.',
   approved_at: null,
 };
@@ -79,7 +81,7 @@ export default async function Page() {
     <section className="panel">
       <h2>Restriction from PEX-0018</h2>
       <p>{authorization.restriction_note || 'No production restriction recorded.'}</p>
-      <div className="notice">Authorization scope: controlled initial production batch only.</div>
+      <div className="notice">Authorization scope: {authorization.batch_limit ? `maximum ${authorization.batch_limit} production batch${authorization.batch_limit === 1 ? '' : 'es'}` : 'no batch-count limit recorded'}.</div>
     </section>
 
     <section className="panel">

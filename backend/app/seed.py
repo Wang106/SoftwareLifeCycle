@@ -12,6 +12,7 @@ from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distribution, SoftwareAuthorization
+from app.models.production import Deployment, ManufacturingSite, ProductionBatch, ProductionLine, SoftwareChangeover
 
 def h(name):
     return hashlib.sha256(name.encode()).hexdigest()
@@ -149,6 +150,29 @@ def run():
         db.add(asr)
         db.flush()
         db.add(ApplicationReleaseDetail(release_id=asr.id, customer_id=customer.id, project_id=project.id, standard_base_release_id=ssr.id))
+    db.flush()
+
+    previous_asr = db.query(Release).filter_by(
+        software_id=software.id,
+        release_type="APPLICATION",
+        version="2.3.3",
+    ).first()
+    if not previous_asr:
+        previous_asr = Release(
+            software_id=software.id,
+            release_type="APPLICATION",
+            version="2.3.3",
+            status="SUPERSEDED",
+        )
+        db.add(previous_asr)
+        db.flush()
+    if not db.get(ApplicationReleaseDetail, previous_asr.id):
+        db.add(ApplicationReleaseDetail(
+            release_id=previous_asr.id,
+            customer_id=customer.id,
+            project_id=project.id,
+            standard_base_release_id=ssr.id,
+        ))
     db.flush()
 
     main = db.query(ComponentDefinition).filter_by(code="MAIN_APPLICATION").first()
@@ -453,10 +477,75 @@ def run():
     authorization.line_code = "LINE-2"
     authorization.purpose = "PRODUCTION"
     authorization.status = "APPROVED"
+    authorization.batch_limit = 1
     authorization.restriction_note = (
         "PEX-0018: controlled initial production batch only while DVP-034 remains incomplete."
     )
     authorization.approved_at = authorization.approved_at or seeded_at
+
+    site = db.query(ManufacturingSite).filter_by(site_code="FACTORY-A").first()
+    if not site:
+        site = ManufacturingSite(site_code="FACTORY-A")
+        db.add(site)
+    site.customer_id = customer.id
+    site.project_id = project.id
+    site.name = "Factory A"
+    site.region = "APAC"
+    site.status = "ACTIVE"
+    db.flush()
+
+    line = db.query(ProductionLine).filter_by(
+        site_id=site.id,
+        line_code="LINE-2",
+    ).first()
+    if not line:
+        line = ProductionLine(site_id=site.id, line_code="LINE-2")
+        db.add(line)
+    line.name = "Line 2"
+    line.status = "ACTIVE"
+    db.flush()
+
+    deployment = db.query(Deployment).filter_by(deployment_no="DEP-0081").first()
+    if not deployment:
+        deployment = Deployment(deployment_no="DEP-0081")
+        db.add(deployment)
+    deployment.authorization_id = authorization.id
+    deployment.production_line_id = line.id
+    deployment.expected_release_id = asr.id
+    deployment.expected_snapshot_id = snap8.id
+    deployment.actual_release_id = asr.id
+    deployment.actual_snapshot_id = snap8.id
+    deployment.status = "MATCH"
+    deployment.deployed_at = deployment.deployed_at or seeded_at
+    db.flush()
+
+    changeover = db.query(SoftwareChangeover).filter_by(
+        changeover_no="CO-0032"
+    ).first()
+    if not changeover:
+        changeover = SoftwareChangeover(changeover_no="CO-0032")
+        db.add(changeover)
+    changeover.deployment_id = deployment.id
+    changeover.authorization_id = authorization.id
+    changeover.from_release_id = previous_asr.id
+    changeover.to_release_id = asr.id
+    changeover.status = "COMPLETED"
+    changeover.changed_at = changeover.changed_at or seeded_at
+    changeover.note = "Controlled changeover from ASR 2.3.3 to authorized ASR 2.3.4."
+    db.flush()
+
+    batch = db.query(ProductionBatch).filter_by(batch_no="PB-1005-A").first()
+    if not batch:
+        batch = ProductionBatch(batch_no="PB-1005-A")
+        db.add(batch)
+    batch.deployment_id = deployment.id
+    batch.changeover_id = changeover.id
+    batch.authorization_id = authorization.id
+    batch.release_id = asr.id
+    batch.snapshot_id = snap8.id
+    batch.status = "ACTIVE"
+    batch.started_at = batch.started_at or seeded_at
+    batch.note = "Initial controlled production batch under PEX-0018 restriction."
 
     db.commit()
 
