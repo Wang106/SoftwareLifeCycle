@@ -8,6 +8,9 @@
     "directory": "frontend/.open-next/assets",
     "binding": "ASSETS"
   },
+  "build": {
+    "command": "cd frontend && npm install && npx opennextjs-cloudflare build"
+  },
   "observability": {
     "enabled": true
   }
