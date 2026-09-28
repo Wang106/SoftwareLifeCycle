@@ -4,6 +4,7 @@ from app.models.core import *
 from app.models.snapshot import ReleaseSnapshot
 from app.models.change import SoftwareChangeRequest, AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation
 from app.models.testing import DvpPlan, DvpItem, ChangePointDvpItem, IssueDvpItem, TestRelease, DvpExecution
+from app.models.governance import PolicyException
 
 def h(name):
     return hashlib.sha256(name.encode()).hexdigest()
@@ -155,6 +156,20 @@ def run():
     for item,no,snapshot,test_release,result,actual in executions:
         if not db.query(DvpExecution).filter_by(dvp_item_id=item.id, execution_no=no).first():
             db.add(DvpExecution(dvp_item_id=item.id, execution_no=no, release_id=asr.id, snapshot_id=snapshot.id, test_release_id=test_release.id, result=result, actual_result=actual))
+
+    pex = db.query(PolicyException).filter_by(exception_no="PEX-0018").first()
+    if not pex:
+        pex = PolicyException(
+            exception_no="PEX-0018",
+            snapshot_id=snap8.id,
+            rule_code="VERIFICATION_CURRENT_SNAPSHOT_COMPLETE",
+            scope="Verification",
+            status="APPROVED",
+            reason="DVP-034 endurance test pending.",
+            compensating_control="Restricted initial production authorization.",
+            approved_by="Quality Manager",
+        )
+        db.add(pex)
 
     db.commit()
 
