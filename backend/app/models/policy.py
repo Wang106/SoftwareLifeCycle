@@ -9,7 +9,10 @@ def uid(): return uuid.uuid4()
 class ArtifactDistributionRule(Base):
     __tablename__ = "artifact_distribution_rules"
     __table_args__ = (
-        UniqueConstraint("artifact_id", "recipient_type", "purpose", name="uq_artifact_recipient_purpose"),
+        UniqueConstraint(
+            "artifact_id", "recipient_type", "purpose", "recipient_code",
+            name="uq_artifact_recipient_purpose_code"
+        ),
     )
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uid)
     artifact_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("artifacts.id"), nullable=False, index=True)
