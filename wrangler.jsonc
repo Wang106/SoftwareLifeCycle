@@ -1,0 +1,14 @@
+{
+  "$schema": "./frontend/node_modules/wrangler/config-schema.json",
+  "name": "software-lifecycle",
+  "main": "frontend/.open-next/worker.js",
+  "compatibility_date": "2026-09-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "frontend/.open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
