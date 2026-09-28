@@ -8,6 +8,7 @@ from app.models.change import Issue, IssueChangeRequestRelation, SoftwareChangeR
 from app.models.testing import DvpItem, DvpExecution
 from app.models.core import ApplicationReleaseDetail, Customer, Project, Release, SoftwareProduct
 from app.models.snapshot import ReleaseSnapshot
+from app.models.governance import PolicyException
 from app.services.traceability import TraceabilityService
 
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
@@ -202,6 +203,24 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="release not found")
 
     coverage = TraceabilityService(db).release_coverage(release.id).as_dict()
+    snapshot_id = uuid.UUID(coverage["snapshot_id"]) if coverage["snapshot_id"] else None
+
+    approved_exceptions = db.scalars(
+        select(PolicyException).where(
+            PolicyException.snapshot_id == snapshot_id,
+            PolicyException.status == "APPROVED",
+        )
+    ).all() if snapshot_id else []
+    exception_by_rule = {x.rule_code: x for x in approved_exceptions}
+
+    verification_raw = "PASS" if coverage["dvp_execution_coverage"] == 100 else "FAIL"
+    verification_exception = exception_by_rule.get("VERIFICATION_CURRENT_SNAPSHOT_COMPLETE")
+    verification_effective = (
+        "PASS" if verification_raw == "PASS"
+        else "EXCEPTION_GRANTED" if verification_exception
+        else "FAIL"
+    )
+
     rules = [
         {
             "group": "Change Control",
@@ -220,8 +239,8 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
         {
             "group": "Verification",
             "rule": "Required DVP executed on current snapshot",
-            "raw": "PASS" if coverage["dvp_execution_coverage"] == 100 else "FAIL",
-            "effective": "EXCEPTION_GRANTED" if coverage["dvp_execution_coverage"] < 100 else "PASS",
+            "raw": verification_raw,
+            "effective": verification_effective,
             "evidence": f'{coverage["current_snapshot_executed"]} / {coverage["required_dvp_total"]}',
         },
         {
@@ -232,20 +251,25 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
             "evidence": coverage["snapshot_no"] or "No snapshot",
         },
     ]
+
     hard_fail = any(r["effective"] == "FAIL" for r in rules)
+
     return {
         "overall": "NOT_READY" if hard_fail else "READY",
         "coverage": coverage,
         "rules": rules,
         "exceptions": [
             {
-                "exception_no": "PEX-0018",
-                "status": "APPROVED",
-                "scope": "Verification",
-                "reason": "DVP-034 endurance test pending",
+                "exception_no": x.exception_no,
+                "status": x.status,
+                "scope": x.scope,
+                "reason": x.reason,
+                "compensating_control": x.compensating_control,
                 "snapshot_no": coverage["snapshot_no"],
+                "rule_code": x.rule_code,
             }
-        ] if coverage["dvp_execution_coverage"] < 100 and coverage["snapshot_no"] else [],
+            for x in approved_exceptions
+        ],
     }
 
 
