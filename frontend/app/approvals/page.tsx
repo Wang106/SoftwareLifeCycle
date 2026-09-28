@@ -1,8 +1,11 @@
 import Link from 'next/link';
-const rows=[
-['APR-0121','RELEASE','ASR 2.3.4 / SNAP-008','Quality Manager','PENDING','Release approval'],
-['APR-0118','POLICY EXCEPTION','PEX-0018 / SNAP-008','Quality Manager','APPROVED','DVP-034 incomplete'],
-['APR-0115','CHANGE REQUEST','SCR-142','Software Lead','APPROVED','Requirement approval'],
-['APR-0109','TEST RELEASE','TR-0061 / SNAP-008','Test Lead','APPROVED','Retest authorization']
-];
-export default function Page(){return <><div className="top"><div><div className="eyebrow">GOVERNANCE</div><h1>Approvals</h1><p className="muted">One approval engine for change, test release, exception, release, delivery and production authorization.</p></div><Link className="button" href="/create">+ Create</Link></div><div className="cards"><div className="card"><span className="muted">PENDING</span><div className="metric">1</div><small>Needs current approver action</small></div><div className="card"><span className="muted">APPROVED</span><div className="metric">3</div><small>Current lifecycle chain</small></div><div className="card"><span className="muted">RETURNED</span><div className="metric">0</div><small>No returned items</small></div><div className="card"><span className="muted">SNAPSHOT-BOUND</span><div className="metric">3</div><small>Immutable target approvals</small></div></div><section className="panel tablewrap"><table><thead><tr><th>Approval</th><th>Type</th><th>Target</th><th>Current Approver</th><th>Status</th><th>Purpose</th></tr></thead><tbody>{rows.map((r,i)=><tr key={r[0]}><td>{i===0?<Link href="/approvals/APR-0121"><b>{r[0]}</b></Link>:<b>{r[0]}</b>}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td><span className={'status '+(r[4]==='APPROVED'?'pass':'warning')}>{r[4]}</span></td><td>{r[5]}</td></tr>)}</tbody></table></section></>}
+import { apiGet } from '../../lib/api';
+
+type Approval={id:string;approval_no:string;target_type:string;target_id:string;snapshot_id:string|null;status:string;submitted_by:string|null};
+const fallback:Approval[]=[{id:'1',approval_no:'APR-0121',target_type:'RELEASE',target_id:'demo',snapshot_id:'SNAP-008',status:'PENDING',submitted_by:'Release Manager'}];
+
+export default async function Page(){
+ const apiRows=await apiGet<Approval[]>('/api/v1/approvals');
+ const rows=apiRows&&apiRows.length?apiRows:fallback;
+ return <><div className="top"><div><div className="eyebrow">GOVERNANCE</div><h1>Approvals</h1><p className="muted">Formal approval requests with immutable targets and append-only decision history.</p></div><Link className="button" href="/create">+ Create</Link></div><div className="cards"><div className="card"><span className="muted">PENDING</span><div className="metric">{rows.filter(r=>r.status==='PENDING').length}</div></div><div className="card"><span className="muted">APPROVED</span><div className="metric">{rows.filter(r=>r.status==='APPROVED').length}</div></div><div className="card"><span className="muted">RETURNED</span><div className="metric">{rows.filter(r=>r.status==='RETURNED').length}</div></div><div className="card"><span className="muted">TOTAL</span><div className="metric">{rows.length}</div></div></div><section className="panel tablewrap"><table><thead><tr><th>Approval</th><th>Type</th><th>Snapshot-bound</th><th>Status</th><th>Submitted By</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td><Link href={'/approvals/'+r.approval_no}><b>{r.approval_no}</b></Link></td><td>{r.target_type}</td><td>{r.snapshot_id?'YES':'NO'}</td><td><span className={'status '+(r.status==='APPROVED'?'pass':'warning')}>{r.status}</span></td><td>{r.submitted_by||'—'}</td></tr>)}</tbody></table></section>{!apiRows&&<p className="datasource">Demo fallback active.</p>}</>
+}
