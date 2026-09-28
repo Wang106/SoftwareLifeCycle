@@ -5,6 +5,7 @@ from app.models.snapshot import ReleaseSnapshot
 from app.models.change import SoftwareChangeRequest, AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation
 from app.models.testing import DvpPlan, DvpItem, ChangePointDvpItem, IssueDvpItem, TestRelease, DvpExecution
 from app.models.governance import PolicyException
+from app.models.policy import ArtifactDistributionRule
 
 def h(name):
     return hashlib.sha256(name.encode()).hexdigest()
@@ -73,6 +74,29 @@ def run():
             Artifact(release_component_id=c1.id, artifact_type="ELF", filename="BMS.elf", storage_reference="managed://BMS.elf", sha256=h("elf"), controlled=True, classification="STRICTLY_CONFIDENTIAL", distribution_level="INTERNAL_ONLY", ai_access_policy="LOCAL_ONLY"),
             Artifact(release_component_id=c2.id, artifact_type="A2L", filename="CustomerA_BMS.a2l", storage_reference="managed://CustomerA_BMS.a2l", sha256=h("a2l"), controlled=True, classification="CONFIDENTIAL", distribution_level="CONTROLLED_EXTERNAL", ai_access_policy="LOCAL_ONLY"),
         ])
+
+    db.flush()
+    artifacts = {a.filename: a for a in db.query(Artifact).join(ReleaseComponent, ReleaseComponent.id == Artifact.release_component_id).filter(ReleaseComponent.release_id == asr.id).all()}
+    policy_specs = [
+        ("CustomerA_BMS.hex", "CUSTOMER", "PRODUCTION", "ALLOW", "CUS-001"),
+        ("CustomerA_BMS.a2l", "CUSTOMER", "PRODUCTION", "APPROVAL_REQUIRED", "CUS-001"),
+    ]
+    for filename, recipient_type, purpose, decision, recipient_code in policy_specs:
+        artifact = artifacts.get(filename)
+        if artifact and not db.query(ArtifactDistributionRule).filter_by(
+            artifact_id=artifact.id,
+            recipient_type=recipient_type,
+            purpose=purpose,
+            recipient_code=recipient_code,
+        ).first():
+            db.add(ArtifactDistributionRule(
+                artifact_id=artifact.id,
+                recipient_type=recipient_type,
+                purpose=purpose,
+                decision=decision,
+                recipient_code=recipient_code,
+                notes="Demo recipient-specific production distribution policy.",
+            ))
 
     snap7 = db.query(ReleaseSnapshot).filter_by(snapshot_no="SNAP-007").first()
     if not snap7:
