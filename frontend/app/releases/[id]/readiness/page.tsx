@@ -4,6 +4,7 @@ import { apiGet } from '../../../../lib/api';
 type Readiness={
   overall:string;
   coverage:{snapshot_no:string|null;dvp_execution_coverage:number};
+  artifact_policy?:{sha_completeness:number;policy_completeness:number};
   rules:{group:string;rule:string;raw:string;effective:string;evidence:string}[];
   exceptions:{exception_no:string;status:string;scope:string;reason:string;snapshot_no:string|null}[];
 };
@@ -11,11 +12,16 @@ type Readiness={
 const fallback:Readiness={
   overall:'READY',
   coverage:{snapshot_no:'SNAP-008',dvp_execution_coverage:67},
+  artifact_policy:{sha_completeness:100,policy_completeness:100},
   rules:[
     {group:'Change Control',rule:'Required changes linked to DVP',raw:'PASS',effective:'PASS',evidence:'2 / 2'},
     {group:'Issue Control',rule:'Verification-required issues linked to DVP',raw:'PASS',effective:'PASS',evidence:'1 / 1'},
     {group:'Verification',rule:'Required DVP executed on current snapshot',raw:'FAIL',effective:'EXCEPTION_GRANTED',evidence:'2 / 3'},
-    {group:'Software Integrity',rule:'Tested snapshot equals current snapshot',raw:'PASS',effective:'PASS',evidence:'SNAP-008'}
+    {group:'Software Integrity',rule:'Tested snapshot equals current snapshot',raw:'PASS',effective:'PASS',evidence:'SNAP-008'},
+    {group:'Software Integrity',rule:'Current snapshot is frozen',raw:'PASS',effective:'PASS',evidence:'FROZEN'},
+    {group:'Artifact Control',rule:'SHA-256 complete for formal artifacts',raw:'PASS',effective:'PASS',evidence:'3 / 3'},
+    {group:'Distribution Control',rule:'Artifact distribution policy complete',raw:'PASS',effective:'PASS',evidence:'3 / 3'},
+    {group:'Governance',rule:'Approved exceptions are bound to current snapshot',raw:'PASS',effective:'PASS',evidence:'1 current-snapshot exception'}
   ],
   exceptions:[
     {exception_no:'PEX-0018',status:'APPROVED',scope:'Verification',reason:'DVP-034 endurance test pending',snapshot_no:'SNAP-008'}
