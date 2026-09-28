@@ -10,6 +10,7 @@ from app.models.core import ApplicationReleaseDetail, Artifact, Customer, Projec
 from app.models.snapshot import ReleaseSnapshot
 from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
+from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 from app.services.artifact_policy import ArtifactPolicyService
 from app.services.traceability import TraceabilityService
 
@@ -364,6 +365,108 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
             }
             for x in approved_exceptions
         ],
+    }
+
+
+@router.get("/approvals")
+def list_approvals(db: Session = Depends(get_db)):
+    rows = db.scalars(
+        select(ApprovalRequest).order_by(ApprovalRequest.created_at.desc())
+    ).all()
+    return [
+        {
+            "id": str(row.id),
+            "approval_no": row.approval_no,
+            "target_type": row.target_type,
+            "target_id": str(row.target_id),
+            "snapshot_id": str(row.snapshot_id) if row.snapshot_id else None,
+            "status": row.status,
+            "submitted_by": row.submitted_by,
+        }
+        for row in rows
+    ]
+
+
+@router.get("/approvals/{approval_no}")
+def get_approval(approval_no: str, db: Session = Depends(get_db)):
+    approval = db.scalars(
+        select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)
+    ).first()
+    if not approval:
+        raise HTTPException(status_code=404, detail="approval not found")
+
+    steps = db.scalars(
+        select(ApprovalStep)
+        .where(ApprovalStep.approval_request_id == approval.id)
+        .order_by(ApprovalStep.step_order)
+    ).all()
+    actions = db.scalars(
+        select(ApprovalAction)
+        .where(ApprovalAction.approval_request_id == approval.id)
+        .order_by(ApprovalAction.created_at)
+    ).all()
+
+    release = db.get(Release, approval.target_id) if approval.target_type == "RELEASE" else None
+    snapshot = db.get(ReleaseSnapshot, approval.snapshot_id) if approval.snapshot_id else None
+
+    return {
+        "id": str(approval.id),
+        "approval_no": approval.approval_no,
+        "target_type": approval.target_type,
+        "target": {
+            "release_version": release.version if release else None,
+            "snapshot_no": snapshot.snapshot_no if snapshot else None,
+            "content_hash": snapshot.content_hash if snapshot else None,
+        },
+        "status": approval.status,
+        "submitted_by": approval.submitted_by,
+        "steps": [
+            {
+                "id": str(step.id),
+                "step_order": step.step_order,
+                "role_name": step.role_name,
+                "approver_name": step.approver_name,
+                "status": step.status,
+            }
+            for step in steps
+        ],
+        "actions": [
+            {
+                "id": str(action.id),
+                "step_id": str(action.step_id) if action.step_id else None,
+                "actor_name": action.actor_name,
+                "action": action.action,
+                "comment": action.comment,
+            }
+            for action in actions
+        ],
+    }
+
+
+@router.get("/releases/application/{version}/decision")
+def get_release_decision(version: str, db: Session = Depends(get_db)):
+    release = _application_release(db, version)
+    if not release:
+        raise HTTPException(status_code=404, detail="release not found")
+    decision = db.scalars(
+        select(ReleaseDecision)
+        .where(ReleaseDecision.release_id == release.id)
+        .order_by(ReleaseDecision.decided_at.desc())
+    ).first()
+    if not decision:
+        return {"decision": None}
+    snapshot = db.get(ReleaseSnapshot, decision.snapshot_id)
+    approval = db.get(ApprovalRequest, decision.approval_request_id)
+    return {
+        "decision": {
+            "decision_no": decision.decision_no,
+            "decision": decision.decision,
+            "readiness_status": decision.readiness_status,
+            "decided_by": decision.decided_by,
+            "decision_notes": decision.decision_notes,
+            "snapshot_no": snapshot.snapshot_no if snapshot else None,
+            "approval_no": approval.approval_no if approval else None,
+        }
     }
 
 
