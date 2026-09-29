@@ -17,7 +17,8 @@ export type AuditEvent = {
 
 export function eventHref(event: AuditEvent): string | null {
   if (event.entity_type === 'SOFTWARE_CHANGE_REQUEST') return `/changes/${encodeURIComponent(event.entity_ref)}`;
-  if (event.entity_type === 'DVP_ITEM') return '/testing/dvp';
+  if (event.entity_type === 'DVP_ITEM')
+    return event.entity_id ? `/testing/dvp/${encodeURIComponent(event.entity_id)}` : '/testing/dvp';
   if (event.entity_type === 'RELEASE_SNAPSHOT' || event.entity_type === 'RELEASE_DECISION')
     return event.related_release_id
       ? `/releases/application/${encodeURIComponent(event.related_release_id)}/passport`

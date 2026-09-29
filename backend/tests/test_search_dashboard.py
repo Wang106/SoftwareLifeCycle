@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy.dialects import postgresql
 
 from app.api.search import _pattern, global_search, search_records
@@ -5,6 +7,7 @@ from app.api.dashboard import dashboard_summary
 from app.models.change import SoftwareChangeRequest
 from app.models.core import Release
 from app.models.production import Deployment, ProductionBatch
+from app.models.testing import DvpItem
 from app.models.audit import AuditEvent
 
 
@@ -56,6 +59,28 @@ def test_search_audit_event_opens_its_formal_record():
 
     results = search_records(AuditSession(), "EVT-0009", 50)
     assert results == [{"type": "Activity", "label": "EVT-0009", "description": "Batch started", "href": "/activity/EVT-0009"}]
+
+
+def test_search_opens_exact_dvp_and_release_profiles():
+    item = DvpItem(id=uuid.uuid4(), plan_id=uuid.uuid4(),
+                   item_no="DVP-031", title="Charge timeout verification", scope="SOFTWARE")
+    standard = Release(id=uuid.uuid4(), software_id=uuid.uuid4(),
+                       release_type="STANDARD", version="5.1.12", status="RELEASED")
+
+    class ExactSession(SearchSession):
+        def scalars(self, statement):
+            self.statements.append(statement)
+            model = statement.column_descriptions[0]["entity"]
+            if model is DvpItem:
+                return Rows([item])
+            if model is Release:
+                return Rows([standard])
+            return Rows([])
+
+    results = search_records(ExactSession(), "5.1.12", 50)
+    assert {row["href"] for row in results} == {
+        f"/testing/dvp/{item.id}", f"/releases/standard/{standard.id}"
+    }
 
 
 class DashboardSession:
