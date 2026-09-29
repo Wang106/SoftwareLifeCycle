@@ -63,6 +63,8 @@ Suppliers, customers and projects use read-only `/api/v1/organizations/{supplier
 
 The Application Releases list reads `GET /api/v1/releases/application`, including customer, project, standard base version and latest snapshot. Every application release links to a read-only profile at `/releases/application/{release_id}`, backed by `GET /api/v1/releases/application/id/{release_id}`. The profile shows snapshot-bound coverage only when a snapshot exists. The existing ASR 2.3.4 workspace remains available as a detailed demo view.
 
+The profile also reads `GET /api/v1/releases/application/id/{release_id}/evidence` for the frozen SnapshotArtifact manifest and the latest DVP execution for each item on the current snapshot. Historical executions from other snapshots are counted separately; storage references are not returned. This is read-only and does not modify formal history.
+
 For Cloudflare Workers Builds, also add any variables needed during static generation under **Build variables and secrets**. The deploy command uses `--keep-vars`, so dashboard-managed runtime variables are preserved.
 
 ## Backend deployment

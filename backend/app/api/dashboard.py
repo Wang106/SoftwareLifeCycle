@@ -7,7 +7,7 @@ from app.core.db import get_db
 from app.models.change import Issue, IssueChangeRequestRelation, SoftwareChangeRequest
 from app.models.testing import DvpItem, DvpExecution
 from app.models.core import ApplicationReleaseDetail, Artifact, Customer, Project, Release, ReleaseComponent, SoftwareProduct
-from app.models.snapshot import ReleaseSnapshot
+from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
@@ -71,6 +71,43 @@ def application_release_profile(release_id: uuid.UUID, db: Session = Depends(get
         "snapshot": {"snapshot_no": snapshot.snapshot_no, "status": snapshot.status,
                      "content_hash": snapshot.content_hash} if snapshot else None,
         "coverage": coverage,
+    }
+
+
+@router.get("/releases/application/id/{release_id}/evidence")
+def application_release_evidence(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+    snapshot = db.scalars(select(ReleaseSnapshot).where(ReleaseSnapshot.release_id == release.id)
+        .order_by(ReleaseSnapshot.snapshot_number.desc()).limit(1)).first()
+    if snapshot is None:
+        return {"snapshot_no": None, "artifacts": [], "executions": [], "other_snapshot_executions": 0}
+
+    artifacts = db.scalars(select(SnapshotArtifact).where(SnapshotArtifact.snapshot_id == snapshot.id)
+        .order_by(SnapshotArtifact.component_code, SnapshotArtifact.filename)).all()
+    executions = db.scalars(select(DvpExecution).where(DvpExecution.release_id == release.id)
+        .order_by(DvpExecution.execution_no.desc(), DvpExecution.executed_at.desc())).all()
+    latest = {}
+    other_snapshot_executions = 0
+    for execution in executions:
+        if execution.snapshot_id == snapshot.id:
+            latest.setdefault(execution.dvp_item_id, execution)
+        else:
+            other_snapshot_executions += 1
+    items = {item.id: item for item in db.scalars(select(DvpItem).where(DvpItem.id.in_(list(latest)))).all()} if latest else {}
+    return {
+        "snapshot_no": snapshot.snapshot_no,
+        "artifacts": [{"id": str(row.id), "component_code": row.component_code, "component_version": row.component_version,
+                       "filename": row.filename, "artifact_type": row.artifact_type,
+                       "sha256": row.sha256, "classification": row.classification,
+                       "distribution_level": row.distribution_level, "ai_access_policy": row.ai_access_policy}
+                      for row in artifacts],
+        "executions": sorted([{"item_no": items[item_id].item_no, "title": items[item_id].title,
+                               "execution_no": execution.execution_no, "result": execution.result,
+                               "executed_at": execution.executed_at}
+                              for item_id, execution in latest.items() if item_id in items], key=lambda row: row["item_no"]),
+        "other_snapshot_executions": other_snapshot_executions,
     }
 
 
