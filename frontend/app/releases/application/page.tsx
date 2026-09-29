@@ -1,3 +1,15 @@
 import Link from 'next/link';
-const rows=[['2.3.4','Customer A','Project X','5.1.12','92%','READY'],['2.3.3','Customer A','Project X','5.1.12','PASS','RELEASED'],['2.3.2','Customer A','Project X','5.1.11','PASS','SUPERSEDED']];
-export default function Page(){return <><div className="top"><div><h1>Application Releases</h1><p className="muted">Customer-specific application software releases.</p></div><button>+ New ASR</button></div><table><thead><tr><th>Version</th><th>Customer</th><th>Project</th><th>Base SSR</th><th>Verification</th><th>Status</th></tr></thead><tbody>{rows.map((r,i)=><tr key={r[0]}><td>{i===0?<Link href="/releases/demo"><b>{r[0]}</b></Link>:r[0]}</td>{r.slice(1).map(x=><td key={x}>{x}</td>)}</tr>)}</tbody></table></>}
+import { apiGet } from '../../../lib/api';
+
+type ApplicationRelease = {
+  id: string; version: string; status: string; customer: string | null; project: string | null;
+  base_version: string | null; snapshot_no: string | null;
+};
+
+export default async function Page() {
+  const rows = await apiGet<ApplicationRelease[]>('/api/v1/releases/application');
+  return <><div className="top"><div><h1>Application Releases</h1><p className="muted">Customer-specific application software releases and their latest snapshots.</p></div></div>
+    <section className="panel tablewrap"><table><thead><tr><th>Version</th><th>Customer</th><th>Project</th><th>Base SSR</th><th>Latest Snapshot</th><th>Status</th></tr></thead><tbody>{rows?.map(row => <tr key={row.id}><td>{row.version === '2.3.4' ? <Link href="/releases/demo"><b>ASR {row.version}</b></Link> : <b>ASR {row.version}</b>}</td><td>{row.customer || '—'}</td><td>{row.project || '—'}</td><td>{row.base_version ? `SSR ${row.base_version}` : '—'}</td><td>{row.snapshot_no || '—'}</td><td><span className={'status ' + (row.status === 'READY' || row.status === 'RELEASED' ? 'pass' : 'warning')}>{row.status}</span></td></tr>)}</tbody></table>{rows?.length === 0 && <p className="muted">No application releases found.</p>}</section>
+    {!rows && <p className="datasource">Release API unavailable · configure API_BASE_URL to load records.</p>}
+  </>;
+}

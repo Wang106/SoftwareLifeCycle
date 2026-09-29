@@ -18,6 +18,36 @@ from app.models.audit import AuditEvent
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
 
 
+@router.get("/releases/application")
+def list_application_releases(db: Session = Depends(get_db)):
+    releases = db.scalars(select(Release).where(Release.release_type == "APPLICATION")
+        .order_by(Release.created_at.desc(), Release.id.desc()).limit(200)).all()
+    ids = [row.id for row in releases]
+    if not ids:
+        return []
+    details = {row.release_id: row for row in db.scalars(
+        select(ApplicationReleaseDetail).where(ApplicationReleaseDetail.release_id.in_(ids))
+    ).all()}
+    customer_ids = {row.customer_id for row in details.values()}
+    project_ids = {row.project_id for row in details.values()}
+    base_ids = {row.standard_base_release_id for row in details.values()}
+    customers = {row.id: row for row in db.scalars(select(Customer).where(Customer.id.in_(customer_ids))).all()}
+    projects = {row.id: row for row in db.scalars(select(Project).where(Project.id.in_(project_ids))).all()}
+    bases = {row.id: row for row in db.scalars(select(Release).where(Release.id.in_(base_ids))).all()}
+    snapshots = db.scalars(select(ReleaseSnapshot).where(ReleaseSnapshot.release_id.in_(ids))
+        .order_by(ReleaseSnapshot.release_id, ReleaseSnapshot.snapshot_number.desc())).all()
+    latest = {}
+    for snapshot in snapshots:
+        latest.setdefault(snapshot.release_id, snapshot)
+    return [{
+        "id": str(release.id), "version": release.version, "status": release.status,
+        "customer": customers[details[release.id].customer_id].name if release.id in details else None,
+        "project": projects[details[release.id].project_id].name if release.id in details else None,
+        "base_version": bases[details[release.id].standard_base_release_id].version if release.id in details else None,
+        "snapshot_no": latest[release.id].snapshot_no if release.id in latest else None,
+    } for release in releases]
+
+
 @router.get("/dashboard/summary")
 def dashboard_summary(db: Session = Depends(get_db)):
     active_changes = db.scalar(select(func.count()).select_from(SoftwareChangeRequest).where(
