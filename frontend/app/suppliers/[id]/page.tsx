@@ -1,1 +1,13 @@
-import Link from 'next/link'; export default function Page(){return <><div className="top"><div><div className="eyebrow">SUPPLIER · SUP-001</div><h1>Supplier A</h1><p className="muted">Standard software source organization</p></div><span className="status pass">ACTIVE</span></div><div className="tabs"><span className="active">Overview</span><span>Software</span><span>Documents</span><span>Links</span><span>Contacts</span><span>Issues</span><span>Activity</span></div><div className="grid2"><section className="panel"><h2>Profile</h2><div className="kv"><span>Supplier Code</span><b>SUP-001</b><span>Region</span><b>APAC</b><span>Primary Contact</span><b>Software Program Manager</b><span>Quality Contact</span><b>Supplier Quality Lead</b></div></section><section className="panel"><h2>Software portfolio</h2><Link className="entityrow" href="/releases/application"><div><b>BMS Standard</b><span>SW-BMS-001</span></div><div><b>SSR 5.1.12</b><span>Current standard release</span></div></Link></section></div><section className="panel"><div className="sectiontitle"><h2>Supplier-origin issues</h2><Link href="/issues/310">Open issue →</Link></div><table><tbody><tr><td><b>#310</b></td><td>Low-temperature charging timeout</td><td>STANDARD</td><td><span className="status pass">FIX VERIFIED</span></td></tr></tbody></table></section></>}
+import Link from 'next/link';
+import { apiGet } from '../../../lib/api';
+import type { Supplier } from '../../../lib/organizations';
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const row = await apiGet<Supplier>(`/api/v1/organizations/suppliers/${encodeURIComponent(id)}`);
+  if (!row) return <section className="panel"><h1>Supplier unavailable</h1><p className="muted">The supplier was not found or the API could not be reached.</p><Link href="/suppliers">Back to suppliers →</Link></section>;
+  return <><div className="top"><div><div className="eyebrow">SUPPLIER · {row.code}</div><h1>{row.name}</h1><p className="muted">Standard software source organization</p></div><span className="status pass">{row.status}</span></div>
+    <div className="grid2"><section className="panel"><h2>Profile</h2><div className="kv"><span>Supplier Code</span><b>{row.code}</b><span>Country</span><b>{row.country || '—'}</b><span>Website</span><b>{row.website || '—'}</b><span>Description</span><b>{row.description || '—'}</b></div></section>
+      <section className="panel"><h2>Software portfolio</h2>{row.software.length ? row.software.map(product => <Link className="entityrow" href="/releases/application" key={product.code}><div><b>{product.name}</b><span>{product.code} · {product.type || 'Software'}</span></div><div><b>{product.standard_version ? `SSR ${product.standard_version}` : 'No standard release'}</b><span>{product.status}</span></div></Link>) : <p className="muted">No software products found.</p>}</section></div>
+  </>;
+}

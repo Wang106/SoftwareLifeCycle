@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models.change import Issue, SoftwareChangeRequest
-from app.models.core import Artifact, Customer, Project, Release
+from app.models.core import Artifact, Customer, Project, Release, Supplier
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.testing import DvpItem
 from app.models.production import Deployment, ProductionBatch
@@ -42,8 +42,9 @@ def search_records(db: Session, query: str, limit: int) -> list[dict]:
     add(Release, [Release.version], "Release", lambda r: f"{r.release_type} {r.version}", lambda r: r.status, lambda r: "/releases/demo" if r.release_type == "APPLICATION" and r.version == "2.3.4" else "/releases/application")
     add(SnapshotArtifact, [SnapshotArtifact.filename, SnapshotArtifact.sha256], "Frozen artifact", lambda r: r.filename, lambda r: f"SHA-256 {r.sha256[:12]}…", lambda r: "/releases/application")
     add(Artifact, [Artifact.filename, Artifact.sha256], "Artifact", lambda r: r.filename, lambda r: r.artifact_type, lambda r: "/releases/application")
-    add(Customer, [Customer.code, Customer.name], "Customer", lambda r: r.name, lambda r: r.code, lambda r: f"/customers/{r.id}")
+    add(Customer, [Customer.code, Customer.name], "Customer", lambda r: r.name, lambda r: r.code, lambda r: f"/customers/{r.code}")
     add(Project, [Project.project_code, Project.name], "Project", lambda r: r.name, lambda r: r.project_code, lambda r: f"/projects/{r.id}")
+    add(Supplier, [Supplier.code, Supplier.name], "Supplier", lambda r: r.name, lambda r: r.code, lambda r: f"/suppliers/{r.code}")
     add(ApprovalRequest, [ApprovalRequest.approval_no], "Approval", lambda r: r.approval_no, lambda r: r.status, lambda r: f"/approvals/{r.approval_no}")
     add(DeliveryPackage, [DeliveryPackage.package_no], "Delivery", lambda r: f"{r.package_no} Rev{r.revision}", lambda r: r.status, lambda r: "/distribution/deliveries/new")
     add(Distribution, [Distribution.distribution_no], "Distribution", lambda r: r.distribution_no, lambda r: r.status, lambda r: "/distribution/deliveries/new")

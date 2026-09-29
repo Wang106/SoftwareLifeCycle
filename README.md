@@ -59,6 +59,8 @@ Configure `API_BASE_URL` as a Cloudflare Worker runtime environment variable poi
 
 The dashboard reads `GET /api/v1/dashboard/summary` for current counts, release verification coverage and the five latest audit events. Global search uses `GET /api/v1/search?q=...&limit=50` to look up lifecycle identifiers, names, artifact filenames and SHA fragments. Search requires a nonblank query (maximum 100 characters), returns at most 100 results, and does not require a database migration. If the API is unavailable, these pages show an unavailable state instead of static demo metrics or fabricated search matches.
 
+Suppliers, customers and projects use read-only `/api/v1/organizations/{suppliers|customers|projects}` list and detail endpoints. Project detail links use the UUID because project codes are only unique within a customer. Legacy project-code links work when the code identifies exactly one project; ambiguous codes return HTTP 409. Organization pages display an unavailable state when FastAPI cannot be reached.
+
 For Cloudflare Workers Builds, also add any variables needed during static generation under **Build variables and secrets**. The deploy command uses `--keep-vars`, so dashboard-managed runtime variables are preserved.
 
 ## Backend deployment
