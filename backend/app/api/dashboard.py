@@ -4,8 +4,8 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
-from app.models.change import Issue, IssueChangeRequestRelation, SoftwareChangeRequest
-from app.models.testing import DvpItem, DvpExecution, DvpPlan, TestRelease
+from app.models.change import AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation, SoftwareChangeRequest
+from app.models.testing import ChangePointDvpItem, DvpItem, DvpExecution, DvpPlan, TestRelease
 from app.models.core import ApplicationReleaseDetail, Artifact, Customer, Project, Release, ReleaseComponent, SoftwareProduct
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.governance import PolicyException
@@ -221,6 +221,70 @@ def list_changes(db: Session = Depends(get_db)):
         }
         for row in rows
     ]
+
+
+@router.get("/changes/{request_no}")
+def change_detail(request_no: str, db: Session = Depends(get_db)):
+    change = db.scalars(select(SoftwareChangeRequest).where(
+        SoftwareChangeRequest.request_no == request_no
+    )).first()
+    if change is None:
+        raise HTTPException(status_code=404, detail="change request not found")
+    software = db.get(SoftwareProduct, change.software_id)
+    customer = db.get(Customer, change.customer_id) if change.customer_id else None
+    project = db.get(Project, change.project_id) if change.project_id else None
+    criteria = db.scalars(select(AcceptanceCriterion).where(
+        AcceptanceCriterion.change_request_id == change.id
+    ).order_by(AcceptanceCriterion.criterion_no)).all()
+    points = db.scalars(select(ChangePoint).where(
+        ChangePoint.change_request_id == change.id
+    ).order_by(ChangePoint.change_no)).all()
+    issue_links = db.execute(select(IssueChangeRequestRelation, Issue)
+        .join(Issue, Issue.id == IssueChangeRequestRelation.issue_id)
+        .where(IssueChangeRequestRelation.change_request_id == change.id)).all()
+    plans = db.scalars(select(DvpPlan).where(DvpPlan.change_request_id == change.id)
+        .order_by(DvpPlan.plan_no)).all()
+    items = db.scalars(select(DvpItem).where(DvpItem.plan_id.in_(
+        [plan.id for plan in plans]
+    )).order_by(DvpItem.item_no)).all() if plans else []
+    item_by_id = {item.id: item for item in items}
+    point_links = db.scalars(select(ChangePointDvpItem).where(
+        ChangePointDvpItem.change_point_id.in_([point.id for point in points])
+    )).all() if points else []
+    missing_item_ids = {link.dvp_item_id for link in point_links} - item_by_id.keys()
+    if missing_item_ids:
+        item_by_id.update({item.id: item for item in db.scalars(select(DvpItem).where(
+            DvpItem.id.in_(missing_item_ids)
+        )).all()})
+    linked_items = {}
+    for link in point_links:
+        if link.dvp_item_id in item_by_id:
+            linked_items.setdefault(link.change_point_id, []).append(item_by_id[link.dvp_item_id])
+    return {
+        "id": str(change.id), "request_no": change.request_no, "title": change.title,
+        "source": change.source, "scope": change.scope, "change_type": change.change_type,
+        "status": change.status, "background": change.background,
+        "requirement": change.requirement, "created_at": change.created_at,
+        "software": {"code": software.code, "name": software.name} if software else None,
+        "customer": {"code": customer.code, "name": customer.name} if customer else None,
+        "project": {"id": str(project.id), "code": project.project_code,
+                    "name": project.name} if project else None,
+        "acceptance_criteria": [{"criterion_no": row.criterion_no, "description": row.description}
+                                for row in criteria],
+        "issues": [{"issue_no": issue.issue_no, "title": issue.title,
+                    "relation_type": link.relation_type, "status": issue.status}
+                   for link, issue in issue_links],
+        "change_points": [{"change_no": point.change_no, "title": point.title,
+                           "description": point.description, "status": point.status,
+                           "dvp_items": [{"id": str(item.id), "item_no": item.item_no}
+                                         for item in linked_items.get(point.id, [])]}
+                          for point in points],
+        "dvp_plans": [{"plan_no": plan.plan_no, "title": plan.title, "status": plan.status,
+                       "items": [{"id": str(item.id), "item_no": item.item_no,
+                                  "title": item.title, "status": item.status}
+                                 for item in items if item.plan_id == plan.id]}
+                      for plan in plans],
+    }
 
 
 @router.get("/issues")
