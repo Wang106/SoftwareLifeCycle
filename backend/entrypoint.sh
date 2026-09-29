@@ -1,6 +1,10 @@
 #!/bin/sh
 set -eu
 
+# The alembic console script runs outside /app, so include the application
+# directory before it imports app.core.config from alembic/env.py.
+export PYTHONPATH="/app${PYTHONPATH:+:$PYTHONPATH}"
+
 alembic upgrade head
 
 case "${SEED_ON_STARTUP:-false}" in

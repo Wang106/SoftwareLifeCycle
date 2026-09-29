@@ -86,6 +86,7 @@ def test_alembic_uses_runtime_database_url():
 
 def test_container_runs_migration_before_optional_seed_and_api():
     text=Path('entrypoint.sh').read_text()
+    assert text.index('export PYTHONPATH=') < text.index('alembic upgrade head')
     migration=text.index('alembic upgrade head')
     seed=text.index('python -m app.seed')
     api=text.index('exec uvicorn')
