@@ -71,6 +71,8 @@ For Cloudflare Workers Builds, also add any variables needed during static gener
 
 ## Backend deployment
 
+For a sample-only online test database, API service, read-only guard, Cloudflare connection, and smoke check, see [Test database and API deployment](docs/staging-api.md). The test environment should contain demo records only; user authentication and project permissions are not implemented yet.
+
 Build and run `backend/Dockerfile` with a managed PostgreSQL database. At minimum configure:
 
 ```text

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
@@ -35,6 +35,16 @@ app.include_router(activity_router)
 app.include_router(search_router)
 app.include_router(organizations_router)
 app.include_router(impact_router)
+
+
+@app.middleware("http")
+async def read_only_guard(request: Request, call_next):
+    if settings.read_only_mode and request.method not in {"GET", "HEAD", "OPTIONS"}:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": "read_only_mode"},
+        )
+    return await call_next(request)
 
 @app.get("/health")
 def health():
