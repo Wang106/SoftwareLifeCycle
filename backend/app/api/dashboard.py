@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.change import AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation, SoftwareChangeRequest
 from app.models.testing import ChangePointDvpItem, DvpItem, DvpExecution, DvpPlan, TestRelease
-from app.models.core import ApplicationReleaseDetail, Artifact, Customer, Project, Release, ReleaseComponent, SoftwareProduct
+from app.models.core import ApplicationReleaseDetail, Artifact, ComponentDefinition, Customer, Project, Release, ReleaseComponent, SoftwareProduct
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
@@ -74,6 +74,47 @@ def application_release_profile(release_id: uuid.UUID, db: Session = Depends(get
         "snapshot": {"snapshot_no": snapshot.snapshot_no, "status": snapshot.status,
                      "content_hash": snapshot.content_hash} if snapshot else None,
         "coverage": coverage,
+    }
+
+
+@router.get("/releases/application/id/{release_id}/components")
+def application_release_components(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+    detail = db.get(ApplicationReleaseDetail, release.id)
+    base = db.get(Release, detail.standard_base_release_id) if detail else None
+    asr_components = db.scalars(select(ReleaseComponent).where(ReleaseComponent.release_id == release.id)
+        .order_by(ReleaseComponent.id)).all()
+    base_components = db.scalars(select(ReleaseComponent).where(ReleaseComponent.release_id == base.id)
+        .order_by(ReleaseComponent.id)).all() if base else []
+    definitions = {row.id: row for row in db.scalars(select(ComponentDefinition).where(
+        ComponentDefinition.id.in_({row.component_definition_id for row in asr_components + base_components})
+    )).all()} if asr_components or base_components else {}
+    base_by_id = {row.id: row for row in base_components}
+    linked_base_ids = set()
+    rows = []
+    for component in asr_components:
+        linked = base_by_id.get(component.base_component_id)
+        valid = bool(linked and linked.component_definition_id == component.component_definition_id)
+        if valid:
+            linked_base_ids.add(linked.id)
+        definition = definitions.get(component.component_definition_id)
+        rows.append({
+            "id": str(component.id), "code": definition.code if definition else None,
+            "name": definition.name if definition else None, "asr_version": component.version,
+            "declared_delta_type": component.delta_type,
+            "base_component_version": linked.version if valid else None,
+            "base_link_status": "VALID" if valid else "INVALID" if component.base_component_id else "NOT_RECORDED",
+        })
+    return {
+        "release_id": str(release.id), "version": release.version,
+        "base_release": {"id": str(base.id), "version": base.version} if base else None,
+        "components": rows,
+        "unlinked_base_components": [{"id": str(row.id),
+            "code": definitions[row.component_definition_id].code if row.component_definition_id in definitions else None,
+            "name": definitions[row.component_definition_id].name if row.component_definition_id in definitions else None,
+            "version": row.version} for row in base_components if row.id not in linked_base_ids],
     }
 
 
