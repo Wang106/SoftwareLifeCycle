@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models.change import Issue, IssueChangeRequestRelation, SoftwareChangeRequest
-from app.models.testing import DvpItem, DvpExecution
+from app.models.testing import DvpItem, DvpExecution, DvpPlan, TestRelease
 from app.models.core import ApplicationReleaseDetail, Artifact, Customer, Project, Release, ReleaseComponent, SoftwareProduct
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.governance import PolicyException
@@ -292,10 +292,47 @@ def list_dvp(db: Session = Depends(get_db)):
             "status": item.status,
             "latest_result": getattr(latest.get(str(item.id)), "result", None),
             "latest_execution_no": getattr(latest.get(str(item.id)), "execution_no", None),
-            "snapshot_id": str(getattr(latest.get(str(item.id)), "snapshot_id", "")) or None,
+            "snapshot_id": str(latest[str(item.id)].snapshot_id) if str(item.id) in latest else None,
         }
         for item in items
     ]
+
+
+@router.get("/testing/dvp/id/{item_id}")
+def dvp_item_detail(item_id: uuid.UUID, db: Session = Depends(get_db)):
+    item = db.get(DvpItem, item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="DVP item not found")
+    plan = db.get(DvpPlan, item.plan_id)
+    change = db.get(SoftwareChangeRequest, plan.change_request_id) if plan else None
+    executions = db.scalars(
+        select(DvpExecution).where(DvpExecution.dvp_item_id == item.id)
+        .order_by(DvpExecution.execution_no)
+    ).all()
+    history = []
+    for execution in executions:
+        release = db.get(Release, execution.release_id)
+        snapshot = db.get(ReleaseSnapshot, execution.snapshot_id)
+        test_release = db.get(TestRelease, execution.test_release_id) if execution.test_release_id else None
+        history.append({
+            "execution_no": execution.execution_no,
+            "result": execution.result,
+            "actual_result": execution.actual_result,
+            "executed_at": execution.executed_at,
+            "release_id": str(execution.release_id),
+            "release_version": release.version if release else None,
+            "release_type": release.release_type if release else None,
+            "snapshot_id": str(execution.snapshot_id),
+            "snapshot_no": snapshot.snapshot_no if snapshot else None,
+            "test_release_no": test_release.test_release_no if test_release else None,
+        })
+    return {
+        "id": str(item.id), "item_no": item.item_no, "title": item.title,
+        "scope": item.scope, "status": item.status,
+        "plan": {"plan_no": plan.plan_no, "title": plan.title,
+                 "change_request_no": change.request_no if change else None} if plan else None,
+        "executions": history,
+    }
 
 
 def _application_release(db: Session, version: str) -> Release | None:

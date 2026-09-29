@@ -1,14 +1,32 @@
+import Link from 'next/link';
 import { apiGet } from '../../../lib/api';
-type DvpRow={id:string;item_no:string;title:string;scope:string;status:string;latest_result:string|null;latest_execution_no:number|null;snapshot_id:string|null};
-const fallback:DvpRow[]=[
-{id:'1',item_no:'DVP-031',title:'Normal charging regression',scope:'SOFTWARE TEST',status:'Completed',latest_result:'PASS',latest_execution_no:1,snapshot_id:'SNAP-008'},
-{id:'2',item_no:'DVP-032',title:'Low-temp charging timeout',scope:'SOFTWARE TEST',status:'Retested',latest_result:'PASS',latest_execution_no:2,snapshot_id:'SNAP-008'},
-{id:'3',item_no:'DVP-033',title:'Calibration boundary verification',scope:'BATTERY TEST',status:'Completed',latest_result:'PASS',latest_execution_no:1,snapshot_id:'SNAP-008'},
-{id:'4',item_no:'DVP-034',title:'Low-temp endurance validation',scope:'BATTERY TEST',status:'In Progress',latest_result:null,latest_execution_no:null,snapshot_id:'SNAP-008'}
-];
-export default async function Page(){
- const apiRows=await apiGet<DvpRow[]>('/api/v1/testing/dvp');
- const rows=apiRows&&apiRows.length?apiRows:fallback;
- const pass=rows.filter(r=>r.latest_result==='PASS').length;
- return <><div className="top"><div><div className="eyebrow">VERIFICATION</div><h1>DVP & Test Execution</h1><p className="muted">Verification evidence is bound to the exact release snapshot that was tested.</p></div><button>+ DVP Plan</button></div><div className="cards"><div className="card"><span className="muted">Execution PASS</span><div className="metric">{pass} / {rows.length}</div><small>Latest executions</small></div><div className="card"><span className="muted">Retest History</span><div className="metric">{rows.filter(r=>(r.latest_execution_no||0)>1).length}</div><small>Immutable execution chains</small></div><div className="card"><span className="muted">Current Snapshot</span><div className="metric">SNAP-008</div><small>Verification target</small></div><div className="card"><span className="muted">Data Source</span><div className="metric">{apiRows?'API':'DEMO'}</div><small>FastAPI with fallback</small></div></div><div className="panel tablewrap"><table><thead><tr><th>DVP</th><th>Test Item</th><th>Scope</th><th>Status</th><th>Result</th><th>Execution</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td>{r.item_no}</td><td>{r.title}</td><td>{r.scope}</td><td>{r.status}</td><td>{r.latest_result?<span className={'status '+(r.latest_result==='PASS'?'pass':'warning')}>{r.latest_result}</span>:'—'}</td><td>{r.latest_execution_no?('#'+r.latest_execution_no):'—'}</td></tr>)}</tbody></table></div><div className="panel"><h2>DVP-032 execution history</h2><div className="timeline"><div><b>Execution #1 · FAIL</b><span>TR-0058 · SNAP-007 · timeout reproduced</span></div><div><b>Fix implemented</b><span>CP-001 updated · new snapshot created</span></div><div><b>Execution #2 · PASS</b><span>TR-0061 · SNAP-008 · retest passed</span></div></div></div>{!apiRows&&<p className="datasource">Demo fallback active · API data will appear automatically when the backend URL is configured.</p>}</>
+
+type DvpRow = {
+  id: string; item_no: string; title: string; scope: string; status: string;
+  latest_result: string | null; latest_execution_no: number | null; snapshot_id: string | null;
+};
+
+export default async function Page() {
+  const rows = await apiGet<DvpRow[]>('/api/v1/testing/dvp');
+  const pass = rows?.filter(row => row.latest_result === 'PASS').length ?? 0;
+  const executed = rows?.filter(row => row.latest_execution_no !== null).length ?? 0;
+  const retested = rows?.filter(row => (row.latest_execution_no ?? 0) > 1).length ?? 0;
+  return <>
+    <div className="top"><div><div className="eyebrow">VERIFICATION</div><h1>DVP &amp; Test Execution</h1>
+      <p className="muted">Open a test item to inspect its execution history and exact release snapshot.</p></div></div>
+    <div className="cards">
+      <div className="card"><span className="muted">TEST ITEMS</span><div className="metric">{rows?.length ?? '—'}</div></div>
+      <div className="card"><span className="muted">LATEST RESULT PASS</span><div className="metric">{rows ? `${pass} / ${executed}` : '—'}</div><small>Across items with an execution</small></div>
+      <div className="card"><span className="muted">RETESTED ITEMS</span><div className="metric">{rows ? retested : '—'}</div><small>More than one recorded execution</small></div>
+    </div>
+    {rows ? <section className="panel tablewrap"><table><thead><tr><th>DVP</th><th>Test Item</th><th>Scope</th><th>Status</th><th>Latest Result</th><th>Execution</th></tr></thead>
+      <tbody>{rows.map(row => <tr key={row.id}>
+        <td><Link href={`/testing/dvp/${encodeURIComponent(row.id)}`}><b>{row.item_no}</b></Link></td>
+        <td>{row.title}</td><td>{row.scope}</td><td>{row.status}</td>
+        <td>{row.latest_result ? <span className={'status ' + (row.latest_result === 'PASS' ? 'pass' : 'warning')}>{row.latest_result}</span> : '—'}</td>
+        <td>{row.latest_execution_no !== null ? `#${row.latest_execution_no}` : '—'}</td>
+      </tr>)}</tbody></table>
+      {rows.length === 0 && <p className="muted">No DVP items recorded.</p>}
+    </section> : <p className="datasource">DVP API unavailable. Test records will load when the backend is connected.</p>}
+  </>;
 }
