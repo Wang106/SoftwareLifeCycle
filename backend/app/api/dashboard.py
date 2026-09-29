@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.change import AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation, SoftwareChangeRequest
 from app.models.testing import ChangePointDvpItem, DvpItem, DvpExecution, DvpPlan, TestRelease
-from app.models.core import ApplicationReleaseDetail, Artifact, ComponentDefinition, Customer, Project, Release, ReleaseComponent, SoftwareProduct
+from app.models.core import ApplicationReleaseDetail, Artifact, ComponentDefinition, Customer, Project, Release, ReleaseComponent, SoftwareProduct, StandardReleaseDetail, Supplier
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
@@ -19,6 +19,60 @@ from app.models.distribution import DeliveryPackage, Distribution, SoftwareAutho
 from app.models.production import Deployment, ProductionBatch, SoftwareChangeover
 
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
+
+
+@router.get("/releases/standard")
+def list_standard_releases(db: Session = Depends(get_db)):
+    releases = db.scalars(select(Release).where(Release.release_type == "STANDARD")
+        .order_by(Release.created_at.desc(), Release.id.desc()).limit(200)).all()
+    if not releases:
+        return []
+    products = {row.id: row for row in db.scalars(select(SoftwareProduct).where(
+        SoftwareProduct.id.in_({release.software_id for release in releases}))).all()}
+    suppliers = {row.id: row for row in db.scalars(select(Supplier).where(
+        Supplier.id.in_({product.supplier_id for product in products.values()}))).all()}
+    return [{"id": str(release.id), "version": release.version, "status": release.status,
+             "software": {"code": products[release.software_id].code, "name": products[release.software_id].name}
+             if release.software_id in products else None,
+             "supplier": {"code": suppliers[products[release.software_id].supplier_id].code,
+                          "name": suppliers[products[release.software_id].supplier_id].name}
+             if release.software_id in products and products[release.software_id].supplier_id in suppliers else None}
+            for release in releases]
+
+
+@router.get("/releases/standard/id/{release_id}")
+def standard_release_profile(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "STANDARD":
+        raise HTTPException(status_code=404, detail="standard release not found")
+    detail = db.get(StandardReleaseDetail, release.id)
+    product = db.get(SoftwareProduct, release.software_id)
+    supplier = db.get(Supplier, product.supplier_id) if product else None
+    previous = db.get(Release, detail.previous_release_id) if detail and detail.previous_release_id else None
+    components = db.scalars(select(ReleaseComponent).where(ReleaseComponent.release_id == release.id)
+        .order_by(ReleaseComponent.id)).all()
+    definitions = {row.id: row for row in db.scalars(select(ComponentDefinition).where(
+        ComponentDefinition.id.in_({component.component_definition_id for component in components}))).all()} if components else {}
+    applications = db.scalars(select(ApplicationReleaseDetail).where(
+        ApplicationReleaseDetail.standard_base_release_id == release.id)).all()
+    application_releases = {row.id: row for row in db.scalars(select(Release).where(
+        Release.id.in_({detail.release_id for detail in applications}))).all()} if applications else {}
+    return {"id": str(release.id), "version": release.version, "status": release.status,
+            "release_notes": release.release_notes,
+            "software": {"code": product.code, "name": product.name} if product else None,
+            "supplier": {"code": supplier.code, "name": supplier.name} if supplier else None,
+            "previous_release": {"id": str(previous.id), "version": previous.version}
+            if previous and previous.release_type == "STANDARD" else None,
+            "source": {"branch": detail.git_branch, "commit": detail.git_commit} if detail else None,
+            "components": [{"id": str(component.id), "code": definitions[component.component_definition_id].code
+                            if component.component_definition_id in definitions else None,
+                            "name": definitions[component.component_definition_id].name
+                            if component.component_definition_id in definitions else None,
+                            "version": component.version} for component in components],
+            "applications": [{"id": str(application_releases[row.release_id].id),
+                              "version": application_releases[row.release_id].version,
+                              "status": application_releases[row.release_id].status}
+                             for row in applications if row.release_id in application_releases]}
 
 
 @router.get("/releases/application")
@@ -46,6 +100,7 @@ def list_application_releases(db: Session = Depends(get_db)):
         "id": str(release.id), "version": release.version, "status": release.status,
         "customer": customers[details[release.id].customer_id].name if release.id in details else None,
         "project": projects[details[release.id].project_id].name if release.id in details else None,
+        "base_id": str(details[release.id].standard_base_release_id) if release.id in details else None,
         "base_version": bases[details[release.id].standard_base_release_id].version if release.id in details else None,
         "snapshot_no": latest[release.id].snapshot_no if release.id in latest else None,
     } for release in releases]
@@ -70,7 +125,7 @@ def application_release_profile(release_id: uuid.UUID, db: Session = Depends(get
         "software": {"code": software.code, "name": software.name} if software else None,
         "customer": {"code": customer.code, "name": customer.name} if customer else None,
         "project": {"id": str(project.id), "code": project.project_code, "name": project.name} if project else None,
-        "base_release": {"version": base.version, "status": base.status} if base else None,
+        "base_release": {"id": str(base.id), "version": base.version, "status": base.status} if base else None,
         "snapshot": {"snapshot_no": snapshot.snapshot_no, "status": snapshot.status,
                      "content_hash": snapshot.content_hash} if snapshot else None,
         "coverage": coverage,

@@ -6,7 +6,7 @@ type Profile = {
   software: { code: string; name: string } | null;
   customer: { code: string; name: string } | null;
   project: { id: string; code: string; name: string } | null;
-  base_release: { version: string; status: string } | null;
+  base_release: { id: string; version: string; status: string } | null;
   snapshot: { snapshot_no: string; status: string; content_hash: string } | null;
 };
 type DecisionResponse = {
@@ -63,7 +63,7 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
         <span>Software</span><b>{profile.software ? `${profile.software.name} · ${profile.software.code}` : '—'}</b>
         <span>Customer</span><b>{profile.customer?.name || '—'}</b>
         <span>Project</span><b>{profile.project ? `${profile.project.name} · ${profile.project.code}` : '—'}</b>
-        <span>Standard Base</span><b>{profile.base_release ? `SSR ${profile.base_release.version}` : '—'}</b>
+        <span>Standard Base</span><b>{profile.base_release ? <Link href={`/releases/standard/${encodeURIComponent(profile.base_release.id)}`}>SSR {profile.base_release.version}</Link> : '—'}</b>
         <span>Release status</span><b>{profile.status}</b>
         <span>Snapshot hash</span><code style={{overflowWrap: 'anywhere'}}>{profile.snapshot?.content_hash || '—'}</code>
       </div></section>

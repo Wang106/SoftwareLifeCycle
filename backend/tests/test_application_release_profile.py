@@ -54,6 +54,7 @@ def test_profile_without_snapshot_has_no_fabricated_coverage():
     assert profile["customer"]["code"] == "CUS-001"
     assert profile["project"]["id"] == str(project.id)
     assert profile["base_release"]["version"] == "5.1.12"
+    assert profile["base_release"]["id"] == str(base.id)
     assert profile["snapshot"] is None
     assert profile["coverage"] is None
 

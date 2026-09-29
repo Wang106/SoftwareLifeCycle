@@ -43,7 +43,8 @@ def test_release_catalog_returns_latest_snapshot_and_organization():
     db = CatalogSession([release], [detail], [customer], [project], [base], [current, old])
     assert list_application_releases(db=db) == [{
         "id": str(release.id), "version": "2.3.4", "status": "READY",
-        "customer": "Customer A", "project": "Project X", "base_version": "5.1.12", "snapshot_no": "SNAP-008",
+        "customer": "Customer A", "project": "Project X", "base_id": str(base.id),
+        "base_version": "5.1.12", "snapshot_no": "SNAP-008",
     }]
     assert db.release_queries == 2
 
