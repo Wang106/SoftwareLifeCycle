@@ -2,11 +2,13 @@ import uuid
 
 from sqlalchemy.dialects import postgresql
 
-from app.api.search import _pattern, global_search, search_records
+from app.api.search import (_artifact_results, _frozen_artifact_results, _pattern,
+                            _snapshot_results, global_search, search_records)
 from app.api.dashboard import dashboard_summary
 from app.models.change import SoftwareChangeRequest
-from app.models.core import Release
+from app.models.core import Artifact, Release, ReleaseComponent
 from app.models.production import Deployment, ProductionBatch
+from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.testing import DvpItem
 from app.models.audit import AuditEvent
 
@@ -81,6 +83,38 @@ def test_search_opens_exact_dvp_and_release_profiles():
     assert {row["href"] for row in results} == {
         f"/testing/dvp/{item.id}", f"/releases/standard/{standard.id}"
     }
+
+
+class RelationSession:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def scalars(self, statement):
+        return Rows(self.rows.get(statement.column_descriptions[0]["entity"], []))
+
+
+def test_search_traces_snapshots_and_artifacts_to_their_exact_release():
+    standard = Release(id=uuid.uuid4(), software_id=uuid.uuid4(), release_type="STANDARD",
+                       version="5.1.12", status="RELEASED")
+    application = Release(id=uuid.uuid4(), software_id=standard.software_id,
+                          release_type="APPLICATION", version="2.3.4", status="RELEASED")
+    snapshot = ReleaseSnapshot(id=uuid.uuid4(), release_id=application.id,
+        snapshot_no="SNAP-008", snapshot_number=1, status="FROZEN", content_hash="a" * 64)
+    frozen = SnapshotArtifact(id=uuid.uuid4(), snapshot_id=snapshot.id,
+        source_artifact_id=uuid.uuid4(), filename="CustomerA_BMS.hex", sha256="b" * 64)
+    component = ReleaseComponent(id=uuid.uuid4(), release_id=standard.id,
+        component_definition_id=uuid.uuid4(), version="1.0")
+    source = Artifact(id=uuid.uuid4(), release_component_id=component.id,
+        artifact_type="HEX", filename="BMS_Standard.hex", storage_reference="artifact://standard",
+        sha256="c" * 64)
+
+    assert _snapshot_results(RelationSession({ReleaseSnapshot: [snapshot], Release: [application]}),
+        "%SNAP-008%", 10)[0]["href"] == f"/releases/application/{application.id}"
+    assert _frozen_artifact_results(RelationSession({SnapshotArtifact: [frozen],
+        ReleaseSnapshot: [snapshot], Release: [application]}), "%CustomerA%", 10)[0]["href"] == (
+            f"/releases/application/{application.id}/artifacts")
+    assert _artifact_results(RelationSession({Artifact: [source], ReleaseComponent: [component],
+        Release: [standard]}), "%Standard%", 10)[0]["href"] == f"/releases/standard/{standard.id}"
 
 
 class DashboardSession:

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models.change import Issue, SoftwareChangeRequest
-from app.models.core import Artifact, Customer, Project, Release, Supplier
+from app.models.core import Artifact, Customer, Project, Release, ReleaseComponent, Supplier
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.testing import DvpItem
 from app.models.production import Deployment, ProductionBatch
@@ -19,6 +19,68 @@ router = APIRouter(prefix="/api/v1", tags=["search"])
 
 def _pattern(query: str) -> str:
     return "%" + query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+
+
+def _release_path(release: Release | None, application_suffix: str = "") -> str:
+    if release is None:
+        return "/releases/application"
+    if release.release_type == "STANDARD":
+        return f"/releases/standard/{release.id}"
+    return f"/releases/application/{release.id}{application_suffix}"
+
+
+def _snapshot_results(db: Session, pattern: str, limit: int) -> list[dict]:
+    if limit <= 0:
+        return []
+    rows = db.scalars(select(ReleaseSnapshot).where(or_(
+        ReleaseSnapshot.snapshot_no.ilike(pattern, escape="\\"),
+        ReleaseSnapshot.content_hash.ilike(pattern, escape="\\"),
+    )).order_by(ReleaseSnapshot.id).limit(min(limit, 10))).all()
+    releases = {row.id: row for row in db.scalars(select(Release).where(
+        Release.id.in_({snapshot.release_id for snapshot in rows}))).all()} if rows else {}
+    return [{"type": "Snapshot", "label": row.snapshot_no, "description": row.status,
+             "href": _release_path(releases.get(row.release_id))} for row in rows]
+
+
+def _frozen_artifact_results(db: Session, pattern: str, limit: int) -> list[dict]:
+    if limit <= 0:
+        return []
+    rows = db.scalars(select(SnapshotArtifact).where(or_(
+        SnapshotArtifact.filename.ilike(pattern, escape="\\"),
+        SnapshotArtifact.sha256.ilike(pattern, escape="\\"),
+    )).order_by(SnapshotArtifact.id).limit(min(limit, 10))).all()
+    snapshots = {row.id: row for row in db.scalars(select(ReleaseSnapshot).where(
+        ReleaseSnapshot.id.in_({artifact.snapshot_id for artifact in rows}))).all()} if rows else {}
+    releases = {row.id: row for row in db.scalars(select(Release).where(Release.id.in_({
+        snapshots[artifact.snapshot_id].release_id for artifact in rows if artifact.snapshot_id in snapshots
+    }))).all()} if snapshots else {}
+    return [{"type": "Frozen artifact", "label": row.filename,
+             "description": f"SHA-256 {row.sha256[:12]}…",
+             "href": _release_path(
+                 releases.get(snapshots[row.snapshot_id].release_id) if row.snapshot_id in snapshots else None,
+                 "/artifacts",
+             )} for row in rows]
+
+
+def _artifact_results(db: Session, pattern: str, limit: int) -> list[dict]:
+    if limit <= 0:
+        return []
+    rows = db.scalars(select(Artifact).where(or_(
+        Artifact.filename.ilike(pattern, escape="\\"),
+        Artifact.sha256.ilike(pattern, escape="\\"),
+    )).order_by(Artifact.id).limit(min(limit, 10))).all()
+    components = {row.id: row for row in db.scalars(select(ReleaseComponent).where(
+        ReleaseComponent.id.in_({artifact.release_component_id for artifact in rows}))).all()} if rows else {}
+    releases = {row.id: row for row in db.scalars(select(Release).where(Release.id.in_({
+        components[artifact.release_component_id].release_id for artifact in rows
+        if artifact.release_component_id in components
+    }))).all()} if components else {}
+    return [{"type": "Artifact", "label": row.filename, "description": row.artifact_type,
+             "href": _release_path(
+                 releases.get(components[row.release_component_id].release_id)
+                 if row.release_component_id in components else None,
+                 "/artifacts",
+             )} for row in rows]
 
 
 def search_records(db: Session, query: str, limit: int) -> list[dict]:
@@ -40,12 +102,12 @@ def search_records(db: Session, query: str, limit: int) -> list[dict]:
     add(Issue, [Issue.issue_no, Issue.title], "Issue", lambda r: f"#{r.issue_no}", lambda r: r.title, lambda r: f"/issues/{r.issue_no}")
     add(DvpItem, [DvpItem.item_no, DvpItem.title], "DVP", lambda r: r.item_no, lambda r: r.title,
         lambda r: f"/testing/dvp/{r.id}")
-    add(ReleaseSnapshot, [ReleaseSnapshot.snapshot_no, ReleaseSnapshot.content_hash], "Snapshot", lambda r: r.snapshot_no, lambda r: r.status, lambda r: f"/releases/application/{r.release_id}")
+    results.extend(_snapshot_results(db, pattern, limit - len(results)))
     add(Release, [Release.version], "Release", lambda r: f"{r.release_type} {r.version}", lambda r: r.status,
         lambda r: f"/releases/application/{r.id}" if r.release_type == "APPLICATION"
         else f"/releases/standard/{r.id}")
-    add(SnapshotArtifact, [SnapshotArtifact.filename, SnapshotArtifact.sha256], "Frozen artifact", lambda r: r.filename, lambda r: f"SHA-256 {r.sha256[:12]}…", lambda r: "/releases/application")
-    add(Artifact, [Artifact.filename, Artifact.sha256], "Artifact", lambda r: r.filename, lambda r: r.artifact_type, lambda r: "/releases/application")
+    results.extend(_frozen_artifact_results(db, pattern, limit - len(results)))
+    results.extend(_artifact_results(db, pattern, limit - len(results)))
     add(Customer, [Customer.code, Customer.name], "Customer", lambda r: r.name, lambda r: r.code, lambda r: f"/customers/{r.code}")
     add(Project, [Project.project_code, Project.name], "Project", lambda r: r.name, lambda r: r.project_code, lambda r: f"/projects/{r.id}")
     add(Supplier, [Supplier.code, Supplier.name], "Supplier", lambda r: r.name, lambda r: r.code, lambda r: f"/suppliers/{r.code}")
