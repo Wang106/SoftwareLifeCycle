@@ -1,16 +1,46 @@
+import Link from 'next/link';
 import { apiGet } from '../../../lib/api';
 
-type ApprovalDetail={
- id:string;approval_no:string;target_type:string;status:string;submitted_by:string|null;
- target:{release_version:string|null;snapshot_no:string|null;content_hash:string|null};
- steps:{id:string;step_order:number;role_name:string;approver_name:string|null;status:string}[];
- actions:{id:string;step_id:string|null;actor_name:string;action:string;comment:string|null}[];
+type ApprovalDetail = {
+  id: string; approval_no: string; target_type: string; target_id: string;
+  status: string; submitted_by: string | null;
+  target: { release_type: string | null; release_version: string | null;
+    snapshot_no: string | null; content_hash: string | null };
+  steps: { id: string; step_order: number; role_name: string; approver_name: string | null; status: string }[];
+  actions: { id: string; step_id: string | null; actor_name: string; action: string; comment: string | null }[];
 };
-const fallback:ApprovalDetail={id:'1',approval_no:'APR-0121',target_type:'RELEASE',status:'APPROVED',submitted_by:'Release Manager',target:{release_version:'2.3.4',snapshot_no:'SNAP-008',content_hash:'5c8e7f41…91af'},steps:[{id:'s1',step_order:1,role_name:'Software Lead',approver_name:'Software Lead',status:'APPROVED'},{id:'s2',step_order:2,role_name:'Test Lead',approver_name:'Test Lead',status:'APPROVED'},{id:'s3',step_order:3,role_name:'Quality Manager',approver_name:'Quality Manager',status:'APPROVED'},{id:'s4',step_order:4,role_name:'Release Manager',approver_name:'Release Manager',status:'APPROVED'}],actions:[{id:'a1',step_id:'s1',actor_name:'Software Lead',action:'APPROVED',comment:'Change scope and release delta reviewed.'},{id:'a2',step_id:'s2',actor_name:'Test Lead',action:'APPROVED',comment:'Current snapshot verification evidence confirmed.'},{id:'a3',step_id:'s3',actor_name:'Quality Manager',action:'APPROVED',comment:'PEX-0018 and compensating control approved.'},{id:'a4',step_id:'s4',actor_name:'Release Manager',action:'APPROVED',comment:'Release approval completed for SNAP-008.'}]};
 
-export default async function Page({params}:{params:Promise<{id:string}>}){
- const {id}=await params;
- const apiData=await apiGet<ApprovalDetail>('/api/v1/approvals/'+id);
- const d=apiData||fallback;
- return <><div className="top"><div><div className="eyebrow">APPROVAL · {d.approval_no}</div><h1>{d.target_type} Approval · {d.target.release_version?'ASR '+d.target.release_version:'Target'}</h1><p className="muted">Bound to {d.target.snapshot_no||'no snapshot'}</p></div><span className={'status '+(d.status==='APPROVED'?'pass':'warning')}>{d.status}</span></div><div className="grid2"><section className="panel"><h2>Target</h2><div className="kv"><span>Target type</span><b>{d.target_type}</b><span>Release</span><b>{d.target.release_version||'—'}</b><span>Snapshot</span><b>{d.target.snapshot_no||'—'}</b><span>Submitted by</span><b>{d.submitted_by||'—'}</b></div></section><section className="panel"><h2>Approval integrity</h2><p>This request is bound to the immutable snapshot content hash.</p><code className="hash">{d.target.content_hash||'—'}</code></section></div><section className="panel"><h2>Sequential approval workflow</h2><div className="approvalsteps">{d.steps.map(s=><div key={s.id} className={s.status==='APPROVED'?'done':s.status==='PENDING'?'current':''}><b>{s.step_order} · {s.role_name}</b><span>{s.status}{s.approver_name?' · '+s.approver_name:''}</span></div>)}</div></section><section className="panel"><h2>Decision history</h2><table><thead><tr><th>Actor</th><th>Action</th><th>Comment</th></tr></thead><tbody>{d.actions.length?d.actions.map(a=><tr key={a.id}><td>{a.actor_name}</td><td><span className={'status '+(a.action==='APPROVED'?'pass':'warning')}>{a.action}</span></td><td>{a.comment||'—'}</td></tr>):<tr><td colSpan={3}>No decision action yet.</td></tr>}</tbody></table></section>{!apiData&&<p className="datasource">Demo fallback active.</p>}</>
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const approval = await apiGet<ApprovalDetail>(`/api/v1/approvals/${encodeURIComponent(id)}`);
+  if (!approval) return <section className="panel"><h1>Approval unavailable</h1>
+    <p className="muted">The approval was not found or the API could not be reached.</p>
+    <Link href="/approvals">← All approvals</Link></section>;
+  const roles = new Map(approval.steps.map(step => [step.id, step.role_name]));
+  return <>
+    <div className="top"><div><div className="eyebrow">APPROVAL · {approval.approval_no}</div>
+      <h1>{approval.target_type} Approval · {approval.target.release_version || approval.target_id}</h1>
+      <p className="muted">{approval.target.snapshot_no ? `Bound to ${approval.target.snapshot_no}` : 'No snapshot recorded'}</p></div>
+      <span className={'status ' + (approval.status === 'APPROVED' ? 'pass' : 'warning')}>{approval.status}</span></div>
+    <div className="grid2"><section className="panel"><h2>Target</h2><div className="kv">
+      <span>Target type</span><b>{approval.target_type}</b>
+      <span>Release</span><b>{approval.target.release_type === 'APPLICATION' ? <Link href={`/releases/application/${encodeURIComponent(approval.target_id)}`}>ASR {approval.target.release_version || approval.target_id}</Link> : approval.target.release_version || '—'}</b>
+      <span>Snapshot</span><b>{approval.target.snapshot_no || '—'}</b>
+      <span>Submitted by</span><b>{approval.submitted_by || '—'}</b>
+    </div></section><section className="panel"><h2>Recorded snapshot hash</h2>
+      <p className="muted">This hash identifies the snapshot referenced by the approval. It does not independently recheck the stored files.</p>
+      <code className="hash">{approval.target.content_hash || 'No snapshot hash recorded'}</code>
+    </section></div>
+    <section className="panel"><h2>Approval steps</h2>{approval.steps.length ? <div className="approvalsteps">
+      {approval.steps.map(step => <div key={step.id} className={step.status === 'APPROVED' ? 'done' : step.status === 'PENDING' ? 'current' : ''}>
+        <b>{step.step_order} · {step.role_name}</b><span>{step.status}{step.approver_name ? ` · ${step.approver_name}` : ''}</span>
+      </div>)}</div> : <p className="muted">No approval steps recorded.</p>}</section>
+    <section className="panel tablewrap"><h2>Decision history</h2><table><thead><tr><th>Step</th><th>Actor</th><th>Action</th><th>Comment</th></tr></thead>
+      <tbody>{approval.actions.map(action => <tr key={action.id}>
+        <td>{action.step_id ? roles.get(action.step_id) || 'Unknown step' : 'General'}</td><td>{action.actor_name}</td>
+        <td><span className={'status ' + (action.action === 'APPROVED' ? 'pass' : 'warning')}>{action.action}</span></td>
+        <td>{action.comment || '—'}</td>
+      </tr>)}</tbody></table>{approval.actions.length === 0 && <p className="muted">No decision action recorded.</p>}</section>
+    <p className="datasource"><Link href="/approvals">← All approvals</Link></p>
+  </>;
 }

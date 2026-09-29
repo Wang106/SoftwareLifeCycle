@@ -65,6 +65,8 @@ The DVP catalog at `/testing/dvp` displays recorded items from `GET /api/v1/test
 
 SCR pages read `GET /api/v1/changes` and `GET /api/v1/changes/{request_no}`. The detail displays stored requirement text, acceptance criteria, linked issues, change points, and DVP plan/item links without assigning a test result or release to an SCR by inference. Issue catalog and SCR pages show empty or unavailable states instead of demo fallback rows; an unavailable API does not fabricate formal records.
 
+Approval catalog and detail pages read `GET /api/v1/approvals` and `GET /api/v1/approvals/{approval_no}`. Detail resolves the exact target release and snapshot, recorded approval steps, and decision actions; actions display their linked step roles when present. Empty or unavailable API responses do not substitute demo approvals. The displayed snapshot hash is a stored reference, not an independent file recheck.
+
 Suppliers, customers and projects use read-only `/api/v1/organizations/{suppliers|customers|projects}` list and detail endpoints. Project detail links use the UUID because project codes are only unique within a customer. Legacy project-code links work when the code identifies exactly one project; ambiguous codes return HTTP 409. Organization pages display an unavailable state when FastAPI cannot be reached.
 
 The Application Releases list reads `GET /api/v1/releases/application`, including customer, project, standard base version and latest snapshot. Every application release links to a read-only profile at `/releases/application/{release_id}`, backed by `GET /api/v1/releases/application/id/{release_id}`. The profile shows snapshot-bound coverage only when a snapshot exists. The existing ASR 2.3.4 workspace remains available as a detailed demo view.

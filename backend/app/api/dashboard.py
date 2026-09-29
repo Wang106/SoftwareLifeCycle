@@ -703,7 +703,9 @@ def get_approval(approval_no: str, db: Session = Depends(get_db)):
         "id": str(approval.id),
         "approval_no": approval.approval_no,
         "target_type": approval.target_type,
+        "target_id": str(approval.target_id),
         "target": {
+            "release_type": release.release_type if release else None,
             "release_version": release.version if release else None,
             "snapshot_no": snapshot.snapshot_no if snapshot else None,
             "content_hash": snapshot.content_hash if snapshot else None,
