@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ distributionN
     <section className="panel tablewrap"><h2>Linked production authorizations</h2>
       {record.authorizations.length ? <table><thead><tr><th>Authorization</th><th>Site / line</th><th>Status</th></tr></thead>
         <tbody>{record.authorizations.map(row => <tr key={row.authorization_no}>
-          <td><b>{row.authorization_no}</b></td><td>{row.site_code} / {row.line_code}</td><td>{row.status}</td>
+          <td><Link href={`/distribution/authorizations/${encodeURIComponent(row.authorization_no)}`}><b>{row.authorization_no}</b></Link></td><td>{row.site_code} / {row.line_code}</td><td>{row.status}</td>
         </tr>)}</tbody></table> : <p className="muted">No production authorization is linked to this distribution.</p>}
       <p className="muted">Acknowledgment alone does not authorize production use.</p>
     </section>

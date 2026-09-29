@@ -9,6 +9,7 @@ from app.core.db import get_db
 from app.models.core import Customer, Project, Release
 from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distribution, SoftwareAuthorization
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
+from app.models.production import Deployment, ProductionBatch
 from app.services.distribution import DistributionError, DistributionService
 
 router = APIRouter(prefix="/api/v1", tags=["distribution"])
@@ -152,6 +153,14 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization):
     project = db.get(Project, row.project_id)
     distribution = db.get(Distribution, row.distribution_id) if row.distribution_id else None
     package = db.get(DeliveryPackage, distribution.delivery_package_id) if distribution else None
+    deployments = db.scalars(
+        select(Deployment).where(Deployment.authorization_id == row.id)
+        .order_by(Deployment.created_at, Deployment.deployment_no)
+    ).all()
+    batches = db.scalars(
+        select(ProductionBatch).where(ProductionBatch.authorization_id == row.id)
+        .order_by(ProductionBatch.batch_no)
+    ).all()
     return {
         "id": str(row.id),
         "authorization_no": row.authorization_no,
@@ -181,6 +190,7 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization):
             "distribution_no": distribution.distribution_no,
             "status": distribution.status,
             "package_no": package.package_no if package else None,
+            "package_revision": package.revision if package else None,
         } if distribution else None,
         "site_code": row.site_code,
         "line_code": row.line_code,
@@ -188,6 +198,16 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization):
         "batch_limit": row.batch_limit,
         "restriction_note": row.restriction_note,
         "approved_at": row.approved_at,
+        "deployments": [{
+            "deployment_no": deployment.deployment_no,
+            "status": deployment.status,
+            "actual_release_matches": deployment.actual_release_id == row.release_id
+            if deployment.actual_release_id else None,
+            "actual_snapshot_matches": deployment.actual_snapshot_id == row.snapshot_id
+            if deployment.actual_snapshot_id else None,
+        } for deployment in deployments],
+        "batches": [{"batch_no": batch.batch_no, "status": batch.status}
+                    for batch in batches],
     }
 
 
@@ -296,7 +316,7 @@ def create_distribution(payload: DistributionCreate, db: Session = Depends(get_d
 
 @router.get("/authorizations")
 def list_authorizations(db: Session = Depends(get_db)):
-    rows = db.scalars(select(SoftwareAuthorization)).all()
+    rows = db.scalars(select(SoftwareAuthorization).order_by(SoftwareAuthorization.authorization_no)).all()
     return [
         {
             "id": str(x.id),

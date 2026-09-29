@@ -49,7 +49,7 @@ def search_records(db: Session, query: str, limit: int) -> list[dict]:
     add(ApprovalRequest, [ApprovalRequest.approval_no], "Approval", lambda r: r.approval_no, lambda r: r.status, lambda r: f"/approvals/{r.approval_no}")
     add(DeliveryPackage, [DeliveryPackage.package_no], "Delivery", lambda r: f"{r.package_no} Rev{r.revision}", lambda r: r.status, lambda r: f"/distribution/deliveries/{quote(r.package_no, safe='')}/{r.revision}")
     add(Distribution, [Distribution.distribution_no], "Distribution", lambda r: r.distribution_no, lambda r: r.status, lambda r: f"/distribution/distributions/{quote(r.distribution_no, safe='')}")
-    add(SoftwareAuthorization, [SoftwareAuthorization.authorization_no], "Authorization", lambda r: r.authorization_no, lambda r: r.status, lambda r: "/distribution/authorizations/new")
+    add(SoftwareAuthorization, [SoftwareAuthorization.authorization_no], "Authorization", lambda r: r.authorization_no, lambda r: r.status, lambda r: f"/distribution/authorizations/{quote(r.authorization_no, safe='')}")
     add(Deployment, [Deployment.deployment_no], "Deployment", lambda r: r.deployment_no, lambda r: r.status, lambda r: f"/deployments/{r.deployment_no}")
     add(ProductionBatch, [ProductionBatch.batch_no], "Batch", lambda r: r.batch_no, lambda r: r.status, lambda r: f"/deployments/{db.get(Deployment, r.deployment_id).deployment_no}")
     add(AuditEvent, [AuditEvent.event_no, AuditEvent.entity_ref], "Activity", lambda r: r.event_no, lambda r: r.summary, lambda r: f"/activity/{r.event_no}")
