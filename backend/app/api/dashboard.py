@@ -540,6 +540,18 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
     if not release:
         raise HTTPException(status_code=404, detail="release not found")
+    return _readiness_for_release(release, db)
+
+
+@router.get("/releases/application/id/{release_id}/readiness")
+def application_release_readiness(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+    return _readiness_for_release(release, db)
+
+
+def _readiness_for_release(release: Release, db: Session):
 
     coverage = TraceabilityService(db).release_coverage(release.id).as_dict()
     artifact_summary = ArtifactPolicyService(db).summarize_release(release.id).as_dict()

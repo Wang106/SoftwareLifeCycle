@@ -73,6 +73,8 @@ The Application Releases list reads `GET /api/v1/releases/application`, includin
 
 The profile also reads `GET /api/v1/releases/application/id/{release_id}/evidence` for the frozen SnapshotArtifact manifest and the latest DVP execution for each item on the current snapshot. Historical executions from other snapshots are counted separately; storage references are not returned. This is read-only and does not modify formal history.
 
+`/releases/application/{release_id}/readiness` reads `GET /api/v1/releases/application/id/{release_id}/readiness`. It evaluates the exact ASR UUID, preserving raw and effective gate results and showing only approved exceptions for its current snapshot. The older version-based readiness endpoint remains for compatibility, but a version alone may be ambiguous across software products.
+
 `GET /api/v1/releases/application/id/{release_id}/downstream` lists deliveries, distributions, authorizations, deployments, changeovers and batches linked through their stored foreign keys. The application release profile displays these records with parent references and snapshot identifiers. It flags an actual deployment or batch recorded for a different release instead of treating a planned authorization as proof of production use. This read-only endpoint returns 404 for a missing or non-application release.
 
 Deployment detail reads `GET /api/v1/deployments/{deployment_no}/provenance` to resolve its authorization, distribution and delivery through stored links, then lists all release decisions for that delivery's release and snapshot with their approval numbers. Missing links are displayed as missing; the page no longer inserts fixed Demo identifiers into the provenance section.
