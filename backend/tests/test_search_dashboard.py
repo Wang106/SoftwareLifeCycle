@@ -46,6 +46,18 @@ def test_blank_query_does_not_scan_database():
     assert global_search(q="   ", limit=50, db=SearchSession()) == {"query": "   ", "results": []}
 
 
+def test_search_audit_event_opens_its_formal_record():
+    class AuditSession(SearchSession):
+        def scalars(self, statement):
+            self.statements.append(statement)
+            if statement.column_descriptions[0]["entity"] is AuditEvent:
+                return Rows([AuditEvent(event_no="EVT-0009", entity_ref="PB-1005-A", summary="Batch started")])
+            return Rows([])
+
+    results = search_records(AuditSession(), "EVT-0009", 50)
+    assert results == [{"type": "Activity", "label": "EVT-0009", "description": "Batch started", "href": "/activity/EVT-0009"}]
+
+
 class DashboardSession:
     def __init__(self):
         self.counts = iter([2, 3, 1, 1])

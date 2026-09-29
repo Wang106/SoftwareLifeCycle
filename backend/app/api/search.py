@@ -51,7 +51,7 @@ def search_records(db: Session, query: str, limit: int) -> list[dict]:
     add(SoftwareAuthorization, [SoftwareAuthorization.authorization_no], "Authorization", lambda r: r.authorization_no, lambda r: r.status, lambda r: "/distribution/authorizations/new")
     add(Deployment, [Deployment.deployment_no], "Deployment", lambda r: r.deployment_no, lambda r: r.status, lambda r: f"/deployments/{r.deployment_no}")
     add(ProductionBatch, [ProductionBatch.batch_no], "Batch", lambda r: r.batch_no, lambda r: r.status, lambda r: f"/deployments/{db.get(Deployment, r.deployment_id).deployment_no}")
-    add(AuditEvent, [AuditEvent.event_no, AuditEvent.entity_ref], "Activity", lambda r: r.event_no, lambda r: r.summary, lambda r: "/activity")
+    add(AuditEvent, [AuditEvent.event_no, AuditEvent.entity_ref], "Activity", lambda r: r.event_no, lambda r: r.summary, lambda r: f"/activity/{r.event_no}")
     return results
 
 
