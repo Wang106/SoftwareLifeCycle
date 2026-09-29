@@ -61,7 +61,7 @@ The dashboard reads `GET /api/v1/dashboard/summary` for current counts, release 
 
 Suppliers, customers and projects use read-only `/api/v1/organizations/{suppliers|customers|projects}` list and detail endpoints. Project detail links use the UUID because project codes are only unique within a customer. Legacy project-code links work when the code identifies exactly one project; ambiguous codes return HTTP 409. Organization pages display an unavailable state when FastAPI cannot be reached.
 
-The Application Releases list reads `GET /api/v1/releases/application`, including customer, project, standard base version and latest snapshot. The existing ASR 2.3.4 detail remains the only linked release detail; other catalog entries are shown without a detail link until generic release detail pages are available.
+The Application Releases list reads `GET /api/v1/releases/application`, including customer, project, standard base version and latest snapshot. Every application release links to a read-only profile at `/releases/application/{release_id}`, backed by `GET /api/v1/releases/application/id/{release_id}`. The profile shows snapshot-bound coverage only when a snapshot exists. The existing ASR 2.3.4 workspace remains available as a detailed demo view.
 
 For Cloudflare Workers Builds, also add any variables needed during static generation under **Build variables and secrets**. The deploy command uses `--keep-vars`, so dashboard-managed runtime variables are preserved.
 

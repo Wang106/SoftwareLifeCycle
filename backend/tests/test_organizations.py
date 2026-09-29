@@ -44,11 +44,14 @@ def test_organization_catalog_uses_real_relationships_and_latest_release():
     supplier_db = CatalogSession({SoftwareProduct: [product], Release: [standard]})
 
     assert _suppliers(supplier_db, [supplier])[0]["software"][0]["standard_version"] == "5.1.12"
-    assert _customers(db, [customer])[0]["projects"][0]["release"]["version"] == "2.3.4"
+    assert _customers(db, [customer])[0]["projects"][0]["release"] == {
+        "id": str(application.id), "version": "2.3.4", "status": "READY",
+    }
     profile = _projects(db, [project])[0]
     assert profile["id"] == str(project.id)
     assert profile["customer"]["code"] == "CUS-001"
     assert profile["sites"][0]["code"] == "FACTORY-A"
+    assert profile["release"]["id"] == str(application.id)
     assert get_project(str(project.id), db=db)["code"] == "PRJ-X"
 
 

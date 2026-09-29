@@ -48,6 +48,32 @@ def list_application_releases(db: Session = Depends(get_db)):
     } for release in releases]
 
 
+@router.get("/releases/application/id/{release_id}")
+def application_release_profile(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+    detail = db.get(ApplicationReleaseDetail, release.id)
+    software = db.get(SoftwareProduct, release.software_id)
+    customer = db.get(Customer, detail.customer_id) if detail else None
+    project = db.get(Project, detail.project_id) if detail else None
+    base = db.get(Release, detail.standard_base_release_id) if detail else None
+    snapshot = db.scalars(select(ReleaseSnapshot).where(ReleaseSnapshot.release_id == release.id)
+        .order_by(ReleaseSnapshot.snapshot_number.desc()).limit(1)).first()
+    coverage = TraceabilityService(db).release_coverage(release.id, snapshot.id if snapshot else None).as_dict() if snapshot else None
+    return {
+        "id": str(release.id), "version": release.version, "status": release.status,
+        "release_notes": release.release_notes,
+        "software": {"code": software.code, "name": software.name} if software else None,
+        "customer": {"code": customer.code, "name": customer.name} if customer else None,
+        "project": {"id": str(project.id), "code": project.project_code, "name": project.name} if project else None,
+        "base_release": {"version": base.version, "status": base.status} if base else None,
+        "snapshot": {"snapshot_no": snapshot.snapshot_no, "status": snapshot.status,
+                     "content_hash": snapshot.content_hash} if snapshot else None,
+        "coverage": coverage,
+    }
+
+
 @router.get("/dashboard/summary")
 def dashboard_summary(db: Session = Depends(get_db)):
     active_changes = db.scalar(select(func.count()).select_from(SoftwareChangeRequest).where(
@@ -71,8 +97,9 @@ def dashboard_summary(db: Session = Depends(get_db)):
         "open_issues": open_issues,
         "high_open_issues": high_issues,
         "ready_releases": ready_releases,
-        "current_release": {"version": current.version, "status": current.status,
-                            "snapshot_no": coverage["snapshot_no"], "coverage": coverage["dvp_execution_coverage"]} if current else None,
+        "current_release": {"id": str(current.id), "version": current.version, "status": current.status,
+                            "snapshot_no": coverage["snapshot_no"],
+                            "coverage": coverage["dvp_execution_coverage"] if coverage["snapshot_id"] else None} if current else None,
         "recent_activity": [{"event_no": event.event_no, "summary": event.summary,
                              "entity_ref": event.entity_ref, "occurred_at": event.occurred_at} for event in events],
     }

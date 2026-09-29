@@ -38,7 +38,7 @@ def _customers(db: Session, rows: list[Customer]) -> list[dict]:
     latest = {}
     for release in releases:
         detail = detail_by_release[release.id]
-        latest.setdefault(detail.project_id, {"version": release.version, "status": release.status})
+        latest.setdefault(detail.project_id, {"id": str(release.id), "version": release.version, "status": release.status})
     return [{"code": row.code, "name": row.name, "status": row.status,
              "projects": [{"id": str(p.id), "code": p.project_code, "name": p.name, "status": p.status,
                            "release": latest.get(p.id)} for p in projects if p.customer_id == row.id]}
@@ -56,7 +56,7 @@ def _projects(db: Session, rows: list[Project]) -> list[dict]:
     latest = {}
     for release in releases:
         detail = detail_by_release[release.id]
-        latest.setdefault(detail.project_id, {"version": release.version, "status": release.status})
+        latest.setdefault(detail.project_id, {"id": str(release.id), "version": release.version, "status": release.status})
     sites = db.scalars(select(ManufacturingSite).where(ManufacturingSite.project_id.in_(ids)).order_by(ManufacturingSite.site_code)).all() if ids else []
     return [{"id": str(row.id), "code": row.project_code, "name": row.name, "status": row.status,
              "vehicle_platform": row.vehicle_platform,
