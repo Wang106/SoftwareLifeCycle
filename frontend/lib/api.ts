@@ -1,7 +1,14 @@
-export const API_BASE =
+import "server-only";
+
+const configuredApiBase =
+  process.env.API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "") ||
+  process.env.NEXT_PUBLIC_API_URL ||
   "";
+
+export const API_BASE = configuredApiBase
+  .replace(/\/api\/v1\/?$/, "")
+  .replace(/\/$/, "");
 
 export async function apiGet<T>(path: string): Promise<T | null> {
   if (!API_BASE) return null;

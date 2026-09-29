@@ -548,6 +548,7 @@ def run():
     batch.note = "Initial controlled production batch under PEX-0018 restriction."
 
     db.commit()
+    db.close()
 
 if __name__ == "__main__":
     run()

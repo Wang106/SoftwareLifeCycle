@@ -1,1 +1,1 @@
-{"name":"software-lifecycle-cloudflare","private":true,"scripts":{"build":"npm --prefix frontend install && npm --prefix frontend run build","deploy":"npm --prefix frontend install && npm --prefix frontend run deploy"},"devDependencies":{"wrangler":"^4.142.0"}}
+{"name":"software-lifecycle-cloudflare","private":true,"scripts":{"build":"npm --prefix frontend ci && npm --prefix frontend run cf:build","deploy":"wrangler deploy --keep-vars"},"devDependencies":{"wrangler":"^4.142.0"},"overrides":{"undici":"7.29.1"}}

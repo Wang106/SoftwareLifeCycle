@@ -15,7 +15,7 @@
     "binding": "ASSETS"
   },
   "build": {
-    "command": "cd frontend && npm install && npx opennextjs-cloudflare build"
+    "command": "cd frontend && npm ci && npx opennextjs-cloudflare build"
   },
   "observability": {
     "enabled": true

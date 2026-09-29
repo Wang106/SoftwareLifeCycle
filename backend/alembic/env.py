@@ -1,9 +1,11 @@
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+from app.core.config import settings
 from app.core.db import Base
 from app.models import core, snapshot, snapshot_policy, change, testing, governance, policy, approval, distribution, production
 
 config = context.config
+config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
 target_metadata = Base.metadata
 
 def run_migrations_offline():

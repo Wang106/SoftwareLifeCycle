@@ -78,3 +78,22 @@ def test_seed_contains_production_traceability_chain():
     text=Path('app/seed.py').read_text()
     for reference in ('FACTORY-A','LINE-2','DEP-0081','CO-0032','PB-1005-A'):
         assert reference in text
+
+def test_alembic_uses_runtime_database_url():
+    text=Path('alembic/env.py').read_text()
+    assert 'settings.database_url' in text
+    assert 'config.set_main_option("sqlalchemy.url"' in text
+
+def test_container_runs_migration_before_optional_seed_and_api():
+    text=Path('entrypoint.sh').read_text()
+    migration=text.index('alembic upgrade head')
+    seed=text.index('python -m app.seed')
+    api=text.index('exec uvicorn')
+    assert migration < seed < api
+
+def test_api_exposes_database_readiness_probe():
+    text=Path('app/main.py').read_text()
+    assert '@app.get("/health/live")' in text
+    assert '@app.get("/health/ready")' in text
+    assert 'SELECT version_num FROM alembic_version' in text
+    assert 'database_revision_mismatch' in text
