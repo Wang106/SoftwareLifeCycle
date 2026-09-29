@@ -14,6 +14,8 @@ from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, R
 from app.services.artifact_policy import ArtifactPolicyService
 from app.services.traceability import TraceabilityService
 from app.models.audit import AuditEvent
+from app.models.distribution import DeliveryPackage, Distribution, SoftwareAuthorization
+from app.models.production import Deployment, ProductionBatch, SoftwareChangeover
 
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
 
@@ -108,6 +110,68 @@ def application_release_evidence(release_id: uuid.UUID, db: Session = Depends(ge
                                "executed_at": execution.executed_at}
                               for item_id, execution in latest.items() if item_id in items], key=lambda row: row["item_no"]),
         "other_snapshot_executions": other_snapshot_executions,
+    }
+
+
+@router.get("/releases/application/id/{release_id}/downstream")
+def application_release_downstream(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+
+    packages = db.scalars(select(DeliveryPackage).where(DeliveryPackage.release_id == release_id)
+        .order_by(DeliveryPackage.created_at, DeliveryPackage.package_no, DeliveryPackage.revision)).all()
+    package_ids = [row.id for row in packages]
+    distributions = db.scalars(select(Distribution).where(Distribution.delivery_package_id.in_(package_ids))
+        .order_by(Distribution.distribution_no)).all() if package_ids else []
+    authorizations = db.scalars(select(SoftwareAuthorization).where(SoftwareAuthorization.release_id == release_id)
+        .order_by(SoftwareAuthorization.authorization_no)).all()
+    authorization_ids = [row.id for row in authorizations]
+    deployments = db.scalars(select(Deployment).where(Deployment.authorization_id.in_(authorization_ids))
+        .order_by(Deployment.created_at, Deployment.deployment_no)).all() if authorization_ids else []
+    deployment_ids = [row.id for row in deployments]
+    changeovers = db.scalars(select(SoftwareChangeover).where(SoftwareChangeover.deployment_id.in_(deployment_ids))
+        .order_by(SoftwareChangeover.changeover_no)).all() if deployment_ids else []
+    batches = db.scalars(select(ProductionBatch).where(ProductionBatch.deployment_id.in_(deployment_ids))
+        .order_by(ProductionBatch.batch_no)).all() if deployment_ids else []
+
+    # Each row retains its direct parent and snapshot reference; related records are not
+    # treated as proof of a matching actual deployment or production batch.
+    snapshot_ids = {row.snapshot_id for row in packages + authorizations + batches}
+    snapshot_ids.update(row.expected_snapshot_id for row in deployments)
+    snapshot_ids.update(row.actual_snapshot_id for row in deployments if row.actual_snapshot_id)
+    snapshots = {row.id: row.snapshot_no for row in db.scalars(
+        select(ReleaseSnapshot).where(ReleaseSnapshot.id.in_(snapshot_ids))
+    ).all()} if snapshot_ids else {}
+    package_by_id = {row.id: row for row in packages}
+    distribution_by_id = {row.id: row for row in distributions}
+    return {
+        "deliveries": [{"id": str(row.id), "package_no": row.package_no, "revision": row.revision,
+                        "status": row.status, "snapshot_no": snapshots.get(row.snapshot_id),
+                        "recipient_code": row.recipient_code} for row in packages],
+        "distributions": [{"id": str(row.id), "distribution_no": row.distribution_no, "status": row.status,
+                           "package_no": package_by_id[row.delivery_package_id].package_no,
+                           "package_revision": package_by_id[row.delivery_package_id].revision,
+                           "recipient_code": row.recipient_code} for row in distributions],
+        "authorizations": [{"id": str(row.id), "authorization_no": row.authorization_no, "status": row.status,
+                            "snapshot_no": snapshots.get(row.snapshot_id),
+                            "distribution_no": distribution_by_id[row.distribution_id].distribution_no
+                            if row.distribution_id in distribution_by_id else None,
+                            "site_code": row.site_code, "line_code": row.line_code,
+                            "batch_limit": row.batch_limit} for row in authorizations],
+        "deployments": [{"id": str(row.id), "deployment_no": row.deployment_no, "status": row.status,
+                         "authorization_no": next(auth.authorization_no for auth in authorizations if auth.id == row.authorization_id),
+                         "expected_snapshot_no": snapshots.get(row.expected_snapshot_id),
+                         "actual_snapshot_no": snapshots.get(row.actual_snapshot_id),
+                         "actual_release_matches": row.actual_release_id == release_id if row.actual_release_id else None}
+                        for row in deployments],
+        "changeovers": [{"id": str(row.id), "changeover_no": row.changeover_no, "status": row.status,
+                         "deployment_no": next(dep.deployment_no for dep in deployments if dep.id == row.deployment_id)}
+                        for row in changeovers],
+        "batches": [{"id": str(row.id), "batch_no": row.batch_no, "status": row.status,
+                     "deployment_no": next(dep.deployment_no for dep in deployments if dep.id == row.deployment_id),
+                     "snapshot_no": snapshots.get(row.snapshot_id), "release_matches": row.release_id == release_id}
+                    for row in batches],
     }
 
 
