@@ -211,6 +211,21 @@ def get_delivery(package_no: str, db: Session = Depends(get_db)):
     return _delivery_detail(db, package)
 
 
+@router.get("/deliveries/{package_no}/revisions/{revision}")
+def get_delivery_revision(package_no: str, revision: int, db: Session = Depends(get_db)):
+    if revision < 1:
+        raise HTTPException(status_code=422, detail="revision must be positive")
+    package = db.scalars(
+        select(DeliveryPackage).where(
+            DeliveryPackage.package_no == package_no,
+            DeliveryPackage.revision == revision,
+        )
+    ).first()
+    if package is None:
+        raise HTTPException(status_code=404, detail="delivery package revision not found")
+    return _delivery_detail(db, package)
+
+
 @router.post("/deliveries", status_code=201)
 def create_delivery(payload: DeliveryCreate, db: Session = Depends(get_db)):
     try:

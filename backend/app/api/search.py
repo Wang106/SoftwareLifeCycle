@@ -1,4 +1,5 @@
 """Bounded, read-only lookup of lifecycle identifiers and descriptions."""
+from urllib.parse import quote
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -46,7 +47,7 @@ def search_records(db: Session, query: str, limit: int) -> list[dict]:
     add(Project, [Project.project_code, Project.name], "Project", lambda r: r.name, lambda r: r.project_code, lambda r: f"/projects/{r.id}")
     add(Supplier, [Supplier.code, Supplier.name], "Supplier", lambda r: r.name, lambda r: r.code, lambda r: f"/suppliers/{r.code}")
     add(ApprovalRequest, [ApprovalRequest.approval_no], "Approval", lambda r: r.approval_no, lambda r: r.status, lambda r: f"/approvals/{r.approval_no}")
-    add(DeliveryPackage, [DeliveryPackage.package_no], "Delivery", lambda r: f"{r.package_no} Rev{r.revision}", lambda r: r.status, lambda r: "/distribution/deliveries/new")
+    add(DeliveryPackage, [DeliveryPackage.package_no], "Delivery", lambda r: f"{r.package_no} Rev{r.revision}", lambda r: r.status, lambda r: f"/distribution/deliveries/{quote(r.package_no, safe='')}/{r.revision}")
     add(Distribution, [Distribution.distribution_no], "Distribution", lambda r: r.distribution_no, lambda r: r.status, lambda r: "/distribution/deliveries/new")
     add(SoftwareAuthorization, [SoftwareAuthorization.authorization_no], "Authorization", lambda r: r.authorization_no, lambda r: r.status, lambda r: "/distribution/authorizations/new")
     add(Deployment, [Deployment.deployment_no], "Deployment", lambda r: r.deployment_no, lambda r: r.status, lambda r: f"/deployments/{r.deployment_no}")
