@@ -109,10 +109,10 @@ def test_search_traces_snapshots_and_artifacts_to_their_exact_release():
         sha256="c" * 64)
 
     assert _snapshot_results(RelationSession({ReleaseSnapshot: [snapshot], Release: [application]}),
-        "%SNAP-008%", 10)[0]["href"] == f"/releases/application/{application.id}"
+        "%SNAP-008%", 10)[0]["href"] == "/snapshots/SNAP-008"
     assert _frozen_artifact_results(RelationSession({SnapshotArtifact: [frozen],
         ReleaseSnapshot: [snapshot], Release: [application]}), "%CustomerA%", 10)[0]["href"] == (
-            f"/releases/application/{application.id}/artifacts")
+            f"/snapshots/SNAP-008#artifact-{frozen.id}")
     assert _artifact_results(RelationSession({Artifact: [source], ReleaseComponent: [component],
         Release: [standard]}), "%Standard%", 10)[0]["href"] == f"/releases/standard/{standard.id}"
 
