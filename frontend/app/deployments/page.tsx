@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { apiGet } from '../../lib/api';
-import { DeploymentDetail, deploymentFallback } from '../../lib/production';
+import { DeploymentDetail } from '../../lib/production';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   const apiRows = await apiGet<DeploymentDetail[]>('/api/v1/deployments');
-  const rows = apiRows && apiRows.length ? apiRows : [deploymentFallback];
+  const rows = apiRows || [];
   const matched = rows.filter(row => row.status === 'MATCH').length;
   const batchCount = rows.reduce((total, row) => total + row.batches.length, 0);
 
@@ -25,7 +25,7 @@ export default async function Page() {
       <td>ASR {row.expected.version || '—'} · {row.expected.snapshot_no || '—'}</td>
       <td>{row.actual ? `ASR ${row.actual.version} · ${row.actual.snapshot_no}` : 'Not reported'}</td>
       <td><span className={'status ' + (row.status === 'MATCH' ? 'pass' : 'warning')}>{row.status}</span></td>
-    </tr>)}</tbody></table></section>
-    {!apiRows && <p className="datasource">Demo fallback active · deployment API will load automatically when backend is configured.</p>}
+    </tr>)}</tbody></table>{apiRows?.length === 0 && <p className="muted">No deployments recorded.</p>}</section>
+    {!apiRows && <p className="datasource">Deployment API unavailable. No substitute records are shown.</p>}
   </>;
 }

@@ -144,6 +144,24 @@ def _deployment_detail(db: Session, deployment: Deployment):
 @router.get("/manufacturing/sites")
 def list_sites(db: Session = Depends(get_db)):
     sites = db.scalars(select(ManufacturingSite).order_by(ManufacturingSite.name)).all()
+    if not sites:
+        return []
+    site_ids = [site.id for site in sites]
+    lines = db.scalars(select(ProductionLine).where(ProductionLine.site_id.in_(site_ids))
+        .order_by(ProductionLine.site_id, ProductionLine.name)).all()
+    line_ids = [line.id for line in lines]
+    deployments = db.scalars(select(Deployment).where(Deployment.production_line_id.in_(line_ids))
+        .order_by(Deployment.production_line_id, Deployment.created_at.desc(), Deployment.id.desc())).all() if line_ids else []
+    latest_by_line = {}
+    for deployment in deployments:
+        latest_by_line.setdefault(deployment.production_line_id, deployment)
+    lines_by_site = {}
+    for line in lines:
+        lines_by_site.setdefault(line.site_id, []).append(line)
+    customers = {row.id: row for row in db.scalars(select(Customer).where(
+        Customer.id.in_({site.customer_id for site in sites}))).all()}
+    projects = {row.id: row for row in db.scalars(select(Project).where(
+        Project.id.in_({site.project_id for site in sites}))).all()}
     return [
         {
             "id": str(site.id),
@@ -151,9 +169,16 @@ def list_sites(db: Session = Depends(get_db)):
             "name": site.name,
             "region": site.region,
             "status": site.status,
-            "line_count": len(db.scalars(
-                select(ProductionLine).where(ProductionLine.site_id == site.id)
-            ).all()),
+            "customer": {"code": customers[site.customer_id].code, "name": customers[site.customer_id].name}
+                if site.customer_id in customers else None,
+            "project": {"code": projects[site.project_id].project_code, "name": projects[site.project_id].name}
+                if site.project_id in projects else None,
+            "line_count": len(lines_by_site.get(site.id, [])),
+            "deployed_line_count": sum(line.id in latest_by_line for line in lines_by_site.get(site.id, [])),
+            "matching_line_count": sum(latest_by_line.get(line.id) is not None
+                and latest_by_line[line.id].status == "MATCH" for line in lines_by_site.get(site.id, [])),
+            "attention_line_count": sum(latest_by_line.get(line.id) is not None
+                and latest_by_line[line.id].status != "MATCH" for line in lines_by_site.get(site.id, [])),
         }
         for site in sites
     ]
@@ -178,7 +203,7 @@ def get_site(site_code: str, db: Session = Depends(get_db)):
         deployment = db.scalars(
             select(Deployment)
             .where(Deployment.production_line_id == line.id)
-            .order_by(Deployment.created_at.desc())
+            .order_by(Deployment.created_at.desc(), Deployment.id.desc())
         ).first()
         line_rows.append({
             "id": str(line.id),

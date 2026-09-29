@@ -37,19 +37,3 @@ export type DeploymentDetail = {
     note: string | null;
   }[];
 };
-
-export const deploymentFallback: DeploymentDetail = {
-  id: 'demo-deployment',
-  deployment_no: 'DEP-0081',
-  status: 'MATCH',
-  authorization: { id: 'demo-authorization', authorization_no: 'PA-0081', status: 'APPROVED' },
-  customer: { id: 'demo-customer', code: 'CUS-001', name: 'Customer A' },
-  project: { id: 'demo-project', code: 'PRJ-X', name: 'Project X' },
-  site: { id: 'demo-site', site_code: 'FACTORY-A', name: 'Factory A' },
-  line: { id: 'demo-line', line_code: 'LINE-2', name: 'Line 2' },
-  expected: { release_id: 'demo-release', version: '2.3.4', snapshot_id: 'demo-snapshot', snapshot_no: 'SNAP-008' },
-  actual: { release_id: 'demo-release', version: '2.3.4', snapshot_id: 'demo-snapshot', snapshot_no: 'SNAP-008' },
-  deployed_at: '2026-09-28T00:00:00Z',
-  changeovers: [{ id: 'demo-changeover', changeover_no: 'CO-0032', from_version: '2.3.3', to_version: '2.3.4', status: 'COMPLETED', changed_at: '2026-09-28T00:00:00Z', note: 'Controlled software changeover.' }],
-  batches: [{ id: 'demo-batch', batch_no: 'PB-1005-A', status: 'ACTIVE', release_version: '2.3.4', snapshot_no: 'SNAP-008', started_at: '2026-09-28T00:00:00Z', ended_at: null, note: 'Initial controlled production batch.' }],
-};
