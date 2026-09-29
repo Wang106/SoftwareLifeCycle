@@ -1,3 +1,3 @@
-import Link from 'next/link';
-const tabs=[['Overview','/releases/demo'],['Changes','/releases/demo/changes'],['Components & Artifacts','/releases/demo/components'],['Delta','/releases/demo/delta'],['Verification','/releases/demo/verification'],['Readiness','/releases/demo/readiness'],['Approval','/releases/demo/approval'],['Passport','/releases/demo/passport']];
-export default function Layout({children}:{children:React.ReactNode}){return <><div className="releasehead"><div><div className="eyebrow">APPLICATION SOFTWARE RELEASE</div><h1>ASR 2.3.4 <span className="status pass">READY</span></h1><p className="muted">Customer A · Project X · BMS Standard · Base SSR 5.1.12 · SNAP-008</p></div><div className="actions"><button className="secondary">Evaluate Readiness</button><Link className="button" href="/releases/demo/approval">Submit for Approval</Link></div></div><nav className="subnav">{tabs.map(([n,h])=><Link key={h} href={h}>{n}</Link>)}</nav>{children}</>}
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
+}

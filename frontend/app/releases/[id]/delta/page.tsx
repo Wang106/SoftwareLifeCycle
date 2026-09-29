@@ -1,1 +1,6 @@
-export default function Page(){return <><section className="panel"><h2>ASR 2.3.4 delta against SSR 5.1.12</h2><p className="muted">UNCHANGED content inherits the SSR artifact; it is not duplicated in the ASR package model.</p><table><thead><tr><th>Component</th><th>SSR Version</th><th>ASR Version</th><th>Delta</th><th>Effective Source</th></tr></thead><tbody><tr><td>Main Application</td><td>5.1.12</td><td>2.3.4</td><td><span className="status warning">MODIFIED</span></td><td>ASR 2.3.4</td></tr><tr><td>Calibration</td><td>CAL-30</td><td>CAL-32</td><td><span className="status warning">MODIFIED</span></td><td>ASR 2.3.4</td></tr><tr><td>Application Bootloader</td><td>1.8.2</td><td>1.8.2</td><td><span className="status pass">UNCHANGED</span></td><td>SSR 5.1.12</td></tr><tr><td>Diagnostics</td><td>3.2.1</td><td>3.2.1</td><td><span className="status pass">UNCHANGED</span></td><td>SSR 5.1.12</td></tr></tbody></table></section></>}
+import { redirect } from 'next/navigation';
+import { legacyReleaseTarget } from '../../../../lib/legacy-release';
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  redirect(await legacyReleaseTarget((await params).id, '/components'));
+}
