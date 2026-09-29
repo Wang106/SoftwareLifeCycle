@@ -65,6 +65,8 @@ The Application Releases list reads `GET /api/v1/releases/application`, includin
 
 The profile also reads `GET /api/v1/releases/application/id/{release_id}/evidence` for the frozen SnapshotArtifact manifest and the latest DVP execution for each item on the current snapshot. Historical executions from other snapshots are counted separately; storage references are not returned. This is read-only and does not modify formal history.
 
+Issue detail pages read `GET /api/v1/issues/{issue_no}/impact` to trace linked SCRs to their software product and show candidate SSR/ASR versions for manual impact review. Actual deployments and production batches attached to each candidate release are counted separately. Sharing a software product does not establish that a version is affected; the endpoint deliberately labels the result as candidates. Unlinked issues produce no inferred releases.
+
 For Cloudflare Workers Builds, also add any variables needed during static generation under **Build variables and secrets**. The deploy command uses `--keep-vars`, so dashboard-managed runtime variables are preserved.
 
 ## Backend deployment
