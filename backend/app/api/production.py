@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.models.core import Customer, Project, Release
-from app.models.distribution import SoftwareAuthorization
+from app.models.distribution import DeliveryPackage, Distribution, SoftwareAuthorization
+from app.models.approval import ApprovalRequest, ReleaseDecision
 from app.models.production import (
     Deployment,
     ManufacturingSite,
@@ -212,6 +213,36 @@ def get_deployment(deployment_no: str, db: Session = Depends(get_db)):
     if not row:
         raise HTTPException(status_code=404, detail="deployment not found")
     return _deployment_detail(db, row)
+
+
+@router.get("/deployments/{deployment_no}/provenance")
+def get_deployment_provenance(deployment_no: str, db: Session = Depends(get_db)):
+    deployment = db.scalars(select(Deployment).where(Deployment.deployment_no == deployment_no)).first()
+    if deployment is None:
+        raise HTTPException(status_code=404, detail="deployment not found")
+    authorization = db.get(SoftwareAuthorization, deployment.authorization_id)
+    distribution = db.get(Distribution, authorization.distribution_id) if authorization and authorization.distribution_id else None
+    package = db.get(DeliveryPackage, distribution.delivery_package_id) if distribution else None
+    decisions = db.scalars(select(ReleaseDecision).where(
+        ReleaseDecision.release_id == package.release_id,
+        ReleaseDecision.snapshot_id == package.snapshot_id,
+    ).order_by(ReleaseDecision.decided_at, ReleaseDecision.decision_no)).all() if package else []
+    approvals = {row.id: row for row in (
+        db.get(ApprovalRequest, decision.approval_request_id) for decision in decisions
+    ) if row is not None}
+    return {
+        "authorization": {"authorization_no": authorization.authorization_no, "status": authorization.status}
+            if authorization else None,
+        "distribution": {"distribution_no": distribution.distribution_no, "status": distribution.status}
+            if distribution else None,
+        "delivery": {"package_no": package.package_no, "revision": package.revision,
+                     "status": package.status, "release_id": str(package.release_id),
+                     "snapshot_id": str(package.snapshot_id)} if package else None,
+        "release_decisions": [{"decision_no": decision.decision_no, "decision": decision.decision,
+                               "approval_no": approvals[decision.approval_request_id].approval_no
+                               if decision.approval_request_id in approvals else None}
+                              for decision in decisions],
+    }
 
 
 @router.post("/deployments", status_code=201)

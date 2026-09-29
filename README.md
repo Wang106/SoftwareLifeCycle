@@ -67,6 +67,8 @@ The profile also reads `GET /api/v1/releases/application/id/{release_id}/evidenc
 
 `GET /api/v1/releases/application/id/{release_id}/downstream` lists deliveries, distributions, authorizations, deployments, changeovers and batches linked through their stored foreign keys. The application release profile displays these records with parent references and snapshot identifiers. It flags an actual deployment or batch recorded for a different release instead of treating a planned authorization as proof of production use. This read-only endpoint returns 404 for a missing or non-application release.
 
+Deployment detail reads `GET /api/v1/deployments/{deployment_no}/provenance` to resolve its authorization, distribution and delivery through stored links, then lists all release decisions for that delivery's release and snapshot with their approval numbers. Missing links are displayed as missing; the page no longer inserts fixed Demo identifiers into the provenance section.
+
 Issue detail pages read `GET /api/v1/issues/{issue_no}/impact` to trace linked SCRs to their software product and show candidate SSR/ASR versions for manual impact review. Actual deployments and production batches attached to each candidate release are counted separately. Sharing a software product does not establish that a version is affected; the endpoint deliberately labels the result as candidates. Unlinked issues produce no inferred releases.
 
 For Cloudflare Workers Builds, also add any variables needed during static generation under **Build variables and secrets**. The deploy command uses `--keep-vars`, so dashboard-managed runtime variables are preserved.
