@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fastapi import HTTPException
 
-from app.api.dashboard import application_release_decision
+from app.api.dashboard import application_release_decision, application_release_decisions
 from app.models.approval import ApprovalRequest, ReleaseDecision
 from app.models.core import Release
 from app.models.snapshot import ReleaseSnapshot
@@ -16,6 +16,9 @@ class Rows:
 
     def first(self):
         return self.rows[0] if self.rows else None
+
+    def all(self):
+        return self.rows
 
 
 class DecisionSession:
@@ -68,3 +71,46 @@ def test_decision_returns_none_without_formal_record():
     assert application_release_decision(release.id, db=db) == {
         "release_id": str(release.id), "current_snapshot_no": None, "decision": None,
     }
+
+
+def test_decision_history_preserves_multiple_snapshots_and_approvals():
+    release = Release(id=uuid.uuid4(), software_id=uuid.uuid4(), release_type="APPLICATION", version="2.3.4")
+    old = ReleaseSnapshot(id=uuid.uuid4(), release_id=release.id, snapshot_no="SNAP-007",
+        snapshot_number=1, status="FROZEN", content_hash="a" * 64)
+    current = ReleaseSnapshot(id=uuid.uuid4(), release_id=release.id, snapshot_no="SNAP-008",
+        snapshot_number=2, status="FROZEN", content_hash="b" * 64)
+    old_approval = ApprovalRequest(id=uuid.uuid4(), approval_no="APR-0119", target_type="RELEASE",
+        target_id=release.id, snapshot_id=old.id, status="REJECTED")
+    current_approval = ApprovalRequest(id=uuid.uuid4(), approval_no="APR-0121", target_type="RELEASE",
+        target_id=release.id, snapshot_id=current.id, status="APPROVED")
+    old_decision = ReleaseDecision(id=uuid.uuid4(), decision_no="RD-0080", release_id=release.id,
+        snapshot_id=old.id, approval_request_id=old_approval.id, readiness_status="BLOCKED",
+        decision="HOLD", decided_by="Release Manager", decided_at=datetime.now(UTC) - timedelta(days=1))
+    current_decision = ReleaseDecision(id=uuid.uuid4(), decision_no="RD-0081", release_id=release.id,
+        snapshot_id=current.id, approval_request_id=current_approval.id, readiness_status="READY",
+        decision="RELEASE", decided_by="Release Manager", decided_at=datetime.now(UTC))
+    objects = {(Release, release.id): release, (ReleaseSnapshot, old.id): old,
+        (ReleaseSnapshot, current.id): current, (ApprovalRequest, old_approval.id): old_approval,
+        (ApprovalRequest, current_approval.id): current_approval}
+    db = DecisionSession(objects, [{ReleaseSnapshot: [current]}, {ReleaseDecision: [current_decision, old_decision]}])
+
+    result = application_release_decisions(release.id, db=db)
+
+    assert [row["decision_no"] for row in result["decisions"]] == ["RD-0081", "RD-0080"]
+    assert result["decisions"][0]["is_current_snapshot"] is True
+    assert result["decisions"][0]["snapshot_content_hash"] == "b" * 64
+    assert result["decisions"][0]["approval_no"] == "APR-0121"
+    assert result["decisions"][1]["is_current_snapshot"] is False
+    assert result["decisions"][1]["approval_status"] == "REJECTED"
+
+
+def test_decision_history_empty_and_non_application_release():
+    release = Release(id=uuid.uuid4(), software_id=uuid.uuid4(), release_type="APPLICATION", version="2.3.5")
+    db = DecisionSession({(Release, release.id): release}, [{ReleaseSnapshot: []}, {ReleaseDecision: []}])
+    assert application_release_decisions(release.id, db=db) == {
+        "release_id": str(release.id), "current_snapshot_no": None, "decisions": [],
+    }
+    standard = Release(id=uuid.uuid4(), software_id=uuid.uuid4(), release_type="STANDARD", version="5.1.12")
+    with pytest.raises(HTTPException) as error:
+        application_release_decisions(standard.id, db=DecisionSession({(Release, standard.id): standard}, []))
+    assert error.value.status_code == 404

@@ -113,6 +113,40 @@ def application_release_decision(release_id: uuid.UUID, db: Session = Depends(ge
     }
 
 
+@router.get("/releases/application/id/{release_id}/decisions")
+def application_release_decisions(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+    current_snapshot = db.scalars(select(ReleaseSnapshot).where(ReleaseSnapshot.release_id == release.id)
+        .order_by(ReleaseSnapshot.snapshot_number.desc()).limit(1)).first()
+    decisions = db.scalars(select(ReleaseDecision).where(ReleaseDecision.release_id == release.id)
+        .order_by(ReleaseDecision.decided_at.desc(), ReleaseDecision.decision_no.desc())).all()
+    rows = []
+    for decision in decisions:
+        snapshot = db.get(ReleaseSnapshot, decision.snapshot_id)
+        approval = db.get(ApprovalRequest, decision.approval_request_id)
+        rows.append({
+            "decision_no": decision.decision_no,
+            "decision": decision.decision,
+            "readiness_status": decision.readiness_status,
+            "decided_by": decision.decided_by,
+            "decision_notes": decision.decision_notes,
+            "decided_at": decision.decided_at,
+            "snapshot_id": str(decision.snapshot_id),
+            "snapshot_no": snapshot.snapshot_no if snapshot else None,
+            "snapshot_content_hash": snapshot.content_hash if snapshot else None,
+            "is_current_snapshot": bool(current_snapshot and decision.snapshot_id == current_snapshot.id),
+            "approval_no": approval.approval_no if approval else None,
+            "approval_status": approval.status if approval else None,
+        })
+    return {
+        "release_id": str(release.id),
+        "current_snapshot_no": current_snapshot.snapshot_no if current_snapshot else None,
+        "decisions": rows,
+    }
+
+
 @router.get("/releases/application/id/{release_id}/components")
 def application_release_components(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)

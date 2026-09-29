@@ -18,6 +18,15 @@ type DecisionResponse = {
     approval_no: string | null; approval_status: string | null;
   };
 };
+type DecisionHistory = {
+  release_id: string; current_snapshot_no: string | null;
+  decisions: {
+    decision_no: string; decision: string; readiness_status: string;
+    decided_by: string; decision_notes: string | null; decided_at: string;
+    snapshot_id: string; snapshot_no: string | null; snapshot_content_hash: string | null;
+    is_current_snapshot: boolean; approval_no: string | null; approval_status: string | null;
+  }[];
+};
 type Downstream = {
   deliveries: { id: string; package_no: string; revision: number; status: string; snapshot_no: string | null; recipient_code: string }[];
   distributions: { id: string; distribution_no: string; status: string; package_no: string; package_revision: number; recipient_code: string }[];
@@ -28,9 +37,10 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
   const { releaseId } = await params;
   const apiPath = `/api/v1/releases/application/id/${encodeURIComponent(releaseId)}`;
   const pagePath = `/releases/application/${encodeURIComponent(releaseId)}`;
-  const [profile, decisionResponse, downstream] = await Promise.all([
+  const [profile, decisionResponse, decisionHistory, downstream] = await Promise.all([
     apiGet<Profile>(apiPath),
     apiGet<DecisionResponse>(`${apiPath}/decision`),
+    apiGet<DecisionHistory>(`${apiPath}/decisions`),
     apiGet<Downstream>(`${apiPath}/downstream`),
   ]);
   if (!profile) return <section className="panel"><h1>Software passport unavailable</h1><p className="muted">The application release was not found or the API could not be reached.</p><Link href="/releases/application">Back to releases →</Link></section>;
@@ -68,6 +78,18 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
       </div> : <p className="muted">No formal release decision is recorded for this exact application release.</p>}
       {decision && !decision.is_current_snapshot && <p className="muted">The recorded decision belongs to an older snapshot. The current snapshot is not presented as formally released.</p>}</section>
     </div>
+    <section className="panel tablewrap"><h2>Formal decision history</h2>
+      <p className="muted">Every recorded decision remains visible with its frozen snapshot and approval. A historical decision does not release the current snapshot.</p>
+      {decisionHistory ? <><table><thead><tr><th>Decision</th><th>Snapshot / hash</th><th>Readiness</th><th>Approval</th><th>Decided by / at</th><th>Notes</th></tr></thead><tbody>
+        {decisionHistory.decisions.map(row => <tr key={row.decision_no}>
+          <td><b>{row.decision_no}</b><div><span className={'status ' + (row.decision === 'RELEASE' && row.is_current_snapshot ? 'pass' : 'warning')}>{row.decision}</span></div></td>
+          <td>{row.snapshot_no || '—'} · {row.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}<div className="muted"><code>{row.snapshot_content_hash ? `${row.snapshot_content_hash.slice(0, 16)}…` : 'Hash unavailable'}</code></div></td>
+          <td>{row.readiness_status}</td>
+          <td>{row.approval_no ? <Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}>{row.approval_no}</Link> : '—'}<div className="muted">{row.approval_status || 'Unknown'}</div></td>
+          <td>{row.decided_by}<div className="muted">{row.decided_at.slice(0, 16).replace('T', ' ')} UTC</div></td>
+          <td>{row.decision_notes || '—'}</td>
+        </tr>)}</tbody></table>{decisionHistory.decisions.length === 0 && <p className="muted">No formal decisions recorded.</p>}</> : <p className="muted">Decision history API unavailable.</p>}
+    </section>
     <section className="panel tablewrap"><h2>Authorized outbound chain</h2><p className="muted">Only recorded downstream objects are shown; this passport does not infer approval or authorization.</p>
       <table><thead><tr><th>Stage</th><th>Record</th><th>Context</th><th>Snapshot</th><th>Status</th></tr></thead><tbody>
         {deliveryRows.map(row => <tr key={row.id}><td>Delivery</td><td><Link href={`/distribution/deliveries/${encodeURIComponent(row.package_no)}/${row.revision}`}><b>{row.package_no} Rev{row.revision}</b></Link></td><td>{row.recipient_code}</td><td>{row.snapshot_no || '—'}</td><td>{row.status}</td></tr>)}
