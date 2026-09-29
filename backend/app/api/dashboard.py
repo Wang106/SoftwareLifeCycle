@@ -10,6 +10,7 @@ from app.models.core import ApplicationReleaseDetail, Artifact, Customer, Projec
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
+from app.models.snapshot_policy import SnapshotArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 from app.services.artifact_policy import ArtifactPolicyService
 from app.services.traceability import TraceabilityService
@@ -110,6 +111,43 @@ def application_release_evidence(release_id: uuid.UUID, db: Session = Depends(ge
                                "executed_at": execution.executed_at}
                               for item_id, execution in latest.items() if item_id in items], key=lambda row: row["item_no"]),
         "other_snapshot_executions": other_snapshot_executions,
+    }
+
+
+@router.get("/releases/application/id/{release_id}/snapshot-policy")
+def application_snapshot_policy(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+    snapshot = db.scalars(select(ReleaseSnapshot).where(ReleaseSnapshot.release_id == release.id)
+        .order_by(ReleaseSnapshot.snapshot_number.desc()).limit(1)).first()
+    if snapshot is None:
+        return {"snapshot": None, "artifacts": []}
+    artifacts = db.scalars(select(SnapshotArtifact).where(SnapshotArtifact.snapshot_id == snapshot.id)
+        .order_by(SnapshotArtifact.component_code, SnapshotArtifact.filename)).all()
+    ids = [artifact.id for artifact in artifacts]
+    rules = db.scalars(select(SnapshotArtifactDistributionRule).where(
+        SnapshotArtifactDistributionRule.snapshot_artifact_id.in_(ids)
+    )).all() if ids else []
+    by_artifact = {}
+    for rule in rules:
+        by_artifact.setdefault(rule.snapshot_artifact_id, []).append(rule)
+    return {
+        "snapshot": {"snapshot_no": snapshot.snapshot_no, "status": snapshot.status,
+                     "content_hash": snapshot.content_hash},
+        "artifacts": [{
+            "id": str(artifact.id), "component_code": artifact.component_code,
+            "component_version": artifact.component_version, "filename": artifact.filename,
+            "artifact_type": artifact.artifact_type, "sha256": artifact.sha256,
+            "classification": artifact.classification,
+            "distribution_level": artifact.distribution_level,
+            "ai_access_policy": artifact.ai_access_policy,
+            "policy_rules": [{"recipient_type": rule.recipient_type, "purpose": rule.purpose,
+                              "recipient_code": rule.recipient_code, "decision": rule.decision}
+                             for rule in sorted(by_artifact.get(artifact.id, []),
+                                                key=lambda row: (row.recipient_type, row.purpose,
+                                                                 row.recipient_code or "", row.decision))],
+        } for artifact in artifacts],
     }
 
 
