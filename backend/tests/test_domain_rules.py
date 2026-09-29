@@ -97,3 +97,30 @@ def test_api_exposes_database_readiness_probe():
     assert '@app.get("/health/ready")' in text
     assert 'SELECT version_num FROM alembic_version' in text
     assert 'database_revision_mismatch' in text
+
+def test_activity_api_is_registered():
+    text=Path('app/main.py').read_text()
+    assert 'activity_router' in text
+    assert 'app.include_router(activity_router)' in text
+
+def test_audit_events_are_append_only_at_database_level():
+    migration=Path('alembic/versions/0010_append_only_audit_events.py').read_text()
+    assert 'BEFORE UPDATE OR DELETE ON audit_events' in migration
+    assert "RAISE EXCEPTION 'audit_events are append-only'" in migration
+
+def test_audit_service_only_exposes_record_operation():
+    text=Path('app/services/audit.py').read_text()
+    assert 'class AuditEventService' in text
+    assert 'def record(' in text
+    assert 'def update(' not in text
+    assert 'def delete(' not in text
+
+def test_seed_contains_complete_audit_timeline():
+    text=Path('app/seed.py').read_text()
+    for reference in ('EVT-0001','EVT-0002','EVT-0003','EVT-0004','EVT-0005','EVT-0006','EVT-0007','EVT-0008','EVT-0009'):
+        assert reference in text
+
+def test_frontend_api_data_is_resolved_at_request_time():
+    text=Path('../frontend/lib/api.ts').read_text()
+    assert 'import { connection } from "next/server"' in text
+    assert 'await connection()' in text

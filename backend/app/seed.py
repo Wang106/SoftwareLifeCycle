@@ -1,6 +1,6 @@
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from app.core.db import SessionLocal
 from app.models.core import *
@@ -13,6 +13,7 @@ from app.models.policy import ArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distribution, SoftwareAuthorization
 from app.models.production import Deployment, ManufacturingSite, ProductionBatch, ProductionLine, SoftwareChangeover
+from app.models.audit import AuditEvent
 
 def h(name):
     return hashlib.sha256(name.encode()).hexdigest()
@@ -546,6 +547,82 @@ def run():
     batch.status = "ACTIVE"
     batch.started_at = batch.started_at or seeded_at
     batch.note = "Initial controlled production batch under PEX-0018 restriction."
+    db.flush()
+
+    audit_specs = [
+        (
+            "EVT-0001", "CHANGE", "STATUS_CHANGED", "SOFTWARE_CHANGE_REQUEST",
+            scr.id, scr.request_no, "Software Lead", "SCR-142 moved to IN TEST",
+            "CP-001 and CP-002 entered formal verification.", 80,
+            {"status": "IN_TEST"},
+        ),
+        (
+            "EVT-0002", "TEST", "EXECUTION_RECORDED", "DVP_ITEM",
+            items["DVP-032"].id, "DVP-032", "Test System", "DVP-032 execution #2 passed",
+            "Retest passed on TR-0061 against SNAP-008.", 70,
+            {"execution_no": 2, "result": "PASS", "test_release": "TR-0061", "snapshot_no": "SNAP-008"},
+        ),
+        (
+            "EVT-0003", "SNAPSHOT", "FROZEN", "RELEASE_SNAPSHOT",
+            snap8.id, snap8.snapshot_no, "Release Manager", "SNAP-008 frozen",
+            "Release content, artifact hashes and distribution policy were frozen.", 60,
+            {"release_version": asr.version, "content_hash": snap8.content_hash},
+        ),
+        (
+            "EVT-0004", "APPROVAL", "APPROVED", "APPROVAL_REQUEST",
+            approval.id, approval.approval_no, "Release Manager", "APR-0121 approved",
+            "All four approval steps completed for SNAP-008.", 50,
+            {"snapshot_no": "SNAP-008", "step_count": 4},
+        ),
+        (
+            "EVT-0005", "RELEASE", "DECISION_RECORDED", "RELEASE_DECISION",
+            decision.id, decision.decision_no, "Release Manager", "RD-0081 released ASR 2.3.4",
+            "Release decision recorded with the PEX-0018 restriction.", 40,
+            {"decision": "RELEASE", "snapshot_no": "SNAP-008"},
+        ),
+        (
+            "EVT-0006", "DISTRIBUTION", "ACKNOWLEDGED", "DISTRIBUTION",
+            distribution.id, distribution.distribution_no, "Customer A", "DIST-0326 acknowledged",
+            "Customer A acknowledged DP-0226 revision 1.", 30,
+            {"package_no": "DP-0226", "revision": 1},
+        ),
+        (
+            "EVT-0007", "AUTHORIZATION", "APPROVED", "SOFTWARE_AUTHORIZATION",
+            authorization.id, authorization.authorization_no, "Quality Manager", "PA-0081 approved",
+            "Controlled initial production was authorized for Factory A / Line 2.", 20,
+            {"site_code": "FACTORY-A", "line_code": "LINE-2", "batch_limit": 1},
+        ),
+        (
+            "EVT-0008", "DEPLOYMENT", "SOFTWARE_MATCHED", "DEPLOYMENT",
+            deployment.id, deployment.deployment_no, "Production Operator", "DEP-0081 software matched",
+            "Actual release and snapshot match the production authorization.", 10,
+            {"release_version": asr.version, "snapshot_no": "SNAP-008"},
+        ),
+        (
+            "EVT-0009", "BATCH", "STARTED", "PRODUCTION_BATCH",
+            batch.id, batch.batch_no, "Production Operator", "PB-1005-A started",
+            "Initial controlled production batch started under PA-0081.", 0,
+            {"deployment_no": "DEP-0081", "authorization_no": "PA-0081"},
+        ),
+    ]
+    for (
+        event_no, event_type, action, entity_type, entity_id, entity_ref,
+        actor_name, summary, detail, minutes_ago, payload,
+    ) in audit_specs:
+        if not db.query(AuditEvent).filter_by(event_no=event_no).first():
+            db.add(AuditEvent(
+                event_no=event_no,
+                event_type=event_type,
+                action=action,
+                entity_type=entity_type,
+                entity_id=entity_id,
+                entity_ref=entity_ref,
+                actor_name=actor_name,
+                summary=summary,
+                detail=detail,
+                payload_json=payload,
+                occurred_at=seeded_at - timedelta(minutes=minutes_ago),
+            ))
 
     db.commit()
     db.close()

@@ -10,6 +10,8 @@ The demo dataset follows one consistent frozen release path:
 
 `SNAP-008 → APR-0121 → RD-0081 → DP-0226 → DIST-0326 → PA-0081 → DEP-0081 → CO-0032 → PB-1005-A`
 
+The Activity workspace is backed by an append-only audit ledger. PostgreSQL rejects updates and deletes to formal audit events; corrections must be recorded as new events.
+
 ## Stack
 
 - Next.js + TypeScript, deployed to Cloudflare Workers through OpenNext

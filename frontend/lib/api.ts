@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 
 const configuredApiBase =
   process.env.API_BASE_URL ||
@@ -11,6 +12,7 @@ export const API_BASE = configuredApiBase
   .replace(/\/$/, "");
 
 export async function apiGet<T>(path: string): Promise<T | null> {
+  await connection();
   if (!API_BASE) return null;
   try {
     const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
