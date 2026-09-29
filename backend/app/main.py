@@ -10,6 +10,7 @@ from app.api.approvals import router as approvals_router
 from app.api.distribution import router as distribution_router
 from app.api.production import router as production_router
 from app.api.activity import router as activity_router
+from app.api.search import router as search_router
 from app.core.config import settings
 from app.core.db import engine
 
@@ -29,6 +30,7 @@ app.include_router(approvals_router)
 app.include_router(distribution_router)
 app.include_router(production_router)
 app.include_router(activity_router)
+app.include_router(search_router)
 
 @app.get("/health")
 def health():

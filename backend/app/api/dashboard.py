@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -13,8 +13,39 @@ from app.models.policy import ArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 from app.services.artifact_policy import ArtifactPolicyService
 from app.services.traceability import TraceabilityService
+from app.models.audit import AuditEvent
 
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
+
+
+@router.get("/dashboard/summary")
+def dashboard_summary(db: Session = Depends(get_db)):
+    active_changes = db.scalar(select(func.count()).select_from(SoftwareChangeRequest).where(
+        SoftwareChangeRequest.status.notin_(["RELEASED", "CANCELLED", "CLOSED"])
+    ))
+    open_issues = db.scalar(select(func.count()).select_from(Issue).where(
+        Issue.status.notin_(["CLOSED", "RESOLVED", "FIX_VERIFIED"])
+    ))
+    high_issues = db.scalar(select(func.count()).select_from(Issue).where(
+        Issue.severity == "HIGH", Issue.status.notin_(["CLOSED", "RESOLVED", "FIX_VERIFIED"])
+    ))
+    ready_releases = db.scalar(select(func.count()).select_from(Release).where(
+        Release.release_type == "APPLICATION", Release.status == "READY"
+    ))
+    current = db.scalars(select(Release).where(Release.release_type == "APPLICATION")
+        .order_by(Release.created_at.desc(), Release.id.desc()).limit(1)).first()
+    coverage = TraceabilityService(db).release_coverage(current.id).as_dict() if current else None
+    events = db.scalars(select(AuditEvent).order_by(AuditEvent.occurred_at.desc(), AuditEvent.event_no.desc()).limit(5)).all()
+    return {
+        "active_changes": active_changes,
+        "open_issues": open_issues,
+        "high_open_issues": high_issues,
+        "ready_releases": ready_releases,
+        "current_release": {"version": current.version, "status": current.status,
+                            "snapshot_no": coverage["snapshot_no"], "coverage": coverage["dvp_execution_coverage"]} if current else None,
+        "recent_activity": [{"event_no": event.event_no, "summary": event.summary,
+                             "entity_ref": event.entity_ref, "occurred_at": event.occurred_at} for event in events],
+    }
 
 
 @router.get("/changes")
