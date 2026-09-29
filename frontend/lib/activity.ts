@@ -22,8 +22,7 @@ export function eventHref(event: AuditEvent): string | null {
   if (event.entity_type === 'DISTRIBUTION') return `/distribution/distributions/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'SOFTWARE_AUTHORIZATION') return `/distribution/authorizations/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'DEPLOYMENT') return `/deployments/${encodeURIComponent(event.entity_ref)}`;
-  if (event.entity_type === 'PRODUCTION_BATCH' && typeof event.payload.deployment_no === 'string')
-    return `/deployments/${encodeURIComponent(event.payload.deployment_no)}`;
+  if (event.entity_type === 'PRODUCTION_BATCH') return `/production/batches/${encodeURIComponent(event.entity_ref)}`;
   return null;
 }
 

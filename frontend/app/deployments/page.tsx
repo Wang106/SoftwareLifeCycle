@@ -11,7 +11,7 @@ export default async function Page() {
   const batchCount = rows.reduce((total, row) => total + row.batches.length, 0);
 
   return <>
-    <div className="top"><div><div className="eyebrow">PRODUCTION TRACEABILITY</div><h1>Deployments & Batches</h1><p className="muted">Actual software use after release, distribution and authorization.</p></div><button>+ Deployment</button></div>
+    <div className="top"><div><div className="eyebrow">PRODUCTION TRACEABILITY</div><h1>Deployments & Batches</h1><p className="muted">Actual software use after release, distribution and authorization.</p></div><Link href="/production/batches">Batch catalog →</Link></div>
     <div className="cards">
       <div className="card"><span className="muted">ACTIVE DEPLOYMENTS</span><div className="metric">{rows.length}</div></div>
       <div className="card"><span className="muted">SOFTWARE MATCH</span><div className="metric">{matched} / {rows.length}</div></div>

@@ -245,6 +245,46 @@ def get_deployment_provenance(deployment_no: str, db: Session = Depends(get_db))
     }
 
 
+@router.get("/batches")
+def list_batches(db: Session = Depends(get_db)):
+    rows = db.scalars(select(ProductionBatch).order_by(ProductionBatch.batch_no)).all()
+    return [{"id": str(row.id), "batch_no": row.batch_no, "status": row.status,
+             "started_at": row.started_at, "release_id": str(row.release_id),
+             "snapshot_id": str(row.snapshot_id)} for row in rows]
+
+
+@router.get("/batches/{batch_no}")
+def get_batch(batch_no: str, db: Session = Depends(get_db)):
+    batch = db.scalars(select(ProductionBatch).where(ProductionBatch.batch_no == batch_no)).first()
+    if batch is None:
+        raise HTTPException(status_code=404, detail="production batch not found")
+    deployment = db.get(Deployment, batch.deployment_id)
+    authorization = db.get(SoftwareAuthorization, batch.authorization_id)
+    changeover = db.get(SoftwareChangeover, batch.changeover_id) if batch.changeover_id else None
+    return {
+        "id": str(batch.id), "batch_no": batch.batch_no, "status": batch.status,
+        "started_at": batch.started_at, "ended_at": batch.ended_at, "note": batch.note,
+        "software": _release_ref(db, batch.release_id, batch.snapshot_id),
+        "deployment": {"deployment_no": deployment.deployment_no, "status": deployment.status,
+                       "actual": _release_ref(db, deployment.actual_release_id, deployment.actual_snapshot_id)
+                       if deployment.actual_release_id or deployment.actual_snapshot_id else None}
+                      if deployment else None,
+        "authorization": {"authorization_no": authorization.authorization_no, "status": authorization.status,
+                          "batch_limit": authorization.batch_limit} if authorization else None,
+        "changeover": {"changeover_no": changeover.changeover_no, "status": changeover.status}
+                      if changeover else None,
+        "matches": {
+            "authorized_release": batch.release_id == authorization.release_id if authorization else None,
+            "authorized_snapshot": batch.snapshot_id == authorization.snapshot_id if authorization else None,
+            "deployed_release": batch.release_id == deployment.actual_release_id
+            if deployment and deployment.actual_release_id else None,
+            "deployed_snapshot": batch.snapshot_id == deployment.actual_snapshot_id
+            if deployment and deployment.actual_snapshot_id else None,
+            "changeover_deployment": changeover.deployment_id == batch.deployment_id if changeover else None,
+        },
+    }
+
+
 @router.post("/deployments", status_code=201)
 def create_deployment(payload: DeploymentCreate, db: Session = Depends(get_db)):
     try:

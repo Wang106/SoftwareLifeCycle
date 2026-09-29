@@ -63,7 +63,7 @@ export default async function Page({ params }: { params: Promise<{ authorization
         </tr>)}</tbody></table> : <p className="muted">No deployment recorded for this authorization.</p>}
     </section>
     <section className="panel"><h2>Production batches</h2>
-      {authorization.batches.length ? <div className="searchresults">{authorization.batches.map(row => <div key={row.batch_no}><b>{row.batch_no}</b><span> · {row.status}</span></div>)}</div>
+      {authorization.batches.length ? <div className="searchresults">{authorization.batches.map(row => <Link href={`/production/batches/${encodeURIComponent(row.batch_no)}`} key={row.batch_no}><b>{row.batch_no}</b><span>{row.status}</span></Link>)}</div>
         : <p className="muted">No production batch recorded.</p>}
     </section>
     <p className="datasource"><Link href="/distribution/authorizations">← All authorizations</Link></p>
