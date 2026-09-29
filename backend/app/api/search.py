@@ -48,7 +48,7 @@ def search_records(db: Session, query: str, limit: int) -> list[dict]:
     add(Supplier, [Supplier.code, Supplier.name], "Supplier", lambda r: r.name, lambda r: r.code, lambda r: f"/suppliers/{r.code}")
     add(ApprovalRequest, [ApprovalRequest.approval_no], "Approval", lambda r: r.approval_no, lambda r: r.status, lambda r: f"/approvals/{r.approval_no}")
     add(DeliveryPackage, [DeliveryPackage.package_no], "Delivery", lambda r: f"{r.package_no} Rev{r.revision}", lambda r: r.status, lambda r: f"/distribution/deliveries/{quote(r.package_no, safe='')}/{r.revision}")
-    add(Distribution, [Distribution.distribution_no], "Distribution", lambda r: r.distribution_no, lambda r: r.status, lambda r: "/distribution/deliveries/new")
+    add(Distribution, [Distribution.distribution_no], "Distribution", lambda r: r.distribution_no, lambda r: r.status, lambda r: f"/distribution/distributions/{quote(r.distribution_no, safe='')}")
     add(SoftwareAuthorization, [SoftwareAuthorization.authorization_no], "Authorization", lambda r: r.authorization_no, lambda r: r.status, lambda r: "/distribution/authorizations/new")
     add(Deployment, [Deployment.deployment_no], "Deployment", lambda r: r.deployment_no, lambda r: r.status, lambda r: f"/deployments/{r.deployment_no}")
     add(ProductionBatch, [ProductionBatch.batch_no], "Batch", lambda r: r.batch_no, lambda r: r.status, lambda r: f"/deployments/{db.get(Deployment, r.deployment_id).deployment_no}")

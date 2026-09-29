@@ -57,7 +57,7 @@ export default async function Page({ params }: { params: Promise<{ packageNo: st
     </section>
     <section className="panel"><h2>Distribution records</h2>
       {delivery.distributions.length ? <table><thead><tr><th>Distribution</th><th>Status</th><th>Sent</th><th>Acknowledged</th></tr></thead>
-        <tbody>{delivery.distributions.map(row => <tr key={row.id}><td><b>{row.distribution_no}</b></td><td>{row.status}</td>
+        <tbody>{delivery.distributions.map(row => <tr key={row.id}><td><Link href={`/distribution/distributions/${encodeURIComponent(row.distribution_no)}`}><b>{row.distribution_no}</b></Link></td><td>{row.status}</td>
           <td>{row.sent_at ? row.sent_at.slice(0, 16).replace('T', ' ') : '—'}</td>
           <td>{row.acknowledged_at ? row.acknowledged_at.slice(0, 16).replace('T', ' ') : '—'}</td></tr>)}</tbody></table>
         : <p className="muted">No distribution record for this package revision.</p>}

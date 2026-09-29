@@ -114,6 +114,11 @@ def _distribution_detail(db: Session, row: Distribution):
     package = db.get(DeliveryPackage, row.delivery_package_id)
     snapshot = db.get(ReleaseSnapshot, package.snapshot_id) if package else None
     release = db.get(Release, package.release_id) if package else None
+    authorizations = db.scalars(
+        select(SoftwareAuthorization)
+        .where(SoftwareAuthorization.distribution_id == row.id)
+        .order_by(SoftwareAuthorization.authorization_no)
+    ).all()
     return {
         "id": str(row.id),
         "distribution_no": row.distribution_no,
@@ -131,6 +136,12 @@ def _distribution_detail(db: Session, row: Distribution):
         } if package else None,
         "release_version": release.version if release else None,
         "snapshot_no": snapshot.snapshot_no if snapshot else None,
+        "authorizations": [{
+            "authorization_no": authorization.authorization_no,
+            "status": authorization.status,
+            "site_code": authorization.site_code,
+            "line_code": authorization.line_code,
+        } for authorization in authorizations],
     }
 
 
@@ -246,7 +257,7 @@ def create_delivery(payload: DeliveryCreate, db: Session = Depends(get_db)):
 
 @router.get("/distributions")
 def list_distributions(db: Session = Depends(get_db)):
-    rows = db.scalars(select(Distribution)).all()
+    rows = db.scalars(select(Distribution).order_by(Distribution.distribution_no)).all()
     return [
         {
             "id": str(x.id),

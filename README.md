@@ -73,6 +73,8 @@ Deployment detail reads `GET /api/v1/deployments/{deployment_no}/provenance` to 
 
 The Distribution navigation now opens a read-only delivery catalog at `/distribution/deliveries`. Each package revision has its own detail URL `/distribution/deliveries/{package_no}/{revision}` backed by `GET /api/v1/deliveries/{package_no}/revisions/{revision}`. Search and release downstream links retain the exact revision. The older `/distribution/deliveries/new` demo URL redirects to the catalog. An unavailable API does not substitute the seeded package for an unrelated revision.
 
+`/distribution/distributions` lists all distribution records from `GET /api/v1/distributions`; `/distribution/distributions/{distribution_no}` shows the recipient, exact delivery revision, sent and acknowledged times, and authorizations linked by `distribution_id`. Search, Activity, release downstream, and delivery details link to these records. These pages are read-only and do not infer production authorization from acknowledgment.
+
 Issue detail pages read `GET /api/v1/issues/{issue_no}/impact` to trace linked SCRs to their software product and show candidate SSR/ASR versions for manual impact review. Actual deployments and production batches attached to each candidate release are counted separately. Sharing a software product does not establish that a version is affected; the endpoint deliberately labels the result as candidates. Unlinked issues produce no inferred releases.
 
 For Cloudflare Workers Builds, also add any variables needed during static generation under **Build variables and secrets**. The deploy command uses `--keep-vars`, so dashboard-managed runtime variables are preserved.
