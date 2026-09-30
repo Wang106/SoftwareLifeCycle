@@ -4,6 +4,7 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Added an executable contract inventory covering every FastAPI write route, with a drift test and explicit identity, authorization, audit, idempotency and concurrency gaps.
 - Added the cross-ChatGPT/Codex handoff protocol and established GitHub `main` as the source of truth.
 - Added maintained project status, roadmap, architecture, API and database references.
 - Documented verified deployment status, known production gaps and the recommended identity/authorization phase.

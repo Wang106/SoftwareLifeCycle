@@ -33,6 +33,8 @@ Older unbounded list/detail routes such as `/api/v1/deliveries`, `/distributions
 
 These endpoints exist in code; their presence does not mean they are safe for anonymous public use.
 
+The detailed security/consistency review is maintained in [docs/write-contracts.md](docs/write-contracts.md). Its executable inventory and test require every registered write route to declare identity, authorization, audit, idempotency and concurrency behavior.
+
 | Method | Path | Purpose |
 | --- | --- | --- |
 | POST | `/api/v1/releases/{release_id}/create-snapshot` | Freeze a release snapshot |

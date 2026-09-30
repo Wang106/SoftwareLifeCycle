@@ -38,6 +38,7 @@ The maintained project documents are:
 - [API.md](API.md) — endpoint families, write controls and API conventions
 - [DATABASE.md](DATABASE.md) — PostgreSQL model groups, lifecycle links and migration rules
 - [CHANGELOG.md](CHANGELOG.md) — repository-level change history
+- [docs/write-contracts.md](docs/write-contracts.md) — executable inventory of write-route security and consistency guarantees
 
 After every completed development task, update at least `PROJECT_STATUS.md` and `CHANGELOG.md`; update architecture, API or database documentation whenever their contracts change.
 

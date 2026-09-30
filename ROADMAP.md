@@ -35,7 +35,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Append-only external resource references
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
-- [ ] Inventory every remaining write path and define its audit/idempotency/concurrency guarantee
+- [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
 - [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate
 
 ## Phase 5 — Identity and authorization (recommended next)

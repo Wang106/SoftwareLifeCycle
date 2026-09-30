@@ -1,11 +1,11 @@
 # Project Status
 
-- Last reviewed: 2026-09-30 (Asia/Shanghai)
+- Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed functional baseline: `2f1e6cfa8fce01ff4580ba511cefab718ad9654c` — `feat: atomically audit governance and distribution writes`
+- Reviewed repository baseline: `a3c4e9e1c75bcf60553bd355bb5519f437c04710` — `docs: establish repository handoff baseline`
 
-The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the functional baseline it reviews.
+The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
@@ -22,12 +22,13 @@ The repository implements and exposes a coherent demo/test lifecycle, but it is 
 - Bounded/filterable catalogs for DVP, distribution, production, governance and audit history, while retaining legacy compatibility endpoints.
 - Append-only PostgreSQL protection for audit events, issue impact assessments, acceptance-to-DVP links and resource links.
 - Atomic audit recording for current approval/release-decision and delivery/distribution/authorization service writes.
+- Executable contract inventory for all 14 write routes, covering scope, actor source, audit, idempotency, concurrency and known gaps; tests fail if FastAPI write routes drift from the inventory.
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
-- 39 backend test modules are present. On 2026-09-30, all 355 collected backend tests passed under Python 3.12 with pytest 8.4.2, and the frontend production build passed.
+- 40 backend test modules are present. On 2026-10-01, all 357 collected backend tests passed under Python 3.12 with pytest 8.4.2. The most recent frontend production build passed on 2026-09-30; this backend-only slice did not change frontend code.
 
 ## In progress
 
-- This documentation baseline and the repeatable ChatGPT/Codex handoff protocol.
+- Phase 5 identity and authorization model selection. No identity provider or trust mechanism has been approved yet.
 - No separate tracked product feature was in progress when `main` was reviewed. The working tree contained an unrelated untracked duplicate file, `frontend/app/activity/page 2.tsx`; it was not used or committed by this documentation change and its ownership should be confirmed before deletion or adoption.
 
 ## Next stage
@@ -67,6 +68,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 - No authentication, session management, trusted identity provider or project-level authorization.
 - Public read access is suitable only for non-sensitive sample data. `CORS_ORIGINS` is not access control.
 - Actor names in current requests are declared strings, not authenticated identities.
+- Snapshot and production command paths still lack atomic audit events; approval and several other commands lack idempotency and row-level concurrency protection. See `docs/write-contracts.md`.
 - Some legacy list/history APIs remain unbounded; migration to bounded catalog endpoints is incomplete.
 - There is no CI workflow in the reviewed tree, so tests/builds are not enforced automatically on every push.
 - Backend tests require Python 3.12 (matching `backend/Dockerfile`). The configured package source could not resolve the repository's `pytest==9.1.1` pin during this review, so the passing run used pytest 8.4.2; verify the pin against the intended package source.
