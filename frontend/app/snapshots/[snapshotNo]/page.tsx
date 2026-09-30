@@ -35,6 +35,7 @@ export default async function Page({ params }: { params: Promise<{ snapshotNo: s
         <td>{row.distribution_level === 'INTERNAL_ONLY' ? 'External distribution denied' : row.policy_rules.length ? row.policy_rules.map((rule, index) => <div key={index}>{rule.recipient_type} {rule.recipient_code || ''} · {rule.purpose} · {rule.decision}</div>) : 'No frozen rule recorded'}</td>
       </tr>)}
     </tbody></table>{snapshot.artifacts.length === 0 && <p className="muted">No frozen artifacts recorded for this snapshot.</p>}</section>
+    <p><Link href={`/snapshots/${encodeURIComponent(snapshot.snapshot_no)}/compare`}>Compare frozen files and policies →</Link></p>
     {snapshot.release && <p><Link href={`/releases/${encodeURIComponent(snapshot.release.id)}/snapshots`}>View snapshot history →</Link></p>}
     {releasePath && <p><Link href={releasePath}>← Release profile</Link></p>}
   </>;

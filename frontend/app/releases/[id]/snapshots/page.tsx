@@ -25,11 +25,12 @@ export default async function Page({ params, searchParams }: {
   return <>
     <div className="top"><div><div className="eyebrow">FROZEN SNAPSHOT HISTORY</div><h1>{history.release.type === 'STANDARD' ? 'SSR' : 'ASR'} {history.release.version}</h1><p className="muted">{history.total} recorded snapshots · newest first</p></div></div>
     <section className="panel tablewrap"><h2>Freeze records</h2><p className="muted">Each link opens that exact frozen manifest. CURRENT identifies the newest snapshot; it does not establish release approval.</p>
-      <table><thead><tr><th>Snapshot</th><th>Frozen at (UTC)</th><th>Status</th><th>Full content hash</th></tr></thead><tbody>
+      <table><thead><tr><th>Snapshot</th><th>Frozen at (UTC)</th><th>Status</th><th>Full content hash</th><th>Compare</th></tr></thead><tbody>
         {history.items.map(row => <tr key={row.id}>
           <td><Link href={`/snapshots/${encodeURIComponent(row.snapshot_no)}`}><b>{row.snapshot_no}</b></Link><div className="muted">#{row.snapshot_number} · {row.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}</div></td>
           <td>{row.created_at.slice(0, 16).replace('T', ' ')}</td><td>{row.status}</td>
           <td><code style={{overflowWrap: 'anywhere', display: 'block', maxWidth: 360}}>{row.content_hash}</code></td>
+          <td><Link href={`/snapshots/${encodeURIComponent(row.snapshot_no)}/compare`}>Compare →</Link></td>
         </tr>)}
       </tbody></table>
       {history.items.length === 0 && <p className="muted">{before ? 'No older snapshots recorded before this cursor.' : 'No snapshots recorded for this release.'}</p>}
