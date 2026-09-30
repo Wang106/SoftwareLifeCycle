@@ -1,5 +1,10 @@
+import uuid
+from datetime import datetime, timezone
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -84,3 +89,64 @@ def get_activity(event_no: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="audit event not found")
     links = _release_links(db, [event])
     return _event_detail(event, links.get((event.entity_type, event.entity_id)))
+
+
+class AuditFilters(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    event_type: str | None = Field(None, max_length=50)
+    entity_type: str | None = Field(None, max_length=80)
+    entity_ref: str | None = Field(None, max_length=120)
+    entity_id: uuid.UUID | None = None
+    action: str | None = Field(None, max_length=80)
+    actor_name: str | None = Field(None, max_length=120)
+    q: str | None = Field(None, max_length=200)
+    occurred_from: datetime | None = None
+    occurred_before: datetime | None = None
+    limit: int = Field(50, ge=1, le=200)
+    offset: int = Field(0, ge=0, le=100000)
+
+    @model_validator(mode="after")
+    def validate_range(self):
+        for name in ("occurred_from", "occurred_before"):
+            value = getattr(self, name)
+            if value is not None:
+                if value.tzinfo is None or value.utcoffset() is None:
+                    raise ValueError("timestamps require a timezone")
+                setattr(self, name, value.astimezone(timezone.utc))
+        if self.occurred_from and self.occurred_before and self.occurred_from >= self.occurred_before:
+            raise ValueError("occurred_from must precede occurred_before")
+        return self
+
+
+@router.get("/audit/events")
+def audit_catalog(filters: Annotated[AuditFilters, Query()], db: Session = Depends(get_db)):
+    """Read-only summaries; payload and long detail remain on exact event profiles."""
+    stmt = select(AuditEvent)
+    for name in ("event_type", "entity_type", "entity_ref", "entity_id", "action", "actor_name"):
+        value = getattr(filters, name)
+        if value is not None and value != "":
+            stmt = stmt.where(getattr(AuditEvent, name) == value)
+    if filters.q and filters.q.strip():
+        stmt = stmt.where(or_(*[column.contains(filters.q.strip(), autoescape=True)
+            for column in (AuditEvent.event_no, AuditEvent.entity_ref, AuditEvent.actor_name,
+                           AuditEvent.summary, AuditEvent.event_type, AuditEvent.action)]))
+    if filters.occurred_from:
+        stmt = stmt.where(AuditEvent.occurred_at >= filters.occurred_from)
+    if filters.occurred_before:
+        stmt = stmt.where(AuditEvent.occurred_at < filters.occurred_before)
+    filtered = stmt.with_only_columns(AuditEvent.event_type).subquery()
+    total = db.scalar(select(func.count()).select_from(filtered))
+    counts = dict(db.execute(select(filtered.c.event_type, func.count())
+        .group_by(filtered.c.event_type).order_by(filtered.c.event_type)).all())
+    # Avoid loading unbounded JSON/text into directory rows.
+    columns = [getattr(AuditEvent, name) for name in ("id", "event_no", "event_type", "action",
+        "entity_type", "entity_id", "entity_ref", "actor_name", "summary", "occurred_at", "created_at")]
+    rows = db.execute(stmt.with_only_columns(*columns).order_by(
+        AuditEvent.occurred_at.desc(), AuditEvent.event_no.desc(), AuditEvent.id.desc()
+    ).limit(filters.limit).offset(filters.offset)).mappings().all()
+    items = [{**dict(row), "id": str(row["id"]),
+        "entity_id": str(row["entity_id"]) if row["entity_id"] else None} for row in rows]
+    next_offset = filters.offset + filters.limit
+    return {"items": items, "total": total, "event_type_counts": counts,
+        "limit": filters.limit, "offset": filters.offset,
+        "next_offset": next_offset if next_offset < total else None}

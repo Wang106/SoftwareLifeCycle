@@ -21,6 +21,8 @@ export default async function Page({ params }: { params: Promise<{ event_no: str
         <div><dt>Recorded at</dt><dd>{displayTime(event.created_at)}</dd></div>
         <div><dt>Entity ID</dt><dd>{event.entity_id || '—'}</dd></div>
       </dl>
+      <p><Link href={`/activity?${new URLSearchParams({ entity_type: event.entity_type, ...(event.entity_id ? { entity_id: event.entity_id } : { entity_ref: event.entity_ref }) })}`}>History for this recorded entity →</Link></p>
+      <p className="muted">The actor name is a recorded declaration, not a verified identity. Links use the recorded reference; a missing business object does not remove this event.</p>
       <h3>Structured details</h3>
       <pre className="auditpayload">{JSON.stringify(event.payload || {}, null, 2)}</pre>
     </section> : <section className="panel"><h2>Event unavailable</h2><p className="muted">The record could not be found or the audit API is unavailable.</p></section>}

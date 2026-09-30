@@ -215,3 +215,25 @@ New GET endpoints `/api/v1/governance/approvals` and `/decisions` accept exact `
 Frontend `/approvals`, `/approvals/{approval_no}`, `/release-decisions`, `/release-decisions/{decision_no}` use the new APIs. SSR/ASR profiles link to their governance history. Approval actions and formal Release Decisions are presented separately. Unsupported approval target types are marked UNVERIFIED_TARGET_TYPE and cannot accidentally resolve a same-UUID Release. Structural mismatch flags are observations; current approval status does not rewrite a past Release Decision, and catalog states do not authorize delivery/production. Declared actor names remain unverified until identity integration.
 
 Legacy `/api/v1/approvals` and its detail/write formats remain unchanged; those legacy histories/lists are still unbounded. No approval state-machine, authentication choice, migration, Seed change or new write API is introduced. Revision remains `0014_resource_links`; public testing remains read-only.
+
+
+### Bounded audit ledger review
+
+`GET /api/v1/audit/events` returns `{items,total,event_type_counts,limit,offset,next_offset}`.
+The legacy `/api/v1/activity` array and `/api/v1/activity/{event_no}` exact profile remain unchanged.
+Filters: exact `event_type`, `entity_type` (case-sensitive, preserving legacy mixed-case types),
+`entity_ref`, `entity_id` UUID, `action`, `actor_name`; literal substring `q` searches event number,
+reference, summary, actor, event type and action, excluding long detail and JSON payload.
+`occurred_from` is inclusive and `occurred_before` exclusive. Both require explicit timezone offsets
+and normalize to UTC; invalid bounds and unknown query parameters return 422.
+Limits: `limit` 1–200, `offset` 0–100000; deterministic newest occurred time/event number/UUID order.
+Counts cover all filtered rows, not just the current page. Three SQL queries per page; directory
+queries do not select detail/payload. Concurrent appends can shift offset pages; this is a review
+catalog, not a transactionally fixed export or a complete audit coverage guarantee.
+
+Activity uses this catalog with preserved pagination filters, exact Snapshot/Release Decision links,
+and UUID-scoped entity history from event profiles and Release Decision profiles. Original event
+references are retained even when a business object no longer resolves. Actor names are recorded
+declarations, not authenticated identities. Existing `Issue` / `SoftwareChangeRequest` audit types
+are supported without rewriting historical events. No migration, seed changes, history backfill,
+new write API or change to public test read-only mode is included.
