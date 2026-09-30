@@ -64,5 +64,5 @@ export default async function Page({ params }: { params: Promise<{ packageNo: st
       <p className="muted">Distribution does not itself authorize production use.</p>
     </section>
     <p className="datasource"><Link href="/distribution/deliveries">← All deliveries</Link></p>
-  </>;
+  <p><Link href={`/activity?${new URLSearchParams({entity_type: 'DELIVERY_PACKAGE', entity_id: delivery.id})}`}>Recorded audit events →</Link></p></>;
 }

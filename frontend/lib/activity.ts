@@ -7,6 +7,7 @@ export type AuditEvent = {
   entity_id: string | null;
   entity_ref: string;
   related_release_id?: string | null;
+  delivery_revision?: number | null;
   actor_name: string;
   summary: string;
   detail?: string | null;
@@ -24,7 +25,9 @@ export function eventHref(event: AuditEvent): string | null {
   if (event.entity_type === 'RELEASE_SNAPSHOT') return `/snapshots/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'RELEASE_DECISION') return `/release-decisions/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'Issue' || event.entity_type === 'ISSUE') return `/issues/${encodeURIComponent(event.entity_ref)}`;
-  if (event.entity_type === 'DELIVERY_PACKAGE') return `/distribution/deliveries/${encodeURIComponent(event.entity_ref)}`;
+  if (event.entity_type === 'DELIVERY_PACKAGE') return Number.isInteger(event.delivery_revision) && Number(event.delivery_revision) > 0
+    ? `/distribution/deliveries/${encodeURIComponent(event.entity_ref)}/${event.delivery_revision}`
+    : `/distribution/deliveries?${new URLSearchParams({q: event.entity_ref})}`;
   if (event.entity_type === 'APPROVAL_REQUEST') return `/approvals/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'DISTRIBUTION') return `/distribution/distributions/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'SOFTWARE_AUTHORIZATION') return `/distribution/authorizations/${encodeURIComponent(event.entity_ref)}`;

@@ -6,6 +6,7 @@ from app.models.core import ApplicationReleaseDetail, Customer, Project, Release
 from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distribution, SoftwareAuthorization
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.snapshot_policy import SnapshotArtifactDistributionRule
+from app.services.audit import commit_with_audit
 
 
 class DistributionError(ValueError):
@@ -110,7 +111,18 @@ class DistributionService:
                 )
             )
 
-        self.db.commit()
+        commit_with_audit(self.db, lambda: dict(
+            event_no=f"EVT-DP-{package.id.hex}", event_type="DELIVERY", action="CREATED",
+            entity_type="DELIVERY_PACKAGE", entity_id=package.id, entity_ref=package.package_no,
+            actor_name=created_by or "Not recorded", summary="Delivery package created",
+            payload={"revision": package.revision, "release_id": str(package.release_id),
+                "snapshot_id": str(package.snapshot_id), "snapshot_no": snapshot.snapshot_no,
+                "decision_no": decision.decision_no, "approval_no": approval.approval_no,
+                "recipient_type": package.recipient_type, "recipient_code": package.recipient_code,
+                "purpose": package.purpose, "status": package.status,
+                "snapshot_artifact_ids": [str(value) for value in snapshot_artifact_ids],
+                "actor_source": "REQUEST_DECLARED" if created_by else "NOT_PROVIDED"},
+        ))
         self.db.refresh(package)
         return package
 
@@ -147,7 +159,16 @@ class DistributionService:
             status="READY",
         )
         self.db.add(row)
-        self.db.commit()
+        commit_with_audit(self.db, lambda: dict(
+            event_no=f"EVT-DS-{row.id.hex}", event_type="DISTRIBUTION", action="CREATED",
+            entity_type="DISTRIBUTION", entity_id=row.id, entity_ref=row.distribution_no,
+            actor_name="Not recorded", summary="Distribution record created",
+            payload={"delivery_package_id": str(package.id), "package_no": package.package_no,
+                "revision": package.revision, "release_id": str(package.release_id),
+                "snapshot_id": str(package.snapshot_id), "recipient_type": row.recipient_type,
+                "recipient_code": row.recipient_code, "status": row.status,
+                "actor_source": "NOT_PROVIDED"},
+        ))
         self.db.refresh(row)
         return row
 
@@ -226,6 +247,17 @@ class DistributionService:
             restriction_note=restriction_note,
         )
         self.db.add(row)
-        self.db.commit()
+        commit_with_audit(self.db, lambda: dict(
+            event_no=f"EVT-PA-{row.id.hex}", event_type="AUTHORIZATION", action="CREATED",
+            entity_type="SOFTWARE_AUTHORIZATION", entity_id=row.id, entity_ref=row.authorization_no,
+            actor_name="Not recorded", summary="Draft production authorization created",
+            detail=restriction_note,
+            payload={"release_id": str(row.release_id), "snapshot_id": str(row.snapshot_id),
+                "distribution_id": str(distribution.id), "distribution_no": distribution.distribution_no,
+                "delivery_package_id": str(package.id), "package_no": package.package_no,
+                "revision": package.revision, "customer_id": str(customer_id), "project_id": str(project_id),
+                "site_code": site_code, "line_code": line_code, "purpose": purpose,
+                "batch_limit": batch_limit, "status": row.status, "actor_source": "NOT_PROVIDED"},
+        ))
         self.db.refresh(row)
         return row

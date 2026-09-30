@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.audit import AuditEvent
 from app.models.approval import ReleaseDecision
+from app.models.distribution import DeliveryPackage
 from app.models.core import Release
 from app.models.snapshot import ReleaseSnapshot
 
@@ -47,6 +48,7 @@ def _event_detail(event: AuditEvent, related_release_id: str | None = None) -> d
         "entity_id": str(event.entity_id) if event.entity_id else None,
         "entity_ref": event.entity_ref,
         "related_release_id": related_release_id,
+        "delivery_revision": event.payload_json.get("revision") if event.entity_type == "DELIVERY_PACKAGE" else None,
         "actor_name": event.actor_name,
         "summary": event.summary,
         "detail": event.detail,
@@ -141,7 +143,10 @@ def audit_catalog(filters: Annotated[AuditFilters, Query()], db: Session = Depen
     # Avoid loading unbounded JSON/text into directory rows.
     columns = [getattr(AuditEvent, name) for name in ("id", "event_no", "event_type", "action",
         "entity_type", "entity_id", "entity_ref", "actor_name", "summary", "occurred_at", "created_at")]
-    rows = db.execute(stmt.with_only_columns(*columns).order_by(
+    delivery_revision = select(DeliveryPackage.revision).where(
+        DeliveryPackage.id == AuditEvent.entity_id, AuditEvent.entity_type == "DELIVERY_PACKAGE"
+    ).correlate(AuditEvent).scalar_subquery().label("delivery_revision")
+    rows = db.execute(stmt.with_only_columns(*columns, delivery_revision).order_by(
         AuditEvent.occurred_at.desc(), AuditEvent.event_no.desc(), AuditEvent.id.desc()
     ).limit(filters.limit).offset(filters.offset)).mappings().all()
     items = [{**dict(row), "id": str(row["id"]),

@@ -67,5 +67,5 @@ export default async function Page({ params }: { params: Promise<{ authorization
         : <p className="muted">No production batch recorded.</p>}
     </section>
     <p className="datasource"><Link href="/distribution/authorizations">← All authorizations</Link></p>
-  </>;
+  <p><Link href={`/activity?${new URLSearchParams({entity_type: 'SOFTWARE_AUTHORIZATION', entity_id: authorization.id})}`}>Recorded audit events →</Link></p></>;
 }

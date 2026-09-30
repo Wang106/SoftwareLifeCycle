@@ -237,3 +237,29 @@ references are retained even when a business object no longer resolves. Actor na
 declarations, not authenticated identities. Existing `Issue` / `SoftwareChangeRequest` audit types
 are supported without rewriting historical events. No migration, seed changes, history backfill,
 new write API or change to public test read-only mode is included.
+
+
+### Atomic governance and distribution audit recording
+
+New calls to `ApprovalService.act()` / `create_release_decision()` and
+`DistributionService.create_delivery()` / `create_distribution()` / `create_authorization()`
+now commit a domain change and one append-only audit event in the same transaction. The internal
+`commit_with_audit` helper flushes domain UUIDs, records the event and commits; event/commit failures
+roll back the pending domain and ledger changes. `AuditEventService.record()` itself remains
+flush-only. Approval records capture the action UUID, step and before/after states; decisions
+capture the original Snapshot hash and approval binding; delivery/distribution/authorization
+creation captures exact package revision and scope. Draft authorization creation does not approve
+production. Numbers still follow existing duplicate rejection rules; no new idempotency or
+concurrent-approval guarantee is introduced. Invalid approval actions are rejected before step mutation.
+
+Actors supplied by existing requests are declarations. Existing distribution/authorization APIs
+have no actor field, so events explicitly record `Not recorded` / `actor_source=NOT_PROVIDED` rather
+than inventing an authenticated operator. There are no new routes or public write forms. Existing
+POST contracts and READ_ONLY_MODE enforcement remain unchanged; protected write behavior is tested
+only in isolated test databases. No historical backfill or seed mutation is performed, so previous
+seeded events remain the original nine events and do not imply complete auto-audit coverage.
+
+Approval, exact Delivery revision, Distribution and Authorization profiles link to UUID-scoped
+Activity history. Delivery event catalog rows resolve revision from the recorded package UUID in
+the same SQL query; full event profiles use the recorded revision payload. Missing revision links
+lead to the package search directory, never an invented/latest revision.

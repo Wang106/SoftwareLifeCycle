@@ -56,3 +56,18 @@ class AuditEventService:
         self.db.flush()
         self.db.refresh(event)
         return event
+
+
+def commit_with_audit(db: Session, event_fields):
+    """Commit a legacy service's domain changes and event together, or roll both back.
+
+    event_fields is evaluated after flush so generated domain UUIDs are available.
+    record() itself remains flush-only for callers managing their own transactions.
+    """
+    try:
+        db.flush()
+        AuditEventService(db).record(**event_fields())
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
