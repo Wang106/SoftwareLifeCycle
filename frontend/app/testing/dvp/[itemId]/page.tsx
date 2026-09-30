@@ -1,44 +1,23 @@
 import Link from 'next/link';
 import { apiGet } from '../../../../lib/api';
+import type { Context, Execution, ReleaseOption } from '../../../../lib/dvp-types';
 
-type Detail = {
-  id: string; item_no: string; title: string; scope: string; status: string;
-  plan: { plan_no: string; title: string; change_request_no: string | null } | null;
-  executions: {
-    execution_no: number; result: string; actual_result: string | null; executed_at: string;
-    release_id: string; release_version: string | null; release_type: string | null; snapshot_id: string;
-    snapshot_no: string | null; test_release_no: string | null;
-  }[];
-};
+type Profile = { id: string; item_no: string; title: string; scope: string; status: string; plan: { plan_no: string; title: string; change_request_no: string | null } | null; release_options: ReleaseOption[]; release_options_truncated: boolean; linked_acceptance: { id: string; criterion_no: string; description: string }[]; linked_change_points: { id: string; change_no: string; title: string }[]; linked_issues: { issue_no: string; title: string }[] };
+type History = { context: Context; total: number; items: Execution[]; next_before_number: number | null };
 
-export default async function Page({ params }: { params: Promise<{ itemId: string }> }) {
-  const { itemId } = await params;
-  const item = await apiGet<Detail>(`/api/v1/testing/dvp/id/${encodeURIComponent(itemId)}`);
-  if (!item) return <section className="panel"><h1>DVP item unavailable</h1>
-    <p className="muted">The item was not found or the API could not be reached.</p>
-    <Link href="/testing/dvp">← All DVP items</Link></section>;
+export default async function Page({ params, searchParams }: { params: Promise<{ itemId: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
+  const { itemId } = await params; const filters = await searchParams;
+  const query = new URLSearchParams(); for (const key of ['release_id', 'snapshot_no', 'result', 'before_number']) if (filters[key]) query.set(key, filters[key]!);
+  const path = `/api/v1/testing/dvp/id/${encodeURIComponent(itemId)}`;
+  const [item, history] = await Promise.all([apiGet<Profile>(`${path}/profile`), apiGet<History>(`${path}/executions?${query}`)]);
+  if (!item) return <section className="panel"><h1>DVP item unavailable</h1><p className="muted">The item was not found or the API is unavailable.</p><Link href="/testing/dvp">All DVP items →</Link></section>;
+  const next = new URLSearchParams(query); if (history?.next_before_number) next.set('before_number', String(history.next_before_number));
+  const first = new URLSearchParams(query); first.delete('before_number');
   return <>
-    <div className="top"><div><div className="eyebrow">DVP TEST ITEM · {item.item_no}</div><h1>{item.title}</h1>
-      <p className="muted">Recorded execution history, including earlier release snapshots.</p></div>
-      <span className="status">{item.status}</span></div>
-    <section className="panel"><h2>Verification scope</h2><div className="kv">
-      <span>Item</span><b>{item.item_no}</b><span>Scope</span><b>{item.scope}</b>
-      <span>Plan</span><b>{item.plan ? `${item.plan.plan_no} · ${item.plan.title}` : 'No plan found'}</b>
-      <span>Change request</span><b>{item.plan?.change_request_no ? <Link href={`/changes/${encodeURIComponent(item.plan.change_request_no)}`}>{item.plan.change_request_no}</Link> : '—'}</b>
-    </div></section>
-    <section className="panel tablewrap"><h2>Execution history</h2>
-      <p className="muted">Each row belongs to its own recorded release and snapshot. An earlier PASS does not verify a later snapshot.</p>
-      <table><thead><tr><th>Execution</th><th>Result</th><th>Release</th><th>Snapshot</th><th>Test Release</th><th>Executed</th><th>Recorded Result</th></tr></thead>
-        <tbody>{item.executions.map(row => <tr key={row.execution_no}>
-          <td>#{row.execution_no}</td>
-          <td><span className={'status ' + (row.result === 'PASS' ? 'pass' : 'warning')}>{row.result}</span></td>
-          <td>{row.release_type === 'APPLICATION' ? <Link href={`/releases/application/${encodeURIComponent(row.release_id)}`}>ASR {row.release_version || row.release_id}</Link> : `${row.release_type || 'Release'} ${row.release_version || row.release_id}`}</td>
-          <td>{row.snapshot_no || row.snapshot_id}</td><td>{row.test_release_no || '—'}</td>
-          <td>{row.executed_at ? new Date(row.executed_at).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—'}</td>
-          <td>{row.actual_result || '—'}</td>
-        </tr>)}</tbody></table>
-      {item.executions.length === 0 && <p className="muted">No executions recorded for this item.</p>}
-    </section>
-    <p className="datasource"><Link href="/testing/dvp">← All DVP items</Link></p>
+    <div className="top"><div><div className="eyebrow">DVP TEST ITEM · {item.item_no}</div><h1>{item.title}</h1><p className="muted">{item.scope} · {item.plan?.plan_no || 'No plan'}</p></div><span className="status">{item.status}</span></div>
+    <section className="panel"><h2>Verification assignments</h2>{item.plan?.change_request_no && <p><Link href={`/changes/${encodeURIComponent(item.plan.change_request_no)}`}>{item.plan.change_request_no}</Link> · <Link href={`/changes/${encodeURIComponent(item.plan.change_request_no)}/coverage`}>Coverage review →</Link></p>}<p>Acceptance: {item.linked_acceptance.map(a => `${a.criterion_no}: ${a.description}`).join('; ') || 'No acceptance assignment recorded'}</p><p>Change points: {item.linked_change_points.map(p => `${p.change_no}: ${p.title}`).join('; ') || 'No change point assignment recorded'}</p><p>Issues: {item.linked_issues.length ? item.linked_issues.map(i => <span key={i.issue_no}><Link href={`/issues/${encodeURIComponent(i.issue_no)}`}>#{i.issue_no} · {i.title}</Link> </span>) : 'No issue assignment recorded'}</p></section>
+    <section className="panel"><form method="get" className="filters"><label>Release <select name="release_id" defaultValue={filters.release_id || ''}><option value="">All recorded contexts</option>{filters.release_id && !item.release_options.some(r => r.id === filters.release_id) && <option value={filters.release_id}>{history?.context.release?.version || 'Selected release'}</option>}{item.release_options.map(r => <option key={r.id} value={r.id}>{r.type === 'APPLICATION' ? 'ASR' : 'SSR'} {r.version}</option>)}</select></label><label>Historical snapshot <input name="snapshot_no" defaultValue={filters.snapshot_no || ''} placeholder="Latest frozen snapshot" maxLength={80} /></label><label>Result <input name="result" defaultValue={filters.result || ''} placeholder="PASS / FAIL" maxLength={30} /></label><button type="submit">Filter history</button><Link href={`/testing/dvp/${itemId}`}>Reset</Link></form><p className="muted">Selecting a release uses its latest frozen snapshot unless a historical snapshot is supplied. Every row retains its recorded context. Declared item status is separate from execution evidence.</p>{item.release_options_truncated && <p className="muted">The selector shows the first 100 recorded releases.</p>}</section>
+    {history ? <section className="panel tablewrap"><h2>Execution history ({history.total})</h2><p className="muted">{history.context.snapshot ? `Exact context: ${history.context.snapshot.snapshot_no}` : history.context.release ? 'No frozen snapshot for selected release.' : 'All recorded releases and snapshots.'} Newest execution first; an earlier PASS does not verify a later snapshot.</p><table><thead><tr><th>Execution / Result</th><th>Release</th><th>Snapshot</th><th>Test Release</th><th>Time / Observation</th></tr></thead><tbody>{history.items.map(e => <tr key={e.execution_no}><td>#{e.execution_no} · <span className={'status ' + (e.result === 'PASS' && e.context_consistent ? 'pass' : 'warning')}>{e.result}</span>{!e.context_consistent && <p className="muted">Context mismatch; review record</p>}</td><td><Link href={`/releases/${e.release_type === 'APPLICATION' ? 'application' : 'standard'}/${e.release_id}`}>{e.release_type === 'APPLICATION' ? 'ASR' : 'SSR'} {e.release_version || e.release_id}</Link></td><td>{e.snapshot_no ? <Link href={`/snapshots/${encodeURIComponent(e.snapshot_no)}`}>{e.snapshot_no}</Link> : e.snapshot_id}</td><td>{e.test_release_no || '—'}</td><td>{e.executed_at}<div>{e.actual_result || '—'}</div></td></tr>)}</tbody></table>{!history.items.length && <p className="muted">No matching executions recorded.</p>}<p>{filters.before_number && <Link href={`/testing/dvp/${itemId}?${first}`}>Newest page</Link>}{history.next_before_number !== null && <Link href={`/testing/dvp/${itemId}?${next}`}> Earlier executions →</Link>}</p></section> : <section className="panel"><h2>History unavailable</h2><p className="muted">Check the release/snapshot filters or API availability.</p></section>}
+    <p><Link href="/testing/dvp">All DVP items →</Link></p>
   </>;
 }

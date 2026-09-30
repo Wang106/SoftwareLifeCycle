@@ -1,32 +1,21 @@
 import Link from 'next/link';
 import { apiGet } from '../../../lib/api';
+import type { Context, Execution, ReleaseOption } from '../../../lib/dvp-types';
 
-type DvpRow = {
-  id: string; item_no: string; title: string; scope: string; status: string;
-  latest_result: string | null; latest_execution_no: number | null; snapshot_id: string | null;
-};
+type Catalog = { context: Context; total: number; summary: { executed: number; not_executed: number; retested: number; recorded_latest_results: Record<string, number> }; items: { id: string; item_no: string; title: string; scope: string; status: string; plan_no: string; request_no: string; execution_count: number; latest_execution: Execution | null }[]; next_offset: number | null; release_options: ReleaseOption[]; release_options_truncated: boolean };
 
-export default async function Page() {
-  const rows = await apiGet<DvpRow[]>('/api/v1/testing/dvp');
-  const pass = rows?.filter(row => row.latest_result === 'PASS').length ?? 0;
-  const executed = rows?.filter(row => row.latest_execution_no !== null).length ?? 0;
-  const retested = rows?.filter(row => (row.latest_execution_no ?? 0) > 1).length ?? 0;
+export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const filters = await searchParams;
+  const query = new URLSearchParams();
+  for (const key of ['scr', 'plan', 'scope', 'status', 'result', 'q', 'release_id', 'snapshot_no', 'offset']) if (filters[key]) query.set(key, filters[key]!);
+  const data = await apiGet<Catalog>(`/api/v1/testing/dvp/catalog?${query}`);
+  const next = new URLSearchParams(query); if (data?.next_offset !== null && data?.next_offset !== undefined) next.set('offset', String(data.next_offset));
+  const first = new URLSearchParams(query); first.delete('offset');
   return <>
-    <div className="top"><div><div className="eyebrow">VERIFICATION</div><h1>DVP &amp; Test Execution</h1>
-      <p className="muted">Open a test item to inspect its execution history and exact release snapshot.</p></div></div>
-    <div className="cards">
-      <div className="card"><span className="muted">TEST ITEMS</span><div className="metric">{rows?.length ?? '—'}</div></div>
-      <div className="card"><span className="muted">LATEST RESULT PASS</span><div className="metric">{rows ? `${pass} / ${executed}` : '—'}</div><small>Across items with an execution</small></div>
-      <div className="card"><span className="muted">RETESTED ITEMS</span><div className="metric">{rows ? retested : '—'}</div><small>More than one recorded execution</small></div>
-    </div>
-    {rows ? <section className="panel tablewrap"><table><thead><tr><th>DVP</th><th>Test Item</th><th>Scope</th><th>Status</th><th>Latest Result</th><th>Execution</th></tr></thead>
-      <tbody>{rows.map(row => <tr key={row.id}>
-        <td><Link href={`/testing/dvp/${encodeURIComponent(row.id)}`}><b>{row.item_no}</b></Link></td>
-        <td>{row.title}</td><td>{row.scope}</td><td>{row.status}</td>
-        <td>{row.latest_result ? <span className={'status ' + (row.latest_result === 'PASS' ? 'pass' : 'warning')}>{row.latest_result}</span> : '—'}</td>
-        <td>{row.latest_execution_no !== null ? `#${row.latest_execution_no}` : '—'}</td>
-      </tr>)}</tbody></table>
-      {rows.length === 0 && <p className="muted">No DVP items recorded.</p>}
-    </section> : <p className="datasource">DVP API unavailable. Test records will load when the backend is connected.</p>}
+    <div className="top"><div><div className="eyebrow">VERIFICATION</div><h1>DVP &amp; Test Execution</h1><p className="muted">Browse test assignments and recorded results by SCR, plan, scope, status and frozen snapshot.</p></div></div>
+    <section className="panel"><form method="get" className="filters"><label>SCR <input name="scr" defaultValue={filters.scr || ''} placeholder="SCR-142" maxLength={50} /></label><label>Plan <input name="plan" defaultValue={filters.plan || ''} placeholder="DVP-PLAN-142" maxLength={50} /></label><label>Scope <input name="scope" defaultValue={filters.scope || ''} placeholder="SOFTWARE_TEST" maxLength={30} /></label><label>Declared status <input name="status" defaultValue={filters.status || ''} placeholder="COMPLETED" maxLength={30} /></label><label>Latest result <input name="result" defaultValue={filters.result || ''} placeholder="PASS / FAIL / NOT_EXECUTED" maxLength={30} /></label><label>Search <input name="q" defaultValue={filters.q || ''} placeholder="Item, title, plan or SCR" maxLength={200} /></label><label>Release <select name="release_id" defaultValue={filters.release_id || ''}><option value="">All recorded contexts</option>{filters.release_id && !data?.release_options.some(r => r.id === filters.release_id) && <option value={filters.release_id}>{data?.context.release?.version || 'Selected release'}</option>}{data?.release_options.map(r => <option key={r.id} value={r.id}>{r.type === 'APPLICATION' ? 'ASR' : 'SSR'} {r.version}</option>)}</select></label><label>Historical snapshot <input name="snapshot_no" defaultValue={filters.snapshot_no || ''} placeholder="Latest frozen snapshot" maxLength={80} /></label><button type="submit">Filter</button><Link href="/testing/dvp">Reset</Link></form>
+    {data && <p className="muted">{data.context.snapshot ? `Exact execution context: ${data.context.snapshot.snapshot_no}` : data.context.release ? 'Selected release has no frozen snapshot; no executions are counted.' : 'Latest recorded execution across all contexts; this does not establish verification of a current release.'} Retested means at least two executions within the selected context.</p>}{data?.release_options_truncated && <p className="muted">The release selector shows the first 100 releases.</p>}</section>
+    {data ? <><div className="cards"><div className="card"><span className="muted">FILTERED TEST ITEMS</span><div className="metric">{data.total}</div></div><div className="card"><span className="muted">LATEST RECORDED PASS</span><div className="metric">{data.summary.recorded_latest_results.PASS || 0} / {data.summary.executed}</div></div><div className="card"><span className="muted">RETESTED / UNEXECUTED</span><div className="metric">{data.summary.retested} / {data.summary.not_executed}</div></div></div>
+    <section className="panel tablewrap"><p className="muted">Summary covers all filtered records. Result counts are recorded outcomes; each execution shows its context consistency.</p><table><thead><tr><th>DVP / Plan</th><th>Test Item / SCR</th><th>Scope / Status</th><th>Latest Result</th><th>Execution Context</th><th>Context Executions</th></tr></thead><tbody>{data.items.map(row => { const e = row.latest_execution; const itemQuery = new URLSearchParams(); if (filters.release_id) itemQuery.set('release_id', filters.release_id); if (filters.snapshot_no) itemQuery.set('snapshot_no', filters.snapshot_no); return <tr key={row.id}><td><Link href={`/testing/dvp/${row.id}?${itemQuery}`}><b>{row.item_no}</b></Link><div>{row.plan_no}</div></td><td>{row.title}<div><Link href={`/changes/${encodeURIComponent(row.request_no)}`}>{row.request_no}</Link></div></td><td>{row.scope}<div>{row.status}</div></td><td>{e ? <><span className={'status ' + (e.result === 'PASS' && e.context_consistent ? 'pass' : 'warning')}>{e.result}</span><div>#{e.execution_no}</div>{!e.context_consistent && <div className="muted">Context mismatch; review record</div>}</> : 'Not executed'}</td><td>{e ? <><Link href={`/releases/${e.release_type === 'APPLICATION' ? 'application' : 'standard'}/${e.release_id}`}>{e.release_type === 'APPLICATION' ? 'ASR' : 'SSR'} {e.release_version}</Link><div>{e.snapshot_no ? <Link href={`/snapshots/${encodeURIComponent(e.snapshot_no)}`}>{e.snapshot_no}</Link> : e.snapshot_id}</div></> : '—'}</td><td>{row.execution_count}</td></tr>; })}</tbody></table>{!data.items.length && <p className="muted">No matching DVP items.</p>}<p>{filters.offset && <Link href={`/testing/dvp?${first}`}>First page</Link>}{data.next_offset !== null && <Link href={`/testing/dvp?${next}`}> Next page →</Link>}</p></section></> : <section className="panel"><h2>DVP catalog unavailable</h2><p className="muted">The API is unavailable or filters are invalid. Historical snapshot selection requires its release.</p><Link href="/testing/dvp">Reset filters →</Link></section>}
   </>;
 }
