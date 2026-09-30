@@ -1,0 +1,37 @@
+# Changelog
+
+This project does not yet publish tagged releases. Entries below summarize repository milestones from Git history; they do not claim semantic-version releases or production certification.
+
+## Unreleased
+
+- Added the cross-ChatGPT/Codex handoff protocol and established GitHub `main` as the source of truth.
+- Added maintained project status, roadmap, architecture, API and database references.
+- Documented verified deployment status, known production gaps and the recommended identity/authorization phase.
+- Updated the staging smoke check and deployment guide to require the current `0014_resource_links` database revision.
+
+## 2026-09-30
+
+- Added exact standard/application release profiles, historical snapshot manifests and comparisons, customer/project release matrix and software passport views.
+- Added snapshot-bound issue impact evidence and append-only judgments.
+- Added explicit acceptance-to-DVP assignments and snapshot-scoped SCR coverage review.
+- Added filtered DVP catalogs, purpose-limited test releases and append-only resource references.
+- Added bounded distribution, production, governance and audit catalogs with exact record links.
+- Added atomic audit recording for governance and distribution service writes.
+
+## 2026-09-29
+
+- Added live dashboard/search, organization catalogs and application release profiles.
+- Added downstream lifecycle trace, deployment provenance and browsable delivery/distribution/authorization/batch records.
+- Added read-only staging preparation and connected the Cloudflare Worker configuration to the Render test API.
+- Added recorded DVP execution, SCR, approval and readiness/evidence views without fabricated fallback records.
+
+## 2026-09-28
+
+- Established the Next.js, FastAPI, SQLAlchemy/Alembic and PostgreSQL application baseline.
+- Added release/component/artifact, SCR/Issue/DVP, snapshot and artifact-policy models.
+- Added readiness, approval, release decision, delivery, distribution, production authorization and production traceability services.
+- Added local Docker Compose and deployment configuration.
+
+## Maintenance rule
+
+Every completed `开发` task adds an entry under **Unreleased** describing behavior, data/API changes and verification. When a tagged release is introduced, move the relevant entries under that version and date; do not rewrite historical Git-derived milestones.

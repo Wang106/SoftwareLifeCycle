@@ -12,6 +12,35 @@ The demo dataset follows one consistent frozen release path:
 
 The Activity workspace is backed by an append-only audit ledger. PostgreSQL rejects updates and deletes to formal audit events; corrections must be recorded as new events.
 
+## Project handoff and source of truth
+
+GitHub `main` is the project source of truth. ChatGPT is used for product, requirement and architecture discussion; Codex reads the current repository, implements and verifies changes, and returns the result to GitHub. A conversation is context, not project state.
+
+Start each handoff with one of these commands:
+
+| Command | Purpose | Expected repository result |
+| --- | --- | --- |
+| `规划：<目标>` | Clarify scope, constraints, architecture and acceptance criteria | Update `ROADMAP.md` or the relevant design document when the decision is durable |
+| `开发：<任务>` | Implement against the latest `main` | Code, tests, relevant docs and `PROJECT_STATUS.md` move together |
+| `检查：<范围>` | Review code, behavior, deployment or a diff | Evidence-backed findings; no change unless explicitly requested |
+| `汇总：SoftwareLifeCycle 当前状态` | Reconstruct status from the repository | Read `PROJECT_STATUS.md`, recent commits and the actual code/configuration |
+| `继续：下一阶段` | Resume the highest-priority ready item | Confirm `main`, blockers and acceptance criteria before changing code |
+
+For a development handoff, the short form is:
+
+> 开发：读取最新 main、PROJECT_STATUS.md 和相关设计文档，完成下一项已确认任务；运行适当检查，更新状态和变更记录，然后提交并推送。
+
+The maintained project documents are:
+
+- [PROJECT_STATUS.md](PROJECT_STATUS.md) — current phase, verified state, blockers and next handoff
+- [ROADMAP.md](ROADMAP.md) — completed capabilities and ordered future phases
+- [ARCHITECTURE.md](ARCHITECTURE.md) — system boundaries, runtime flow and trust model
+- [API.md](API.md) — endpoint families, write controls and API conventions
+- [DATABASE.md](DATABASE.md) — PostgreSQL model groups, lifecycle links and migration rules
+- [CHANGELOG.md](CHANGELOG.md) — repository-level change history
+
+After every completed development task, update at least `PROJECT_STATUS.md` and `CHANGELOG.md`; update architecture, API or database documentation whenever their contracts change.
+
 ## Stack
 
 - Next.js + TypeScript, deployed to Cloudflare Workers through OpenNext
@@ -130,6 +159,8 @@ curl --fail https://API_HOST/api/v1/deployments/DEP-0081
 cd backend && pytest -q
 cd frontend && npm run build
 ```
+
+Use Python 3.12 for backend development and tests, matching `backend/Dockerfile`.
 
 The product baseline is available at `docs/baseline-v1.1.html`.
 
