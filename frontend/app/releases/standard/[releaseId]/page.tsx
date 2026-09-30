@@ -16,6 +16,7 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
   const profile = await apiGet<Profile>(`/api/v1/releases/standard/id/${encodeURIComponent(releaseId)}`);
   if (!profile) return <section className="panel"><h1>Standard release unavailable</h1><p className="muted">The release was not found or the API could not be reached.</p><Link href="/releases/standard">Back to standard releases →</Link></section>;
   return <>
+    <p><Link href={`/distribution/deliveries?release_id=${profile.id}`}>Delivery history →</Link> · <Link href={`/distribution/distributions?release_id=${profile.id}`}>Distribution history →</Link> · <Link href={`/distribution/authorizations?release_id=${profile.id}`}>Production authorizations →</Link></p>
     <p><Link href={`/resources?entity_type=RELEASE&entity_id=${profile.id}`}>Materials & evidence references →</Link></p>
     <div className="top"><div><div className="eyebrow">STANDARD SOFTWARE RELEASE</div><h1>SSR {profile.version}</h1><p className="muted">{profile.software?.name || 'Software unavailable'} · {profile.software?.code || 'No code'}</p></div><span className={'status ' + (profile.status === 'READY' || profile.status === 'RELEASED' ? 'pass' : 'warning')}>{profile.status}</span></div>
     <div className="grid2"><section className="panel"><h2>Baseline identity</h2><div className="kv">
