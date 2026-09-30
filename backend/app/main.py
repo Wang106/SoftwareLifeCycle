@@ -21,6 +21,7 @@ from app.api.testing_releases import router as test_releases_router
 from app.api.resources import router as resources_router
 from app.api.distribution_catalog import router as distribution_catalog_router
 from app.api.production_catalog import router as production_catalog_router
+from app.api.governance_catalog import router as governance_catalog_router
 from app.core.config import settings
 from app.core.db import engine
 
@@ -51,6 +52,7 @@ app.include_router(test_releases_router)
 app.include_router(resources_router)
 app.include_router(distribution_catalog_router)
 app.include_router(production_catalog_router)
+app.include_router(governance_catalog_router)
 
 
 @app.middleware("http")
