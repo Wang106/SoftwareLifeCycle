@@ -19,6 +19,7 @@ export default async function Page({ params }: { params: Promise<{ snapshotNo: s
   if (!snapshot) return <section className="panel"><h1>Snapshot unavailable</h1><p className="muted">The exact snapshot was not found or the API could not be reached. No substitute snapshot is shown.</p><Link href="/search">Search records →</Link></section>;
   const releasePath = snapshot.release ? `/releases/${snapshot.release.type === 'STANDARD' ? 'standard' : 'application'}/${encodeURIComponent(snapshot.release.id)}` : null;
   return <>
+    <p><Link href={`/resources?entity_type=SNAPSHOT&entity_id=${snapshot.id}`}>Materials & evidence references →</Link></p>
     <div className="top"><div><div className="eyebrow">EXACT FROZEN SNAPSHOT</div><h1>{snapshot.snapshot_no}</h1><p className="muted">Snapshot #{snapshot.snapshot_number} · {snapshot.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}</p></div><span className="status">{snapshot.status}</span></div>
     <section className="panel"><h2>Snapshot identity</h2><div className="kv">
       <span>Release</span><b>{snapshot.release && releasePath ? <Link href={releasePath}>{snapshot.release.type} {snapshot.release.version}</Link> : 'Release unavailable'}</b>

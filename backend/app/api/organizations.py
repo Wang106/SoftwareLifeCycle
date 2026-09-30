@@ -21,7 +21,7 @@ def _suppliers(db: Session, rows: list[Supplier]) -> list[dict]:
     latest = {}
     for release in versions:
         latest.setdefault(release.software_id, release.version)
-    return [{"code": row.code, "name": row.name, "country": row.country, "website": row.website,
+    return [{"id": str(row.id), "code": row.code, "name": row.name, "country": row.country, "website": row.website,
              "description": row.description, "status": row.status,
              "software": [{"code": p.code, "name": p.name, "type": p.software_type,
                            "status": p.status, "standard_version": latest.get(p.id)}
@@ -39,7 +39,7 @@ def _customers(db: Session, rows: list[Customer]) -> list[dict]:
     for release in releases:
         detail = detail_by_release[release.id]
         latest.setdefault(detail.project_id, {"id": str(release.id), "version": release.version, "status": release.status})
-    return [{"code": row.code, "name": row.name, "status": row.status, "region": row.region,
+    return [{"id": str(row.id), "code": row.code, "name": row.name, "status": row.status, "region": row.region,
              "projects": [{"id": str(p.id), "code": p.project_code, "name": p.name, "status": p.status,
                            "release": latest.get(p.id)} for p in projects if p.customer_id == row.id]}
             for row in rows]

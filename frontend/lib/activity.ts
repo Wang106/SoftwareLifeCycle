@@ -16,6 +16,7 @@ export type AuditEvent = {
 };
 
 export function eventHref(event: AuditEvent): string | null {
+  if (event.entity_type === 'RESOURCE_LINK' && event.entity_id) return `/resources/${encodeURIComponent(event.entity_id)}`;
   if (event.entity_type === 'TEST_RELEASE') return `/testing/releases/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'SOFTWARE_CHANGE_REQUEST') return `/changes/${encodeURIComponent(event.entity_ref)}`;
   if (event.entity_type === 'DVP_ITEM')

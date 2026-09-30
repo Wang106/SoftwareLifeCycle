@@ -1,0 +1,10 @@
+import Link from 'next/link';
+import { apiGet } from '../../../lib/api';
+import { safeWebLocation, type Resource } from '../../../lib/resources';
+export default async function Page({ params }: { params: Promise<{ resourceId: string }> }) {
+  const { resourceId } = await params;
+  const row = await apiGet<Resource>(`/api/v1/resources/${encodeURIComponent(resourceId)}`);
+  if (!row) return <section className="panel"><h1>Resource unavailable</h1><p className="muted">The reference was not found or the API is unavailable.</p><Link href="/resources">Resource catalog →</Link></section>;
+  const web = safeWebLocation(row);
+  return <><div className="top"><div><div className="eyebrow">APPEND-ONLY RESOURCE REFERENCE</div><h1>{row.title}</h1><p className="muted">{row.description || 'No description recorded.'}</p></div></div><section className="panel"><h2>Business association</h2><p>{row.entity_type} · <Link href={row.entity_href}>{row.entity_ref}</Link></p><p className="muted">Object ID: {row.entity_id}</p></section><section className="panel"><h2>Recorded location</h2><p>{row.location_kind}</p><code style={{overflowWrap:'anywhere'}}>{row.location}</code>{web && <p><a href={web} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">Open recorded web address ↗</a></p>}<p className="muted">The system has not accessed or verified this location. Local and network paths must be opened on a computer with the appropriate access. No file upload or distribution permission is granted by this reference.</p></section><section className="panel"><h2>Registration history</h2><div className="kv"><span>Declared actor</span><b>{row.actor_name}</b><span>Recorded at</span><b>{row.created_at}</b><span>Reason</span><b>{row.reason}</b></div><p className="muted">Actor names are declarations until identity integration is implemented. This record cannot be edited or deleted.</p></section><Link href={`/resources?entity_type=${row.entity_type}&entity_id=${row.entity_id}`}>Other resources for this object →</Link></>;
+}

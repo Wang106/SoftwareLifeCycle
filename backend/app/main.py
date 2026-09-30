@@ -18,6 +18,7 @@ from app.api.release_matrix import router as release_matrix_router
 from app.api.change_coverage import router as change_coverage_router
 from app.api.dvp_catalog import router as dvp_catalog_router
 from app.api.testing_releases import router as test_releases_router
+from app.api.resources import router as resources_router
 from app.core.config import settings
 from app.core.db import engine
 
@@ -45,6 +46,7 @@ app.include_router(release_matrix_router)
 app.include_router(change_coverage_router)
 app.include_router(dvp_catalog_router)
 app.include_router(test_releases_router)
+app.include_router(resources_router)
 
 
 @app.middleware("http")

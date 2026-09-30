@@ -20,6 +20,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <p className="muted">The request was not found or the API could not be reached.</p>
     <Link href="/changes">← All change requests</Link></section>;
   return <>
+    <p><Link href={`/resources?entity_type=SCR&entity_id=${change.id}`}>Materials & evidence references →</Link></p>
     <div className="top"><div><div className="eyebrow">SOFTWARE CHANGE REQUEST · {change.request_no}</div><h1>{change.title}</h1>
       <p className="muted">{change.scope} · {change.change_type} · Source: {change.source}</p></div>
       <span className={'status ' + (change.status.includes('READY') || change.status === 'RELEASED' ? 'pass' : 'warning')}>{change.status.replaceAll('_', ' ')}</span></div>
