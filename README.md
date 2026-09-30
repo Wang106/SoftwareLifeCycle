@@ -195,3 +195,13 @@ Delivery rows include artifact/distribution counts; distribution rows include li
 Legacy `/api/v1/deliveries`, `/distributions`, `/authorizations` list formats and all detail/write routes remain unchanged (legacy lists are still unbounded). This round introduces no migration, Seed changes or writes; head stays `0014_resource_links`, and the public test API stays read-only.
 
 For reproducible backend test setup, run `python -m pip install -r backend/requirements-dev.txt`; HTTP query validation tests use Starlette TestClient/httpx. Runtime container dependencies remain in requirements.txt.
+
+### Bounded production history (round 8)
+
+`GET /api/v1/production/catalog/{kind}` accepts `deployments`, `changeovers` or `batches` and returns `{total, status_counts, items, next_offset, notice}`. Filters: exact `status`, `authorization_id`, `deployment_id`, `customer_id`, `project_id`, `site_code`, `line_code`; literal `q` search (max 200); `limit` 1–100 (default 50), `offset` 0–100000. `release_id`/`snapshot_id` scope deployment expected software, batch recorded software, or changeover destination release/deployment expected snapshot. A changeover has no stored snapshot: the catalog does not invent one. Unknown query parameters and invalid IDs/bounds return 422. Metadata is loaded in fixed batches and related counts do not multiply root rows.
+
+`/deployments`, `/production/changeovers`, `/production/batches` use these APIs with filtered totals, pagination, scope preservation, exact software links and reverse trace links. SSR/ASR profiles link to deployment/batch history. Deployment child counts link to filtered changeover/batch catalogs. Changeovers link to their deployment detail, which retains their original records; no standalone changeover profile or new write workflow is introduced.
+
+Binding flags compare stored authorization/software/location relationships; actual software separately reports NOT_RECORDED, PARTIAL, MATCH or MISMATCH by stored IDs. A row's domain status is preserved even if it conflicts with the observed software. Batch records resolve their original deployment and optional changeover, never the latest deployment of a line. Missing context stays visible. Structural observations do not prove physical installation or grant production permission. Legacy deployment/batch/site detail and write routes remain unchanged; legacy lists remain unbounded.
+
+No migration, Seed changes or writes are introduced. Revision remains `0014_resource_links`; public test access remains read-only.

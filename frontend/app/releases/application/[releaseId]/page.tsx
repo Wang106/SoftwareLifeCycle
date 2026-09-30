@@ -38,6 +38,7 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
   if (!profile) return <section className="panel"><h1>Release unavailable</h1><p className="muted">The release was not found or the API could not be reached.</p><Link href="/releases/application">Back to releases →</Link></section>;
   const c = profile.coverage;
   return <>
+    <p><Link href={`/deployments?release_id=${profile.id}`}>Deployment history →</Link> · <Link href={`/production/batches?release_id=${profile.id}`}>Batch history →</Link></p>
     <p><Link href={`/distribution/deliveries?release_id=${profile.id}`}>Delivery history →</Link> · <Link href={`/distribution/distributions?release_id=${profile.id}`}>Distribution history →</Link> · <Link href={`/distribution/authorizations?release_id=${profile.id}`}>Production authorizations →</Link></p>
     <p><Link href={`/resources?entity_type=RELEASE&entity_id=${profile.id}`}>Materials & evidence references →</Link></p>
     <div className="top"><div><div className="eyebrow">APPLICATION SOFTWARE RELEASE</div><h1>ASR {profile.version}</h1><p className="muted">{profile.customer?.name || 'No customer'} · {profile.project?.name || 'No project'} · {profile.software?.name || 'No software'}</p></div><span className={'status ' + (profile.status === 'READY' || profile.status === 'RELEASED' ? 'pass' : 'warning')}>{profile.status}</span></div>

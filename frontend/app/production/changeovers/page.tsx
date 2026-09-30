@@ -1,4 +1,4 @@
 import ProductionCatalog from '../../../components/production-catalog';
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string,string | undefined>> }) {
-  return <ProductionCatalog kind='batches' filters={await searchParams} />;
+  return <ProductionCatalog kind='changeovers' filters={await searchParams} />;
 }
