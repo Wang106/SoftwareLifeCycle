@@ -31,6 +31,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       </div></section><section className="panel"><h2>Acceptance criteria</h2>
       {change.acceptance_criteria.length ? <div className="timeline">{change.acceptance_criteria.map(row => <div key={row.criterion_no}><b>{row.criterion_no}</b><span>{row.description}</span></div>)}</div> : <p className="muted">No acceptance criteria recorded.</p>}
     </section></div>
+    <section className="panel"><h2>Coverage review</h2><p>Review acceptance assignments, missing verification links, and execution evidence for a selected release and frozen snapshot.</p><Link href={`/changes/${encodeURIComponent(id)}/coverage`}>Open completeness and coverage report →</Link></section>
     <section className="panel tablewrap"><h2>Linked issues</h2><table><thead><tr><th>Issue</th><th>Title</th><th>Relation</th><th>Status</th></tr></thead>
       <tbody>{change.issues.map(row => <tr key={`${row.issue_no}-${row.relation_type}`}><td><Link href={`/issues/${encodeURIComponent(row.issue_no)}`}><b>#{row.issue_no}</b></Link></td>
         <td>{row.title}</td><td>{row.relation_type}</td><td>{row.status}</td></tr>)}</tbody></table>

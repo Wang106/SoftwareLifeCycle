@@ -10,3 +10,4 @@ from app.models.distribution import *
 from app.models.production import *
 from app.models.audit import *
 from app.models.impact import *
+from app.models.acceptance import *
