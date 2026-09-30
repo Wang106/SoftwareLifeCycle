@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://slc:slc_dev_password@localhost:5432/software_lifecycle"
     cors_origins: str = "http://localhost:3000,https://softwarelifecycle.whf969.com"
-    required_db_revision: str = "0011_customer_regions"
+    required_db_revision: str = "0012_issue_impact_assessments"
     read_only_mode: bool = False
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

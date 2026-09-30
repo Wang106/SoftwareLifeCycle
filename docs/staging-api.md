@@ -26,7 +26,7 @@ Use PostgreSQL for end-to-end testing: migrations depend on PostgreSQL `JSONB` a
    ```
 
    Both `postgres://` and `postgresql://` provider URLs are normalized to the installed `psycopg` driver. Preserve provider-required SSL options. The API service must listen on the host-provided `PORT`, which `entrypoint.sh` already uses.
-4. Set the web service health check to `/health/ready`. Wait until it reports `status: ready` and revision `0011_customer_regions`. The demo Seed is idempotent, so restarting this **test** service does not duplicate the named demo chain.
+4. Set the web service health check to `/health/ready`. Wait until it reports `status: ready` and revision `0012_issue_impact_assessments`. The demo Seed is idempotent, so restarting this **test** service does not duplicate the named demo chain.
 5. Test `https://<public-api-host>/health/ready`, `/api/v1/releases/application`, `/api/v1/issues/310/impact`, and `/api/v1/activity`. A write request must return HTTP 403 with `read_only_mode`. Run `python scripts/check_staging.py https://<public-api-host>` from the repository root to check these endpoints.
 6. The Wrangler configuration sets the public test API origin as `API_BASE_URL=https://softwarelifecycle-api-test.onrender.com`. Deploy the Worker from `main` or wait for its connected Git build, then verify the homepage no longer says `Live dashboard unavailable`. To use another API origin later, change this runtime binding in the Wrangler configuration (or the Cloudflare Dashboard). Keep `DATABASE_URL` on the API service, never on Cloudflare Worker or in `NEXT_PUBLIC_*` variables.
 

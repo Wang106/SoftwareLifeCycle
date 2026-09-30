@@ -132,3 +132,12 @@ cd frontend && npm run build
 ```
 
 The product baseline is available at `docs/baseline-v1.1.html`.
+
+
+### Issue impact evidence and judgments
+
+`GET /api/v1/issues/{issue_no}/impact/{release_id}` shows the latest **frozen** snapshot, its frozen component versions, and the latest execution per linked DVP item matching that exact release and snapshot. Candidate software matching and a PASS result do not establish issue impact. The Issue page links to these evidence pages and reads append-only judgment history from `GET /api/v1/issues/{issue_no}/impact-assessments` (default latest 50, maximum 200, `truncated` indicates more history).
+
+`POST /api/v1/issues/{issue_no}/impact-assessments` accepts `request_id` (client-generated UUID), `release_id`, `snapshot_id`, `decision` (`AFFECTED`, `NOT_AFFECTED`, `NEEDS_REVIEW`), nonblank `reason` and `actor_name`, and optional `evidence_ref`. The snapshot must be frozen, belong to the release, and the release software must match a linked SCR. New requests return 201; identical retries return 200 without another audit event; reusing an ID with different content returns 409. Correct a judgment by submitting a **new** request ID; earlier records remain. Judgment and `ISSUE_IMPACT` audit event commit in the same transaction. Reviewer names are declared inputs, not authenticated identities. This write endpoint remains blocked by `READ_ONLY_MODE=true` on the public test API; no public write form is exposed.
+
+Migration `0012_issue_impact_assessments` creates the history table with PostgreSQL UPDATE/DELETE rejection trigger. No existing migration or Seed data is changed, and a judgment for an older snapshot is not automatically applied to the latest snapshot. History has a bounded latest-record list, without a pagination cursor yet. PostgreSQL locking serializes writes for one issue; SQLite tests verify transaction behavior but do not simulate concurrent PostgreSQL connections.
