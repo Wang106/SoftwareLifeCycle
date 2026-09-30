@@ -14,6 +14,7 @@ from app.api.search import router as search_router
 from app.api.organizations import router as organizations_router
 from app.api.impact import router as impact_router
 from app.api.snapshots import router as snapshots_router
+from app.api.release_matrix import router as release_matrix_router
 from app.core.config import settings
 from app.core.db import engine
 
@@ -37,6 +38,7 @@ app.include_router(search_router)
 app.include_router(organizations_router)
 app.include_router(impact_router)
 app.include_router(snapshots_router)
+app.include_router(release_matrix_router)
 
 
 @app.middleware("http")

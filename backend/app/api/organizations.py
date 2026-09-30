@@ -39,7 +39,7 @@ def _customers(db: Session, rows: list[Customer]) -> list[dict]:
     for release in releases:
         detail = detail_by_release[release.id]
         latest.setdefault(detail.project_id, {"id": str(release.id), "version": release.version, "status": release.status})
-    return [{"code": row.code, "name": row.name, "status": row.status,
+    return [{"code": row.code, "name": row.name, "status": row.status, "region": row.region,
              "projects": [{"id": str(p.id), "code": p.project_code, "name": p.name, "status": p.status,
                            "release": latest.get(p.id)} for p in projects if p.customer_id == row.id]}
             for row in rows]

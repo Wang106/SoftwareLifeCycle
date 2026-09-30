@@ -20,9 +20,11 @@ class Supplier(Base):
 
 class Customer(Base):
     __tablename__ = "customers"
+    __table_args__ = (CheckConstraint("region IS NULL OR region IN ('APAC','EUROPE','AMERICAS','OTHER')", name="ck_customer_region"),)
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uid)
     code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    region: Mapped[str | None] = mapped_column(String(20))
     status: Mapped[str] = mapped_column(String(30), default="ACTIVE")
 
 class Project(Base):
