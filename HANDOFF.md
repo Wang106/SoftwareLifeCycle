@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `2410b55ceac01263f62fdac0b109408a8c88fd1d`
-- Baseline subject: `feat: make deployment and changeover retries safe with shared production locks`
+- Verified baseline: `bbd8a42b567c4f5b2c83017c570e47039442f3af`
+- Baseline subject: `feat: make actual reports retry-safe with versioned audited corrections`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -34,9 +34,9 @@ The solution is evidence-oriented:
 
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
-| Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, verified HTTP 200 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.17.0`, health verified ready |
-| Database | PostgreSQL 16 + Alembic | Required/verified revision `0016_authenticated_audit_actors` |
+| Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
+| API | FastAPI + SQLAlchemy services | Render API version `0.18.0`, health verified ready |
+| Database | PostgreSQL 16 + Alembic | Required/verified revision `0017_deployment_actual_version` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
 | Engineering source | GitHub `main` | Baseline above was pushed successfully |
@@ -247,4 +247,15 @@ adds a non-negative Deployment version, preserving existing state at baseline ze
 All 14 current routes now declare request-ID/row-lock/scope/actor/atomic contracts.
 Legacy no-key paths remain weaker; UI, broader correction/revocation, provider and
 operations are unfinished. Roadmap scope is 33/44 (75%); Phase 6 is 2/5 (40%).
-Full Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL 16.15 tests**. Added 34 unit/route and 13 PostgreSQL cases. Single Alembic head 0017 and generated PostgreSQL SQL (858 lines) passed; populated migration round-trip preserves legacy state. Frontend sources were unchanged; additive backend fields are unused by current read consumers, so no frontend build was required. Deployment verification remains pending.
+Full Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL 16.15 tests**. Added 34 unit/route and 13 PostgreSQL cases. Single Alembic head 0017 and generated PostgreSQL SQL (858 lines) passed; populated migration round-trip preserves legacy state. Frontend sources were unchanged; additive backend fields are unused by current read consumers, so no frontend build was required. Render deployment `dep-dav0vf0473hc73a8vl10` is **live** for feature commit
+`bbd8a42b567c4f5b2c83017c570e47039442f3af` (finished 2026-10-01T07:48:56.742624Z UTC). Health returned HTTP 200 /
+API `0.18.0` / database `0017_deployment_actual_version`. Release/application,
+issue-impact and activity reads returned 200; actual-report OpenAPI fields and the
+existing DEP-0081 detail's non-negative actual_version were verified. Harmless
+Deployment, Changeover and actual-report writes returned 403 `read_only_mode`.
+Frontend checks using a browser User-Agent returned HTTP 200 with Dashboard HTML
+at both the bare domain and slash URL. The default Python User-Agent repeatedly
+returned HTTP 403 with Cloudflare error code 1010; this client-dependent result is retained, not called
+a fully passing default-agent smoke run. No frontend access policy, code or build was changed; no separate frontend deployment was needed. A first health attempt timed out during Render's
+update_in_progress stage; the post-live checks above passed. No public setting or
+application change was made to resolve that in-progress timeout.

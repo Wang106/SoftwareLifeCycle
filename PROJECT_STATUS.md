@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `2410b55ceac01263f62fdac0b109408a8c88fd1d` — `feat: make deployment and changeover retries safe with shared production locks` (developed from `8955c8d4039850ecc0bb5c0907f5c10f26a1eb4c`)
+- Reviewed repository baseline: `bbd8a42b567c4f5b2c83017c570e47039442f3af` — `feat: make actual reports retry-safe with versioned audited corrections` (developed from `5e236bed5ac687273b2a681d06a64734bcbae432`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -54,7 +54,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 ## In progress
 
 - Approved OIDC provider configuration remains open. Phase 6 now has five safety slices; retry/concurrency roadmap items are complete for current keyed routes. UI, broader corrections and result confirmation/trace remain.
-- The fifth package is being verified; provider configuration and remaining UI/correction/result scope are next.
+- All five safety packages have implementation/test/deployment evidence; provider configuration and remaining UI/correction/result scope are next.
 - The unrelated `frontend/app/activity/page 2.tsx` was not present in this clean cloud checkout and was not recreated, adopted or deleted.
 
 ## Next stage
@@ -71,29 +71,30 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 | Layer | Configured target | Verified 2026-10-01 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | HTTP 200 and live dashboard HTML returned | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.17.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
-| Database | PostgreSQL behind the Render API | Ready at Alembic revision `0016_authenticated_audit_actors` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
+| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Browser User-Agent HTTP 200 / Dashboard HTML; Python User-Agent 403 / Cloudflare 1010 | Demo/test frontend, not evidence of production readiness |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| Database | PostgreSQL behind the Render API | Ready at Alembic revision `0017_deployment_actual_version` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
-Render retry deployment `dep-dav0kvs1nsns7382pu00` is **live** for feature commit
-`2410b55ceac01263f62fdac0b109408a8c88fd1d` (finished 2026-10-01T07:24:38.937384Z UTC). Health returned
-HTTP 200 / API `0.17.0` / database `0016_authenticated_audit_actors`;
-release/application, issue-impact and activity reads returned 200. Deployment,
-Changeover and actual-report POSTs retained 403 `read_only_mode`. Frontend returned
-HTTP 200 with Dashboard HTML; no frontend code or separate deployment was required.
-The original auto-deploy `dep-dav0jpo473hc73a87bag` reported `update_failed` despite
-completed image build, healthy startup and API 0.17.0. Error/warn logs were empty;
-no definitive cause was exposed. The same commit was retried without code, schema
-or environment changes and its final deployment state was verified. No application
-fix is claimed for that unexplained operational failure.
+Render deployment `dep-dav0vf0473hc73a8vl10` is **live** for feature commit
+`bbd8a42b567c4f5b2c83017c570e47039442f3af` (finished 2026-10-01T07:48:56.742624Z UTC). Health returned HTTP 200 /
+API `0.18.0` / database `0017_deployment_actual_version`. Release/application,
+issue-impact and activity reads returned 200; actual-report OpenAPI fields and the
+existing DEP-0081 detail's non-negative actual_version were verified. Harmless
+Deployment, Changeover and actual-report writes returned 403 `read_only_mode`.
+Frontend checks using a browser User-Agent returned HTTP 200 with Dashboard HTML
+at both the bare domain and slash URL. The default Python User-Agent repeatedly
+returned HTTP 403 with Cloudflare error code 1010; this client-dependent result is retained, not called
+a fully passing default-agent smoke run. No frontend access policy, code or build was changed; no separate frontend deployment was needed. A first health attempt timed out during Render's
+update_in_progress stage; the post-live checks above passed. No public setting or
+application change was made to resolve that in-progress timeout.
 
 The live URLs are volatile operational state. Recheck them rather than copying this table into a future report.
 
 ## Database and API status
 
-- Repository API version: `0.18.0`; previous verified online version: `0.17.0` until this package deploys.
-- Required repository schema: `0017_deployment_actual_version`; previous verified online revision: `0016_authenticated_audit_actors` until deployment.
+- Repository and verified online API version: `0.18.0`.
+- Required and verified online schema revision: `0017_deployment_actual_version`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
@@ -203,4 +204,15 @@ adds a non-negative Deployment version, preserving existing state at baseline ze
 All 14 current routes now declare request-ID/row-lock/scope/actor/atomic contracts.
 Legacy no-key paths remain weaker; UI, broader correction/revocation, provider and
 operations are unfinished. Roadmap scope is 33/44 (75%); Phase 6 is 2/5 (40%).
-Full Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL 16.15 tests**. Added 34 unit/route and 13 PostgreSQL cases. Single Alembic head 0017 and generated PostgreSQL SQL (858 lines) passed; populated migration round-trip preserves legacy state. Frontend sources were unchanged; additive backend fields are unused by current read consumers, so no frontend build was required. Deployment verification remains pending.
+Full Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL 16.15 tests**. Added 34 unit/route and 13 PostgreSQL cases. Single Alembic head 0017 and generated PostgreSQL SQL (858 lines) passed; populated migration round-trip preserves legacy state. Frontend sources were unchanged; additive backend fields are unused by current read consumers, so no frontend build was required. Render deployment `dep-dav0vf0473hc73a8vl10` is **live** for feature commit
+`bbd8a42b567c4f5b2c83017c570e47039442f3af` (finished 2026-10-01T07:48:56.742624Z UTC). Health returned HTTP 200 /
+API `0.18.0` / database `0017_deployment_actual_version`. Release/application,
+issue-impact and activity reads returned 200; actual-report OpenAPI fields and the
+existing DEP-0081 detail's non-negative actual_version were verified. Harmless
+Deployment, Changeover and actual-report writes returned 403 `read_only_mode`.
+Frontend checks using a browser User-Agent returned HTTP 200 with Dashboard HTML
+at both the bare domain and slash URL. The default Python User-Agent repeatedly
+returned HTTP 403 with Cloudflare error code 1010; this client-dependent result is retained, not called
+a fully passing default-agent smoke run. No frontend access policy, code or build was changed; no separate frontend deployment was needed. A first health attempt timed out during Render's
+update_in_progress stage; the post-live checks above passed. No public setting or
+application change was made to resolve that in-progress timeout.

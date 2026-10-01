@@ -8,7 +8,7 @@
 - Migration 0017_deployment_actual_version preserves current state and initializes non-negative versions to zero without reconstructing history. Detail/report responses add actual_version; old no-key clients remain compatible but weaker.
 - Added unit and real PostgreSQL coverage for retry, versions, corrections, concurrency, migration data preservation and full rollback; all 14 route contracts now declare request-ID and row serialization.
 - Roadmap marks the current retry/concurrency items complete: 33/44 (75%), Phase 6 2/5 (40%); controlled UI, general correction/revocation and result confirmation/trace remain.
-- Full Python 3.12 suite: 688 passed, 3179 warnings, no skips (103 real PostgreSQL tests). Single Alembic head 0017 and PostgreSQL SQL (858 lines) passed; legacy migration preservation verified. Deployment verification follows the push. Public staging remains read-only.
+- Full Python 3.12 suite: 688 passed, 3179 warnings, no skips (103 real PostgreSQL tests). Single Alembic head 0017 and PostgreSQL SQL (858 lines) passed; legacy migration preservation verified. Verified deployment dep-dav0vf0473hc73a8vl10 is live for bbd8a42b567c4f5b2c83017c570e47039442f3af: API 0.18.0, schema 0017, read checks and browser-agent frontend 200; writes 403 read_only_mode. Default Python-agent frontend requests repeatedly returned 403 / Cloudflare 1010; no access-policy change was made. A health attempt timed out during update_in_progress; post-live checks passed. Public staging remains read-only.
 
 
 This project does not yet publish tagged releases. Entries below summarize repository milestones from Git history; they do not claim semantic-version releases or production certification.
