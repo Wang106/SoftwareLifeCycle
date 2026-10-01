@@ -5,8 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `a3ea30e3bd0b8181c24f37a35289835c0d462626`
-- Baseline subject: `feat: migrate deployment detail to bounded profile and history catalogs`
+- Verified baseline: `c1348ed445918d5dfac225dd7386a79a83317a9b`
+- Baseline subject: `feat: migrate authorization and distribution details to bounded profiles`
+- Developed from: `d287ce83c73195d428b99673d15720ef6e7604f4`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -35,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.18.1`, health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API version `0.18.2`, health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0017_deployment_actual_version` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -387,4 +388,4 @@ Old endpoints and all 14 write contracts remain compatible. Public staging stays
 read-only. Only these two additional consumers are migrated; delivery/release/other
 legacy histories, OIDC/session, submission/recovery, corrections and operations remain.
 Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%).
-Verification: 15 new profile tests passed, including exact/sibling scope, missing context, unchanged legacy shapes, read-only routes and 105 added histories with fixed query counts and no child payload loading. Full Python 3.12 backend suite: 714 passed, 3477 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Seven SSR checks passed for exact links/revision/command UUIDs, all-status counts/zero clamp, unlimited/empty history, missing delivery, both unavailable profiles and profile-only API calls. No migration. Online verification follows the scoped push.
+Verification: 15 new profile tests passed, including exact/sibling scope, missing context, unchanged legacy shapes, read-only routes and 105 added histories with fixed query counts and no child payload loading. Full Python 3.12 backend suite: 714 passed, 3477 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Seven SSR checks passed for exact links/revision/command UUIDs, all-status counts/zero clamp, unlimited/empty history, missing delivery, both unavailable profiles and profile-only API calls. No migration. Online verification after feature commit `c1348ed445918d5dfac225dd7386a79a83317a9b`: Render deployment `dep-dav9mlvlk1mc73be8h8g` is live for that commit. Health returned 200 with API 0.18.2 and database revision 0017_deployment_actual_version; read-only PostgreSQL SQL independently confirmed that revision. Exact PA-0081 and DIST-0326 profiles returned 200 with counts 1/1 and 1 respectively, exact parent references and no embedded histories; missing profiles returned 404. Harmless empty Authorization and Distribution POSTs both returned 403 read_only_mode. Cloudflare live details and exact-distribution authorization/exact-authorization batch catalog links were verified in the browser; no business write was submitted. Recent Render error logs were empty. Cloudflare provider deployment ID/commit metadata was unavailable; live feature behavior is the frontend evidence.
