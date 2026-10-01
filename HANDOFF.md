@@ -63,9 +63,9 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Compatibility-list migration remains |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
-| Phase 6 — Controlled write experience | 0 / 5 | 0% | Four safety slices implemented; broad items partial |
+| Phase 6 — Controlled write experience | 2 / 5 | 40% | Five safety slices implemented; UI/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
-| **Overall** | **31 / 44** | **70%** | Demo lifecycle is coherent; controlled writes and operations remain |
+| **Overall** | **33 / 44** | **75%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
 ## Completed capabilities
 
@@ -79,23 +79,23 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 53 backend test modules; the latest full run passed all 641 tests under Python 3.12, including 90 real PostgreSQL tests without skips.
+- 55 backend test modules; the latest full run passed all 688 tests under Python 3.12, including 103 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
 
 1. No approved OIDC issuer, audience or JWKS endpoint is configured in a target environment.
 2. There is no audited principal/grant administration API or browser login/session flow.
-3. Snapshot/Batch, Approval/Decision and the distribution chain now provide optional request-ID idempotency; several other commands still lack it.
-4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment/Changeover now have retry and locks; actual-software retry/version controls remain unfinished.
-5. Actual-software reporting is a mutable overwrite without an optimistic-concurrency token or explicit correction command, although every report is now audited.
+3. All 14 current routes support keyed retry; optional legacy/no-key paths retain weaker semantics.
+4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment/Changeover now have retry and locks; actual reports now have keyed retry/version checks and audited corrections.
+5. Actual software has keyed retry/version/correction protection; legacy no-key reports may still overwrite without a precondition.
 6. Some legacy list/history endpoints remain unbounded.
 7. CI, backup/restore, monitoring, alerting and incident runbooks are not present.
 8. Public reads are suitable only for non-sensitive sample data; CORS is not access control.
 
 ## Recommended next development package
 
-The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **actual-software retry, optimistic conflict detection and correction semantics**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
+The first Phase 6 package below is implemented for Snapshot and Production Batch. The fifth package completes actual-software keyed retry/version/correction; next select **controlled write UI and broader correction/revocation contracts**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
 
 ### Scope
 
@@ -138,7 +138,7 @@ POST https://softwarelifecycle-api-test.onrender.com/api/v1/deployments
 GET  https://softwarelifecycle.whf969.com
 ```
 
-Expected public state after this package deploys: API `0.17.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
+Expected public state after this package deploys: API `0.18.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
 
 ## Working-tree caution
 
@@ -237,3 +237,14 @@ completed image build, healthy startup and API 0.17.0. Error/warn logs were empt
 no definitive cause was exposed. The same commit was retried without code, schema
 or environment changes and its final deployment state was verified. No application
 fix is claimed for that unexplained operational failure.
+
+## Phase 6 fifth package — development report
+
+Development mode: **Codex**. Starting main: `5e236bed5ac687273b2a681d06a64734bcbae432`.
+API code 0.18.0 implements actual report keyed retry with original outcomes,
+expected-version conflicts and append-only correction evidence. Migration 0017
+adds a non-negative Deployment version, preserving existing state at baseline zero.
+All 14 current routes now declare request-ID/row-lock/scope/actor/atomic contracts.
+Legacy no-key paths remain weaker; UI, broader correction/revocation, provider and
+operations are unfinished. Roadmap scope is 33/44 (75%); Phase 6 is 2/5 (40%).
+Full Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL 16.15 tests**. Added 34 unit/route and 13 PostgreSQL cases. Single Alembic head 0017 and generated PostgreSQL SQL (858 lines) passed; populated migration round-trip preserves legacy state. Frontend sources were unchanged; additive backend fields are unused by current read consumers, so no frontend build was required. Deployment verification remains pending.

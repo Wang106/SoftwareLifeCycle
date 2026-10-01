@@ -1,10 +1,12 @@
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import uuid
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.actor import ActorContext
+from app.actor import ActorContext, audit_actor_matches
+from app.models.audit import AuditEvent
 from app.models.core import Release
 from app.models.distribution import SoftwareAuthorization
 from app.models.production import (
@@ -15,12 +17,24 @@ from app.models.production import (
     SoftwareChangeover,
 )
 from app.models.snapshot import ReleaseSnapshot
-from app.services.audit import commit_with_audit
+from app.services.audit import AuditEventError, commit_with_audit
 from app.services.command_retry import atomic_command, retry_result, timestamp_content
 
 
 class ProductionError(ValueError):
     pass
+
+
+@dataclass(frozen=True)
+class ActualReportResult:
+    """Original committed report outcome, independent of later deployment writes."""
+    id: uuid.UUID
+    deployment_no: str
+    status: str
+    actual_version: int
+    actual_release_id: uuid.UUID
+    actual_snapshot_id: uuid.UUID
+    deployed_at: datetime
 
 
 class ProductionService:
@@ -116,75 +130,101 @@ class ProductionService:
         return row
 
     def report_actual(self, deployment_no, actual_release_id, actual_snapshot_id,
-                      deployed_at=None, actor_context=None):
+                      deployed_at=None, actor_context=None, request_id=None,
+                      expected_version=None, correction_reason=None):
         with atomic_command(self.db, ProductionError):
             return self._report_actual(deployment_no, actual_release_id,
-                actual_snapshot_id, deployed_at, actor_context)
+                actual_snapshot_id, deployed_at, actor_context, request_id,
+                expected_version, correction_reason)
 
-    def _report_actual(
-        self,
-        deployment_no: str,
-        actual_release_id,
-        actual_snapshot_id,
-        deployed_at=None,
-        actor_context: ActorContext | None = None,
-    ):
+    @staticmethod
+    def _actual_result(deployment, state):
+        return ActualReportResult(
+            id=deployment.id, deployment_no=deployment.deployment_no,
+            status=state["status"], actual_version=state["actual_version"],
+            actual_release_id=uuid.UUID(state["actual_release_id"]),
+            actual_snapshot_id=uuid.UUID(state["actual_snapshot_id"]),
+            deployed_at=datetime.fromisoformat(state["deployed_at"]),
+        )
+
+    def _report_actual(self, deployment_no, actual_release_id, actual_snapshot_id,
+                       deployed_at, actor_context, request_id, expected_version,
+                       correction_reason):
         actor = actor_context or ActorContext.legacy(None)
-        deployment = self.db.scalars(
+        if request_id is not None and expected_version is None:
+            raise ProductionError("request_id requires expected_version")
+        if expected_version is not None and (type(expected_version) is not int or expected_version < 0):
+            raise ProductionError("expected_version must be a non-negative integer")
+        if correction_reason is not None and (not correction_reason.strip() or len(correction_reason) > 2000):
+            raise ProductionError("correction_reason must contain 1 to 2000 characters")
+        deployment = self.db.scalar(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
             .with_for_update().execution_options(populate_existing=True)
-        ).first()
+        )
         if not deployment:
             raise ProductionError("Deployment not found")
-
+        request_content = {
+            "deployment_no": deployment_no, "actual_release_id": str(actual_release_id),
+            "actual_snapshot_id": str(actual_snapshot_id),
+            "deployed_at": timestamp_content(deployed_at),
+            "expected_version": expected_version, "correction_reason": correction_reason,
+        }
+        event_no = f"EVT-DA-{(request_id or uuid.uuid4()).hex}"
+        if request_id is not None:
+            event = self.db.scalar(select(AuditEvent).where(AuditEvent.event_no == event_no))
+            if event is not None:
+                if (event.entity_type != "DEPLOYMENT" or event.entity_id != deployment.id
+                        or event.action not in ("ACTUAL_REPORTED", "ACTUAL_CORRECTED")
+                        or not audit_actor_matches(event, actor)
+                        or event.payload_json.get("request") != request_content):
+                    raise ProductionError("request_id already used for different or legacy content")
+                result = self._actual_result(deployment, event.payload_json["after"])
+                self.db.commit()
+                return result
+        # Replay precedes the current version and mutable validation checks.
+        if expected_version is not None and expected_version != deployment.actual_version:
+            raise ProductionError(f"actual_version conflict: expected {expected_version}, current {deployment.actual_version}")
+        is_correction = deployment.actual_release_id is not None or deployment.actual_snapshot_id is not None
+        if request_id is not None and is_correction and correction_reason is None:
+            raise ProductionError("Replacing an actual report requires correction_reason")
         release = self.db.get(Release, actual_release_id)
         snapshot = self.db.get(ReleaseSnapshot, actual_snapshot_id)
         if not release or not snapshot or snapshot.release_id != release.id:
             raise ProductionError("Actual snapshot does not belong to actual release")
 
-        before = {
-            "actual_release_id": str(deployment.actual_release_id)
-            if deployment.actual_release_id
-            else None,
-            "actual_snapshot_id": str(deployment.actual_snapshot_id)
-            if deployment.actual_snapshot_id
-            else None,
-            "status": deployment.status,
-        }
+        def state():
+            return {
+                "actual_release_id": str(deployment.actual_release_id) if deployment.actual_release_id else None,
+                "actual_snapshot_id": str(deployment.actual_snapshot_id) if deployment.actual_snapshot_id else None,
+                "status": deployment.status, "actual_version": deployment.actual_version,
+                "deployed_at": timestamp_content(deployment.deployed_at),
+            }
+        before = state()
         deployment.actual_release_id = release.id
         deployment.actual_snapshot_id = snapshot.id
-        deployment.deployed_at = deployed_at or datetime.now(timezone.utc)
-        deployment.status = (
-            "MATCH"
-            if release.id == deployment.expected_release_id
-            and snapshot.id == deployment.expected_snapshot_id
-            else "MISMATCH"
-        )
-        commit_with_audit(
-            self.db,
-            lambda: {
-                "event_no": f"EVT-DA-{uuid.uuid4().hex}",
-                "event_type": "DEPLOYMENT",
-                "action": "ACTUAL_REPORTED",
-                "entity_type": "DEPLOYMENT",
-                "entity_id": deployment.id,
-                "entity_ref": deployment.deployment_no,
-                **actor.audit_fields(),
-                "summary": "Actual deployed software reported",
+        deployment.deployed_at = (deployed_at.replace(tzinfo=deployed_at.tzinfo or timezone.utc)
+                                  if deployed_at else datetime.now(timezone.utc))
+        deployment.status = ("MATCH" if release.id == deployment.expected_release_id
+            and snapshot.id == deployment.expected_snapshot_id else "MISMATCH")
+        deployment.actual_version += 1
+        after = state()
+        result = self._actual_result(deployment, after)
+        try:
+            commit_with_audit(self.db, lambda: {
+                "event_no": event_no, "event_type": "DEPLOYMENT",
+                "action": "ACTUAL_CORRECTED" if is_correction and correction_reason is not None else "ACTUAL_REPORTED",
+                "entity_type": "DEPLOYMENT", "entity_id": deployment.id,
+                "entity_ref": deployment.deployment_no, **actor.audit_fields(),
+                "summary": "Actual deployed software corrected" if is_correction and correction_reason is not None else "Actual deployed software reported",
                 "occurred_at": deployment.deployed_at,
-                "payload": {
-                    "before": before,
-                    "after": {
-                        "actual_release_id": str(deployment.actual_release_id),
-                        "actual_snapshot_id": str(deployment.actual_snapshot_id),
-                        "status": deployment.status,
-                    },
-                    "actor_source": actor.source,
-                },
-            },
-        )
-        self.db.refresh(deployment)
-        return deployment
+                "payload": {"before": before, "after": after,
+                    "correction_reason": correction_reason, "actor_source": actor.source,
+                    "request": request_content if request_id is not None else None},
+            })
+        except AuditEventError as exc:
+            # A global key collision on different deployments must be a conflict.
+            raise ProductionError("request_id already used for different content") from exc
+        return result
 
     def create_changeover(self, deployment_no, changeover_no, from_release_id,
                          changed_at=None, note=None, actor_context=None, request_id=None):

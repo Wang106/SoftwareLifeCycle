@@ -9,9 +9,9 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**Phase 6 fourth package implements Deployment/Changeover retry and shared production row locks; public staging remains read-only.**
+**Phase 6 fifth package implements actual-report keyed retry, optimistic versions and audited corrections; public staging remains read-only.**
 
-The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; idempotency/concurrency coverage is still incomplete.
+The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
 ## Roadmap progress
 
@@ -24,9 +24,9 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Remaining: retire/bound compatibility lists |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Remaining: configure an approved OIDC provider |
-| Phase 6 — Controlled write experience | 0 / 5 | 0% | Four slices implemented; broad items remain partial |
+| Phase 6 — Controlled write experience | 2 / 5 | 40% | Five slices implemented; UI/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
-| **Overall** | **31 / 44** | **70%** | Demo lifecycle is coherent; controlled writes and operations remain |
+| **Overall** | **33 / 44** | **75%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
 ## Completed and evidenced in `main`
 
@@ -47,24 +47,25 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 53 backend test modules are present. The complete 2026-10-01 Python 3.12 run passed **641 tests**, including **90 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (2821 in this run).
-- Alembic remains at the single head `0016_authenticated_audit_actors`; no migration was required. PostgreSQL SQL generation passed (850 lines). Frontend code/contracts consumed by its read pages did not change; no new frontend build was required.
+- 55 backend test modules are present. The complete 2026-10-01 Python 3.12 run passed **688 tests**, including **103 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (3179 in this run).
+- Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). Frontend code/contracts consumed by its read pages did not change; no new frontend build was required.
 
 
 ## In progress
 
-- Approved OIDC provider configuration remains open. Phase 6 now has four command-safety slices; the broad retry/concurrency roadmap items remain unchecked because other commands are unfinished.
-- All four safety-package implementation and deployment checks are complete; remaining Phase 6 commands and provider configuration are the next work.
+- Approved OIDC provider configuration remains open. Phase 6 now has five safety slices; retry/concurrency roadmap items are complete for current keyed routes. UI, broader corrections and result confirmation/trace remain.
+- The fifth package is being verified; provider configuration and remaining UI/correction/result scope are next.
 - The unrelated `frontend/app/activity/page 2.tsx` was not present in this clean cloud checkout and was not recreated, adopted or deleted.
 
 ## Next stage
 
-1. Add actual-software request-ID retry and optimistic concurrency, with PostgreSQL contention tests.
-2. Define optimistic concurrency or append-only correction for actual-software reports.
-3. Select/configure the approved OIDC provider and add provider-backed HTTP integration tests.
-4. Only then evaluate controlled UI writes and a non-read-only target environment.
+1. Select controlled write forms with validation, confirmation and result trace.
+2. Extend correction/revocation beyond actual reports, preserving formal history.
+3. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
+4. Migrate legacy lists and add CI, backup/restore, monitoring and environment governance.
 
-Roadmap progress remains **31/44 (70%)**: two broad Phase 6 items are partially implemented, not fully complete. See [ROADMAP.md](ROADMAP.md).
+Roadmap progress is **33/44 (75%)**, Phase 6 **2/5 (40%)**; these are implemented
+scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.md).
 
 ## Deployment status
 
@@ -91,8 +92,8 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository and verified online API version: `0.17.0`.
-- Required and verified online schema revision: `0016_authenticated_audit_actors`.
+- Repository API version: `0.18.0`; previous verified online version: `0.17.0` until this package deploys.
+- Required repository schema: `0017_deployment_actual_version`; previous verified online revision: `0016_authenticated_audit_actors` until deployment.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
@@ -104,7 +105,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 - There is no security-principal/grant management API or audited grant lifecycle yet; migration `0015` creates no identities or permissions.
 - Public read access is suitable only for non-sensitive sample data. `CORS_ORIGINS` is not access control.
 - All current OIDC writes use the authenticated principal for their atomic audit event and retain request declarations separately; historical/disabled-mode events remain unverified by design.
-- All 14 current command routes are authenticated/scoped and atomically audited. Snapshot/Batch now support optional request-ID replay and PostgreSQL locking; actual-software reporting still lacks request-ID retry and optimistic conflict detection. See `docs/write-contracts.md`.
+- All 14 current command routes are authenticated/scoped and atomically audited. Snapshot/Batch now support optional request-ID replay and PostgreSQL locking; actual-software keyed reporting now adds retry/version protection and correction evidence; legacy paths remain weaker. See `docs/write-contracts.md`.
 - Some legacy list/history APIs remain unbounded; migration to bounded catalog endpoints is incomplete.
 - There is no CI workflow in the reviewed tree, so tests/builds are not enforced automatically on every push.
 - Backend tests require Python 3.12 (matching `backend/Dockerfile`); this review used the repository's pinned `pytest==9.1.1` environment.
@@ -192,3 +193,14 @@ completed image build, healthy startup and API 0.17.0. Error/warn logs were empt
 no definitive cause was exposed. The same commit was retried without code, schema
 or environment changes and its final deployment state was verified. No application
 fix is claimed for that unexplained operational failure.
+
+## Phase 6 fifth package — development report
+
+Development mode: **Codex**. Starting main: `5e236bed5ac687273b2a681d06a64734bcbae432`.
+API code 0.18.0 implements actual report keyed retry with original outcomes,
+expected-version conflicts and append-only correction evidence. Migration 0017
+adds a non-negative Deployment version, preserving existing state at baseline zero.
+All 14 current routes now declare request-ID/row-lock/scope/actor/atomic contracts.
+Legacy no-key paths remain weaker; UI, broader correction/revocation, provider and
+operations are unfinished. Roadmap scope is 33/44 (75%); Phase 6 is 2/5 (40%).
+Full Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL 16.15 tests**. Added 34 unit/route and 13 PostgreSQL cases. Single Alembic head 0017 and generated PostgreSQL SQL (858 lines) passed; populated migration round-trip preserves legacy state. Frontend sources were unchanged; additive backend fields are unused by current read consumers, so no frontend build was required. Deployment verification remains pending.

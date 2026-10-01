@@ -52,12 +52,12 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 
 Exit gate: protected operations reject unauthenticated and out-of-scope actors; positive and negative integration tests pass; security decisions are documented.
 
-## Phase 6 — Controlled write experience (four safety slices implemented)
+## Phase 6 — Controlled write experience (five safety slices implemented)
 
 - [ ] Prioritize which existing command APIs require UI forms
-- [ ] Add idempotency keys and explicit conflict behavior where absent — Snapshot, Batch, Approval Action, Release Decision, Delivery, Distribution, Authorization, Deployment and Changeover implemented; actual-software retry remains pending
-- [ ] Add concurrency protection for approval and other state transitions — Release numbering, shared Batch quota, approval/decision and distribution-chain and production row serialization implemented; actual-software optimistic conflict detection remains pending
-- [ ] Provide correction/revocation flows using new history records, not destructive edits
+- [x] Add idempotency keys and explicit conflict behavior where absent — all 14 current command routes support request-ID contracts; optional no-key legacy semantics remain documented
+- [x] Add concurrency protection for approval and other state transitions — all 14 current routes serialize their command scope; actual reports add expected-version conflicts for keyed calls
+- [ ] Provide correction/revocation flows using new history records, not destructive edits — actual-report corrections append full before/after audit; other lifecycle correction/revocation workflows remain
 - [ ] Add validation, confirmation and trace links to every write result
 
 Exit gate: every exposed write is authorized, auditable, retry-safe where required and covered by end-to-end tests.
@@ -79,19 +79,22 @@ Use `规划：<目标>` to agree on scope and acceptance criteria. A roadmap ite
 
 ## Current measurable progress and remaining sequence
 
-Checked roadmap items remain 31/44 (70%): Phase 1 5/5, Phase 2 5/5 (demo),
-Phase 3 5/5 (demo), Phase 4 8/9, Phase 5 8/9, Phase 6 0/5 and Phase 7 0/6.
-Phase 6 broad items remain partial; 13/14 write routes (93%) now declare request-ID
-and row-lock controls; all 14 declare row serialization, exact scope, actor binding and atomic audit. Actual-software optimistic conflict detection is still pending.
+Checked roadmap items are now 33/44 (75%): Phase 1 5/5, Phase 2 5/5 (demo),
+Phase 3 5/5 (demo), Phase 4 8/9, Phase 5 8/9, Phase 6 2/5 (40%) and Phase 7 0/6.
+All 14 write routes declare request-ID, row serialization, exact scope, trusted actor
+and atomic audit. Actual keyed reports require expected_version and replacement
+reason. Legacy no-key paths remain compatible and weaker; broad correction/revocation,
+UI and result confirmation/trace are incomplete. These percentages are checked scope,
+not provider configuration or production-readiness certification.
 
-1. Add actual-software request-ID retry, optimistic conflict detection and explicit
-   correction semantics; row serialization alone does not solve stale client writes.
-2. Define append-only correction/revocation and result validation/confirmation/trace;
-   select controlled UI forms without opening public staging writes.
+1. Select controlled write forms and define validation/confirmation/result trace;
+   keep public staging read-only and use a separately approved controlled target.
+2. Extend append-only correction/revocation contracts beyond actual reporting;
+   never infer physical flashing reversal or alter existing batch history.
 3. Migrate consumers from unbounded compatibility lists to bounded catalogs.
-4. Configure an approved OIDC provider, provider-backed tests, grant administration
-   and browser login/session flow before exposing protected multi-user workflows.
+4. Configure an approved OIDC provider, provider-backed tests, audited grant
+   administration and browser login/session flow before protected multi-user use.
 5. Add CI backend/PostgreSQL/migration/frontend checks; backup/restore, retention,
    monitoring, alerts and incident procedures.
 6. Separate demo/staging/company environments, disable non-demo seed, approve
-   network/data governance and validate recovery before loading real company data.
+   network/data governance and validate recovery before loading company data.

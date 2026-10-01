@@ -110,10 +110,10 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         scope="deployment, release and snapshot",
         actor_source="NONE",
         audit="ATOMIC_APPEND",
-        idempotency="NONE",
+        idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
-        known_gap="Mutable overwrite has no optimistic lock; the append-only audit preserves each report.",
+        known_gap="Keyed reports require expected_version and correction reasons; legacy no-key overwrites remain compatible.",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/changeovers"): WriteContract(
         operation="Record software changeover",

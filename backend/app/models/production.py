@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -43,6 +43,7 @@ class ProductionLine(Base):
 
 class Deployment(Base):
     __tablename__ = "deployments"
+    __table_args__ = (CheckConstraint("actual_version >= 0", name="ck_deployment_actual_version"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uid)
     deployment_no: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
@@ -59,6 +60,7 @@ class Deployment(Base):
     actual_release_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("releases.id"))
     actual_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("release_snapshots.id"))
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="PENDING")
+    actual_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     deployed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 

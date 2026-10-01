@@ -82,7 +82,7 @@ def pg(monkeypatch):
         admin.dispose()
 
 
-def overlapping_commands(engine, monkeypatch, first, second):
+def overlapping_commands(engine, monkeypatch, first, second, *, hold_after_audit=False):
     """Hold the first write before audit/commit and prove the second is DB-blocked."""
     reached, release = Event(), Event()
     mutex = Lock()
@@ -93,10 +93,11 @@ def overlapping_commands(engine, monkeypatch, first, second):
         with mutex:
             hold_this = first_record
             first_record = False
+        event = original(service, **kwargs) if hold_after_audit else None
         if hold_this:
             reached.set()
             assert release.wait(8), 'test did not release first transaction'
-        return original(service, **kwargs)
+        return event if hold_after_audit else original(service, **kwargs)
     monkeypatch.setattr(AuditEventService, 'record', hold)
     def execute(fn):
         with Session(engine, autoflush=False, expire_on_commit=False) as db:

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.0 — Actual-report retry/version/correction (2026-10-01)
+
+- Codex development: optional request-ID actual reports require expected_version; matching retries recover original status/version from atomic audit without another write/event.
+- Conflicting content/actor/global target, stale expected version and missing replacement reason return conflicts; current exact permission and trusted identity remain required.
+- Corrections append ACTUAL_CORRECTED reason and complete before/after software, status, UTC time and version. Existing batches and physical flashing are not reversed.
+- Migration 0017_deployment_actual_version preserves current state and initializes non-negative versions to zero without reconstructing history. Detail/report responses add actual_version; old no-key clients remain compatible but weaker.
+- Added unit and real PostgreSQL coverage for retry, versions, corrections, concurrency, migration data preservation and full rollback; all 14 route contracts now declare request-ID and row serialization.
+- Roadmap marks the current retry/concurrency items complete: 33/44 (75%), Phase 6 2/5 (40%); controlled UI, general correction/revocation and result confirmation/trace remain.
+- Full Python 3.12 suite: 688 passed, 3179 warnings, no skips (103 real PostgreSQL tests). Single Alembic head 0017 and PostgreSQL SQL (858 lines) passed; legacy migration preservation verified. Deployment verification follows the push. Public staging remains read-only.
+
+
 This project does not yet publish tagged releases. Entries below summarize repository milestones from Git history; they do not claim semantic-version releases or production certification.
 
 ## Unreleased

@@ -2,7 +2,7 @@
 
 This is the reviewed baseline for every non-read FastAPI route. The executable source is `backend/app/write_contracts.py`; `backend/tests/test_write_contracts.py` fails when a write route is added, removed or renamed without updating that inventory.
 
-This inventory is backed by runtime guards. Every current write route has `authentication=OIDC_WHEN_ENABLED`, `authorization=SCOPED_WHEN_OIDC`, `audit=ATOMIC_APPEND` and `actor_binding=AUTHENTICATED_WHEN_OIDC`. When OIDC is enabled, a valid active principal must also hold the exact active role resolved through stored software/project relationships, unless it has the exceptional `PLATFORM_ADMIN` override. The public sample service still keeps `READ_ONLY_MODE=true` because no approved provider is configured and retry/concurrency safeguards are incomplete.
+This inventory is backed by runtime guards. Every current write route has `authentication=OIDC_WHEN_ENABLED`, `authorization=SCOPED_WHEN_OIDC`, `audit=ATOMIC_APPEND` and `actor_binding=AUTHENTICATED_WHEN_OIDC`. When OIDC is enabled, a valid active principal must also hold the exact active role resolved through stored software/project relationships, unless it has the exceptional `PLATFORM_ADMIN` override. The public sample service still keeps `READ_ONLY_MODE=true` because no approved provider is configured and provider-backed acceptance, controlled UI and operations remain unfinished; legacy no-key paths remain weaker.
 
 The enforced scoped roles are recorded in the executable contracts and defined in `SECURITY.md`: snapshot creation uses software-maintainer/project-contributor scope; review actions use reviewer; release decisions use release authority; delivery/distribution use distribution authority; production authorization uses production authority; deployment/changeover/batch use production operator. `PLATFORM_ADMIN` is the only scope-free override.
 
@@ -15,7 +15,7 @@ The enforced scoped roles are recorded in the executable contracts and defined i
 | `POST /api/v1/distributions` | Package/recipient | Authenticated | Atomic append | Optional request ID | Package row lock | Legacy duplicate number rejection |
 | `POST /api/v1/authorizations` | Distribution/customer/project/site/line | Authenticated | Atomic append | Optional request ID | Release then Package then Distribution row locks | Legacy duplicate number rejection |
 | `POST /api/v1/deployments` | Authorization/line | Authenticated | Atomic append | Optional request ID | Authorization then Site then Line row locks | Legacy duplicate number rejection |
-| `POST /api/v1/deployments/{deployment_no}/actual` | Deployment/release/snapshot | Authenticated | Atomic append | Mutable overwrite | Deployment row lock | No request-ID or optimistic lock |
+| `POST /api/v1/deployments/{deployment_no}/actual` | Deployment/release/snapshot | Authenticated | Atomic append | Optional request ID + required expected version | Deployment lock + version comparison | Legacy no-key writes may overwrite without precondition |
 | `POST /api/v1/deployments/{deployment_no}/changeovers` | Deployment/releases | Authenticated | Atomic append | Optional request ID | Deployment row lock | Distinct-number history; no correction/revocation |
 | `POST /api/v1/deployments/{deployment_no}/batches` | Deployment/authorization/changeover | Authenticated | Atomic append | Optional request ID | Deployment then shared Authorization row locks | No-key legacy duplicate number returns conflict |
 | `POST /api/v1/issues/{issue_no}/impact-assessments` | Issue/release/snapshot | Authenticated; declaration retained | Atomic append | Request ID | Issue row lock | No correction/supersession command |
@@ -185,6 +185,57 @@ parent validation, UTC semantics and failure rollback. Real independent-session
 UUID/number conflicts, stale parents, rollback/lock release, sequential actual-before
 history, actual/Batch ordering and no reversed-lock deadlock.
 
-Current request-ID coverage is **13/14 (93%)**; all 14 declare row-lock serialization,
+At the fourth package, request-ID coverage was **13/14 (93%)**; all 14 declare row-lock serialization,
 exact scope, trusted actor and atomic audit. Row locking alone does not provide stale
-client conflict detection. The remaining retry/version package is actual-software reporting.
+client conflict detection. The subsequent 0.18.0 package below completes actual-software keyed retry/version protection.
+
+
+## Actual-software retry, version and correction contract (0.18.0)
+
+`POST /api/v1/deployments/{deployment_no}/actual` adds optional UUID `request_id`,
+non-negative integer `expected_version` and `correction_reason` (1–2000 characters,
+not whitespace-only). A keyed request requires expected_version; invalid JSON fields
+return 422. Read the current `actual_version` from deployment detail. HTTP 200 keeps
+`deployment_no`/`status` and adds `actual_version`; successful retries return the
+original committed status/version, even after a subsequent report changes current state.
+
+The Deployment row is locked and refreshed before evidence/version checks. Identical
+key/content/full trusted actor replays the original audit outcome without another
+write/event or version increment. Different content/actor/target or legacy evidence
+returns 409. Canonical content includes deployment number, release/snapshot UUIDs,
+expected version, exact reason and UTC-normalized timestamp. Naive timestamps mean
+UTC; omission remains distinct from explicit time and server time is generated once.
+The global key namespace for this command uses existing unique audit event numbers
+`EVT-DA-{request_id.hex}`; it does not reuse the Deployment ID or add a request table.
+
+Fresh requests compare expected_version under the same lock, then increment exactly
+once with the domain/audit transaction. A competing stale request returns 409 with
+expected/current versions and no writes. Replacing any existing actual report with a
+key requires a correction reason, including migrated rows at baseline version zero.
+Corrections append `ACTUAL_CORRECTED` events with reason and full before/after release,
+snapshot, status, UTC deployment time and version; the Deployment is the mutable current
+projection. Initial reports append ACTUAL_REPORTED. Historical events are never edited.
+This is a correction of the reported fact, not rollback of physical flashing, reversal
+of existing batches, or a general revocation workflow. Every retry still requires the
+current exact active PRODUCTION_OPERATOR grant and matching authenticated actor.
+
+No-key clients keep legacy overwrite behavior, with an optional version precondition;
+each successful no-key report increments version and creates an event. They are not
+retry-safe without a key and may overwrite without expected_version. Adopt the keyed
+contract before multi-user use. Replay is checked before current version/eligibility;
+all validation/constraint/audit/commit failures roll back and release locks. Batch and
+Changeover continue sharing the Deployment lock. There is no automatic server retry.
+
+Migration `0017_deployment_actual_version` adds non-null Integer actual_version,
+server/default zero and a non-negative check. Existing state remains unchanged and
+starts at zero; this is a concurrency baseline, not a reconstructed historical count.
+No audit history is backfilled. Rollback drops the version column/check and loses
+version protection; never roll back a serving writer without coordinating downtime.
+
+`test_actual_retry.py` covers original outcomes, content/actor/legacy conflicts,
+versions, correction evidence, UTC input, authorization and failures.
+`test_actual_concurrency_postgres.py` applies migrated disposable PostgreSQL schemas,
+observes real blocking across sessions, checks stale ORM refresh, competing versions,
+global key uniqueness, atomic rollback/lock release and old-state migration preservation.
+All 14 routes now declare request-ID, row serialization, exact scope, actor and atomic
+audit contracts. Optional legacy paths remain weaker; this is not production readiness.

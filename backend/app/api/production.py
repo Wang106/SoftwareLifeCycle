@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -34,6 +34,18 @@ class DeploymentCreate(BaseModel):
 
 
 class ActualSoftwareReport(BaseModel):
+    request_id: uuid.UUID | None = None
+    expected_version: int | None = Field(default=None, ge=0, strict=True)
+    correction_reason: str | None = Field(default=None, min_length=1, max_length=2000)
+
+    @model_validator(mode="after")
+    def keyed_report_requires_version(self):
+        if self.request_id is not None and self.expected_version is None:
+            raise ValueError("request_id requires expected_version")
+        if self.correction_reason is not None and not self.correction_reason.strip():
+            raise ValueError("correction_reason must contain non-whitespace text")
+        return self
+
     actual_release_id: uuid.UUID
     actual_snapshot_id: uuid.UUID
     deployed_at: datetime | None = None
@@ -118,6 +130,7 @@ def _deployment_detail(db: Session, deployment: Deployment):
             db, deployment.actual_release_id, deployment.actual_snapshot_id
         ) if deployment.actual_release_id and deployment.actual_snapshot_id else None,
         "deployed_at": deployment.deployed_at,
+        "actual_version": deployment.actual_version,
         "changeovers": [
             {
                 "id": str(row.id),
@@ -347,7 +360,8 @@ def report_actual(
         row = ProductionService(db).report_actual(
             deployment_no, **payload.model_dump(), actor_context=actor
         )
-        return {"deployment_no": row.deployment_no, "status": row.status}
+        return {"deployment_no": row.deployment_no, "status": row.status,
+                "actual_version": row.actual_version}
     except ProductionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 

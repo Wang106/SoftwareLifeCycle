@@ -5,7 +5,7 @@
 - Engine: PostgreSQL 16 in the local Compose environment.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0016_authenticated_audit_actors`.
+- Required schema revision: `0017_deployment_actual_version`.
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
@@ -68,10 +68,11 @@ Foreign keys and stored UUIDs are the trace authority. Display numbers, versions
 | `0014` | Append-only external resource links |
 | `0015` | Provider-neutral user/service principals and scoped role grants |
 | `0016` | Authenticated principal/display binding and preserved declarations on audit events |
+| `0017` | Non-negative actual-report version on Deployment; preserved legacy state at baseline zero |
 
 Revision `0015` stores only external identity references and grants. It deliberately contains no password, token or client-secret columns, and no Seed identities or grants are created. Revision `0016` adds nullable actor identity columns so historical/seed audit events remain unchanged while new OIDC-mode events can reference the exact local principal and preserve the request's declared name separately.
 
-API version `0.13.0` adds audit events for snapshot and production commands without changing the schema; revision `0016_authenticated_audit_actors` remains the required head.
+API version `0.13.0` adds audit events for snapshot and production commands without changing the schema; that round used revision `0016_authenticated_audit_actors`; the current head is 0017.
 
 Never edit an applied migration to change history. Add a new ordered revision, import its model metadata in Alembic as required, and update `required_db_revision` in `backend/app/core/config.py` together with deployment documentation and readiness tests.
 
@@ -155,8 +156,29 @@ on the parent join. It refreshes rows and checks exact scope before insert. It d
 not lock existing Deployment after Authorization, preserving Batch's opposite
 parent direction. Changeover, actual reporting and Batch all start with Deployment;
 only Batch subsequently acquires Authorization. Locks last through atomic audit
-commit; validation/constraint/audit/commit failures roll back. Actual rows have no
+commit; validation/constraint/audit/commit failures roll back. At 0.17.0 actual rows had no
 version column or request ledger, so latest committed reports still overwrite state.
 Real migrated PostgreSQL tests observe blocking, cross-parent uniqueness races,
 stale authorization/site/line/deployment refresh, audit rollback, timestamp equivalence,
 actual-before history, actual/Batch ordering and absence of reversed-lock deadlock.
+
+
+## Actual-report version migration (0.18.0)
+
+Revision `0017_deployment_actual_version` adds Deployment actual_version: Integer,
+non-null, Python/server default zero, CHECK actual_version >= 0. Existing actual
+release/snapshot/status/time stay unchanged and all deployments start at version
+zero. This is a concurrency baseline, not a reconstructed historical report count.
+Audit history is not backfilled. A downgrade drops the column/check and loses version
+protection; coordinate downtime before rolling back a serving writer.
+
+Actual commands lock/refresh Deployment, compare expected_version, update current
+projection/version and append audit in one transaction. The existing unique
+`audit_events.event_no` stores the global actual-request namespace EVT-DA-{UUID.hex};
+no request table or Deployment ID reuse is added. Audit JSONB retains canonical
+request and complete before/after state/version/time plus correction reason. Matching
+replays recover the original result without incrementing version. Cross-deployment
+key races use audit uniqueness as the final guard; the loser fully rolls back.
+Batch/Changeover retain the same Deployment-first ordering under READ COMMITTED.
+Real PostgreSQL tests cover blocking, competing versions, stale cached state,
+rollback/lock release, migration downgrade/upgrade preservation and the negative check.

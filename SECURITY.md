@@ -2,7 +2,7 @@
 
 ## Current status
 
-The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. Every current write records an atomic audit event bound to that principal. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and retry/concurrency controls remain incomplete.
+The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. Every current write records an atomic audit event bound to that principal. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and legacy no-key writes retain weaker semantics; controlled UI, provider-backed acceptance and operations remain unfinished.
 
 ## Authentication boundary
 
@@ -65,7 +65,7 @@ Historical/seed records and `AUTH_MODE=disabled` writes have a null principal re
 3. **Implemented:** require an active scoped role or the exceptional global admin role.
 4. **Implemented:** derive audit actors from the authenticated principal and preserve request declarations separately for every current write.
 5. **Implemented:** append audit events atomically for snapshot and production commands.
-6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval actions and release decisions also support these safeguards; Delivery, Distribution and Production Authorization also implement optional-key replay and locks; Deployment and Changeover now also implement optional-key replay and locks. Actual reporting shares the Deployment lock but still lacks retry/version conflict protection.
+6. **Implemented for all 14 current keyed routes:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval actions and release decisions also support these safeguards; Delivery, Distribution and Production Authorization also implement optional-key replay and locks; Deployment and Changeover now also implement optional-key replay and locks. Actual reporting now provides optional request-ID replay, expected-version conflict protection and audited corrections; see 0.18.0 below.
 7. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract tests already cover wrong scope/role, suspended membership and actor mismatch.
 
 No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
@@ -134,6 +134,23 @@ business-number rejection and existing disabled-auth behavior.
 Deployment creation verifies current approved authorization and exact active site/line
 scope after parent locks. Changeover retains source/target release rules. Shared
 Deployment locking coordinates actual reporting, Changeover and Batch through audit
-commit; it does not reject a stale client's actual overwrite. Actual retry, optimistic
-version and correction behavior remain explicit gaps. Public staging remains read-only,
+commit; it does not reject a stale client's actual overwrite. Those gaps at 0.17.0 are addressed by the 0.18.0 keyed contract below; legacy paths remain weaker. Public staging remains read-only,
 without an approved provider, login/grant administration or public write forms.
+
+
+## Actual-report trust boundary (0.18.0)
+
+Every report/replay passes current exact active project PRODUCTION_OPERATOR scope
+and trusted actor resolution before retry evidence. Full principal/display/declaration
+and authentication-mode binding remains required; key possession grants no permission.
+Keyed calls require expected_version, and replacement reports require a nonblank
+correction reason. The atomic append-only event preserves before/after software,
+status, time, version and reason; it does not authorize physical flashing rollback,
+batch reversal or general revocation. Matching replay recovers the original result
+before current-state checks, without changing the current deployment projection.
+
+All 14 current routes now declare request-ID, row serialization, exact scope, actor
+and atomic audit contracts. Legacy no-key reporting may still overwrite without a
+precondition, so controlled multi-user clients must adopt keyed/versioned reporting.
+Approved OIDC/provider-backed acceptance, browser login, audited grants and controlled
+write UI remain unfinished. Public staging stays sample-only and read-only.

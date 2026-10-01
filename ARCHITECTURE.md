@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.17.0
+FastAPI 0.18.0
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -143,6 +143,23 @@ guard for independent-parent UUID/number races.
 Changeover creation uses optional UUID/audit evidence and locks Deployment through
 commit. Actual reporting now locks/refreshes that same Deployment; Batch already
 locks Deployment then Authorization. Actual-before audit values and batch eligibility
-therefore follow committed state. This gives row serialization, not actual-report
-idempotency or optimistic conflict detection. No migration is needed; next work is
-a retry/version contract for actual-software reporting and append-only correction.
+therefore follow committed state. That 0.17.0 slice provided row serialization. The 0.18.0 slice below adds actual-report
+retry/version protection and audited corrections, using migration 0017.
+
+
+## Actual report projection and immutable command outcome (0.18.0)
+
+Deployment remains the current actual-software projection. Migration 0017 adds its
+non-negative actual_version; zero is a migration baseline without historical inference.
+A report locks/refreshes Deployment, checks optional expected_version, increments
+version and commits the projection with an append-only audit event. Keyed reports
+require the version; replacements also require a correction reason. Batch/Changeover
+continue using the same Deployment-first lock.
+
+Existing unique audit event numbers identify actual request UUIDs globally, because
+multiple reports cannot reuse the single Deployment primary key. Audit JSONB stores
+canonical request, full actor evidence and before/after software/status/time/version.
+A frozen service result reads the original after-state on retry, instead of mutating
+a cached Deployment or returning its later state. Cross-target key collisions roll
+back the losing projection/event. Legacy no-key reports remain weaker. The full
+contract and limits are in [docs/write-contracts.md](docs/write-contracts.md).
