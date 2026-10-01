@@ -292,3 +292,10 @@ No migration is needed: existing child foreign-key indexes serve count scope.
 Legacy endpoints retain their old shapes. All 14 write contracts, exact scope,
 trusted actors, replay/locks and atomic audit are unchanged; public staging remains
 read-only and provider-backed submission/other consumer migrations remain pending.
+
+## Authorization/distribution context reads
+
+API 0.18.2 adds only GET profiles; all 14 executable write contracts are unchanged.
+Preparation still uses exact returned UUIDs and requires explicit declarations.
+Full history counts do not reserve batch capacity; Batch creation rechecks finite
+limits in its existing serialized transaction and atomically commits audit.

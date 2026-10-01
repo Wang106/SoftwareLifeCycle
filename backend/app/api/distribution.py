@@ -2,7 +2,7 @@ import uuid
 
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -121,7 +121,7 @@ def _delivery_detail(db: Session, package: DeliveryPackage):
     }
 
 
-def _distribution_detail(db: Session, row: Distribution):
+def _distribution_detail(db: Session, row: Distribution, *, include_history: bool = True):
     package = db.get(DeliveryPackage, row.delivery_package_id)
     snapshot = db.get(ReleaseSnapshot, package.snapshot_id) if package else None
     release = db.get(Release, package.release_id) if package else None
@@ -129,7 +129,7 @@ def _distribution_detail(db: Session, row: Distribution):
         select(SoftwareAuthorization)
         .where(SoftwareAuthorization.distribution_id == row.id)
         .order_by(SoftwareAuthorization.authorization_no)
-    ).all()
+    ).all() if include_history else []
     return {
         "id": str(row.id),
         "distribution_no": row.distribution_no,
@@ -156,7 +156,7 @@ def _distribution_detail(db: Session, row: Distribution):
     }
 
 
-def _authorization_detail(db: Session, row: SoftwareAuthorization):
+def _authorization_detail(db: Session, row: SoftwareAuthorization, *, include_history: bool = True):
     release = db.get(Release, row.release_id)
     snapshot = db.get(ReleaseSnapshot, row.snapshot_id)
     customer = db.get(Customer, row.customer_id)
@@ -166,11 +166,11 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization):
     deployments = db.scalars(
         select(Deployment).where(Deployment.authorization_id == row.id)
         .order_by(Deployment.created_at, Deployment.deployment_no)
-    ).all()
+    ).all() if include_history else []
     batches = db.scalars(
         select(ProductionBatch).where(ProductionBatch.authorization_id == row.id)
         .order_by(ProductionBatch.batch_no)
-    ).all()
+    ).all() if include_history else []
     return {
         "id": str(row.id),
         "authorization_no": row.authorization_no,
@@ -323,6 +323,20 @@ def get_distribution(distribution_no: str, db: Session = Depends(get_db)):
     return _distribution_detail(db, row)
 
 
+@router.get("/distributions/{distribution_no}/profile")
+def distribution_profile(distribution_no: str, db: Session = Depends(get_db)):
+    row = db.scalars(select(Distribution).where(Distribution.distribution_no == distribution_no)).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="distribution not found")
+    detail = _distribution_detail(db, row, include_history=False)
+    detail.pop("authorizations")
+    detail["history_counts"] = {
+        "authorizations": db.scalar(select(func.count()).select_from(SoftwareAuthorization).where(SoftwareAuthorization.distribution_id == row.id)),
+    }
+    detail["notice"] = "Recorded authorization counts are observations, not production permission. Review the bounded catalog scoped to this exact distribution."
+    return detail
+
+
 @router.post("/distributions", status_code=201)
 def create_distribution(
     payload: DistributionCreate,
@@ -379,6 +393,22 @@ def get_authorization(authorization_no: str, db: Session = Depends(get_db)):
     if not row:
         raise HTTPException(status_code=404, detail="authorization not found")
     return _authorization_detail(db, row)
+
+
+@router.get("/authorizations/{authorization_no}/profile")
+def authorization_profile(authorization_no: str, db: Session = Depends(get_db)):
+    row = db.scalars(select(SoftwareAuthorization).where(SoftwareAuthorization.authorization_no == authorization_no)).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="authorization not found")
+    detail = _authorization_detail(db, row, include_history=False)
+    detail.pop("deployments")
+    detail.pop("batches")
+    detail["history_counts"] = {
+        "deployments": db.scalar(select(func.count()).select_from(Deployment).where(Deployment.authorization_id == row.id)),
+        "batches": db.scalar(select(func.count()).select_from(ProductionBatch).where(ProductionBatch.authorization_id == row.id)),
+    }
+    detail["notice"] = "Counts include all recorded statuses. They are not production permission, reserved capacity or a transaction receipt; creation rechecks current authorization under its existing locks."
+    return detail
 
 
 @router.post("/authorizations", status_code=201)

@@ -369,3 +369,22 @@ Only this consumer is migrated; remaining compatibility lists/details, approved
 OIDC/session, authenticated submission/recovery, corrections and operations remain.
 Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%).
 Verification: 11 new deployment-profile tests passed, including exact scope, missing references, legacy shape, stored/observed mismatch, 106/107 history counts without row loading and unchanged SQL query count. Full Python 3.12 backend suite: 699 passed, 3267 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Four SSR checks passed for large history/exact catalog links, empty/missing delivery, unavailable profile and profile-only API calls. No migration. Online verification after feature commit `a3ea30e3bd0b8181c24f37a35289835c0d462626`: Render deployment `dep-dav9frnavr4c7396mtu0` is live for that commit. Health returned 200 with API 0.18.1 and database revision 0017_deployment_actual_version. Exact DEP-0081 profile returned 200, counts 1/1, MATCH observation and actual_version 0 without embedded histories; missing profile returned 404. Harmless empty Deployment and Batch POSTs both returned 403 read_only_mode. Read-only PostgreSQL SQL independently confirmed head 0017. Cloudflare live deployment detail and exact-deployment batch/exact-delivered-snapshot decision catalogs were verified in the browser; no business write was submitted. Recent Render error logs were empty. Cloudflare provider deployment ID/commit metadata was unavailable; live feature behavior is the frontend evidence.
+
+## Authorization/distribution bounded-read package — 2026-10-02
+
+Developed from GitHub main `d287ce83c73195d428b99673d15720ef6e7604f4`.
+Two exact GET profiles replace authorization/distribution frontend legacy detail
+reads. Complete counts cover all stored child statuses; arrays are omitted without
+loading history rows. Existing bounded catalogs use exact returned parent UUIDs.
+Exact scope, recipient, delivery revision, note/timeline and command preparation
+context remain; null parent references are not guessed. Finite slot display uses
+the full batch count and clamps at zero; unlimited stays null/no finite limit.
+Counts are observations, not permission, reserved capacity or a write receipt.
+API 0.18.2, no migration, required head 0017_deployment_actual_version. Existing
+foreign-key indexes cover distribution/deployment counts, but batch authorization
+count has no dedicated index and can scan rows; constant latency is not claimed.
+Old endpoints and all 14 write contracts remain compatible. Public staging stays
+read-only. Only these two additional consumers are migrated; delivery/release/other
+legacy histories, OIDC/session, submission/recovery, corrections and operations remain.
+Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%).
+Verification: 15 new profile tests passed, including exact/sibling scope, missing context, unchanged legacy shapes, read-only routes and 105 added histories with fixed query counts and no child payload loading. Full Python 3.12 backend suite: 714 passed, 3477 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Seven SSR checks passed for exact links/revision/command UUIDs, all-status counts/zero clamp, unlimited/empty history, missing delivery, both unavailable profiles and profile-only API calls. No migration. Online verification follows the scoped push.

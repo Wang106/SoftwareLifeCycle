@@ -210,3 +210,10 @@ history counts link to existing deployment-scoped paginated catalogs. Decision l
 pin the delivered release and snapshot. No history, latest changeover or previous
 release is auto-selected for a command. Old read APIs and all write exports stay
 compatible; authenticated submission/result recovery remain pending.
+
+## Authorization/distribution profile context
+
+Details now use exact profiles and full counts, with bounded history links scoped
+to stored authorization/distribution UUIDs. Existing Deployment/Authorization
+preparation links retain those exact targets. No recipient, line, purpose or
+permission is inferred from history counts or acknowledgment. Submission is pending.

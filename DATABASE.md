@@ -237,3 +237,13 @@ No migration is needed: existing child foreign-key indexes serve count scope.
 Legacy endpoints retain their old shapes. All 14 write contracts, exact scope,
 trusted actors, replay/locks and atomic audit are unchanged; public staging remains
 read-only and provider-backed submission/other consumer migrations remain pending.
+
+## Authorization/distribution profile queries — 2026-10-02
+
+No migration: profiles reuse existing columns and COUNT by exact foreign key.
+SoftwareAuthorization.distribution_id and Deployment.authorization_id are indexed.
+ProductionBatch.authorization_id has no dedicated index in the current model;
+its count can scan batch rows. Bounded history payloads/fixed query count do not
+prove constant database work or latency. Evaluate plans and representative volume
+before deciding an index migration; schema/head stays 0017. Counts include all
+statuses and do not change transaction-level batch-limit enforcement.

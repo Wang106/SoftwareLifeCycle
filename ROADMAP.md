@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment detail now uses bounded profile/counts and catalog history; other consumers remain
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution details now use bounded profiles/counts and catalog history; other consumers remain
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -94,7 +94,7 @@ not provider configuration or production-readiness certification.
    keep public staging read-only and use a separately approved controlled target.
 3. Extend append-only correction/revocation contracts beyond actual reporting;
    never infer physical flashing reversal or alter existing batch history.
-4. Continue migrating consumers from unbounded compatibility lists/details to bounded catalogs; deployment detail profile migration is implemented.
+4. Continue migrating consumers from unbounded compatibility lists/details to bounded catalogs; deployment/authorization/distribution detail profile migrations are implemented.
 5. Configure an approved OIDC provider, provider-backed tests, audited grant
    administration and browser login/session flow before protected multi-user use.
 6. Add CI backend/PostgreSQL/migration/frontend checks; backup/restore, retention,

@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.1`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.2`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -255,3 +255,24 @@ remaining batch capacity or authorization. COUNT work may grow with history even
 though response size and query count remain bounded. The old deployment detail and
 provenance endpoints retain their complete legacy shapes; other legacy consumers
 remain to migrate. No write contract, identity configuration or schema change.
+
+## Bounded authorization and distribution profiles (0.18.2)
+
+- `GET /api/v1/authorizations/{authorization_no}/profile`: exact business-number
+  identity, complete stored scope, restriction/approval/limit and exact distribution/
+  delivery revision references; `history_counts.deployments` and `.batches` replace
+  embedded `deployments`/`batches` arrays.
+- `GET /api/v1/distributions/{distribution_no}/profile`: exact distribution and
+  package revision, recipient, timeline, note and software references;
+  `history_counts.authorizations` replaces the embedded `authorizations` array.
+
+Missing exact records return 404; unresolved parent references stay null. Counts
+include every recorded status and use stored foreign keys, without selecting child
+payloads or inferring a release, location or receipt. Use bounded production catalogs
+with returned `authorization_id`, or the authorization catalog with returned
+`distribution_id`; default 50/max 100 rows and next_offset remain unchanged.
+The UI's finite unfilled slots are max(0, limit - full batch count); null remains
+unlimited/no finite limit recorded. Neither count, acknowledgment nor stored APPROVED
+is a permission receipt, capacity reservation or a consistent transaction snapshot.
+Old detail endpoints keep their complete array shapes for controlled clients.
+No write contract, authentication/public-read policy or schema changes.

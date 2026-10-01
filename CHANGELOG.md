@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 — Bounded authorization/distribution details
+
+- Added two exact profiles with full history counts and parent/revision context, omitting unbounded child arrays.
+- Migrated both details to scoped paginated history links; retained all-status quota counting and exact command-preparation UUIDs.
+- Legacy shapes and all 14 write contracts remain; API 0.18.2/head 0017, no migration, staging read-only.
+- Verification: 15 new profile tests passed, including exact/sibling scope, missing context, unchanged legacy shapes, read-only routes and 105 added histories with fixed query counts and no child payload loading. Full Python 3.12 backend suite: 714 passed, 3477 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Seven SSR checks passed for exact links/revision/command UUIDs, all-status counts/zero clamp, unlimited/empty history, missing delivery, both unavailable profiles and profile-only API calls. No migration. Online verification follows the scoped push.
+
 ## 2026-10-02 — Bounded deployment detail reads
 
 - Added exact deployment profile with full history counts and parent chain; omitted unbounded history payloads.

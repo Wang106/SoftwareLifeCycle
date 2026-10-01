@@ -10,13 +10,13 @@ type AuthorizationDetail = {
   distribution: { id: string; distribution_no: string; status: string; package_no: string | null; package_revision: number | null } | null;
   site_code: string; line_code: string; purpose: string;
   batch_limit: number | null; restriction_note: string | null; approved_at: string | null;
-  deployments: { deployment_no: string; status: string; actual_release_matches: boolean | null; actual_snapshot_matches: boolean | null }[];
-  batches: { batch_no: string; status: string }[];
+  history_counts: { deployments: number; batches: number };
+  notice: string;
 };
 
 export default async function Page({ params }: { params: Promise<{ authorizationNo: string }> }) {
   const { authorizationNo } = await params;
-  const authorization = await apiGet<AuthorizationDetail>(`/api/v1/authorizations/${encodeURIComponent(authorizationNo)}`);
+  const authorization = await apiGet<AuthorizationDetail>(`/api/v1/authorizations/${encodeURIComponent(authorizationNo)}/profile`);
   if (!authorization) return <section className="panel"><h1>Authorization unavailable</h1>
     <p className="muted">This authorization was not found or the API is unavailable.</p>
     <Link href="/distribution/authorizations">← All authorizations</Link></section>;
@@ -54,21 +54,15 @@ export default async function Page({ params }: { params: Promise<{ authorization
       <p>{authorization.restriction_note || 'No restriction note recorded.'}</p>
       <div className="kv"><span>Approved at</span><b>{authorization.approved_at ? new Date(authorization.approved_at).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—'}</b>
         <span>Batch limit</span><b>{authorization.batch_limit ?? 'No limit recorded'}</b>
-        <span>Recorded batches</span><b>{authorization.batches.length}</b>
-        <span>Unfilled slots (count only)</span><b>{authorization.batch_limit === null ? 'No limit recorded' : Math.max(0, authorization.batch_limit - authorization.batches.length)}</b>
+        <span>Recorded batches</span><b>{authorization.history_counts.batches}</b>
+        <span>Unfilled slots (count only)</span><b>{authorization.batch_limit === null ? 'No limit recorded' : Math.max(0, authorization.batch_limit - authorization.history_counts.batches)}</b>
       </div>
     </section>
-    <section className="panel tablewrap"><h2>Actual deployments</h2>
-      {authorization.deployments.length ? <table><thead><tr><th>Deployment</th><th>Status</th><th>Actual release matches</th><th>Actual snapshot matches</th></tr></thead>
-        <tbody>{authorization.deployments.map(row => <tr key={row.deployment_no}>
-          <td><Link href={`/deployments/${encodeURIComponent(row.deployment_no)}`}><b>{row.deployment_no}</b></Link></td>
-          <td>{row.status}</td><td>{row.actual_release_matches === null ? 'Not reported' : row.actual_release_matches ? 'Yes' : 'No'}</td>
-          <td>{row.actual_snapshot_matches === null ? 'Not reported' : row.actual_snapshot_matches ? 'Yes' : 'No'}</td>
-        </tr>)}</tbody></table> : <p className="muted">No deployment recorded for this authorization.</p>}
-    </section>
-    <section className="panel"><h2>Production batches</h2>
-      {authorization.batches.length ? <div className="searchresults">{authorization.batches.map(row => <Link href={`/production/batches/${encodeURIComponent(row.batch_no)}`} key={row.batch_no}><b>{row.batch_no}</b><span>{row.status}</span></Link>)}</div>
-        : <p className="muted">No production batch recorded.</p>}
+    <section className="panel"><h2>Recorded production history</h2>
+      <p className="muted">{authorization.notice}</p>
+      <p><Link href={`/deployments?${new URLSearchParams({authorization_id: authorization.id})}`}>{authorization.history_counts.deployments} recorded deployments →</Link></p>
+      <p><Link href={`/production/batches?${new URLSearchParams({authorization_id: authorization.id})}`}>{authorization.history_counts.batches} recorded batches →</Link></p>
+      <p className="muted">Review software observations and binding evidence in paginated catalogs scoped to this exact authorization.</p>
     </section>
     <p className="datasource"><Link href="/distribution/authorizations">← All authorizations</Link></p>
   <p><Link href={`/activity?${new URLSearchParams({entity_type: 'SOFTWARE_AUTHORIZATION', entity_id: authorization.id})}`}>Recorded audit events →</Link></p></>;

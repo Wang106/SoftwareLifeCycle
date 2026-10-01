@@ -206,3 +206,11 @@ No migration is needed: existing child foreign-key indexes serve count scope.
 Legacy endpoints retain their old shapes. All 14 write contracts, exact scope,
 trusted actors, replay/locks and atomic audit are unchanged; public staging remains
 read-only and provider-backed submission/other consumer migrations remain pending.
+
+## Profile read boundary — 2026-10-02
+
+Authorization/distribution profiles follow the existing public sample read policy.
+They do not authenticate an operator or establish permission through a count,
+acknowledgment, stored approval or catalog observation. Exact-role authorization,
+actor binding, keyed retry/locking and atomic write audit remain unchanged.
+Public staging remains read-only; company-data read policy/provider setup is pending.

@@ -6,7 +6,8 @@ type DistributionDetail = {
   sent_at: string | null; acknowledged_at: string | null; note: string | null;
   delivery: { id: string; package_no: string; revision: number; purpose: string } | null;
   release_version: string | null; snapshot_no: string | null;
-  authorizations: { authorization_no: string; status: string; site_code: string; line_code: string }[];
+  history_counts: { authorizations: number };
+  notice: string;
 };
 
 function displayTime(value: string | null): string {
@@ -15,7 +16,7 @@ function displayTime(value: string | null): string {
 
 export default async function Page({ params }: { params: Promise<{ distributionNo: string }> }) {
   const { distributionNo } = await params;
-  const record = await apiGet<DistributionDetail>(`/api/v1/distributions/${encodeURIComponent(distributionNo)}`);
+  const record = await apiGet<DistributionDetail>(`/api/v1/distributions/${encodeURIComponent(distributionNo)}/profile`);
   if (!record) return <section className="panel"><h1>Distribution unavailable</h1>
     <p className="muted">This distribution was not found or the API is unavailable.</p>
     <Link href="/distribution/distributions">← All distributions</Link></section>;
@@ -41,10 +42,8 @@ export default async function Page({ params }: { params: Promise<{ distributionN
     </div>
     <section className="panel tablewrap"><h2>Linked production authorizations</h2>
       <p><Link href={`/commands?${new URLSearchParams({operation: 'authorization', target: record.id})}`}>Prepare draft authorization for this distribution →</Link></p>
-      {record.authorizations.length ? <table><thead><tr><th>Authorization</th><th>Site / line</th><th>Status</th></tr></thead>
-        <tbody>{record.authorizations.map(row => <tr key={row.authorization_no}>
-          <td><Link href={`/distribution/authorizations/${encodeURIComponent(row.authorization_no)}`}><b>{row.authorization_no}</b></Link></td><td>{row.site_code} / {row.line_code}</td><td>{row.status}</td>
-        </tr>)}</tbody></table> : <p className="muted">No production authorization is linked to this distribution.</p>}
+      <p><Link href={`/distribution/authorizations?${new URLSearchParams({distribution_id: record.id})}`}>{record.history_counts.authorizations} recorded authorizations →</Link></p>
+      <p className="muted">{record.notice}</p>
       <p className="muted">Acknowledgment alone does not authorize production use.</p>
     </section>
     <p className="datasource"><Link href="/distribution/distributions">← All distributions</Link></p>

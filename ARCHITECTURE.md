@@ -215,3 +215,10 @@ No migration is needed: existing child foreign-key indexes serve count scope.
 Legacy endpoints retain their old shapes. All 14 write contracts, exact scope,
 trusted actors, replay/locks and atomic audit are unchanged; public staging remains
 read-only and provider-backed submission/other consumer migrations remain pending.
+
+## Authorization/distribution read migration — 2026-10-02
+
+These two frontend details use exact profiles (API 0.18.2) with direct parent
+references and COUNT queries instead of loading child histories. Child reviews
+open existing paginated catalogs with exact authorization/distribution UUIDs.
+Legacy detail responses remain compatible; other consumer migrations remain open.
