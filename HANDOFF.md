@@ -5,9 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `c1348ed445918d5dfac225dd7386a79a83317a9b`
-- Baseline subject: `feat: migrate authorization and distribution details to bounded profiles`
-- Developed from: `d287ce83c73195d428b99673d15720ef6e7604f4`
+- Verified baseline: `1efe0c28e2c5d68a36b00103b540329a38b1df04`
+- Baseline subject: `feat: bound exact delivery revision profiles and artifact reads`
+- Developed from: `ec983d0434afd6e014c69d58e371f46ce323606c`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.18.2`, health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API version `0.18.3`, health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0017_deployment_actual_version` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -413,4 +413,4 @@ Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%): release/other le
 consumers, approved OIDC/session/controlled target, submission/recovery,
 correction/revocation and operations remain pending.
 
-Verification: 19 new delivery profile/artifact tests pass within the complete Python 3.12 backend suite: 733 passed, 3568 warnings, no skips, including 103 real PostgreSQL 16 migrated-schema concurrency/integration tests. Frontend: 214 passed, no skips; final Next/OpenNext Cloudflare production build passed. Eleven local SSR checks passed for full totals, exact UUID/revision links, first/next paging, empty/missing parents, lost metadata, beyond-end page, unavailable/invalid/array pagination, missing profile without fallback, invalid revision without API calls and profile/artifact-only reads. No migration. Online verification follows the scoped push.
+Verification: 19 new delivery profile/artifact tests pass within the complete Python 3.12 backend suite: 733 passed, 3568 warnings, no skips, including 103 real PostgreSQL 16 migrated-schema concurrency/integration tests. Frontend: 214 passed, no skips; final Next/OpenNext Cloudflare production build passed. Eleven local SSR checks passed for full totals, exact UUID/revision links, first/next paging, empty/missing parents, lost metadata, beyond-end page, unavailable/invalid/array pagination, missing profile without fallback, invalid revision without API calls and profile/artifact-only reads. No migration. Online verification after feature commit `1efe0c28e2c5d68a36b00103b540329a38b1df04`: Render deployment `dep-dava0k6417fc73ds081g` is live for that commit (finished 2026-10-01T18:03:49Z). Health returned 200 with API 0.18.3 and revision 0017_deployment_actual_version; read-only PostgreSQL SQL independently confirmed that revision. DP-0226 revision 1 profile returned 200, exact package UUID, counts 3 artifacts/1 distribution, policy counts 2 ALLOW/1 APPROVAL_REQUIRED/0 OTHER and 1 distinct control. Two one-item artifact pages returned distinct exact UUIDs with total 3, next offsets 1/2 and no storage references. Missing exact revision returned 404; limit 101 returned 422. Empty Delivery/Distribution POSTs returned 403 read_only_mode. Cloudflare live detail, first/next artifact paging with unchanged full totals and exact-package distribution catalog were verified in the browser; no business writes were submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live feature behavior is frontend evidence. The first Render log query failed with a provider Loki 502/503; a subsequent query succeeded with no recent error logs, without application changes.
