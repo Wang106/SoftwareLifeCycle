@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-02 — Exact delivery revision bounded reads
+
+- Added exact revision profile with full artifact/distribution totals, fixed policy counts and distinct control count; no embedded child history.
+- Added validated artifact pagination, deterministic duplicate-name ordering, visible missing metadata and omitted storage references.
+- Migrated the delivery detail to profile/paged manifest and exact-package distribution catalog links; retained preparation/audit UUIDs, legacy reads and all write contracts.
+- API 0.18.3/head 0017, no migration; public staging remains read-only. Roadmap stays 34/44 (77%).
+- Verification: 19 new delivery profile/artifact tests pass within the complete Python 3.12 backend suite: 733 passed, 3568 warnings, no skips, including 103 real PostgreSQL 16 migrated-schema concurrency/integration tests. Frontend: 214 passed, no skips; final Next/OpenNext Cloudflare production build passed. Eleven local SSR checks passed for full totals, exact UUID/revision links, first/next paging, empty/missing parents, lost metadata, beyond-end page, unavailable/invalid/array pagination, missing profile without fallback, invalid revision without API calls and profile/artifact-only reads. No migration. Online verification follows the scoped push.
+
+
 ## 2026-10-02 — Bounded authorization/distribution details
 
 - Added two exact profiles with full history counts and parent/revision context, omitting unbounded child arrays.

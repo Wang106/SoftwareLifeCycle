@@ -1,8 +1,9 @@
 import uuid
+from typing import Annotated
 
-from pydantic import BaseModel, Field
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy import func, select
+from pydantic import BaseModel, ConfigDict, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -56,7 +57,7 @@ class AuthorizationCreate(BaseModel):
     restriction_note: str | None = None
 
 
-def _delivery_detail(db: Session, package: DeliveryPackage):
+def _delivery_detail(db: Session, package: DeliveryPackage, *, include_children: bool = True):
     release = db.get(Release, package.release_id)
     snapshot = db.get(ReleaseSnapshot, package.snapshot_id)
     customer = db.scalars(
@@ -67,12 +68,12 @@ def _delivery_detail(db: Session, package: DeliveryPackage):
         .join(SnapshotArtifact, SnapshotArtifact.id == DeliveryPackageItem.snapshot_artifact_id)
         .where(DeliveryPackageItem.delivery_package_id == package.id)
         .order_by(SnapshotArtifact.filename)
-    ).all()
+    ).all() if include_children else []
     distributions = db.scalars(
         select(Distribution)
         .where(Distribution.delivery_package_id == package.id)
         .order_by(Distribution.distribution_no)
-    ).all()
+    ).all() if include_children else []
     return {
         "id": str(package.id),
         "package_no": package.package_no,
@@ -254,6 +255,10 @@ def get_delivery(package_no: str, db: Session = Depends(get_db)):
 
 @router.get("/deliveries/{package_no}/revisions/{revision}")
 def get_delivery_revision(package_no: str, revision: int, db: Session = Depends(get_db)):
+    return _delivery_detail(db, _delivery_revision(db, package_no, revision))
+
+
+def _delivery_revision(db: Session, package_no: str, revision: int):
     if revision < 1:
         raise HTTPException(status_code=422, detail="revision must be positive")
     package = db.scalars(
@@ -264,7 +269,72 @@ def get_delivery_revision(package_no: str, revision: int, db: Session = Depends(
     ).first()
     if package is None:
         raise HTTPException(status_code=404, detail="delivery package revision not found")
-    return _delivery_detail(db, package)
+    return package
+
+
+@router.get("/deliveries/{package_no}/revisions/{revision}/profile")
+def delivery_profile(package_no: str, revision: int, db: Session = Depends(get_db)):
+    package = _delivery_revision(db, package_no, revision)
+    result = _delivery_detail(db, package, include_children=False)
+    result.pop("items")
+    result.pop("distributions")
+    total, allowed, approval_required = db.execute(
+        select(func.count(),
+            func.count(case((DeliveryPackageItem.policy_decision == "ALLOW", 1))),
+            func.count(case((DeliveryPackageItem.policy_decision == "APPROVAL_REQUIRED", 1))))
+        .where(DeliveryPackageItem.delivery_package_id == package.id)
+    ).one()
+    result["history_counts"] = {
+        "artifacts": total,
+        "distributions": db.scalar(select(func.count()).select_from(Distribution)
+            .where(Distribution.delivery_package_id == package.id)),
+    }
+    result["policy_counts"] = {"ALLOW": allowed, "APPROVAL_REQUIRED": approval_required,
+        "OTHER": total - allowed - approval_required}
+    result["control_reference_count"] = db.scalar(
+        select(func.count(func.distinct(DeliveryPackageItem.exception_reference)))
+        .where(DeliveryPackageItem.delivery_package_id == package.id)
+    )
+    return result
+
+
+class DeliveryArtifactPage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    limit: int = Field(default=50, ge=1, le=100)
+    offset: int = Field(default=0, ge=0, le=100000)
+
+
+@router.get("/deliveries/{package_no}/revisions/{revision}/artifacts")
+def delivery_artifacts(
+    package_no: str, revision: int,
+    filters: Annotated[DeliveryArtifactPage, Query()],
+    db: Session = Depends(get_db),
+):
+    package = _delivery_revision(db, package_no, revision)
+    total = db.scalar(select(func.count()).select_from(DeliveryPackageItem)
+        .where(DeliveryPackageItem.delivery_package_id == package.id))
+    rows = db.execute(
+        select(DeliveryPackageItem, SnapshotArtifact)
+        .outerjoin(SnapshotArtifact, SnapshotArtifact.id == DeliveryPackageItem.snapshot_artifact_id)
+        .where(DeliveryPackageItem.delivery_package_id == package.id)
+        .order_by(func.coalesce(SnapshotArtifact.filename, ""),
+            DeliveryPackageItem.snapshot_artifact_id, DeliveryPackageItem.id)
+        .limit(filters.limit).offset(filters.offset)
+    ).all()
+    return {
+        "delivery_package_id": str(package.id), "package_no": package.package_no,
+        "revision": package.revision, "total": total,
+        "next_offset": filters.offset + filters.limit if filters.offset + filters.limit < total else None,
+        "items": [{
+            "id": str(item.id), "snapshot_artifact_id": str(item.snapshot_artifact_id),
+            "filename": artifact.filename if artifact else None,
+            "artifact_type": artifact.artifact_type if artifact else None,
+            "sha256": artifact.sha256 if artifact else None,
+            "distribution_level": artifact.distribution_level if artifact else None,
+            "policy_decision": item.policy_decision,
+            "control_reference": item.exception_reference,
+        } for item, artifact in rows],
+    }
 
 
 @router.post("/deliveries", status_code=201)

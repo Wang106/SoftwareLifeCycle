@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.2`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.3`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -276,3 +276,28 @@ unlimited/no finite limit recorded. Neither count, acknowledgment nor stored APP
 is a permission receipt, capacity reservation or a consistent transaction snapshot.
 Old detail endpoints keep their complete array shapes for controlled clients.
 No write contract, authentication/public-read policy or schema changes.
+
+## Exact delivery revision reads (0.18.3)
+
+- GET `/api/v1/deliveries/{package_no}/revisions/{revision}/profile`: exact positive
+  revision, never latest. Retains package UUID/status, exact release/frozen snapshot,
+  recipient/purpose/creator; omits items/distributions. `history_counts.artifacts`
+  counts stored DeliveryPackageItem rows (including missing metadata),
+  `history_counts.distributions` counts every stored status. Fixed `policy_counts`
+  contains ALLOW, APPROVAL_REQUIRED and OTHER with zero defaults; OTHER preserves
+  unfamiliar legacy values. `control_reference_count` counts distinct non-null
+  stored references, not a list of approvals.
+- GET `/api/v1/deliveries/{package_no}/revisions/{revision}/artifacts`: query
+  `limit` 1–100 (default 50), `offset` 0–100000 (default 0); extra/invalid queries
+  return 422. Returns exact delivery_package_id/package_no/revision, full total,
+  next_offset and bounded items. Each row includes item UUID, recorded artifact UUID,
+  frozen filename/type/SHA-256/distribution level, stored policy/control; missing
+  artifact metadata stays null and the row remains visible. Storage references are
+  omitted. Ordering is coalesced filename, artifact UUID, item UUID.
+- Missing exact package/revision is 404, nonpositive revision is 422. Legacy latest
+  and exact revision endpoints retain their original shapes. Distribution review
+  uses `/distribution/catalog/distributions?delivery_package_id={exact_uuid}`.
+
+Profile and artifact totals are separate read observations, not a transaction-wide
+receipt, current permission, file access or delivery evidence. Offset pages do not
+provide a consistent historical snapshot during concurrent writes.

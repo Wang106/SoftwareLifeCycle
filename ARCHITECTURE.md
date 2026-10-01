@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.0
+FastAPI 0.18.3
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -222,3 +222,7 @@ These two frontend details use exact profiles (API 0.18.2) with direct parent
 references and COUNT queries instead of loading child histories. Child reviews
 open existing paginated catalogs with exact authorization/distribution UUIDs.
 Legacy detail responses remain compatible; other consumer migrations remain open.
+
+## Delivery revision read migration — 2026-10-02
+
+The delivery revision frontend uses an exact profile and a paginated artifact endpoint (API 0.18.3). Aggregate counts omit child histories; manifest metadata is joined only for the bounded window, retaining missing references through an outer join. Distribution review uses the exact package UUID catalog. Legacy consumers remain compatible; all write/security boundaries are unchanged.

@@ -299,3 +299,7 @@ API 0.18.2 adds only GET profiles; all 14 executable write contracts are unchang
 Preparation still uses exact returned UUIDs and requires explicit declarations.
 Full history counts do not reserve batch capacity; Batch creation rechecks finite
 limits in its existing serialized transaction and atomically commits audit.
+
+## Delivery revision read migration — 2026-10-02
+
+API 0.18.3 adds GET-only exact delivery profile and artifact paging. Distribution preparation keeps the exact package UUID; no recipient/policy permission is inferred from the count or displayed page. Existing Delivery/Distribution authorization, actor, retry, row-lock and atomic-audit contracts remain unchanged. No new write or migration is added.

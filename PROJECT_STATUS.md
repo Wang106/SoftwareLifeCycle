@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**All 14 request-preparation forms are implemented; deployment, authorization and distribution details are migrated to bounded profile/catalog reads. Authenticated submission remains pending; public staging remains read-only.**
+**All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details are migrated to bounded profile/catalog reads. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -47,7 +47,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 55 backend test modules are present. The complete 2026-10-01 Python 3.12 run passed **688 tests**, including **103 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (3179 in this run).
+- 58 backend test modules are present. The complete 2026-10-02 (Asia/Shanghai) Python 3.12 run passed **733 tests**, including **103 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (3568 in this run).
 - Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). This schema verification belongs to the prior backend package; current frontend verification is recorded below.
 
 
@@ -96,7 +96,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository and verified online API version: `0.18.0`.
+- Repository API version: `0.18.3`; latest previously verified online version `0.18.2`. Current rollout evidence is recorded below.
 - Required and verified online schema revision: `0017_deployment_actual_version`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -348,3 +348,28 @@ read-only. Only these two additional consumers are migrated; delivery/release/ot
 legacy histories, OIDC/session, submission/recovery, corrections and operations remain.
 Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%).
 Verification: 15 new profile tests passed, including exact/sibling scope, missing context, unchanged legacy shapes, read-only routes and 105 added histories with fixed query counts and no child payload loading. Full Python 3.12 backend suite: 714 passed, 3477 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Seven SSR checks passed for exact links/revision/command UUIDs, all-status counts/zero clamp, unlimited/empty history, missing delivery, both unavailable profiles and profile-only API calls. No migration. Online verification after feature commit `c1348ed445918d5dfac225dd7386a79a83317a9b`: Render deployment `dep-dav9mlvlk1mc73be8h8g` is live for that commit. Health returned 200 with API 0.18.2 and database revision 0017_deployment_actual_version; read-only PostgreSQL SQL independently confirmed that revision. Exact PA-0081 and DIST-0326 profiles returned 200 with counts 1/1 and 1 respectively, exact parent references and no embedded histories; missing profiles returned 404. Harmless empty Authorization and Distribution POSTs both returned 403 read_only_mode. Cloudflare live details and exact-distribution authorization/exact-authorization batch catalog links were verified in the browser; no business write was submitted. Recent Render error logs were empty. Cloudflare provider deployment ID/commit metadata was unavailable; live feature behavior is the frontend evidence.
+
+## Delivery revision bounded-read package — 2026-10-02
+
+Development mode: **Codex**. Developed from GitHub main
+`ec983d0434afd6e014c69d58e371f46ce323606c`. API 0.18.3 adds exact
+package-number/revision profile and bounded artifact reads. The profile omits
+child arrays, counts all stored items/distribution statuses, reports fixed
+ALLOW/APPROVAL_REQUIRED/OTHER policy totals and distinct non-null control-reference
+count. Unknown legacy decisions remain in OTHER, so summary size stays fixed.
+The artifact page keeps recorded item/artifact UUIDs with null metadata when a
+reference is missing, omits storage_reference, and sorts deterministically by
+coalesced frozen filename, artifact UUID and item UUID. Frontend totals never derive
+from the visible page; control reference text applies only to displayed rows.
+Distribution history opens the existing catalog by exact package UUID. Existing
+request-preparation/audit links stay exact; unavailable reads have no legacy fallback.
+No schema migration: migration 0007 already indexes both package foreign keys and
+uniquely identifies package number/revision. Counts and joined filename sorting may
+still scan/sort many rows; bounded payloads do not imply constant database work.
+Legacy reads and all 14 writes, scoped authorization, actor binding, transaction
+locks and atomic audit remain compatible. Public staging stays read-only.
+Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%): release/other legacy
+consumers, approved OIDC/session/controlled target, submission/recovery,
+correction/revocation and operations remain pending.
+
+Verification: 19 new delivery profile/artifact tests pass within the complete Python 3.12 backend suite: 733 passed, 3568 warnings, no skips, including 103 real PostgreSQL 16 migrated-schema concurrency/integration tests. Frontend: 214 passed, no skips; final Next/OpenNext Cloudflare production build passed. Eleven local SSR checks passed for full totals, exact UUID/revision links, first/next paging, empty/missing parents, lost metadata, beyond-end page, unavailable/invalid/array pagination, missing profile without fallback, invalid revision without API calls and profile/artifact-only reads. No migration. Online verification follows the scoped push.

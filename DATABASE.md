@@ -247,3 +247,7 @@ its count can scan batch rows. Bounded history payloads/fixed query count do not
 prove constant database work or latency. Evaluate plans and representative volume
 before deciding an index migration; schema/head stays 0017. Counts include all
 statuses and do not change transaction-level batch-limit enforcement.
+
+## Delivery revision read migration — 2026-10-02
+
+No migration is needed. Existing migration 0007 provides uq_delivery_package_revision, ix_delivery_package_items_package_id and ix_distributions_package_id. Profile COUNT/conditional COUNT/distinct-control queries scope by the exact package UUID; artifact rows use outer join, deterministic filename/UUID order and SQL LIMIT/OFFSET. Missing metadata remains visible in defensive reads. Counts and filename sorting can grow in cost with stored rows; no constant-latency guarantee or general load benchmark is claimed. Required head remains 0017_deployment_actual_version.

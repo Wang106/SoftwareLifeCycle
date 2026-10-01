@@ -214,3 +214,7 @@ They do not authenticate an operator or establish permission through a count,
 acknowledgment, stored approval or catalog observation. Exact-role authorization,
 actor binding, keyed retry/locking and atomic write audit remain unchanged.
 Public staging remains read-only; company-data read policy/provider setup is pending.
+
+## Delivery revision read migration — 2026-10-02
+
+The new GET profile/artifact page retains the public sample-read boundary, omits storage_reference and never fetches files or linked locations. Counts, recorded policy decisions and controls do not establish current permissions, approval, sending or receipt. All 14 command guards, trusted actors, keyed replay/serialization and atomic audit are unchanged. Public staging remains read-only; provider-backed submission and company-data read controls remain pending.

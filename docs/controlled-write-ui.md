@@ -217,3 +217,7 @@ Details now use exact profiles and full counts, with bounded history links scope
 to stored authorization/distribution UUIDs. Existing Deployment/Authorization
 preparation links retain those exact targets. No recipient, line, purpose or
 permission is inferred from history counts or acknowledgment. Submission is pending.
+
+## Delivery revision read migration — 2026-10-02
+
+Delivery revision context now uses bounded profile/artifact reads. Full totals stay independent of displayed rows; the exact package UUID remains the Distribution preparation target. Policy/control display is recorded evidence, not permission or successful execution. Confirmation/copy remains transport-free; authenticated submission/recovery and approved identity/target remain pending.
