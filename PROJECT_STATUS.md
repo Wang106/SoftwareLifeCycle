@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5` — `feat: make distribution chain commands retry-safe and serialize release checks` (developed from `a131d2f931e240d17b5c9f59d00e43a2061716bf`)
+- Reviewed repository baseline: `2410b55ceac01263f62fdac0b109408a8c88fd1d` — `feat: make deployment and changeover retries safe with shared production locks` (developed from `8955c8d4039850ecc0bb5c0907f5c10f26a1eb4c`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -54,7 +54,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 ## In progress
 
 - Approved OIDC provider configuration remains open. Phase 6 now has four command-safety slices; the broad retry/concurrency roadmap items remain unchecked because other commands are unfinished.
-- Earlier safety-package implementation and deployment checks are complete; remaining Phase 6 commands and provider configuration are the next work.
+- All four safety-package implementation and deployment checks are complete; remaining Phase 6 commands and provider configuration are the next work.
 - The unrelated `frontend/app/activity/page 2.tsx` was not present in this clean cloud checkout and was not recreated, adopted or deleted.
 
 ## Next stage
@@ -71,24 +71,27 @@ Roadmap progress remains **31/44 (70%)**: two broad Phase 6 items are partially 
 | Layer | Configured target | Verified 2026-10-01 | Qualification |
 | --- | --- | --- | --- |
 | Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | HTTP 200 and live dashboard HTML returned | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.16.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.17.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at Alembic revision `0016_authenticated_audit_actors` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
-Render deployment `dep-dav0af5g1s2s73d55420` is **live** for feature commit
-`42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5` (finished 2026-10-01 15:02:05 Asia/Shanghai).
-Post-deploy health returned HTTP 200, API `0.16.0` and database revision
-`0016_authenticated_audit_actors`. Release/application, issue-impact and activity
-reads returned 200. Harmless Deployment and Snapshot writes returned 403
-`read_only_mode`; the three new retry routes also retained that rejection.
-Frontend returned HTTP 200 with Dashboard HTML. No frontend code or separate
-frontend deployment was required.
+Render retry deployment `dep-dav0kvs1nsns7382pu00` is **live** for feature commit
+`2410b55ceac01263f62fdac0b109408a8c88fd1d` (finished 2026-10-01T07:24:38.937384Z UTC). Health returned
+HTTP 200 / API `0.17.0` / database `0016_authenticated_audit_actors`;
+release/application, issue-impact and activity reads returned 200. Deployment,
+Changeover and actual-report POSTs retained 403 `read_only_mode`. Frontend returned
+HTTP 200 with Dashboard HTML; no frontend code or separate deployment was required.
+The original auto-deploy `dep-dav0jpo473hc73a87bag` reported `update_failed` despite
+completed image build, healthy startup and API 0.17.0. Error/warn logs were empty;
+no definitive cause was exposed. The same commit was retried without code, schema
+or environment changes and its final deployment state was verified. No application
+fix is claimed for that unexplained operational failure.
 
 The live URLs are volatile operational state. Recheck them rather than copying this table into a future report.
 
 ## Database and API status
 
-- Repository API version: `0.17.0`; last verified online version before this push: `0.16.0`.
+- Repository and verified online API version: `0.17.0`.
 - Required and verified online schema revision: `0016_authenticated_audit_actors`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -178,4 +181,14 @@ optimistic token or correction contract yet. No migration/frontend change is nee
 Request-ID coverage is 13/14 (93%); row serialization/scope/actor/atomic audit are
 14/14. Broad roadmap stays 31/44 (70%): actual-version protection, UI/correction,
 provider configuration and operations are unfinished. Next package is actual-software
-retry and optimistic conflict/correction. Full Python 3.12 suite: **641 passed, 2821 warnings, no skips**, including **90 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend build/change. Deployment verification follows the scoped push.
+retry and optimistic conflict/correction. Full Python 3.12 suite: **641 passed, 2821 warnings, no skips**, including **90 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend build/change. Render retry deployment `dep-dav0kvs1nsns7382pu00` is **live** for feature commit
+`2410b55ceac01263f62fdac0b109408a8c88fd1d` (finished 2026-10-01T07:24:38.937384Z UTC). Health returned
+HTTP 200 / API `0.17.0` / database `0016_authenticated_audit_actors`;
+release/application, issue-impact and activity reads returned 200. Deployment,
+Changeover and actual-report POSTs retained 403 `read_only_mode`. Frontend returned
+HTTP 200 with Dashboard HTML; no frontend code or separate deployment was required.
+The original auto-deploy `dep-dav0jpo473hc73a87bag` reported `update_failed` despite
+completed image build, healthy startup and API 0.17.0. Error/warn logs were empty;
+no definitive cause was exposed. The same commit was retried without code, schema
+or environment changes and its final deployment state was verified. No application
+fix is claimed for that unexplained operational failure.

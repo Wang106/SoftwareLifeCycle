@@ -4,6 +4,8 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Verified production retry deployment `dep-dav0kvs1nsns7382pu00` for `2410b55ceac01263f62fdac0b109408a8c88fd1d`: live API `0.17.0`, database `0016_authenticated_audit_actors`, public writes 403 `read_only_mode`, read checks/frontend 200. Initial auto-deploy metadata reported update_failed with normal build/startup and no exposed errors; same-commit retry reached verified live status without code/schema/environment changes.
+
 - Fourth-package full Python 3.12 verification: 641 passed, 2821 warnings, no skips; 90 real PostgreSQL 16.15 tests. Single Alembic head and PostgreSQL SQL generation passed.
 
 - API `0.17.0`: Deployment/Changeover optional request-ID replay, content/actor conflict, UTC Changeover time semantics and transaction locks. Deployment locks Authorization -> Site -> Line; Changeover locks Deployment. Legacy payloads/HTTP 201 and distinct-number history remain compatible.

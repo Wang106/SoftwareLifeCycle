@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5`
-- Baseline subject: `feat: make distribution chain commands retry-safe and serialize release checks`
+- Verified baseline: `2410b55ceac01263f62fdac0b109408a8c88fd1d`
+- Baseline subject: `feat: make deployment and changeover retries safe with shared production locks`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -35,7 +35,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, verified HTTP 200 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.16.0`, health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API version `0.17.0`, health verified ready |
 | Database | PostgreSQL 16 + Alembic | Required/verified revision `0016_authenticated_audit_actors` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -226,4 +226,14 @@ optimistic token or correction contract yet. No migration/frontend change is nee
 Request-ID coverage is 13/14 (93%); row serialization/scope/actor/atomic audit are
 14/14. Broad roadmap stays 31/44 (70%): actual-version protection, UI/correction,
 provider configuration and operations are unfinished. Next package is actual-software
-retry and optimistic conflict/correction. Full Python 3.12 suite: **641 passed, 2821 warnings, no skips**, including **90 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend build/change. Deployment verification follows the scoped push.
+retry and optimistic conflict/correction. Full Python 3.12 suite: **641 passed, 2821 warnings, no skips**, including **90 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend build/change. Render retry deployment `dep-dav0kvs1nsns7382pu00` is **live** for feature commit
+`2410b55ceac01263f62fdac0b109408a8c88fd1d` (finished 2026-10-01T07:24:38.937384Z UTC). Health returned
+HTTP 200 / API `0.17.0` / database `0016_authenticated_audit_actors`;
+release/application, issue-impact and activity reads returned 200. Deployment,
+Changeover and actual-report POSTs retained 403 `read_only_mode`. Frontend returned
+HTTP 200 with Dashboard HTML; no frontend code or separate deployment was required.
+The original auto-deploy `dep-dav0jpo473hc73a87bag` reported `update_failed` despite
+completed image build, healthy startup and API 0.17.0. Error/warn logs were empty;
+no definitive cause was exposed. The same commit was retried without code, schema
+or environment changes and its final deployment state was verified. No application
+fix is claimed for that unexplained operational failure.
