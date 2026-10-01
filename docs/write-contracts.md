@@ -9,8 +9,8 @@ The enforced scoped roles are recorded in the executable contracts and defined i
 | Route | Scope | Actor | Audit | Retry | Concurrency | Main gap |
 | --- | --- | --- | --- | --- | --- | --- |
 | `POST /api/v1/releases/{release_id}/create-snapshot` | Release | Authenticated | Atomic append | Optional request ID | Release row lock | No-key legacy calls create a new snapshot |
-| `POST /api/v1/approvals/{approval_no}/actions` | Approval target/step | Authenticated; declaration retained | Atomic append | None | None | Step transition not locked |
-| `POST /api/v1/approvals/{approval_no}/release-decision` | Approved release/snapshot | Authenticated; declaration retained | Atomic append | None | None | Approval not locked |
+| `POST /api/v1/approvals/{approval_no}/actions` | Approval target/step | Authenticated; declaration retained | Atomic append | Optional request ID + expected step | ApprovalRequest and step row locks | Unkeyed callers act on current step |
+| `POST /api/v1/approvals/{approval_no}/release-decision` | Approved release/snapshot | Authenticated; declaration retained | Atomic append | Optional request ID | ApprovalRequest row lock | Distinct decision numbers retain history semantics |
 | `POST /api/v1/deliveries` | Release/snapshot/recipient/artifacts | Authenticated; optional declaration retained | Atomic append | Duplicate rejection | None | No idempotency key |
 | `POST /api/v1/distributions` | Package/recipient | Authenticated | Atomic append | Duplicate rejection | None | No idempotency key |
 | `POST /api/v1/authorizations` | Distribution/customer/project/site/line | Authenticated | Atomic append | Duplicate rejection | None | No idempotency key |
@@ -82,3 +82,38 @@ with `pg_blocking_pids`, and checks numbering, shared limits, replays, cross-tar
 conflicts, stale ORM state and rollback. Run it with `TEST_POSTGRES_URL` set to a
 throwaway development database that allows schema creation; the fixture drops only
 its own schema. Without that variable it is explicitly skipped; SQLite is rejected.
+
+## Phase 6 second package: Approval Action and Release Decision
+
+Both routes accept optional UUID `request_id`, using existing domain IDs and atomic
+audit request evidence. A keyed action additionally requires `expected_step_id`;
+missing step returns HTTP 422, stale/wrong step returns 409. Unkeyed clients retain
+current-step behavior. Canonical action content is approval number, declared actor,
+action, comment and expected step; decision content is approval number, decision
+number, declared actor, readiness status, decision and notes. Exact strings retain
+existing semantics. Keys are global within each record type. Actor/content mismatch
+or missing legacy evidence conflicts, and every HTTP replay needs current permission.
+
+- Both lock/refresh the owning ApprovalRequest before retry/validation; actions
+  also lock/refresh current and next steps. Locks last through domain/audit commit.
+- Same key/content/actor returns the original response without another action,
+  decision or audit event. Action after-status comes from the original atomic audit,
+  so replay cannot approve the next step or overwrite current workflow state.
+- Distinct keyed requests for the same expected step serialize: after the winner
+  commits, the loser conflicts. Final action and decision share a lock; decisions
+  validate the final committed approval state. Distinct decision numbers retain
+  existing append history; duplicate numbers under another key conflict.
+- Validation, insert/constraint, audit-after-flush and commit failures fully roll
+  back; cross-approval UUID collisions cannot leave a partially advanced step.
+- Status/response shapes stay HTTP 200 for action and 201 for decision. No migration,
+  historical backfill, automatic server retry, correction or revocation is claimed.
+
+`test_approval_retry.py` covers stable responses, content/actor conflict, expected
+steps, no-key compatibility, exact-role denial and transaction failures.
+`test_approval_concurrency_postgres.py` uses the migrated-schema independent-session
+harness described above, asserts actual blocking and verifies step competition,
+final-action/decision ordering, global-key collisions and rollback/lock release.
+
+Request-ID and row-lock contracts now cover 8/14 routes (57%); scope/actor/atomic
+audit contracts cover 14/14 (100%). These counts describe reviewed route contracts,
+not provider configuration, production readiness or completion of broad Phase 6 items.

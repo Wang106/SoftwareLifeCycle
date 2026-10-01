@@ -4,6 +4,11 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- API `0.15.0`: Approval Action and Release Decision optional request-ID retry, canonical content/actor conflict and shared PostgreSQL ApprovalRequest serialization. Keyed actions require an exact expected-step UUID and return original after-status without advancing another step. Legacy no-key clients and distinct decision-number history remain compatible.
+- Full backend verification: 477 passed, 1646 warnings, no skips; 31 tests use real PostgreSQL 16.15. Single Alembic head and PostgreSQL SQL generation passed.
+- Added approval failure/HTTP/scope/actor tests and 18 real PostgreSQL contention cases, including final-action/decision ordering, global-key races, stale ORM refresh and rollback/lock release. No migration; existing UUID/audit evidence is reused.
+- Recorded recurring Codex/ChatGPT-mode, changes/tests, module percentage/unfinished scope and remaining-step reporting rules. Broad roadmap remains 31/44 (70%); request-ID/row-lock route coverage is now 8/14 (57%).
+
 - Verified the Phase 6 first-package Render deployment for `3968f9f007e2a00a7268074e5e66cc1a0a8db2cc`: live API `0.14.0`, schema `0016_authenticated_audit_actors`, HTTP 403 `read_only_mode` for a harmless write, and available frontend (HTTP 200 / rendered Dashboard).
 
 - API `0.14.0`: optional request-ID idempotency for Snapshot and Production Batch; identical authorized retries reuse the original result and audit, while changed content/actor or duplicate business numbers conflict. Existing no-key clients retain their behavior.

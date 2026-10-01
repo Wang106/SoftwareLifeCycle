@@ -12,7 +12,8 @@ from app.actor import audit_actor_matches
 from app.models.audit import AuditEvent
 
 
-def retry_result(db, model, request_id, event_prefix, request_content, actor, error):
+def retry_result(db, model, request_id, event_prefix, request_content, actor, error,
+                 *, event_entity_id=None):
     if request_id is None:
         return None
     existing = db.get(model, request_id)
@@ -20,7 +21,7 @@ def retry_result(db, model, request_id, event_prefix, request_content, actor, er
         return None
     event = db.scalar(select(AuditEvent).where(
         AuditEvent.event_no == f"{event_prefix}{request_id.hex}",
-        AuditEvent.entity_id == existing.id,
+        AuditEvent.entity_id == (event_entity_id if event_entity_id is not None else existing.id),
     ))
     if (event is None or not audit_actor_matches(event, actor)
             or event.payload_json.get("request") != request_content):

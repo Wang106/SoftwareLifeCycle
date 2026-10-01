@@ -1,17 +1,28 @@
 from datetime import datetime, timezone
+from dataclasses import dataclass
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.approval import ApprovalAction, ApprovalRequest, ApprovalStep, ReleaseDecision
 from app.models.core import Release
+from app.models.audit import AuditEvent
 from app.models.snapshot import ReleaseSnapshot
 from app.actor import ActorContext
 from app.services.audit import commit_with_audit
+from app.services.command_retry import atomic_command, retry_result
 
 
 class ApprovalError(ValueError):
     pass
+
+
+@dataclass(frozen=True)
+class ApprovalOutcome:
+    """Stable action response, independent of later workflow transitions."""
+    id: object
+    approval_no: str
+    status: str
 
 
 class ApprovalService:
@@ -26,6 +37,7 @@ class ApprovalService:
                 ApprovalStep.status.in_(["PENDING", "WAITING"]),
             )
             .order_by(ApprovalStep.step_order)
+            .with_for_update().execution_options(populate_existing=True)
         ).first()
 
     def act(
@@ -35,19 +47,46 @@ class ApprovalService:
         action: str,
         comment: str | None = None,
         actor_context: ActorContext | None = None,
+        request_id=None,
+        expected_step_id=None,
     ):
+        with atomic_command(self.db, ApprovalError):
+            return self._act(approval_no, actor, action, comment, actor_context,
+                             request_id, expected_step_id)
+
+    def _act(self, approval_no, actor, action, comment, actor_context,
+             request_id, expected_step_id):
         resolved_actor = actor_context or ActorContext.legacy(actor)
         approval = self.db.scalars(
             select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)
+            .with_for_update().execution_options(populate_existing=True)
         ).first()
         if not approval:
             raise ApprovalError("Approval request not found")
+        if request_id is not None and expected_step_id is None:
+            raise ApprovalError("request_id requires expected_step_id")
+        request_content = {
+            "approval_no": approval_no, "actor": actor, "action": action,
+            "comment": comment,
+            "expected_step_id": str(expected_step_id) if expected_step_id else None,
+        }
+        existing = retry_result(self.db, ApprovalAction, request_id, "EVT-AP-",
+            request_content, resolved_actor, ApprovalError, event_entity_id=approval.id)
+        if existing is not None:
+            event = self.db.scalar(select(AuditEvent).where(
+                AuditEvent.event_no == f"EVT-AP-{request_id.hex}"))
+            outcome = ApprovalOutcome(approval.id, approval.approval_no,
+                                      event.payload_json["after_status"])
+            self.db.commit()
+            return outcome
         if approval.status in ("APPROVED", "REJECTED", "RETURNED", "CANCELLED"):
             raise ApprovalError("Approval request is already closed")
 
         step = self.current_step(approval)
         if not step:
             raise ApprovalError("No active approval step")
+        if expected_step_id is not None and step.id != expected_step_id:
+            raise ApprovalError("expected_step_id does not match the active approval step")
         if action not in ("APPROVED", "RETURNED", "REJECTED"):
             raise ApprovalError("Unsupported approval action")
 
@@ -61,6 +100,8 @@ class ApprovalService:
             actor_name=resolved_actor.name, action=action, comment=comment,
             created_at=step.decided_at,
         )
+        if request_id is not None:
+            history.id = request_id
         self.db.add(history)
 
         if action in ("RETURNED", "REJECTED"):
@@ -73,6 +114,7 @@ class ApprovalService:
                     ApprovalStep.step_order > step.step_order,
                 )
                 .order_by(ApprovalStep.step_order)
+                .with_for_update().execution_options(populate_existing=True)
             ).first()
             if next_step:
                 next_step.status = "PENDING"
@@ -92,10 +134,10 @@ class ApprovalService:
                 "snapshot_id": str(approval.snapshot_id) if approval.snapshot_id else None,
                 "before_status": before_status, "after_status": approval.status,
                 "before_step_status": before_step_status, "after_step_status": step.status,
-                "actor_source": resolved_actor.source},
+                "actor_source": resolved_actor.source,
+                "request": request_content if request_id is not None else None},
         ))
-        self.db.refresh(approval)
-        return approval
+        return ApprovalOutcome(approval.id, approval.approval_no, approval.status)
 
     def create_release_decision(
         self,
@@ -106,13 +148,30 @@ class ApprovalService:
         decision: str,
         notes: str | None = None,
         actor_context: ActorContext | None = None,
+        request_id=None,
     ):
+        with atomic_command(self.db, ApprovalError):
+            return self._create_release_decision(approval_no, decision_no, decided_by,
+                readiness_status, decision, notes, actor_context, request_id)
+
+    def _create_release_decision(self, approval_no, decision_no, decided_by,
+                                 readiness_status, decision, notes, actor_context, request_id):
         resolved_actor = actor_context or ActorContext.legacy(decided_by)
         approval = self.db.scalars(
             select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)
+            .with_for_update().execution_options(populate_existing=True)
         ).first()
         if not approval:
             raise ApprovalError("Approval request not found")
+        request_content = {
+            "approval_no": approval_no, "decision_no": decision_no, "decided_by": decided_by,
+            "readiness_status": readiness_status, "decision": decision, "notes": notes,
+        }
+        existing = retry_result(self.db, ReleaseDecision, request_id, "EVT-RD-",
+                                request_content, resolved_actor, ApprovalError)
+        if existing is not None:
+            self.db.commit()
+            return existing
         if approval.target_type != "RELEASE":
             raise ApprovalError("Approval target is not a release")
         if approval.status != "APPROVED":
@@ -142,6 +201,8 @@ class ApprovalService:
             decision_notes=notes,
             decided_at=datetime.now(timezone.utc),
         )
+        if request_id is not None:
+            row.id = request_id
         self.db.add(row)
         commit_with_audit(self.db, lambda: dict(
             event_no=f"EVT-RD-{row.id.hex}", event_type="RELEASE", action="DECISION_RECORDED",
@@ -153,7 +214,8 @@ class ApprovalService:
                 "release_id": str(row.release_id), "snapshot_id": str(row.snapshot_id),
                 "snapshot_no": snapshot.snapshot_no, "content_hash": snapshot.content_hash,
                 "approval_id": str(approval.id), "approval_no": approval.approval_no,
-                "actor_source": resolved_actor.source},
+                "actor_source": resolved_actor.source,
+                "request": request_content if request_id is not None else None},
         ))
         self.db.refresh(row)
         return row

@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+import uuid
+from pydantic import BaseModel, model_validator
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
@@ -11,12 +12,22 @@ router = APIRouter(prefix="/api/v1/approvals", tags=["approvals"])
 
 
 class ApprovalActionRequest(BaseModel):
+    request_id: uuid.UUID | None = None
+    expected_step_id: uuid.UUID | None = None
     actor: str
     action: str
     comment: str | None = None
 
 
+    @model_validator(mode="after")
+    def require_retry_step(self):
+        if self.request_id is not None and self.expected_step_id is None:
+            raise ValueError("request_id requires expected_step_id")
+        return self
+
+
 class ReleaseDecisionRequest(BaseModel):
+    request_id: uuid.UUID | None = None
     decision_no: str
     decided_by: str
     readiness_status: str
@@ -40,6 +51,8 @@ def approval_action(
             action=payload.action,
             comment=payload.comment,
             actor_context=actor,
+            request_id=payload.request_id,
+            expected_step_id=payload.expected_step_id,
         )
         return {"approval_no": approval.approval_no, "status": approval.status}
     except ApprovalError as exc:
@@ -64,6 +77,7 @@ def create_release_decision(
             decision=payload.decision,
             notes=payload.notes,
             actor_context=actor,
+            request_id=payload.request_id,
         )
         return {
             "decision_no": row.decision_no,

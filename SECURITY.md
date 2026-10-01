@@ -65,7 +65,7 @@ Historical/seed records and `AUTH_MODE=disabled` writes have a null principal re
 3. **Implemented:** require an active scoped role or the exceptional global admin role.
 4. **Implemented:** derive audit actors from the authenticated principal and preserve request declarations separately for every current write.
 5. **Implemented:** append audit events atomically for snapshot and production commands.
-6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval transitions and other writes still need safeguards.
+6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval actions and release decisions also support these safeguards; remaining commands are unfinished.
 7. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract tests already cover wrong scope/role, suspended membership and actor mismatch.
 
 No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
@@ -88,6 +88,18 @@ scope and `PLATFORM_ADMIN` rules remain unchanged.
 Replay reads the original frozen/business result and does not repeat a write or
 consume a second quota. New work still requires all domain checks. Release numbering
 and shared production authorization quotas are serialized through atomic domain/audit
-commit. Failure rolls back both and releases locks. These controls cover two commands;
+commit. Failure rolls back both and releases locks. The first package controls cover Snapshot and Batch;
 no OIDC provider, public write UI or production readiness is claimed. Public staging
 remains `READ_ONLY_MODE=true`.
+
+## Approval retry trust boundary
+
+Approval Action and Release Decision replays require the same authenticated audit
+principal, full effective display identity and retained declaration. A matching
+UUID or display name cannot substitute for identity. HTTP exact active role checks
+run before replay, including denial after grant suspension. The original response
+is recoverable after workflow state changes, without bypassing current permission.
+Keyed actions require an explicit expected step; unkeyed compatibility calls still
+act on the current step and do not provide the same retry guarantee. ApprovalRequest
+locking serializes actions and decisions through atomic audit commit. No approved
+OIDC provider or public write capability is introduced; staging remains read-only.

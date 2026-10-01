@@ -63,7 +63,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Compatibility-list migration remains |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
-| Phase 6 — Controlled write experience | 0 / 5 | 0% | Snapshot/Batch slice implemented; broad items partial |
+| Phase 6 — Controlled write experience | 0 / 5 | 0% | Snapshot/Batch and Approval/Decision slices implemented; broad items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **31 / 44** | **70%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
@@ -79,15 +79,15 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 47 backend test modules; the latest full run passed all 421 tests under Python 3.12, including 13 real PostgreSQL tests without skips.
+- 49 backend test modules; the latest full run passed all 477 tests under Python 3.12, including 31 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering and shared Production Batch quotas, without a new migration.
 
 ## Current limitations and risks
 
 1. No approved OIDC issuer, audience or JWKS endpoint is configured in a target environment.
 2. There is no audited principal/grant administration API or browser login/session flow.
-3. Snapshot/Batch now provide optional request-ID idempotency; several other commands still lack it.
-4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval transitions still need concurrency protection.
+3. Snapshot/Batch and Approval/Decision now provide optional request-ID idempotency; several other commands still lack it.
+4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; other commands remain unfinished.
 5. Actual-software reporting is a mutable overwrite without an optimistic-concurrency token or explicit correction command, although every report is now audited.
 6. Some legacy list/history endpoints remain unbounded.
 7. CI, backup/restore, monitoring, alerting and incident runbooks are not present.
@@ -95,7 +95,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 
 ## Recommended next development package
 
-The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **approval action/release-decision retry and concurrency safety**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
+The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **delivery/distribution/authorization/deployment/changeover retry safety and actual-software conflict control**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
 
 ### Scope
 
@@ -138,7 +138,7 @@ POST https://softwarelifecycle-api-test.onrender.com/api/v1/deployments
 GET  https://softwarelifecycle.whf969.com
 ```
 
-Expected public state after this package deploys: API `0.14.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
+Expected public state after this package deploys: API `0.15.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
 
 ## Working-tree caution
 
@@ -152,7 +152,7 @@ At the end of the cloud development task:
 2. Run proportional tests and record exact results/warnings.
 3. Update `PROJECT_STATUS.md` and `CHANGELOG.md`, plus contract documents affected by the change.
 4. Commit and push the scoped result.
-5. Report changed files, behavior, migrations, tests, commit hash, push/deployment state and the next recommended task.
+5. Report development mode (Codex or ChatGPT), changed files, behavior, migrations, tests, commit hash, push/deployment state, evidence-based module percentages with unfinished content, and remaining development steps.
 
 Fast handoff commands remain:
 
@@ -175,3 +175,19 @@ verification: Render `dep-dauvf1m417fc73fq13dg` is live for commit
 `0016_authenticated_audit_actors`, harmless deployment POST returned
 403 `read_only_mode`, and frontend returned HTTP 200 with a rendered Dashboard.
 The unrelated duplicate frontend file was absent in this checkout and untouched.
+
+## Phase 6 second package — development report
+
+Development mode: **Codex**. API code is `0.15.0`; schema head remains
+`0016_authenticated_audit_actors`, with no migration. Approval Action supports
+optional request UUID plus required exact expected step for keyed calls. Release
+Decision supports optional request UUID. Shared ApprovalRequest locks serialize
+step transitions and decisions, and atomic audit evidence preserves original replay
+results. No-key clients and distinct decision-number history stay compatible.
+
+Use the current-progress section of ROADMAP.md for module percentages and unfinished
+steps. Request-ID/row-lock coverage is 8/14 (57%); exact scope, actor and atomic audit
+coverage is 14/14 (100%). Broad roadmap progress stays 31/44 (70%), not production
+readiness. Complete test and deployment evidence is recorded after verification.
+
+Second-package verification: Python 3.12 full backend run **477 passed, 1646 warnings, no skips**, including **31 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend change/build. Deployment verification follows the scoped push.

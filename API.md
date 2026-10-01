@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.14.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.15.0`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -59,7 +59,7 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 - In OIDC mode, every current write route additionally requires its exact active project/software role or the exceptional `PLATFORM_ADMIN` override. Scope is resolved from stored relationships; a client-supplied project alone is not authorization evidence.
 - `AUTH_MODE=disabled` preserves controlled local development compatibility; it is not appropriate for public writes.
 - For atomically audited writes in OIDC mode, stored actor names come from the authenticated principal. Audit events also expose `actor_principal_id`, full `actor_display_name` and the original `declared_actor_name`. Disabled mode retains legacy declaration behavior.
-- Snapshot and production-batch creation now accept optional client-generated request IDs, in addition to the existing request-ID commands. Other commands still have incomplete retry protection.
+- Snapshot, production-batch creation, approval actions and release decisions now accept optional client-generated request IDs, in addition to the existing request-ID commands. Other commands still have incomplete retry protection.
 - All 14 current command routes record an audit event in the same transaction as their domain change. Snapshot and production audit payloads retain exact release, snapshot, authorization, deployment and before/after identifiers as applicable.
 - Snapshot and exact UUID bindings take precedence over matching version, name or display code.
 - Bounded catalogs validate filters, limit and offset; totals/counts apply to the full filtered result, not just the visible page.
@@ -95,3 +95,25 @@ creates a new record and Batch still rejects duplicate numbers. PostgreSQL locks
 serialize Release snapshot numbering and Deployment/shared Authorization batch
 quota evaluation through domain/audit commit. Replay still requires current exact
 scope authorization. See [write contracts](docs/write-contracts.md) for details.
+
+## Approval / Release Decision retry contract (0.15.0)
+
+Approval action JSON adds optional UUID `request_id` and `expected_step_id`.
+When a key is supplied, the exact step UUID is required; missing step or malformed
+UUID yields 422. A fresh request targeting a different/currently completed step
+returns 409. Unkeyed callers remain compatible with current-step behavior;
+providing an optional expected step also protects an unkeyed action from stale use.
+
+Identical keyed actions return HTTP 200 with the original `approval_no`/`status`,
+even after later workflow transitions. A replay never approves the next step.
+Canonical content includes approval number, declared actor, action, comment and
+expected step. Release Decision adds optional UUID `request_id`, returns HTTP 201
+with the existing response shape, and compares approval number, decision number,
+declared actor, readiness status, decision and notes. Changed content or actor
+returns 409; historical rows without retry evidence cannot be claimed.
+
+Both commands lock the owning ApprovalRequest through validation, domain write,
+audit and commit. Concurrent decisions wait for the final action and recheck its
+committed status. Distinct decision numbers retain existing append-history behavior;
+a duplicate decision number under another key conflicts. Every replay still passes
+current exact-scope authorization. No migration or server retry loop is added.

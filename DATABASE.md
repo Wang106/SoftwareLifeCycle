@@ -104,3 +104,21 @@ Real concurrency tests create a unique schema, apply the entire Alembic chain,
 observe database blocking across separate sessions, and drop that test schema.
 Set `TEST_POSTGRES_URL` only to an isolated development database permitting schema
 creation. An unset variable explicitly skips this suite; SQLite cannot stand in.
+
+## Approval retry storage and locks (API 0.15.0)
+
+No migration: `approval_actions.id` and `release_decisions.id` hold optional request
+UUIDs, globally unique within each table. Canonical request content is recorded in
+existing audit JSONB, without historical backfill. `EVT-AP-{id.hex}` identifies an
+action's audit event whose entity remains its ApprovalRequest; `EVT-RD-{id.hex}`
+identifies the decision audit event whose entity is the decision. Existing unique
+UUID, decision-number and event-number constraints remain final conflict guards.
+
+Both services lock/refresh ApprovalRequest before replay or mutable validation;
+actions additionally lock/refresh the current and next ApprovalStep. Locks last
+through atomic domain/audit commit under READ COMMITTED. Keyed actions use the
+exact expected step UUID, not the current step discovered after a competing commit.
+Cross-approval UUID races roll back the losing transaction. No-key compatibility
+is retained; distinct decision numbers remain allowed for an approved request.
+Real PostgreSQL tests verify actual blocking, final-action/decision ordering,
+refresh of cached state, global-key collisions and full rollback/lock release.

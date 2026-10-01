@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.14.0
+FastAPI 0.15.0
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -105,3 +105,14 @@ refresh previously loaded ORM rows and retain locks through commit under Postgre
 READ COMMITTED. Errors roll back the complete command. No-key clients keep legacy
 behavior, while exact authorized replays create neither a record nor an audit event.
 Other command transitions still need their own concurrency/idempotency controls.
+
+## Approval command serialization
+
+Approval actions and release decisions share the ApprovalRequest row as their
+PostgreSQL transaction lock. Actions also refresh/lock current and next step rows.
+Keyed actions require the exact expected step, so competing requests cannot silently
+advance two steps. The action UUID plus atomic audit request evidence supports
+replay; a frozen response value reads original after-status without changing a
+cached workflow object. Decisions use the same UUID/audit mechanism and retain
+existing distinct-number history semantics. Constraint, audit and commit failures
+roll back the entire command. Current HTTP scope and actor resolution precede replay.
