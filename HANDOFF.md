@@ -63,9 +63,9 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Compatibility-list migration remains |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
-| Phase 6 — Controlled write experience | 2 / 5 | 40% | Five safety slices implemented; UI/correction/result items partial |
+| Phase 6 — Controlled write experience | 3 / 5 | 60% | Safety slices and UI priorities implemented; submission/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
-| **Overall** | **33 / 44** | **75%** | Demo lifecycle is coherent; controlled writes and operations remain |
+| **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
 ## Completed capabilities
 
@@ -162,6 +162,10 @@ Fast handoff commands remain:
 - `汇总：SoftwareLifeCycle 当前状态` — reconstruct status from repository evidence.
 - `继续：下一阶段` — resume the highest-priority ready item.
 
+
+Request preparation for Snapshot, actual software and Batch is available in code at
+`/commands`, with validation, immutable confirmation/copy and expected audit links.
+It never submits or saves a request. See [UI scope and remaining work](docs/controlled-write-ui.md).
 ## Phase 6 first-package verification — 2026-10-01
 
 Starting main: `a5db39eccb0a5a73ea3232f455a9167f1af835a4`. API code is `0.14.0`;
@@ -259,3 +263,13 @@ returned HTTP 403 with Cloudflare error code 1010; this client-dependent result 
 a fully passing default-agent smoke run. No frontend access policy, code or build was changed; no separate frontend deployment was needed. A first health attempt timed out during Render's
 update_in_progress stage; the post-live checks above passed. No public setting or
 application change was made to resolve that in-progress timeout.
+
+## Phase 6 sixth package — request preparation
+
+Development mode: **Codex**. Starting main: `4f1af50ade84c4daa964499f75725969c476685a`.
+Three request-preparation forms add validation, fixed-key confirmation/copy, exact
+context links and expected audit identifiers. All 14 command forms have a priority
+plan. There is no submit transport, login or successful-write claim. API remains
+0.18.0; schema remains 0017, with no migration. Roadmap scope becomes 34/44 (77%),
+Phase 6 3/5 (60%); authenticated submission, broader corrections and full result
+trace are unfinished. Frontend helper tests: **30 passed, no skips**. Next.js production and OpenNext/Cloudflare Worker builds passed; existing multiple-lockfile/Autoprefixer/cache/proxy warnings remain. Complete Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL tests**. The first two attempts encountered PostgreSQL system-catalog file read failures in workspace test directories; a new isolated /tmp cluster completed the entire suite. No backend/staging database was changed to resolve this test-runtime issue. No migration is added; head remains 0017. Local Next.js SSR checks passed for /commands (Snapshot, actual and Batch) and /create, including exact prefilled deployment targets. Online deployment checks follow the scoped push.

@@ -54,7 +54,7 @@ Exit gate: protected operations reject unauthenticated and out-of-scope actors; 
 
 ## Phase 6 — Controlled write experience (five safety slices implemented)
 
-- [ ] Prioritize which existing command APIs require UI forms
+- [x] Prioritize which existing command APIs require UI forms — all 14 are grouped in docs/controlled-write-ui.md; Snapshot/actual/Batch request preparation is implemented, authenticated submission remains pending
 - [x] Add idempotency keys and explicit conflict behavior where absent — all 14 current command routes support request-ID contracts; optional no-key legacy semantics remain documented
 - [x] Add concurrency protection for approval and other state transitions — all 14 current routes serialize their command scope; actual reports add expected-version conflicts for keyed calls
 - [ ] Provide correction/revocation flows using new history records, not destructive edits — actual-report corrections append full before/after audit; other lifecycle correction/revocation workflows remain
@@ -79,15 +79,16 @@ Use `规划：<目标>` to agree on scope and acceptance criteria. A roadmap ite
 
 ## Current measurable progress and remaining sequence
 
-Checked roadmap items are now 33/44 (75%): Phase 1 5/5, Phase 2 5/5 (demo),
-Phase 3 5/5 (demo), Phase 4 8/9, Phase 5 8/9, Phase 6 2/5 (40%) and Phase 7 0/6.
+Checked roadmap items are now 34/44 (77%): Phase 1 5/5, Phase 2 5/5 (demo),
+Phase 3 5/5 (demo), Phase 4 8/9, Phase 5 8/9, Phase 6 3/5 (60%) and Phase 7 0/6.
 All 14 write routes declare request-ID, row serialization, exact scope, trusted actor
 and atomic audit. Actual keyed reports require expected_version and replacement
 reason. Legacy no-key paths remain compatible and weaker; broad correction/revocation,
 UI and result confirmation/trace are incomplete. These percentages are checked scope,
 not provider configuration or production-readiness certification.
 
-1. Select controlled write forms and define validation/confirmation/result trace;
+1. Connect first request-preparation forms to approved identity/session and define
+   authenticated submission, uncertain-result recovery and successful result trace;
    keep public staging read-only and use a separately approved controlled target.
 2. Extend append-only correction/revocation contracts beyond actual reporting;
    never infer physical flashing reversal or alter existing batch history.

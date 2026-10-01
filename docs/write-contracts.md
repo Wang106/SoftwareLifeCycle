@@ -239,3 +239,13 @@ observes real blocking across sessions, checks stale ORM refresh, competing vers
 global key uniqueness, atomic rollback/lock release and old-state migration preservation.
 All 14 routes now declare request-ID, row serialization, exact scope, actor and atomic
 audit contracts. Optional legacy paths remain weaker; this is not production readiness.
+
+## Frontend request preparation
+
+Snapshot/actual/Batch /commands forms prepare the reviewed existing command bodies
+with a fixed request UUID. Editing invalidates review; confirmation gates export.
+The envelope has method/path/body; actual API execution sends only body. Client
+checks are syntactic, not permission/business validation. Exact expected audit links
+may be unavailable before execution and are not success evidence. No backend route,
+submit transport or automatic retry is added; all 14 API contracts remain unchanged.
+See [controlled-write-ui.md](controlled-write-ui.md) for scope and pending acceptance.

@@ -16,6 +16,7 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
   const profile = await apiGet<Profile>(`/api/v1/releases/standard/id/${encodeURIComponent(releaseId)}`);
   if (!profile) return <section className="panel"><h1>Standard release unavailable</h1><p className="muted">The release was not found or the API could not be reached.</p><Link href="/releases/standard">Back to standard releases →</Link></section>;
   return <>
+    <p><Link href={`/commands?${new URLSearchParams({operation: "snapshot", target: profile.id})}`}>Prepare Snapshot request →</Link></p>
     <p><Link href={`/approvals?release_id=${profile.id}`}>Approval history →</Link> · <Link href={`/release-decisions?release_id=${profile.id}`}>Release decision history →</Link></p>
     <p><Link href={`/deployments?release_id=${profile.id}`}>Deployment history →</Link> · <Link href={`/production/batches?release_id=${profile.id}`}>Batch history →</Link></p>
     <p><Link href={`/distribution/deliveries?release_id=${profile.id}`}>Delivery history →</Link> · <Link href={`/distribution/distributions?release_id=${profile.id}`}>Distribution history →</Link> · <Link href={`/distribution/authorizations?release_id=${profile.id}`}>Production authorizations →</Link></p>

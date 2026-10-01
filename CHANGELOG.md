@@ -1,5 +1,14 @@
 # Changelog
 
+## Request-preparation workspace — 2026-10-01
+
+- Codex development adds /commands preparation for Snapshot, actual-software and Batch: input validation, immutable reviewed key/body, confirmation/copy and expected business/audit links.
+- Release/deployment/Create pages provide exact-context entry points; deployment detail shows actual_version without inventing zero for missing data.
+- All 14 command forms have explicit priorities. This page does not submit, authenticate, persist or claim business success.
+- API 0.18.0 and migration head 0017 are unchanged; public staging stays read-only. Roadmap scope is 34/44 (77%), Phase 6 3/5 (60%); authenticated submission and general correction/result flows remain.
+- Frontend helper tests: **30 passed, no skips**. Next.js production and OpenNext/Cloudflare Worker builds passed; existing multiple-lockfile/Autoprefixer/cache/proxy warnings remain. Complete Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL tests**. The first two attempts encountered PostgreSQL system-catalog file read failures in workspace test directories; a new isolated /tmp cluster completed the entire suite. No backend/staging database was changed to resolve this test-runtime issue. No migration is added; head remains 0017. Local Next.js SSR checks passed for /commands (Snapshot, actual and Batch) and /create, including exact prefilled deployment targets. Online deployment checks follow the scoped push.
+
+
 ## 0.18.0 — Actual-report retry/version/correction (2026-10-01)
 
 - Codex development: optional request-ID actual reports require expected_version; matching retries recover original status/version from atomic audit without another write/event.

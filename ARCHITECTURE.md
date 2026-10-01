@@ -163,3 +163,12 @@ A frozen service result reads the original after-state on retry, instead of muta
 a cached Deployment or returning its later state. Cross-target key collisions roll
 back the losing projection/event. Legacy no-key reports remain weaker. The full
 contract and limits are in [docs/write-contracts.md](docs/write-contracts.md).
+
+## Request-preparation frontend
+
+The /commands server page selects bounded initial form context; a client component
+uses a transport-free pure helper to validate and freeze a request. Field/target
+changes invalidate review; confirmation enables clipboard export with a stable key.
+Only React memory is used. No token, API-origin input, browser storage, mutation
+route or POST transport is introduced. Backend security/atomicity remains authoritative
+for later controlled-client execution. See docs/controlled-write-ui.md.

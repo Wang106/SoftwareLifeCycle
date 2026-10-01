@@ -9,6 +9,7 @@ export type DeploymentDetail = {
   id: string;
   deployment_no: string;
   status: string;
+  actual_version?: number;
   authorization: { id: string; authorization_no: string; status: string } | null;
   customer: { id: string; code: string; name: string } | null;
   project: { id: string; code: string; name: string } | null;

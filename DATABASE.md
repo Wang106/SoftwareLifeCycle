@@ -182,3 +182,11 @@ key races use audit uniqueness as the final guard; the loser fully rolls back.
 Batch/Changeover retain the same Deployment-first ordering under READ COMMITTED.
 Real PostgreSQL tests cover blocking, competing versions, stale cached state,
 rollback/lock release, migration downgrade/upgrade preservation and the negative check.
+
+## Request-preparation UI package
+
+The Snapshot/actual/Batch preparation workspace changes no backend persistence,
+migration or seed. Required head remains 0017_deployment_actual_version. Drafts
+exist only in browser component memory/explicit clipboard export, not the database.
+Expected audit links reference the existing deterministic request event numbers;
+no event exists merely because a user prepared or copied a request.

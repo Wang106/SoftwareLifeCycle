@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**Phase 6 fifth package implements actual-report keyed retry, optimistic versions and audited corrections; public staging remains read-only.**
+**Phase 6 sixth package implements Snapshot/actual/Batch request preparation and prioritizes all 14 command forms; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -24,9 +24,9 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Remaining: retire/bound compatibility lists |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Remaining: configure an approved OIDC provider |
-| Phase 6 — Controlled write experience | 2 / 5 | 40% | Five slices implemented; UI/correction/result items partial |
+| Phase 6 — Controlled write experience | 3 / 5 | 60% | Safety slices and UI priorities implemented; submission/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
-| **Overall** | **33 / 44** | **75%** | Demo lifecycle is coherent; controlled writes and operations remain |
+| **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
 ## Completed and evidenced in `main`
 
@@ -59,12 +59,12 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 
 ## Next stage
 
-1. Select controlled write forms with validation, confirmation and result trace.
+1. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
 2. Extend correction/revocation beyond actual reports, preserving formal history.
 3. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
 4. Migrate legacy lists and add CI, backup/restore, monitoring and environment governance.
 
-Roadmap progress is **33/44 (75%)**, Phase 6 **2/5 (40%)**; these are implemented
+Roadmap progress is **34/44 (77%)**, Phase 6 **3/5 (60%)**; these are implemented
 scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.md).
 
 ## Deployment status
@@ -129,6 +129,10 @@ At the end of any completed development task:
 3. Record checks actually run and distinguish passing, warning, skipped and unavailable checks.
 4. Review the final diff, commit only in-scope files, push, and report the resulting commit hash and push status.
 
+
+Request preparation for Snapshot, actual software and Batch is available in code at
+`/commands`, with validation, immutable confirmation/copy and expected audit links.
+It never submits or saves a request. See [UI scope and remaining work](docs/controlled-write-ui.md).
 ## Phase 6 second package and recurring report requirements
 
 Development mode: **Codex**. Approval actions and release decisions now implement
@@ -216,3 +220,13 @@ returned HTTP 403 with Cloudflare error code 1010; this client-dependent result 
 a fully passing default-agent smoke run. No frontend access policy, code or build was changed; no separate frontend deployment was needed. A first health attempt timed out during Render's
 update_in_progress stage; the post-live checks above passed. No public setting or
 application change was made to resolve that in-progress timeout.
+
+## Phase 6 sixth package — request preparation
+
+Development mode: **Codex**. Starting main: `4f1af50ade84c4daa964499f75725969c476685a`.
+Three request-preparation forms add validation, fixed-key confirmation/copy, exact
+context links and expected audit identifiers. All 14 command forms have a priority
+plan. There is no submit transport, login or successful-write claim. API remains
+0.18.0; schema remains 0017, with no migration. Roadmap scope becomes 34/44 (77%),
+Phase 6 3/5 (60%); authenticated submission, broader corrections and full result
+trace are unfinished. Frontend helper tests: **30 passed, no skips**. Next.js production and OpenNext/Cloudflare Worker builds passed; existing multiple-lockfile/Autoprefixer/cache/proxy warnings remain. Complete Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL tests**. The first two attempts encountered PostgreSQL system-catalog file read failures in workspace test directories; a new isolated /tmp cluster completed the entire suite. No backend/staging database was changed to resolve this test-runtime issue. No migration is added; head remains 0017. Local Next.js SSR checks passed for /commands (Snapshot, actual and Batch) and /create, including exact prefilled deployment targets. Online deployment checks follow the scoped push.

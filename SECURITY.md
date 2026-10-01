@@ -154,3 +154,12 @@ and atomic audit contracts. Legacy no-key reporting may still overwrite without 
 precondition, so controlled multi-user clients must adopt keyed/versioned reporting.
 Approved OIDC/provider-backed acceptance, browser login, audited grants and controlled
 write UI remain unfinished. Public staging stays sample-only and read-only.
+
+## Request-preparation boundary
+
+The public /commands workspace performs local validation/review/clipboard export
+only. It has no write transport, token/login inputs, API-host picker, mutation proxy
+or persistence. Prepared/copied requests do not prove permission or successful writes.
+Current API READ_ONLY_MODE, OIDC, exact scope, trusted actor and audit behavior is
+unchanged. Authenticated submission must wait for approved identity/session and
+a controlled target; a frontend must not proxy auth-disabled public writes.

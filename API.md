@@ -196,3 +196,11 @@ an explicit reason. The audit retains before/after state; existing batches and p
 flashing are not reversed. Legacy no-key calls remain compatible, increment version
 and append events, but have no retry safety or required precondition. See the full
 contract in [docs/write-contracts.md](docs/write-contracts.md).
+
+## Frontend command preparation
+
+`/commands` prepares keyed Snapshot, actual-software and Batch requests using the
+existing 0.18.0 contracts. It copies an envelope `{method, path, body}`; a controlled
+client sends only body as JSON. No frontend mutation route or new backend API is
+added. Client checks do not establish authorization, entity membership or quota.
+See [UI contract](docs/controlled-write-ui.md) for confirmation/retry and trace limits.
