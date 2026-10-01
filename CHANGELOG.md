@@ -4,6 +4,12 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Third-package full verification: 573 passed, 2326 warnings, no skips; 63 real PostgreSQL 16.15 cases. Single Alembic head and PostgreSQL SQL generation passed, no migration/frontend change. A disposable PostgreSQL startup error was fixed before the successful full rerun.
+
+- API `0.16.0`: Delivery, Distribution and Production Authorization optional request-ID replay, content/trusted-actor conflict and PostgreSQL parent-row serialization. Legacy clients and HTTP 201 shapes remain compatible; delivery file order is equivalent and duplicate IDs remain invalid.
+- Release Decision now acquires Release before ApprovalRequest, coordinating latest-decision checks with Delivery/Authorization; failures roll back domain, child items and atomic audit together. No migration or historical backfill.
+- Added distribution retry/policy/actor/permission/failure tests and 32 real PostgreSQL concurrency cases, including observed cross-parent blocking and both release-decision/downstream orderings. Safety contract coverage is 11/14 (79%); broad roadmap remains 31/44 (70%).
+
 - Verified Approval/Decision safety deployment `dep-dav00btg1s2s73d4nqo0` for `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50`: live API `0.15.0`, database `0016_authenticated_audit_actors`, harmless writes 403 `read_only_mode`, frontend 200 with Dashboard HTML.
 
 - API `0.15.0`: Approval Action and Release Decision optional request-ID retry, canonical content/actor conflict and shared PostgreSQL ApprovalRequest serialization. Keyed actions require an exact expected-step UUID and return original after-status without advancing another step. Legacy no-key clients and distinct decision-number history remain compatible.

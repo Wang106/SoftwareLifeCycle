@@ -63,7 +63,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Compatibility-list migration remains |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
-| Phase 6 — Controlled write experience | 0 / 5 | 0% | Snapshot/Batch and Approval/Decision slices implemented; broad items partial |
+| Phase 6 — Controlled write experience | 0 / 5 | 0% | Three safety slices implemented; broad items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **31 / 44** | **70%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
@@ -79,15 +79,15 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 49 backend test modules; the latest full run passed all 477 tests under Python 3.12, including 31 real PostgreSQL tests without skips.
+- 51 backend test modules; the latest full run passed all 573 tests under Python 3.12, including 63 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
 
 1. No approved OIDC issuer, audience or JWKS endpoint is configured in a target environment.
 2. There is no audited principal/grant administration API or browser login/session flow.
-3. Snapshot/Batch and Approval/Decision now provide optional request-ID idempotency; several other commands still lack it.
-4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; other commands remain unfinished.
+3. Snapshot/Batch, Approval/Decision and the distribution chain now provide optional request-ID idempotency; several other commands still lack it.
+4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment, actual-software and Changeover remain unfinished.
 5. Actual-software reporting is a mutable overwrite without an optimistic-concurrency token or explicit correction command, although every report is now audited.
 6. Some legacy list/history endpoints remain unbounded.
 7. CI, backup/restore, monitoring, alerting and incident runbooks are not present.
@@ -95,7 +95,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 
 ## Recommended next development package
 
-The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **delivery/distribution/authorization/deployment/changeover retry safety and actual-software conflict control**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
+The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **deployment/changeover retry safety and actual-software conflict control**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
 
 ### Scope
 
@@ -138,7 +138,7 @@ POST https://softwarelifecycle-api-test.onrender.com/api/v1/deployments
 GET  https://softwarelifecycle.whf969.com
 ```
 
-Expected public state after this package deploys: API `0.15.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
+Expected public state after this package deploys: API `0.16.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
 
 ## Working-tree caution
 
@@ -193,3 +193,17 @@ readiness. Complete test and deployment evidence is recorded below.
 Second-package verification: Python 3.12 full backend run **477 passed, 1646 warnings, no skips**, including **31 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend change/build. Render deployment `dep-dav00btg1s2s73d4nqo0` is live for `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50` (2026-10-01 06:40:39 UTC). Health returned 200 / API `0.15.0` / database `0016_authenticated_audit_actors`; harmless deployment and Snapshot POSTs returned 403 `read_only_mode`. Frontend returned 200 with Dashboard HTML. No frontend change or separate frontend deployment was needed.
 
 Staging smoke note: the stock 10-second check timed out on `/api/v1/activity` after the first three reads passed. Repeating all four reads and the harmless Snapshot write with a 45-second timeout passed; the separate deployment write also returned 403 `read_only_mode`. No smoke-check timeout or public setting was changed.
+
+## Phase 6 third package — development report
+
+Development mode: **Codex**. Starting GitHub main is
+`a131d2f931e240d17b5c9f59d00e43a2061716bf`. API code is `0.16.0`;
+schema remains `0016_authenticated_audit_actors`, with no migration.
+Delivery, Distribution and Authorization support optional request-ID replay and
+atomic rollback. Release Decision also acquires Release before ApprovalRequest,
+coordinating latest-decision validation. Current route safety coverage is 11/14
+(79%); overall checked roadmap remains 31/44 (70%), with Phase 6 broad items partial.
+Next: Deployment/Changeover retry and actual-software concurrency/correction.
+Full Python 3.12 suite: **573 passed, 2326 warnings, no skips**, including **63 real PostgreSQL 16.15 tests**. This package adds 64 unit/route cases and 32 PostgreSQL cases. Single Alembic head and PostgreSQL SQL generation passed (850 lines). No frontend code/build was changed. Deployment verification follows the push.
+
+Test environment note: the first full run had 63 PostgreSQL connection errors because the disposable local server retained a stale shutdown PID file. The test runtime was restarted with clean shutdown/wait handling; the complete rerun above passed. No application or staging database was altered to resolve this.

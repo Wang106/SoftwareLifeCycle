@@ -23,6 +23,7 @@ router = APIRouter(prefix="/api/v1", tags=["distribution"])
 
 
 class DeliveryCreate(BaseModel):
+    request_id: uuid.UUID | None = None
     release_id: uuid.UUID
     package_no: str
     revision: int = 1
@@ -34,6 +35,7 @@ class DeliveryCreate(BaseModel):
 
 
 class DistributionCreate(BaseModel):
+    request_id: uuid.UUID | None = None
     delivery_package_id: uuid.UUID
     distribution_no: str
     recipient_type: str
@@ -41,6 +43,7 @@ class DistributionCreate(BaseModel):
 
 
 class AuthorizationCreate(BaseModel):
+    request_id: uuid.UUID | None = None
     release_id: uuid.UUID
     distribution_id: uuid.UUID
     authorization_no: str
@@ -288,6 +291,7 @@ def create_delivery(
             snapshot_artifact_ids=payload.snapshot_artifact_ids,
             created_by=payload.created_by,
             actor_context=actor,
+            request_id=payload.request_id,
         )
         return {"id": str(row.id), "package_no": row.package_no, "revision": row.revision, "status": row.status}
     except DistributionError as exc:
@@ -336,6 +340,7 @@ def create_distribution(
             recipient_type=payload.recipient_type,
             recipient_code=payload.recipient_code,
             actor_context=actor,
+            request_id=payload.request_id,
         )
         return {"id": str(row.id), "distribution_no": row.distribution_no, "status": row.status}
     except DistributionError as exc:
@@ -402,6 +407,7 @@ def create_authorization(
             batch_limit=payload.batch_limit,
             restriction_note=payload.restriction_note,
             actor_context=actor,
+            request_id=payload.request_id,
         )
         return {"id": str(row.id), "authorization_no": row.authorization_no, "status": row.status}
     except DistributionError as exc:

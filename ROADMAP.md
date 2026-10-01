@@ -52,11 +52,11 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 
 Exit gate: protected operations reject unauthenticated and out-of-scope actors; positive and negative integration tests pass; security decisions are documented.
 
-## Phase 6 — Controlled write experience (two safety slices implemented)
+## Phase 6 — Controlled write experience (three safety slices implemented)
 
 - [ ] Prioritize which existing command APIs require UI forms
-- [ ] Add idempotency keys and explicit conflict behavior where absent — Snapshot, Batch, Approval Action and Release Decision implemented; six routes remain pending
-- [ ] Add concurrency protection for approval and other state transitions — Release numbering, shared Batch quota and approval/decision transitions implemented; six routes remain pending
+- [ ] Add idempotency keys and explicit conflict behavior where absent — Snapshot, Batch, Approval Action, Release Decision, Delivery, Distribution and Authorization implemented; three routes remain pending
+- [ ] Add concurrency protection for approval and other state transitions — Release numbering, shared Batch quota, approval/decision and distribution-chain serialization implemented; three routes remain pending
 - [ ] Provide correction/revocation flows using new history records, not destructive edits
 - [ ] Add validation, confirmation and trace links to every write result
 
@@ -81,11 +81,11 @@ Use `规划：<目标>` to agree on scope and acceptance criteria. A roadmap ite
 
 Checked roadmap items remain 31/44 (70%): Phase 1 5/5, Phase 2 5/5 (demo),
 Phase 3 5/5 (demo), Phase 4 8/9, Phase 5 8/9, Phase 6 0/5 and Phase 7 0/6.
-Phase 6 broad items remain partial; 8/14 write routes (57%) now declare request-ID
+Phase 6 broad items remain partial; 11/14 write routes (79%) now declare request-ID
 and row-lock controls, while all 14 declare exact scope, actor binding and atomic audit.
 
-1. Add retry/transaction protection to delivery, distribution, authorization,
-   deployment and changeover; define actual-software optimistic concurrency.
+1. Add retry/transaction protection to deployment and changeover; define
+   actual-software optimistic concurrency and correction semantics.
 2. Define append-only correction/revocation and result validation/confirmation/trace;
    select controlled UI forms without opening public staging writes.
 3. Migrate consumers from unbounded compatibility lists to bounded catalogs.

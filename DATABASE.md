@@ -122,3 +122,22 @@ Cross-approval UUID races roll back the losing transaction. No-key compatibility
 is retained; distinct decision numbers remain allowed for an approved request.
 Real PostgreSQL tests verify actual blocking, final-action/decision ordering,
 refresh of cached state, global-key collisions and full rollback/lock release.
+
+## Distribution retry storage and locks (API 0.16.0)
+
+No migration: optional request UUIDs use existing `delivery_packages.id`,
+`distributions.id` and `software_authorizations.id`. Canonical request evidence is
+stored in the same atomic audit JSONB under `request`, using existing `EVT-DP-`,
+`EVT-DS-`, `EVT-PA-` event numbers. UUID keys are global within each domain table;
+legacy rows are not backfilled. Existing unique package-number/revision, distribution
+number, authorization number, item and audit constraints are retained.
+
+Release Decision now uses Release -> ApprovalRequest locks. Delivery uses the same
+order; Distribution locks Package; Authorization uses Release -> Package -> Distribution,
+with explicit `FOR UPDATE OF delivery_packages` on its parent join. Earlier identity-map
+reads refresh before validation. All locks span domain, child items, audit and commit.
+The latest-decision lookup is deterministic by descending decided time then UUID;
+Release serialization ensures supported new decisions commit before dependent checks.
+Cross-parent global-key/business-number conflicts roll back all domain/items/audit.
+Real PostgreSQL tests apply the full migration chain in disposable schemas and observe
+blocking, both ordering directions, stale-state refresh and lock release after failure.

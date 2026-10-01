@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.15.0
+FastAPI 0.16.0
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -116,3 +116,18 @@ replay; a frozen response value reads original after-status without changing a
 cached workflow object. Decisions use the same UUID/audit mechanism and retain
 existing distinct-number history semantics. Constraint, audit and commit failures
 roll back the entire command. Current HTTP scope and actor resolution precede replay.
+
+## Distribution chain serialization (0.16.0)
+
+Delivery, Distribution and Production Authorization reuse domain UUIDs and atomic
+audit request evidence for optional-key replay. Their command wrappers roll back
+validation and domain-child insertion failures as well as audit/commit failures.
+Delivery locks Release then ApprovalRequest; Distribution locks exact Package;
+Authorization locks Release, Package, Distribution. Release Decision now locks
+Release before ApprovalRequest, so new decisions serialize with latest-decision
+validation in Delivery/Authorization. Approval Action retains ApprovalRequest/step
+locks and never acquires Release afterward. No cyclic reverse acquisition is added.
+
+The tested contract covers supported command paths under READ COMMITTED; arbitrary
+SQL edits or future transition routes must implement their own consistent lock order.
+Legacy/no-key calls keep duplicate rejection; no full production-readiness claim follows.

@@ -157,6 +157,13 @@ class ApprovalService:
     def _create_release_decision(self, approval_no, decision_no, decided_by,
                                  readiness_status, decision, notes, actor_context, request_id):
         resolved_actor = actor_context or ActorContext.legacy(decided_by)
+        # Release precedes ApprovalRequest: delivery/authorization latest-decision
+        # checks share this lock, while actions only acquire ApprovalRequest.
+        self.db.scalar(select(Release).join(
+            ApprovalRequest, ApprovalRequest.target_id == Release.id
+        ).where(ApprovalRequest.approval_no == approval_no,
+                ApprovalRequest.target_type == "RELEASE")
+          .with_for_update(of=Release).execution_options(populate_existing=True))
         approval = self.db.scalars(
             select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)
             .with_for_update().execution_options(populate_existing=True)

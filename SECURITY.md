@@ -65,7 +65,7 @@ Historical/seed records and `AUTH_MODE=disabled` writes have a null principal re
 3. **Implemented:** require an active scoped role or the exceptional global admin role.
 4. **Implemented:** derive audit actors from the authenticated principal and preserve request declarations separately for every current write.
 5. **Implemented:** append audit events atomically for snapshot and production commands.
-6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval actions and release decisions also support these safeguards; remaining commands are unfinished.
+6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval actions and release decisions also support these safeguards; Delivery, Distribution and Production Authorization also implement optional-key replay and locks; Deployment, actual-software and Changeover remain unfinished.
 7. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract tests already cover wrong scope/role, suspended membership and actor mismatch.
 
 No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
@@ -103,3 +103,21 @@ Keyed actions require an explicit expected step; unkeyed compatibility calls sti
 act on the current step and do not provide the same retry guarantee. ApprovalRequest
 locking serializes actions and decisions through atomic audit commit. No approved
 OIDC provider or public write capability is introduced; staging remains read-only.
+
+## Distribution-chain retry trust boundary
+
+Current HTTP authorization and actor resolution run before every replay. Delivery
+and Distribution require exact release/project distribution authority; Authorization
+requires both the supplied project and stored distribution-chain production authority.
+An absent/suspended scoped grant denies replay. Request IDs do not grant access:
+principal, effective/full display name and retained declaration must match audit
+identity, including auth-disabled versus authenticated mode changes. Delivery retains
+`created_by` as declaration while storing the trusted actor in OIDC mode.
+
+Fresh Delivery retains frozen artifact membership, INTERNAL_ONLY denial and recipient/
+purpose policy checks; fresh Authorization retains exact release/snapshot, customer/
+project, recipient, purpose and finite-limit validation. Locks coordinate supported
+latest-release-decision checks. Recovery of an already committed keyed write does not
+recheck mutable parent eligibility, but never bypasses current HTTP permission.
+No provider, public write UI or write-enabled public target is configured; staging
+continues to be sample-only and read-only.

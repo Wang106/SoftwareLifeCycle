@@ -10,10 +10,10 @@ The enforced scoped roles are recorded in the executable contracts and defined i
 | --- | --- | --- | --- | --- | --- | --- |
 | `POST /api/v1/releases/{release_id}/create-snapshot` | Release | Authenticated | Atomic append | Optional request ID | Release row lock | No-key legacy calls create a new snapshot |
 | `POST /api/v1/approvals/{approval_no}/actions` | Approval target/step | Authenticated; declaration retained | Atomic append | Optional request ID + expected step | ApprovalRequest and step row locks | Unkeyed callers act on current step |
-| `POST /api/v1/approvals/{approval_no}/release-decision` | Approved release/snapshot | Authenticated; declaration retained | Atomic append | Optional request ID | ApprovalRequest row lock | Distinct decision numbers retain history semantics |
-| `POST /api/v1/deliveries` | Release/snapshot/recipient/artifacts | Authenticated; optional declaration retained | Atomic append | Duplicate rejection | None | No idempotency key |
-| `POST /api/v1/distributions` | Package/recipient | Authenticated | Atomic append | Duplicate rejection | None | No idempotency key |
-| `POST /api/v1/authorizations` | Distribution/customer/project/site/line | Authenticated | Atomic append | Duplicate rejection | None | No idempotency key |
+| `POST /api/v1/approvals/{approval_no}/release-decision` | Approved release/snapshot | Authenticated; declaration retained | Atomic append | Optional request ID | Release then ApprovalRequest row locks | Distinct decision numbers retain history semantics |
+| `POST /api/v1/deliveries` | Release/snapshot/recipient/artifacts | Authenticated; optional declaration retained | Atomic append | Optional request ID | Release then ApprovalRequest row locks | Legacy duplicate number/revision rejection |
+| `POST /api/v1/distributions` | Package/recipient | Authenticated | Atomic append | Optional request ID | Package row lock | Legacy duplicate number rejection |
+| `POST /api/v1/authorizations` | Distribution/customer/project/site/line | Authenticated | Atomic append | Optional request ID | Release then Package then Distribution row locks | Legacy duplicate number rejection |
 | `POST /api/v1/deployments` | Authorization/line | Authenticated | Atomic append | Duplicate rejection | None | Scope rows are not locked |
 | `POST /api/v1/deployments/{deployment_no}/actual` | Deployment/release/snapshot | Authenticated | Atomic append | Mutable overwrite | None | No optimistic lock |
 | `POST /api/v1/deployments/{deployment_no}/changeovers` | Deployment/releases | Authenticated | Atomic append | Duplicate rejection | None | Deployment row is not locked |
@@ -114,6 +114,43 @@ steps, no-key compatibility, exact-role denial and transaction failures.
 harness described above, asserts actual blocking and verifies step competition,
 final-action/decision ordering, global-key collisions and rollback/lock release.
 
-Request-ID and row-lock contracts now cover 8/14 routes (57%); scope/actor/atomic
+At the second package, request-ID and row-lock contracts covered 8/14 routes (57%); scope/actor/atomic
 audit contracts cover 14/14 (100%). These counts describe reviewed route contracts,
 not provider configuration, production readiness or completion of broad Phase 6 items.
+
+## Phase 6 third package: Delivery, Distribution, Production Authorization
+
+Optional UUID `request_id` identifies the existing domain primary key; canonical
+request evidence is committed with the domain row/items and audit. Keys are global
+within each record type, not per parent. Existing HTTP 201 shapes expose the stored
+row (including its current status). There is no frozen response-body ledger.
+
+- Delivery compares release UUID, package number/revision, recipient type/code,
+  purpose, declared `created_by` and sorted artifact UUID collection. Reordering
+  files is equivalent; duplicates are invalid. Distribution compares exact package
+  UUID, distribution number and recipient. Authorization compares release/distribution
+  UUIDs, number, customer/project UUIDs, site/line, purpose, limit and restriction note.
+- Same key/content/actor reuses the domain row and existing audit; changed fields,
+  audit identity or legacy missing evidence conflict. All HTTP retries still require
+  current exact permissions. New requests retain every existing business/policy rule.
+- Delivery locks/refreshes Release then selected ApprovalRequest; Distribution
+  locks/refreshes Package; Authorization locks Release, Package, Distribution.
+  Release Decision now locks Release before ApprovalRequest, coordinating latest
+  decision checks. No code path acquires Release after ApprovalRequest/Package.
+- Replay precedes mutable parent status/latest-decision checks. Fresh commands
+  validate committed parent state after locks. All validation, child insert,
+  uniqueness, audit-after-flush and commit failures roll back and release locks.
+  Independent parents retain unique database constraints as final conflict guards.
+- Unkeyed clients retain duplicate rejection (Delivery uses number plus revision).
+  No migration/backfill/server retry, correction, revocation, public write UI or
+  production certification is added. Future SQL/transition writers must honor locks.
+
+`test_distribution_retry.py` covers content, actor, permission, legacy, policy,
+validation/flush/audit/commit rollback and artifact-order semantics.
+`test_distribution_concurrency_postgres.py` observes actual blocking for same-parent
+and cross-parent races, stale ORM refresh, child/event rollback, lock release, and
+new release decisions competing with Delivery/Authorization in both orderings.
+
+Current request-ID/row-lock coverage is **11/14 (79%)**. The remaining routes are
+Deployment creation, actual-software reporting and Changeover creation. Scope/actor/
+atomic-audit coverage remains 14/14; these counts do not certify an OIDC deployment.

@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.15.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.16.0`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -59,7 +59,7 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 - In OIDC mode, every current write route additionally requires its exact active project/software role or the exceptional `PLATFORM_ADMIN` override. Scope is resolved from stored relationships; a client-supplied project alone is not authorization evidence.
 - `AUTH_MODE=disabled` preserves controlled local development compatibility; it is not appropriate for public writes.
 - For atomically audited writes in OIDC mode, stored actor names come from the authenticated principal. Audit events also expose `actor_principal_id`, full `actor_display_name` and the original `declared_actor_name`. Disabled mode retains legacy declaration behavior.
-- Snapshot, production-batch creation, approval actions and release decisions now accept optional client-generated request IDs, in addition to the existing request-ID commands. Other commands still have incomplete retry protection.
+- Snapshot, production-batch creation, approval actions, release decisions, deliveries, distributions and production authorizations now accept optional client-generated request IDs, in addition to the existing request-ID commands. Other commands still have incomplete retry protection.
 - All 14 current command routes record an audit event in the same transaction as their domain change. Snapshot and production audit payloads retain exact release, snapshot, authorization, deployment and before/after identifiers as applicable.
 - Snapshot and exact UUID bindings take precedence over matching version, name or display code.
 - Bounded catalogs validate filters, limit and offset; totals/counts apply to the full filtered result, not just the visible page.
@@ -118,3 +118,30 @@ audit and commit. Concurrent decisions wait for the final action and recheck its
 committed status. Distinct decision numbers retain existing append-history behavior;
 a duplicate decision number under another key conflicts. Every replay still passes
 current exact-scope authorization. No migration or server retry loop is added.
+
+## Delivery / Distribution / Authorization retry contract (0.16.0)
+
+`POST /deliveries`, `/distributions` and `/authorizations` add optional UUID
+`request_id` to their existing JSON. UUID validation returns 422; existing payloads
+and HTTP 201 response shapes remain compatible. Same key/content/trusted actor
+returns the existing domain row without additional business/items/audit records.
+Responses expose that row's stored status; this is not a frozen historical response
+body or a lifecycle transition API. Reusing a key with changed content/actor or
+claiming a legacy row without request evidence returns 409. Without a key, duplicate
+business numbers still conflict; delivery identity includes both number and revision.
+
+Canonical retry content includes every existing input field. Delivery artifact UUIDs
+are compared as a sorted collection: order changes match, duplicate IDs remain
+invalid. Strings and optional/null values keep existing exact semantics. Distribution
+and Authorization have no declared-actor input; OIDC still binds their trusted actor.
+Replay precedes mutable parent eligibility/latest-decision checks but always requires
+current exact HTTP scope. Fresh writes retain all frozen artifact policy, recipient,
+release/snapshot, customer/project, purpose and batch-limit checks.
+
+Delivery locks Release then the selected decision's ApprovalRequest. Distribution
+locks its exact DeliveryPackage. Authorization locks Release, Package, Distribution
+in that order. Release Decision now locks Release before ApprovalRequest, coordinating
+all current latest-decision writers/readers. Locks refresh ORM state and last through
+atomic domain/audit commit. Unique UUID/business constraints guard cross-parent races;
+all validation/constraint/audit/commit failures roll back. No migration, public writes,
+correction/revocation or automatic server retry is introduced.
