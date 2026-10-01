@@ -1,5 +1,14 @@
 # Changelog
 
+## Governance request-preparation forms — 2026-10-01
+
+- Codex adds Approval Action/Release Decision preparation with explicit step/action, exact declarations, immutable review/confirmation/copy and business/audit links.
+- Approval detail shows step UUIDs and provides exact-target preparation links; missing/stale context never proves an active step or approved readiness.
+- Five of 14 command forms prepare requests. Login, authenticated submission, provider-backed outcome handling and nine other forms remain incomplete.
+- No backend/API/schema change; API 0.18.0, head 0017 and public read-only settings remain. Roadmap remains 34/44 (77%), Phase 6 3/5 (60%).
+
+- Verification: 56 frontend tests; Next.js/OpenNext builds; complete backend 688 passed, no skips, including 103 real PostgreSQL tests. Local preparation SSR passed. No new migration.
+
 ## Request-preparation workspace — 2026-10-01
 
 - Codex development adds /commands preparation for Snapshot, actual-software and Batch: input validation, immutable reviewed key/body, confirmation/copy and expected business/audit links.

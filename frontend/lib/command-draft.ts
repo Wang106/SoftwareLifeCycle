@@ -1,8 +1,9 @@
 /** Request preparation only. This module has no transport or persistence. */
-export type Operation = 'snapshot' | 'actual' | 'batch';
+export type Operation = 'snapshot' | 'actual' | 'batch' | 'approval' | 'decision';
 export type Fields = {
   target: string; release: string; snapshot: string; version: string;
   reason: string; timestamp: string; batch: string; changeover: string; note: string;
+  step: string; actor: string; action: string; decisionNo: string; readiness: string; decision: string;
 };
 export type Draft = Readonly<{
   operation: Operation; path: string; payload: Readonly<Record<string, string | number | null>>;
@@ -11,7 +12,8 @@ export type Draft = Readonly<{
 export type Review = Readonly<{ draft: Draft; confirmed: boolean }>;
 export const blankFields: Fields = {
   target: '', release: '', snapshot: '', version: '', reason: '', timestamp: '',
-  batch: '', changeover: '', note: '',
+  batch: '', changeover: '', note: '', step: '', actor: '', action: '',
+  decisionNo: '', readiness: '', decision: '',
 };
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function validUuid(value: string): boolean { return uuidPattern.test(value); }
@@ -27,6 +29,12 @@ function identifier(value: string, label: string, max: number): string {
     throw new Error(`${label} must contain 1–${max} characters without path separators, dot segments or control characters.`);
   }
   return result;
+}
+function declaredText(value: string, label: string, max: number): string {
+  if (!value.trim() || value.length > max || /[\u0000-\u001f\u007f]/.test(value)) {
+    throw new Error(`${label} must contain 1–${max} characters without control characters.`);
+  }
+  return value; // Actor/readiness/decision declarations retain exact API semantics.
 }
 function timestamp(value: string): string | null {
   if (!value.trim()) return null;
@@ -54,6 +62,29 @@ export function prepare(operation: Operation, fields: Fields, requestId: string)
     path = `/api/v1/releases/${target}/create-snapshot`;
     trace = `/releases/${target}/snapshots`;
     audit = `/activity/EVT-SN-${key.replaceAll("-", "")}`;
+  } else if (operation === 'approval' || operation === 'decision') {
+    const target = identifier(fields.target, 'Approval number', 50);
+    const encoded = encodeURIComponent(target);
+    path = `/api/v1/approvals/${encoded}/${operation === 'approval' ? 'actions' : 'release-decision'}`;
+    trace = `/approvals/${encoded}`;
+    audit = `/activity/${operation === 'approval' ? 'EVT-AP-' : 'EVT-RD-'}${key.replaceAll('-', '')}`;
+    const actor = declaredText(fields.actor, 'Declared operator', 120);
+    if (operation === 'approval') {
+      if (!['APPROVED', 'RETURNED', 'REJECTED'].includes(fields.action)) {
+        throw new Error('Select an explicit approval action.');
+      }
+      payload.expected_step_id = uuid(fields.step, 'Expected approval step');
+      payload.actor = actor;
+      payload.action = fields.action;
+      payload.comment = fields.note || null;
+    } else {
+      payload.decision_no = identifier(fields.decisionNo, 'Decision number', 50);
+      payload.decided_by = actor;
+      payload.readiness_status = declaredText(fields.readiness, 'Recorded readiness status', 30);
+      payload.decision = declaredText(fields.decision, 'Decision', 30);
+      payload.notes = fields.note || null;
+      trace = `/release-decisions/${encodeURIComponent(payload.decision_no)}`;
+    }
   } else {
     const target = identifier(fields.target, 'Deployment number', 50);
     const encoded = encodeURIComponent(target);

@@ -80,3 +80,55 @@ test('invalid key, invalid optional changeover and unsupported operation fail cl
   assert.throws(() => prepare('batch', { ...blankFields, target: 'DEP', batch: 'B', changeover: 'bad' }, key));
   assert.throws(() => prepare('unsupported', actual, key), /Unsupported/);
 });
+const approvalFields = { ...blankFields, target: 'AP? #%', step: snapshot, actor: ' Declared Reviewer ',
+  action: 'APPROVED', note: ' Exact comment\n' };
+const decisionFields = { ...blankFields, target: 'AP', actor: 'Release Authority', decisionNo: 'RD? #%',
+  readiness: 'READY', decision: 'RELEASE', note: ' Exact notes\n' };
+test('keyed approval exports the exact step, declaration and comment, with correctly scoped trace/audit', () => {
+  const review = prepare('approval', approvalFields, key);
+  assert.equal(review.draft.path, '/api/v1/approvals/AP%3F%20%23%25/actions');
+  assert.equal(review.draft.trace, '/approvals/AP%3F%20%23%25');
+  assert.equal(review.draft.audit, '/activity/EVT-AP-12345678123412341234123456789abc');
+  assert.throws(() => exportRequest(review), /Confirm/);
+  assert.deepEqual(exported('approval', approvalFields).body, { request_id: key,
+    expected_step_id: snapshot, actor: ' Declared Reviewer ', action: 'APPROVED', comment: ' Exact comment\n' });
+});
+for (const action of ['APPROVED', 'RETURNED', 'REJECTED']) {
+  test(`approval action ${action} requires explicit exact step`, () => {
+    assert.equal(exported('approval', { ...approvalFields, action, note: '' }).body.action, action);
+    assert.equal(exported('approval', { ...approvalFields, action, note: '' }).body.comment, null);
+  });
+}
+for (const changes of [{ step: '' }, { step: 'bad' }, { action: '' }, { action: 'approved' },
+  { action: 'CANCELLED' }, { actor: '' }, { actor: '   ' }, { actor: 'A'.repeat(121) }, { actor: 'A\nB' }]) {
+  test(`approval invalid declaration/step/action ${JSON.stringify(changes)} fails closed`, () => {
+    assert.throws(() => prepare('approval', { ...approvalFields, ...changes }, key));
+  });
+}
+test('decision exports exact readiness/decision declarations and encoded record/audit links', () => {
+  const review = prepare('decision', decisionFields, key);
+  assert.equal(review.draft.path, '/api/v1/approvals/AP/release-decision');
+  assert.equal(review.draft.trace, '/release-decisions/RD%3F%20%23%25');
+  assert.equal(review.draft.audit, '/activity/EVT-RD-12345678123412341234123456789abc');
+  assert.deepEqual(exported('decision', decisionFields).body, { request_id: key,
+    decision_no: 'RD? #%', decided_by: 'Release Authority', readiness_status: 'READY',
+    decision: 'RELEASE', notes: ' Exact notes\n' });
+  assert.equal(exported('decision', { ...decisionFields, readiness: ' DECLARED ', decision: ' HOLD ', note: '' }).body.decision, ' HOLD ');
+  assert.equal(exported('decision', { ...decisionFields, note: '' }).body.notes, null);
+});
+for (const changes of [{ decisionNo: '' }, { decisionNo: '..' }, { decisionNo: 'RD/A' }, { decisionNo: 'R'.repeat(51) },
+  { readiness: '' }, { readiness: ' ' }, { readiness: 'R'.repeat(31) }, { decision: '' },
+  { decision: 'D'.repeat(31) }, { decision: 'HOLD\n' }, { target: 'AP/A' }]) {
+  test(`invalid decision content ${JSON.stringify(changes)} is rejected`, () => {
+    assert.throws(() => prepare('decision', { ...decisionFields, ...changes }, key));
+  });
+}
+test('governance repeated confirmed exports retain content/key; source edits cannot alter review', () => {
+  for (const [operation, source] of [['approval', approvalFields], ['decision', decisionFields]]) {
+    const fields = { ...source }; const review = confirm(prepare(operation, fields, key), true);
+    const before = exportRequest(review); fields.actor = 'Changed'; fields.step = release; fields.decision = 'HOLD';
+    assert.equal(exportRequest(review), before);
+    assert.throws(() => { review.draft.payload.actor = 'Forged'; }, TypeError);
+    assert.throws(() => exportRequest(confirm(review, false)), /Confirm/);
+  }
+});

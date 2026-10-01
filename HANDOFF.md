@@ -95,7 +95,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 
 ## Recommended next development package
 
-The first Phase 6 package below is implemented for Snapshot and Production Batch. The fifth package completes actual-software keyed retry/version/correction; next select **controlled write UI and broader correction/revocation contracts**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
+The first Phase 6 package below is implemented for Snapshot and Production Batch. The fifth package completes actual-software keyed retry/version/correction; next extend **Impact Assessment/Acceptance-to-DVP/Resource request preparation**, then approved identity/submission and broader correction/revocation contracts, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
 
 ### Scope
 
@@ -273,3 +273,18 @@ plan. There is no submit transport, login or successful-write claim. API remains
 0.18.0; schema remains 0017, with no migration. Roadmap scope becomes 34/44 (77%),
 Phase 6 3/5 (60%); authenticated submission, broader corrections and full result
 trace are unfinished. Frontend helper tests: **30 passed, no skips**. Next.js production and OpenNext/Cloudflare Worker builds passed; existing multiple-lockfile/Autoprefixer/cache/proxy warnings remain. Complete Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL tests**. The first two attempts encountered PostgreSQL system-catalog file read failures in workspace test directories; a new isolated /tmp cluster completed the entire suite. No backend/staging database was changed to resolve this test-runtime issue. No migration is added; head remains 0017. Local Next.js SSR checks passed for /commands (Snapshot, actual and Batch) and /create, including exact prefilled deployment targets. Feature commit `dc3a20841b7e58bb6638e3914ff298e5d0047a3e` was pushed to main. The live Cloudflare /commands page was verified in the browser: Snapshot review requires explicit confirmation before copy, repeated copy preserves the same key/body, and editing the release target removes the old review. No API write was sent. Cloudflare deployment ID/commit metadata is unavailable through the installed tools; live feature behavior is verified, not a provider deployment identifier. Render connector confirms the unchanged backend deployment dep-dav0vf0473hc73a8vl10 remains live for bbd8a42. Fresh command-line probes completed: health HTTP 200, API 0.18.0, database 0017_deployment_actual_version; harmless empty Deployment and Batch POSTs both returned 403 with detail read_only_mode. Browser navigation to the API was separately blocked with ERR_BLOCKED_BY_CLIENT; this is an environment/browser limitation, not a failing API smoke check. Public settings were not changed.
+
+## Phase 6 seventh package — governance request preparation
+
+Codex extends /commands with Approval Action and Release Decision forms, immutable
+request review, explicit confirmation and stable copy/retry content. Approval uses
+exact expected_step_id and a selected action; approval detail shows step UUIDs and
+can prefill its first visible pending/waiting step. Decision records exact readiness
+and decision declarations, not computed business readiness. Declared operators never
+replace authenticated principals. Evidence/history and exact expected audit links are
+provided without submission or business-success claims. Five of 14 forms now prepare
+requests; the other nine, approved OIDC/session/target, submission, uncertain outcomes
+and general correction/revocation remain. No backend change or migration; API 0.18.0,
+head 0017. Roadmap scope remains 34/44 (77%), Phase 6 3/5 (60%).
+
+Frontend helper tests: 56 passed, no skips (26 added governance cases). Next.js and OpenNext/Cloudflare Worker production builds passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Local SSR checks passed for approval/decision exact target/step context, oversized-step rejection and Create entry. No migration or backend change. Online checks follow the scoped push.

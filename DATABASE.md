@@ -190,3 +190,7 @@ migration or seed. Required head remains 0017_deployment_actual_version. Drafts
 exist only in browser component memory/explicit clipboard export, not the database.
 Expected audit links reference the existing deterministic request event numbers;
 no event exists merely because a user prepared or copied a request.
+
+## Governance request preparation
+
+Approval/Decision request preparation reads already exposed approval step UUIDs; it needs no table, column, request ledger or migration. Existing ApprovalAction/ReleaseDecision IDs and EVT-AP-/EVT-RD- audit evidence implement keyed execution. API remains 0.18.0 and Alembic head remains 0017_deployment_actual_version.

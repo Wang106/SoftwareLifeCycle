@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**Phase 6 sixth package implements Snapshot/actual/Batch request preparation and prioritizes all 14 command forms; public staging remains read-only.**
+**Phase 6 seventh package adds Approval Action/Release Decision preparation; five of 14 command forms now prepare requests; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -48,8 +48,10 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
 - 55 backend test modules are present. The complete 2026-10-01 Python 3.12 run passed **688 tests**, including **103 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (3179 in this run).
-- Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). Frontend code/contracts consumed by its read pages did not change; no new frontend build was required.
+- Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). This schema verification belongs to the prior backend package; current frontend verification is recorded below.
 
+
+- Five of 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 56 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -59,10 +61,11 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 
 ## Next stage
 
-1. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
-2. Extend correction/revocation beyond actual reports, preserving formal history.
-3. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
-4. Migrate legacy lists and add CI, backup/restore, monitoring and environment governance.
+1. Extend request preparation to Impact Assessment, Acceptance-to-DVP Link and Resource, with exact context and evidence.
+2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
+3. Extend correction/revocation beyond actual reports, preserving formal history.
+4. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
+5. Migrate legacy lists and add CI, backup/restore, monitoring and environment governance.
 
 Roadmap progress is **34/44 (77%)**, Phase 6 **3/5 (60%)**; these are implemented
 scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.md).
@@ -230,3 +233,18 @@ plan. There is no submit transport, login or successful-write claim. API remains
 0.18.0; schema remains 0017, with no migration. Roadmap scope becomes 34/44 (77%),
 Phase 6 3/5 (60%); authenticated submission, broader corrections and full result
 trace are unfinished. Frontend helper tests: **30 passed, no skips**. Next.js production and OpenNext/Cloudflare Worker builds passed; existing multiple-lockfile/Autoprefixer/cache/proxy warnings remain. Complete Python 3.12 backend suite: **688 passed, 3179 warnings, no skips**, including **103 real PostgreSQL tests**. The first two attempts encountered PostgreSQL system-catalog file read failures in workspace test directories; a new isolated /tmp cluster completed the entire suite. No backend/staging database was changed to resolve this test-runtime issue. No migration is added; head remains 0017. Local Next.js SSR checks passed for /commands (Snapshot, actual and Batch) and /create, including exact prefilled deployment targets. Feature commit `dc3a20841b7e58bb6638e3914ff298e5d0047a3e` was pushed to main. The live Cloudflare /commands page was verified in the browser: Snapshot review requires explicit confirmation before copy, repeated copy preserves the same key/body, and editing the release target removes the old review. No API write was sent. Cloudflare deployment ID/commit metadata is unavailable through the installed tools; live feature behavior is verified, not a provider deployment identifier. Render connector confirms the unchanged backend deployment dep-dav0vf0473hc73a8vl10 remains live for bbd8a42. Fresh command-line probes completed: health HTTP 200, API 0.18.0, database 0017_deployment_actual_version; harmless empty Deployment and Batch POSTs both returned 403 with detail read_only_mode. Browser navigation to the API was separately blocked with ERR_BLOCKED_BY_CLIENT; this is an environment/browser limitation, not a failing API smoke check. Public settings were not changed.
+
+## Phase 6 seventh package — governance request preparation
+
+Codex extends /commands with Approval Action and Release Decision forms, immutable
+request review, explicit confirmation and stable copy/retry content. Approval uses
+exact expected_step_id and a selected action; approval detail shows step UUIDs and
+can prefill its first visible pending/waiting step. Decision records exact readiness
+and decision declarations, not computed business readiness. Declared operators never
+replace authenticated principals. Evidence/history and exact expected audit links are
+provided without submission or business-success claims. Five of 14 forms now prepare
+requests; the other nine, approved OIDC/session/target, submission, uncertain outcomes
+and general correction/revocation remain. No backend change or migration; API 0.18.0,
+head 0017. Roadmap scope remains 34/44 (77%), Phase 6 3/5 (60%).
+
+Frontend helper tests: 56 passed, no skips (26 added governance cases). Next.js and OpenNext/Cloudflare Worker production builds passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Local SSR checks passed for approval/decision exact target/step context, oversized-step rejection and Create entry. No migration or backend change. Online checks follow the scoped push.

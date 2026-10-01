@@ -6,7 +6,7 @@ to enable public writes. The current `/commands` workspace prepares requests onl
 | Priority | Commands | UI status | Remaining submission work |
 | --- | --- | --- | --- |
 | First | Snapshot, actual-software report/correction, Batch | Request preparation implemented | Approved target, login/session, authenticated submission and uncertain-result recovery |
-| Next | Approval Action, Release Decision | API retry/step locks exist; forms pending | Exact step selection, review evidence, confirmation and outcome trace |
+| Next | Approval Action, Release Decision | Request preparation implemented; exact step UUID visible in approval detail | Permission-aware pickers, authenticated submission and outcome verification |
 | Next | Impact Assessment, Acceptance-to-DVP Link, Resource | API retry contracts exist; forms pending | Exact scope/context pickers and judgment/reference validation |
 | Later | Delivery, Distribution, Authorization | API retry/locks exist; forms pending | Artifact policy/recipient/scope pickers and complete chain confirmation |
 | Later | Test Release, Deployment, Changeover | API retry/locks exist; forms pending | Purpose/location/source pickers; activation/revocation contracts where absent |
@@ -19,7 +19,7 @@ business number for actual/Batch preparation. Switching query targets remounts t
 form; changing any field or operation invalidates the reviewed request. Deployment
 detail displays actual_version; missing versions are shown as unavailable, never zero.
 
-The three forms validate UUIDs, bounded business numbers without path separators/dot segments, exact version integer,
+The Snapshot/actual/Batch forms validate UUIDs, bounded business numbers without path separators/dot segments, exact version integer,
 report/correction reason and calendar-valid ISO time with explicit zone. Actual
 preparation requires a reason even for an initial report, covering migrated actual
 records at version zero. The optional timestamp is UTC-normalized or null; omission
@@ -34,6 +34,26 @@ Send only `body` as JSON to `path`. Fields cannot change while clipboard copying
 in progress. Clipboard denial leaves a selectable reviewed request. Starting another
 request requires another preparation/key; preserve an exported request until any
 uncertain manual API result has been resolved. This page cannot track such execution.
+
+Approval preparation requires an explicit step UUID, one of APPROVED/RETURNED/REJECTED,
+and a nonblank declared operator (up to 120 characters). Approval detail shows exact
+step UUIDs and can prefill the first visible PENDING/WAITING step for a nonclosed
+request. It does not establish that this step is still active. If none is visible,
+no UUID is invented; truncated/stale context must be checked through the API.
+Changing the step query remounts the workspace and clears any old review.
+
+Decision preparation requires its number plus exact declared operator, readiness
+status and decision text (each status/decision up to 30 characters). The existing
+backend accepts arbitrary readiness/decision strings: this UI does not compute or
+certify readiness, introduce an enum or infer a new business policy. Declarations
+retain their exact text, optional comments/notes retain exact text or null. Client
+text limits are a stricter preparation subset; legacy API behavior is unchanged.
+OIDC execution binds the actual actor to a trusted principal and preserves these
+declarations separately. Neither field identifies an authenticated reviewer.
+Approval/decision evidence links lead to the exact approval and original snapshot;
+expected audit links use EVT-AP-/EVT-RD- with the request UUID hex. Approval outcomes
+are reviewed in history; decision outcomes link to the exact decision business number.
+These links do not prove that a copied request executed successfully.
 
 Snapshot links to its release's snapshot history; actual links to its deployment;
 Batch links to its expected batch business number. Audit links use deterministic
@@ -51,7 +71,7 @@ Public API remains READ_ONLY_MODE=true. The workspace does not bypass OIDC, exac
 scope, trusted actor, row locking, versions, limits or atomic audit; it makes no write.
 
 Actual authenticated submission, permission-aware pickers, stale-context refresh,
-uncertain-result resolution, success/error trace and all other forms remain pending.
+uncertain-result resolution, success/error trace and the other nine forms remain pending.
 Configure an approved OIDC provider/session and a separately approved controlled
 write target before implementing production submission. Avoid exposing auth-disabled
 writes through a frontend proxy. General correction/revocation workflows remain open.

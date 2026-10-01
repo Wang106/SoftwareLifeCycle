@@ -163,3 +163,7 @@ or persistence. Prepared/copied requests do not prove permission or successful w
 Current API READ_ONLY_MODE, OIDC, exact scope, trusted actor and audit behavior is
 unchanged. Authenticated submission must wait for approved identity/session and
 a controlled target; a frontend must not proxy auth-disabled public writes.
+
+## Governance request preparation
+
+Approval/Decision preparation requires explicitly entered declared operator text and labels it as evidence, never authentication or a scoped grant. Exact step/context links can be stale; the API still enforces REVIEWER/RELEASE_AUTHORITY, trusted actor binding, row locks and atomic audit for every call. Readiness/decision text is a declaration rather than a security or eligibility check. No login/token field, transport, persistence or public-write permission is added.

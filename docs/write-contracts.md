@@ -249,3 +249,7 @@ checks are syntactic, not permission/business validation. Exact expected audit l
 may be unavailable before execution and are not success evidence. No backend route,
 submit transport or automatic retry is added; all 14 API contracts remain unchanged.
 See [controlled-write-ui.md](controlled-write-ui.md) for scope and pending acceptance.
+
+## Governance request preparation
+
+Approval/Decision forms extend /commands using the same confirmed immutable export. Approval requires an explicit expected_step_id and supported action; exact readiness/decision/actor declarations and comments/notes are retained. Exact business/history and EVT-AP-/EVT-RD- links are expected execution evidence, not success claims. All existing API retry, scope, actor, locking and rollback contracts remain unchanged; no migration is needed.

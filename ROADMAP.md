@@ -52,9 +52,9 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 
 Exit gate: protected operations reject unauthenticated and out-of-scope actors; positive and negative integration tests pass; security decisions are documented.
 
-## Phase 6 — Controlled write experience (five safety slices implemented)
+## Phase 6 — Controlled write experience (safety slices and five request forms implemented)
 
-- [x] Prioritize which existing command APIs require UI forms — all 14 are grouped in docs/controlled-write-ui.md; Snapshot/actual/Batch request preparation is implemented, authenticated submission remains pending
+- [x] Prioritize which existing command APIs require UI forms — all 14 are grouped in docs/controlled-write-ui.md; Snapshot/actual/Batch/Approval Action/Release Decision request preparation is implemented, authenticated submission remains pending
 - [x] Add idempotency keys and explicit conflict behavior where absent — all 14 current command routes support request-ID contracts; optional no-key legacy semantics remain documented
 - [x] Add concurrency protection for approval and other state transitions — all 14 current routes serialize their command scope; actual reports add expected-version conflicts for keyed calls
 - [ ] Provide correction/revocation flows using new history records, not destructive edits — actual-report corrections append full before/after audit; other lifecycle correction/revocation workflows remain
@@ -87,15 +87,17 @@ reason. Legacy no-key paths remain compatible and weaker; broad correction/revoc
 UI and result confirmation/trace are incomplete. These percentages are checked scope,
 not provider configuration or production-readiness certification.
 
-1. Connect first request-preparation forms to approved identity/session and define
+1. Extend preparation to Impact Assessment, Acceptance-to-DVP Link and Resource
+   with exact context/evidence while provider setup remains pending.
+2. Connect first request-preparation forms to approved identity/session and define
    authenticated submission, uncertain-result recovery and successful result trace;
    keep public staging read-only and use a separately approved controlled target.
-2. Extend append-only correction/revocation contracts beyond actual reporting;
+3. Extend append-only correction/revocation contracts beyond actual reporting;
    never infer physical flashing reversal or alter existing batch history.
-3. Migrate consumers from unbounded compatibility lists to bounded catalogs.
-4. Configure an approved OIDC provider, provider-backed tests, audited grant
+4. Migrate consumers from unbounded compatibility lists to bounded catalogs.
+5. Configure an approved OIDC provider, provider-backed tests, audited grant
    administration and browser login/session flow before protected multi-user use.
-5. Add CI backend/PostgreSQL/migration/frontend checks; backup/restore, retention,
+6. Add CI backend/PostgreSQL/migration/frontend checks; backup/restore, retention,
    monitoring, alerts and incident procedures.
-6. Separate demo/staging/company environments, disable non-demo seed, approve
+7. Separate demo/staging/company environments, disable non-demo seed, approve
    network/data governance and validate recovery before loading company data.

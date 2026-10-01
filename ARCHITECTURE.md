@@ -172,3 +172,7 @@ changes invalidate review; confirmation enables clipboard export with a stable k
 Only React memory is used. No token, API-origin input, browser storage, mutation
 route or POST transport is introduced. Backend security/atomicity remains authoritative
 for later controlled-client execution. See docs/controlled-write-ui.md.
+
+## Governance request preparation
+
+Approval/Decision preparation extends the same pure-helper boundary. Existing governance detail supplies visible step UUIDs for bounded initial context; changing step context remounts the form. The backend remains authoritative for current-step, approved-snapshot binding, trusted actor and atomic audit.

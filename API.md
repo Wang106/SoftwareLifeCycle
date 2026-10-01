@@ -199,8 +199,14 @@ contract in [docs/write-contracts.md](docs/write-contracts.md).
 
 ## Frontend command preparation
 
-`/commands` prepares keyed Snapshot, actual-software and Batch requests using the
+`/commands` prepares keyed Snapshot, actual-software, Batch, Approval Action and
+Release Decision requests using the
 existing 0.18.0 contracts. It copies an envelope `{method, path, body}`; a controlled
 client sends only body as JSON. No frontend mutation route or new backend API is
 added. Client checks do not establish authorization, entity membership or quota.
 See [UI contract](docs/controlled-write-ui.md) for confirmation/retry and trace limits.
+
+Approval preparation requires expected_step_id and an explicit APPROVED/RETURNED/REJECTED
+action. Decision readiness_status/decision remain exact declarations, not computed
+readiness or newly enforced enums. Declared actor text is not authenticated identity.
+Approval detail exposes existing step UUIDs and preparation links; no API shape changes.
