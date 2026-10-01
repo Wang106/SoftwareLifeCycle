@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `3968f9f007e2a00a7268074e5e66cc1a0a8db2cc`
-- Baseline subject: `feat: make snapshot and production batch writes retry-safe`
+- Verified baseline: `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50`
+- Baseline subject: `feat: serialize approval actions and replay release decisions safely`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -35,7 +35,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, verified HTTP 200 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.14.0`, health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API version `0.15.0`, health verified ready |
 | Database | PostgreSQL 16 + Alembic | Required/verified revision `0016_authenticated_audit_actors` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
 - 49 backend test modules; the latest full run passed all 477 tests under Python 3.12, including 31 real PostgreSQL tests without skips.
-- Optional request-ID replay and PostgreSQL serialization for Snapshot numbering and shared Production Batch quotas, without a new migration.
+- Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
 
@@ -188,6 +188,8 @@ results. No-key clients and distinct decision-number history stay compatible.
 Use the current-progress section of ROADMAP.md for module percentages and unfinished
 steps. Request-ID/row-lock coverage is 8/14 (57%); exact scope, actor and atomic audit
 coverage is 14/14 (100%). Broad roadmap progress stays 31/44 (70%), not production
-readiness. Complete test and deployment evidence is recorded after verification.
+readiness. Complete test and deployment evidence is recorded below.
 
-Second-package verification: Python 3.12 full backend run **477 passed, 1646 warnings, no skips**, including **31 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend change/build. Deployment verification follows the scoped push.
+Second-package verification: Python 3.12 full backend run **477 passed, 1646 warnings, no skips**, including **31 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend change/build. Render deployment `dep-dav00btg1s2s73d4nqo0` is live for `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50` (2026-10-01 06:40:39 UTC). Health returned 200 / API `0.15.0` / database `0016_authenticated_audit_actors`; harmless deployment and Snapshot POSTs returned 403 `read_only_mode`. Frontend returned 200 with Dashboard HTML. No frontend change or separate frontend deployment was needed.
+
+Staging smoke note: the stock 10-second check timed out on `/api/v1/activity` after the first three reads passed. Repeating all four reads and the harmless Snapshot write with a 45-second timeout passed; the separate deployment write also returned 403 `read_only_mode`. No smoke-check timeout or public setting was changed.

@@ -4,6 +4,8 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Verified Approval/Decision safety deployment `dep-dav00btg1s2s73d4nqo0` for `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50`: live API `0.15.0`, database `0016_authenticated_audit_actors`, harmless writes 403 `read_only_mode`, frontend 200 with Dashboard HTML.
+
 - API `0.15.0`: Approval Action and Release Decision optional request-ID retry, canonical content/actor conflict and shared PostgreSQL ApprovalRequest serialization. Keyed actions require an exact expected-step UUID and return original after-status without advancing another step. Legacy no-key clients and distinct decision-number history remain compatible.
 - Full backend verification: 477 passed, 1646 warnings, no skips; 31 tests use real PostgreSQL 16.15. Single Alembic head and PostgreSQL SQL generation passed.
 - Added approval failure/HTTP/scope/actor tests and 18 real PostgreSQL contention cases, including final-action/decision ordering, global-key races, stale ORM refresh and rollback/lock release. No migration; existing UUID/audit evidence is reused.

@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `3968f9f007e2a00a7268074e5e66cc1a0a8db2cc` — `feat: make snapshot and production batch writes retry-safe` (developed from `a5db39eccb0a5a73ea3232f455a9167f1af835a4`)
+- Reviewed repository baseline: `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50` — `feat: serialize approval actions and replay release decisions safely` (developed from `830367973b33b0025ee33fdcea0f2c3a7b71ead5`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -54,7 +54,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 ## In progress
 
 - Approved OIDC provider configuration remains open. Phase 6 now has Snapshot/Batch and Approval/Decision safety slices; the broad retry/concurrency roadmap items remain unchecked because other commands are unfinished.
-- First-package implementation and deployment checks are complete; remaining Phase 6 commands and provider configuration are the next work.
+- Both safety-package implementation and deployment checks are complete; remaining Phase 6 commands and provider configuration are the next work.
 - The unrelated `frontend/app/activity/page 2.tsx` was not present in this clean cloud checkout and was not recreated, adopted or deleted.
 
 ## Next stage
@@ -71,22 +71,22 @@ Roadmap progress remains **31/44 (70%)**: two broad Phase 6 items are partially 
 | Layer | Configured target | Verified 2026-10-01 | Qualification |
 | --- | --- | --- | --- |
 | Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | HTTP 200 and live dashboard HTML returned | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.14.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.15.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at Alembic revision `0016_authenticated_audit_actors` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
-Render deployment `dep-dauvf1m417fc73fq13dg` is **live** for feature commit
-`3968f9f007e2a00a7268074e5e66cc1a0a8db2cc` (finished 2026-10-01 14:03:50
-Asia/Shanghai). Post-deploy `/health/ready` returned HTTP 200, API `0.14.0` and
-revision `0016_authenticated_audit_actors`; a harmless random-ID deployment POST
-returned HTTP 403 `read_only_mode`. Frontend HTTP 200 and browser-rendered Dashboard
-were verified. No frontend code was changed or separately deployed by this slice.
+Render deployment `dep-dav00btg1s2s73d4nqo0` is **live** for feature commit
+`fbb66ae9a2c1833a05ee2032595eb2613d1d3a50` (finished 2026-10-01 06:40:39 UTC).
+Post-deploy health returned HTTP 200, API `0.15.0` and revision
+`0016_authenticated_audit_actors`; harmless deployment and Snapshot POSTs returned
+HTTP 403 `read_only_mode`. Frontend returned HTTP 200 with Dashboard HTML.
+No frontend code was changed or separately deployed by this slice.
 
 The live URLs are volatile operational state. Recheck them rather than copying this table into a future report.
 
 ## Database and API status
 
-- Repository API version: `0.15.0`; last verified online version before this push: `0.14.0`.
+- Repository and verified online API version: `0.15.0`.
 - Required and verified online schema revision: `0016_authenticated_audit_actors`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -137,4 +137,6 @@ completion reports must state Codex or ChatGPT mode, changed files/behavior, tes
 migration and push/deploy state, module percentages with unfinished content, and
 remaining steps. Use ROADMAP.md for evidence-based percentages and next sequence.
 
-Second-package verification: Python 3.12 full backend run **477 passed, 1646 warnings, no skips**, including **31 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend change/build. Deployment verification follows the scoped push.
+Second-package verification: Python 3.12 full backend run **477 passed, 1646 warnings, no skips**, including **31 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend change/build. Deployment `dep-dav00btg1s2s73d4nqo0` is live for `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50`; health API `0.15.0` / database `0016_authenticated_audit_actors`, deployment/Snapshot writes 403 `read_only_mode`, frontend 200 with Dashboard HTML.
+
+Staging smoke note: the stock 10-second check timed out on `/api/v1/activity` after the first three reads passed. Repeating all four reads and the harmless Snapshot write with a 45-second timeout passed; the separate deployment write also returned 403 `read_only_mode`. No smoke-check timeout or public setting was changed.

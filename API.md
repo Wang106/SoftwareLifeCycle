@@ -99,6 +99,7 @@ scope authorization. See [write contracts](docs/write-contracts.md) for details.
 ## Approval / Release Decision retry contract (0.15.0)
 
 Approval action JSON adds optional UUID `request_id` and `expected_step_id`.
+Read step UUIDs from `GET /api/v1/governance/approvals/{approval_no}` (`steps[].id`).
 When a key is supplied, the exact step UUID is required; missing step or malformed
 UUID yields 422. A fresh request targeting a different/currently completed step
 returns 409. Unkeyed callers remain compatible with current-step behavior;
