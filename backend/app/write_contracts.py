@@ -9,6 +9,8 @@ and concurrency behavior.
 from dataclasses import dataclass
 from typing import Literal
 
+from app.security_roles import ALL_ROLES
+
 
 ActorSource = Literal["NONE", "DECLARED_OPTIONAL", "DECLARED_REQUIRED"]
 AuditGuarantee = Literal["NONE", "ATOMIC_APPEND"]
@@ -24,6 +26,7 @@ class WriteContract:
     audit: AuditGuarantee
     idempotency: IdempotencyGuarantee
     concurrency: ConcurrencyGuarantee
+    planned_roles: frozenset[str]
     known_gap: str
     authentication: Literal["NONE"] = "NONE"
     authorization: Literal["NONE"] = "NONE"
@@ -38,6 +41,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="NONE",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"SOFTWARE_MAINTAINER", "CONTRIBUTOR"}),
         known_gap="No actor, audit event, idempotency key or release row lock.",
     ),
     ("POST", "/api/v1/approvals/{approval_no}/actions"): WriteContract(
@@ -47,6 +51,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"REVIEWER"}),
         known_gap="Declared actor is untrusted; active approval/step rows are not locked.",
     ),
     ("POST", "/api/v1/approvals/{approval_no}/release-decision"): WriteContract(
@@ -56,6 +61,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"RELEASE_AUTHORITY"}),
         known_gap="Declared actor is untrusted; approval is not locked against concurrent decisions.",
     ),
     ("POST", "/api/v1/deliveries"): WriteContract(
@@ -65,6 +71,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"DISTRIBUTION_AUTHORITY"}),
         known_gap="Actor is optional; retries use duplicate rejection rather than an idempotency key.",
     ),
     ("POST", "/api/v1/distributions"): WriteContract(
@@ -74,6 +81,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"DISTRIBUTION_AUTHORITY"}),
         known_gap="Audit records an unavailable actor; no idempotency or locking guarantee.",
     ),
     ("POST", "/api/v1/authorizations"): WriteContract(
@@ -83,6 +91,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"PRODUCTION_AUTHORITY"}),
         known_gap="Audit records an unavailable actor; creation does not authenticate an authority.",
     ),
     ("POST", "/api/v1/deployments"): WriteContract(
@@ -92,6 +101,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="NONE",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="No actor, audit event, idempotency key or scope row locks.",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/actual"): WriteContract(
@@ -101,6 +111,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="NONE",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="Mutable overwrite has no actor, append-only audit event or optimistic lock.",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/changeovers"): WriteContract(
@@ -110,6 +121,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="NONE",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="No actor, audit event, idempotency key or deployment row lock.",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/batches"): WriteContract(
@@ -119,6 +131,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="NONE",
         idempotency="NONE",
         concurrency="NONE",
+        planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="Batch-limit check is not serialized; no actor or audit event is recorded.",
     ),
     ("POST", "/api/v1/issues/{issue_no}/impact-assessments"): WriteContract(
@@ -128,6 +141,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
+        planned_roles=frozenset({"REVIEWER"}),
         known_gap="Declared actor is untrusted; no project authorization is enforced.",
     ),
     ("POST", "/api/v1/changes/{request_no}/acceptance-dvp-links"): WriteContract(
@@ -137,6 +151,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
+        planned_roles=frozenset({"CONTRIBUTOR"}),
         known_gap="Declared actor is untrusted; no project authorization is enforced.",
     ),
     ("POST", "/api/v1/testing/releases"): WriteContract(
@@ -146,6 +161,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
+        planned_roles=frozenset({"CONTRIBUTOR"}),
         known_gap="Declared actor is untrusted; no project authorization is enforced.",
     ),
     ("POST", "/api/v1/resources"): WriteContract(
@@ -155,6 +171,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         audit="ATOMIC_APPEND",
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
+        planned_roles=frozenset({"CONTRIBUTOR"}),
         known_gap="Declared actor is untrusted; registering a location does not verify access.",
     ),
 }

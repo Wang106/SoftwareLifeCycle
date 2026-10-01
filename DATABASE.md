@@ -5,7 +5,7 @@
 - Engine: PostgreSQL 16 in the local Compose environment.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0014_resource_links`.
+- Required schema revision: `0015_identity_roles`.
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
@@ -23,6 +23,7 @@ SQLite is used by isolated tests where supported, but it does not validate Postg
 | Governance | `approval_requests`, `approval_steps`, `approval_actions`, `release_decisions`, `audit_events` |
 | Distribution | `delivery_packages`, `delivery_package_items`, `distributions`, `software_authorizations` |
 | Production | `manufacturing_sites`, `production_lines`, `deployments`, `software_changeovers`, `production_batches` |
+| Identity/authorization foundation | `security_principals`, `global_role_assignments`, `software_memberships`, `project_memberships` |
 
 ## Key relationship path
 
@@ -65,6 +66,9 @@ Foreign keys and stored UUIDs are the trace authority. Display numbers, versions
 | `0012` | Append-only issue impact assessments |
 | `0013` | Append-only acceptance-to-DVP links |
 | `0014` | Append-only external resource links |
+| `0015` | Provider-neutral user/service principals and scoped role grants |
+
+Revision `0015` stores only external identity references and grants. It deliberately contains no password, token or client-secret columns, and no Seed identities or grants are created.
 
 Never edit an applied migration to change history. Add a new ordered revision, import its model metadata in Alembic as required, and update `required_db_revision` in `backend/app/core/config.py` together with deployment documentation and readiness tests.
 

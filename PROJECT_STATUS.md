@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `a3c4e9e1c75bcf60553bd355bb5519f437c04710` — `docs: establish repository handoff baseline`
+- Reviewed repository baseline: `9f5f5384a6bbb9ae64056f7e3daee9f3acafb165` — `test: inventory write route guarantees`
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**V1 traceability demo baseline, preparing for production hardening.**
+**Phase 5 identity and authorization foundation, still read-only in public staging.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Authentication, trusted identities and project-level authorization are not implemented.
 
@@ -23,23 +23,25 @@ The repository implements and exposes a coherent demo/test lifecycle, but it is 
 - Append-only PostgreSQL protection for audit events, issue impact assessments, acceptance-to-DVP links and resource links.
 - Atomic audit recording for current approval/release-decision and delivery/distribution/authorization service writes.
 - Executable contract inventory for all 14 write routes, covering scope, actor source, audit, idempotency, concurrency and known gaps; tests fail if FastAPI write routes drift from the inventory.
+- Provider-neutral user/service principals and scoped global/software/project roles in migration `0015_identity_roles`; no credentials, identities or grants are seeded.
+- Planned role requirements for every write route, without claiming that authentication or authorization is already enforced.
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
-- 40 backend test modules are present. On 2026-10-01, all 357 collected backend tests passed under Python 3.12 with pytest 8.4.2. The most recent frontend production build passed on 2026-09-30; this backend-only slice did not change frontend code.
+- 41 backend test modules are present. On 2026-10-01, all 360 collected backend tests passed under Python 3.12 with pytest 8.4.2; Alembic reports the single head `0015_identity_roles`, and the `0014 → 0015` offline PostgreSQL SQL generation passed. The most recent frontend production build passed on 2026-09-30; this backend-only slice did not change frontend code.
 
 ## In progress
 
-- Phase 5 identity and authorization model selection. No identity provider or trust mechanism has been approved yet.
+- OIDC provider selection, token validation and route-level authorization enforcement. No identity provider or trust mechanism has been configured yet.
 - No separate tracked product feature was in progress when `main` was reviewed. The working tree contained an unrelated untracked duplicate file, `frontend/app/activity/page 2.tsx`; it was not used or committed by this documentation change and its ownership should be confirmed before deletion or adoption.
 
 ## Next stage
 
 Recommended next stage: **identity, authorization and controlled write workflows**.
 
-1. Define user, role and project-membership concepts and an authentication boundary.
-2. Enforce project/customer/resource authorization in FastAPI before exposing writes outside local development.
-3. Replace declared actor names with authenticated actor identity while retaining historical declarations.
-4. Add permission-focused integration tests and security-negative cases.
-5. Only then design UI write forms for the already-supported command APIs.
+1. Select the OIDC issuer/audience and implement strict token validation.
+2. Resolve active principals and exact software/project scope from stored relationships.
+3. Enforce scoped authorization in FastAPI before exposing writes outside local development.
+4. Replace declared actor names with authenticated actor identity while retaining historical declarations.
+5. Add permission-focused integration tests and security-negative cases; only then design UI write forms.
 
 See [ROADMAP.md](ROADMAP.md) for sequencing and acceptance gates.
 
@@ -56,8 +58,8 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- API application version: `0.8.0`.
-- Required/current online schema revision: `0014_resource_links`.
+- Repository API version: `0.9.0`.
+- Required repository schema revision: `0015_identity_roles`. The deployment table above remains the last verified online state until the new commit is deployed and checked.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false` for controlled development and `SEED_ON_STARTUP=true` for demo data.
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
@@ -65,7 +67,8 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Known gaps and issues
 
-- No authentication, session management, trusted identity provider or project-level authorization.
+- Identity and scoped-role records now exist, but there is still no token validation, session management, configured identity provider or route-level authorization.
+- There is no security-principal/grant management API or audited grant lifecycle yet; migration `0015` creates no identities or permissions.
 - Public read access is suitable only for non-sensitive sample data. `CORS_ORIGINS` is not access control.
 - Actor names in current requests are declared strings, not authenticated identities.
 - Snapshot and production command paths still lack atomic audit events; approval and several other commands lack idempotency and row-level concurrency protection. See `docs/write-contracts.md`.

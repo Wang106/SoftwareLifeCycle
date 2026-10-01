@@ -12,7 +12,7 @@ def check(base: str) -> None:
                  "/api/v1/issues/310/impact", "/api/v1/activity"):
         with urlopen(origin + path, timeout=10) as response:
             payload = json.load(response)
-        if path == "/health/ready" and (payload.get("status") != "ready" or payload.get("database_revision") != "0014_resource_links"):
+        if path == "/health/ready" and (payload.get("status") != "ready" or payload.get("database_revision") != "0015_identity_roles"):
             raise RuntimeError(f"API or migration not ready: {payload}")
         print(f"OK {path}")
 

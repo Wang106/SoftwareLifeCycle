@@ -1,4 +1,5 @@
 from app.main import app
+from app.security_roles import ALL_ROLES
 from app.write_contracts import WRITE_CONTRACTS
 
 
@@ -27,4 +28,6 @@ def test_current_write_contracts_remain_non_public_and_explicitly_unauthenticate
         assert contract.audit in {"NONE", "ATOMIC_APPEND"}
         assert contract.idempotency in {"NONE", "REQUEST_ID"}
         assert contract.concurrency in {"NONE", "ROW_LOCK"}
+        assert contract.planned_roles
+        assert contract.planned_roles <= ALL_ROLES
         assert contract.known_gap.strip()

@@ -4,6 +4,8 @@ This is the reviewed baseline for every non-read FastAPI route. The executable s
 
 This inventory is descriptive, not an access-control implementation. Every current write route has `authentication=NONE` and `authorization=NONE`. The public sample service must therefore keep `READ_ONLY_MODE=true`.
 
+The intended scoped roles are recorded in the executable contracts and defined in `SECURITY.md`: snapshot creation uses software-maintainer/project-contributor scope; review actions use reviewer; release decisions use release authority; delivery/distribution use distribution authority; production authorization uses production authority; deployment/changeover/batch use production operator. `PLATFORM_ADMIN` is a future exceptional override. None of these roles is enforced yet.
+
 | Route | Scope | Actor | Audit | Retry | Concurrency | Main gap |
 | --- | --- | --- | --- | --- | --- | --- |
 | `POST /api/v1/releases/{release_id}/create-snapshot` | Release | None | None | None | None | No actor/audit; concurrent numbering is not serialized |

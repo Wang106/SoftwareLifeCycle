@@ -12,3 +12,4 @@ from app.models.audit import *
 from app.models.impact import *
 from app.models.acceptance import *
 from app.models.resource import *
+from app.models.security import *

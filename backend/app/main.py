@@ -25,7 +25,7 @@ from app.api.governance_catalog import router as governance_catalog_router
 from app.core.config import settings
 from app.core.db import engine
 
-APP_VERSION = "0.8.0"
+APP_VERSION = "0.9.0"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(

@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.8.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.9.0`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -56,6 +56,7 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 
 - `READ_ONLY_MODE=true` rejects every method except GET, HEAD and OPTIONS with HTTP 403. The public sample API must use this mode.
 - There is no implemented authentication or project authorization. Actor names are unverified declarations.
+- The provider-neutral principal and scoped-role schema in `SECURITY.md` is a design/enforcement foundation; it does not authenticate a request by itself.
 - Issue impact and acceptance-link writes use client-generated request IDs for retry handling; other commands do not all provide the same idempotency guarantee.
 - Current approval/release-decision and delivery/distribution/authorization service writes record audit events in the same transaction.
 - Snapshot and exact UUID bindings take precedence over matching version, name or display code.

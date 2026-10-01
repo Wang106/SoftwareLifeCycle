@@ -40,8 +40,8 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 
 ## Phase 5 — Identity and authorization (recommended next)
 
-- [ ] Approve an identity model: user, organization, role, project membership and service identity
-- [ ] Add authentication without placing secrets or tokens in lifecycle records
+- [x] Define provider-neutral user/service principals, global roles, software membership and project membership
+- [ ] Select/configure an OIDC provider and add authentication without storing secrets or tokens in lifecycle records
 - [ ] Enforce customer/project/resource authorization in the API and test denial paths
 - [ ] Bind new audit actors to authenticated principals while preserving historical declared actors
 - [ ] Define admin, reviewer, release authority, distribution authority and production roles

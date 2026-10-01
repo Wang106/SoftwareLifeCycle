@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.8.0
+FastAPI 0.9.0
 domain/query services + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -76,7 +76,7 @@ Most UI pages use read-only catalog/profile endpoints. Newer catalogs are bounde
 
 ### Trust boundary
 
-Current actor fields are request data, not authenticated principals. CORS is browser policy, not authorization. Until identity and project permissions exist, public deployment must contain sample data only and remain read-only.
+Current actor fields are request data, not authenticated principals. The database has provider-neutral user/service principals and scoped role grants, but no request authentication or authorization enforcement yet. CORS is browser policy, not authorization. Until the `SECURITY.md` enforcement sequence is complete, public deployment must contain sample data only and remain read-only.
 
 ### Failure behavior
 
