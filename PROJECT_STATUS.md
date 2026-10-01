@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `07c6c5f62ddcf57c6e3f4436904b3b74fd9a1208` — `docs: record scoped authorization deployment`
+- Reviewed repository baseline: `777ab0cec606fdf07563ac7c4a391f62aa0329d5` — `feat: bind audited writes to authenticated actors`
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -54,16 +54,16 @@ See [ROADMAP.md](ROADMAP.md) for sequencing and acceptance gates.
 | Layer | Configured target | Verified 2026-10-01 | Qualification |
 | --- | --- | --- | --- |
 | Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | HTTP 200 and live dashboard HTML returned | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.11.0`; staging reads passed; harmless write rejected with HTTP 403 `read_only_mode` | Public sample API; OIDC authentication/authorization remain disabled while read-only mode is active |
-| Database | PostgreSQL behind the Render API | Ready at Alembic revision `0015_identity_roles` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.12.0`; staging reads passed; harmless write rejected with HTTP 403 `read_only_mode` | Public sample API; OIDC authentication/authorization remain disabled while read-only mode is active |
+| Database | PostgreSQL behind the Render API | Ready at Alembic revision `0016_authenticated_audit_actors` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
 The live URLs are volatile operational state. Recheck them rather than copying this table into a future report.
 
 ## Database and API status
 
-- Repository API version: `0.12.0`; the last verified online deployment remains `0.11.0` until this change is deployed and checked.
-- Required repository schema revision: `0016_authenticated_audit_actors`; the last verified online revision remains `0015_identity_roles` until deployment.
+- Repository and verified online API version: `0.12.0`.
+- Required and verified online schema revision: `0016_authenticated_audit_actors`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
