@@ -5,8 +5,8 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `210b124e3b2a0b3a04b9ddcb75f913e3a514d2a9`
-- Baseline subject: `feat: prepare reviewed test deployment and changeover requests`
+- Verified baseline: `a3ea30e3bd0b8181c24f37a35289835c0d462626`
+- Baseline subject: `feat: migrate deployment detail to bounded profile and history catalogs`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -35,7 +35,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.18.0`, health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API version `0.18.1`, health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0017_deployment_actual_version` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -368,4 +368,4 @@ required Alembic head remains 0017_deployment_actual_version.
 Only this consumer is migrated; remaining compatibility lists/details, approved
 OIDC/session, authenticated submission/recovery, corrections and operations remain.
 Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%).
-Verification: 11 new deployment-profile tests passed, including exact scope, missing references, legacy shape, stored/observed mismatch, 106/107 history counts without row loading and unchanged SQL query count. Full Python 3.12 backend suite: 699 passed, 3267 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Four SSR checks passed for large history/exact catalog links, empty/missing delivery, unavailable profile and profile-only API calls. No migration. Online verification follows the scoped push.
+Verification: 11 new deployment-profile tests passed, including exact scope, missing references, legacy shape, stored/observed mismatch, 106/107 history counts without row loading and unchanged SQL query count. Full Python 3.12 backend suite: 699 passed, 3267 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Four SSR checks passed for large history/exact catalog links, empty/missing delivery, unavailable profile and profile-only API calls. No migration. Online verification after feature commit `a3ea30e3bd0b8181c24f37a35289835c0d462626`: Render deployment `dep-dav9frnavr4c7396mtu0` is live for that commit. Health returned 200 with API 0.18.1 and database revision 0017_deployment_actual_version. Exact DEP-0081 profile returned 200, counts 1/1, MATCH observation and actual_version 0 without embedded histories; missing profile returned 404. Harmless empty Deployment and Batch POSTs both returned 403 read_only_mode. Read-only PostgreSQL SQL independently confirmed head 0017. Cloudflare live deployment detail and exact-deployment batch/exact-delivered-snapshot decision catalogs were verified in the browser; no business write was submitted. Recent Render error logs were empty. Cloudflare provider deployment ID/commit metadata was unavailable; live feature behavior is the frontend evidence.
