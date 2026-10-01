@@ -1,0 +1,22 @@
+{
+  "{0} must be a UUID.": "{0} 必须为 UUID。",
+  "{0} must contain 1–{1} characters without path separators, dot segments or control characters.": "{0}必须包含 1–{1} 个字符，且不含路径分隔符、点路径或控制字符。",
+  "{0} must contain 1–{1} characters without control characters.": "{0}必须包含 1–{1} 个字符，且不含控制字符。",
+  "{0} must contain nonblank text and use at most {1} characters without control characters.": "{0}必须包含非空文本，最多 {1} 个字符，且不含控制字符。",
+  "{0} must contain nonblank text and use at most {1} characters.": "{0}必须包含非空文本，最多 {1} 个字符。",
+  "{0} must use at most {1} characters without control characters.": "{0}最多包含 {1} 个字符，且不含控制字符。",
+  "{0} must use at most {1} characters.": "{0}最多包含 {1} 个字符。",
+  "{0} must be an explicit positive PostgreSQL integer (1–2147483647).": "{0}必须为明确的 PostgreSQL 正整数（1–2147483647）。",
+  "Acknowledged: {0}": "确认接收：{0}",
+  "Exact context: {0}": "精确上下文：{0}",
+  "Exact execution context: {0}": "精确执行上下文：{0}",
+  "Execution context: {0} · freeze #{1}": "执行上下文：{0} · 冻结编号 #{1}",
+  "{0} / {1} change points": "{0} / {1} 个变更点",
+  "{0} / {1} issues": "{0} / {1} 个问题",
+  "{0} / {1} on current snapshot": "当前快照：{0} / {1}",
+  "{0} Rev{1} · {2}": "{0} 修订 {1} · {2}",
+  "{0} high severity": "{0} 个高严重程度问题",
+  "{0} remaining by count": "按计数剩余 {0}",
+  "{0}% current snapshot execution coverage": "当前快照执行覆盖率 {0}%",
+  "{0}: {1}": "{0}：{1}"
+}

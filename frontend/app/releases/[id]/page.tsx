@@ -1,3 +1,5 @@
+
+import { Localized, LocalizedAttributes } from "../../../components/localized";
 import { redirect } from 'next/navigation';
 import { legacyReleaseTarget } from '../../../lib/legacy-release';
 

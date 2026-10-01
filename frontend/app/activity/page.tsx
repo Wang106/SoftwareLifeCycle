@@ -1,3 +1,5 @@
+
+import { Localized, LocalizedAttributes } from "../../components/localized";
 import Link from 'next/link';
 
 import { apiGet } from '../../lib/api';
@@ -35,56 +37,56 @@ export default async function Page({ searchParams }: { searchParams: Promise<Fil
   return <>
     <div className="top">
       <div>
-        <div className="eyebrow">AUDIT & ACTIVITY</div>
-        <h1>Activity</h1>
-        <p className="muted">Append-only domain history for formal lifecycle actions and operational events.</p>
+        <div className="eyebrow"><Localized>{"AUDIT & ACTIVITY"}</Localized></div>
+        <h1><Localized>{"Activity"}</Localized></h1>
+        <p className="muted"><Localized>{"Append-only domain history for formal lifecycle actions and operational events."}</Localized></p>
       </div>
-      <span className="badge">APPEND ONLY</span>
+      <span className="badge"><Localized>{"APPEND ONLY"}</Localized></span>
     </div>
     <div className="cards">
-      <div className="card"><span className="muted">EVENTS</span><div className="metric">{catalog?.total ?? '—'}</div><small>All matching records</small></div>
-      <div className="card"><span className="muted">EVENT TYPES</span><div className="metric">{catalog ? Object.keys(catalog.event_type_counts).length : '—'}</div><small>Across matching history</small></div>
-      <div className="card"><span className="muted">PAGE RECORDS</span><div className="metric">{events?.length ?? '—'}</div><small>Offset {offset}</small></div>
-      <div className="card"><span className="muted">DATA SOURCE</span><div className="metric">{events ? 'API' : '—'}</div><small>FastAPI audit ledger</small></div>
+      <div className="card"><span className="muted"><Localized>{"EVENTS"}</Localized></span><div className="metric"><Localized>{catalog?.total ?? '—'}</Localized></div><small><Localized>{"All matching records"}</Localized></small></div>
+      <div className="card"><span className="muted"><Localized>{"EVENT TYPES"}</Localized></span><div className="metric"><Localized>{catalog ? Object.keys(catalog.event_type_counts).length : '—'}</Localized></div><small><Localized>{"Across matching history"}</Localized></small></div>
+      <div className="card"><span className="muted"><Localized>{"PAGE RECORDS"}</Localized></span><div className="metric"><Localized>{events?.length ?? '—'}</Localized></div><small><Localized>{"Offset "}</Localized><Localized>{offset}</Localized></small></div>
+      <div className="card"><span className="muted"><Localized>{"DATA SOURCE"}</Localized></span><div className="metric"><Localized>{events ? 'API' : '—'}</Localized></div><small><Localized>{"FastAPI audit ledger"}</Localized></small></div>
     </div>
     <section className="panel">
-      <h2>Filter activity</h2>
+      <h2><Localized>{"Filter activity"}</Localized></h2>
       <form className="activityfilters" action="/activity" method="get">
-        <label>Event type<input name="event_type" maxLength={50} defaultValue={eventType} placeholder="e.g. DEPLOYMENT" /></label>
-        <label>Entity type<input name="entity_type" maxLength={80} defaultValue={entityType} placeholder="e.g. DEPLOYMENT" /></label>
-        <label>Entity reference<input name="entity_ref" maxLength={120} defaultValue={entityRef} placeholder="e.g. DEP-0081" /></label>
-        <label>Search<input name="q" maxLength={200} defaultValue={query.get('q') || ''} placeholder="Number, summary or actor" /></label>
-        <label>Actor (exact)<input name="actor_name" maxLength={120} defaultValue={query.get('actor_name') || ''} /></label>
-        <label>Action (exact)<input name="action" maxLength={80} defaultValue={query.get('action') || ''} /></label>
-        <label>Entity UUID<input name="entity_id" defaultValue={query.get('entity_id') || ''} /></label>
-        <label>Occurred from (inclusive)<input name="occurred_from" defaultValue={query.get('occurred_from') || ''} placeholder="2026-09-29T00:00:00Z" /></label>
-        <label>Occurred before (exclusive)<input name="occurred_before" defaultValue={query.get('occurred_before') || ''} placeholder="2026-09-30T00:00:00Z" /></label>
-        <label>Limit<select name="limit" defaultValue={limit}><option value="50">50</option><option value="100">100</option><option value="200">200</option></select></label>
-        <button type="submit">Apply</button><Link href="/activity">Clear</Link>
+        <label><Localized>{"Event type"}</Localized><LocalizedAttributes><input name="event_type" maxLength={50} defaultValue={eventType} placeholder="e.g. DEPLOYMENT" /></LocalizedAttributes></label>
+        <label><Localized>{"Entity type"}</Localized><LocalizedAttributes><input name="entity_type" maxLength={80} defaultValue={entityType} placeholder="e.g. DEPLOYMENT" /></LocalizedAttributes></label>
+        <label><Localized>{"Entity reference"}</Localized><LocalizedAttributes><input name="entity_ref" maxLength={120} defaultValue={entityRef} placeholder="e.g. DEP-0081" /></LocalizedAttributes></label>
+        <label><Localized>{"Search"}</Localized><LocalizedAttributes><input name="q" maxLength={200} defaultValue={query.get('q') || ''} placeholder="Number, summary or actor" /></LocalizedAttributes></label>
+        <label><Localized>{"Actor (exact)"}</Localized><input name="actor_name" maxLength={120} defaultValue={query.get('actor_name') || ''} /></label>
+        <label><Localized>{"Action (exact)"}</Localized><input name="action" maxLength={80} defaultValue={query.get('action') || ''} /></label>
+        <label><Localized>{"Entity UUID"}</Localized><input name="entity_id" defaultValue={query.get('entity_id') || ''} /></label>
+        <label><Localized>{"Occurred from (inclusive)"}</Localized><LocalizedAttributes><input name="occurred_from" defaultValue={query.get('occurred_from') || ''} placeholder="2026-09-29T00:00:00Z" /></LocalizedAttributes></label>
+        <label><Localized>{"Occurred before (exclusive)"}</Localized><LocalizedAttributes><input name="occurred_before" defaultValue={query.get('occurred_before') || ''} placeholder="2026-09-30T00:00:00Z" /></LocalizedAttributes></label>
+        <label><Localized>{"Limit"}</Localized><select name="limit" defaultValue={limit}><option value="50"><Localized>{"50"}</Localized></option><option value="100"><Localized>{"100"}</Localized></option><option value="200"><Localized>{"200"}</Localized></option></select></label>
+        <button type="submit"><Localized>{"Apply"}</Localized></button><Link href="/activity"><Localized>{"Clear"}</Localized></Link>
       </form>
     </section>
     <section className="panel">
-      <h2>Audit events</h2>
-      {events?.length ? <div className="activitylist">{events.map(event => {
+      <h2><Localized>{"Audit events"}</Localized></h2>
+      <Localized>{events?.length ? <div className="activitylist"><Localized>{events.map(event => {
         const href = eventHref(event);
         return <div className="activityitem" key={event.event_no}>
-          <time>{displayTime(event.occurred_at)}</time>
-          <span className="activitytype">{event.event_type}</span>
-          <div><b><Link href={`/activity/${encodeURIComponent(event.event_no)}`}>{event.summary}</Link></b>
-            <small>{event.detail || event.action} · {event.actor_name} · {event.event_no}</small>
-            {href && <small><Link href={href}>View {event.entity_ref} →</Link></small>}
+          <time><Localized>{displayTime(event.occurred_at)}</Localized></time>
+          <span className="activitytype"><Localized>{event.event_type}</Localized></span>
+          <div><b><Link href={`/activity/${encodeURIComponent(event.event_no)}`}><Localized>{event.summary}</Localized></Link></b>
+            <small><Localized>{event.detail || event.action}</Localized><Localized>{" · "}</Localized><Localized>{event.actor_name}</Localized><Localized>{" · "}</Localized><Localized>{event.event_no}</Localized></small>
+            <Localized>{href && <small><Link href={href}><Localized>{"View "}</Localized><Localized>{event.entity_ref}</Localized><Localized>{" →"}</Localized></Link></small>}</Localized>
           </div>
         </div>;
-      })}</div> : <p className="muted">{events ? 'No audit events match these filters.' : 'Audit API unavailable or filters invalid. Use timezone-qualified timestamps and ensure the start precedes the end.'}</p>}
-      {catalog && <><p className="muted">{Object.entries(catalog.event_type_counts).map(([name, count]) => `${name}: ${count}`).join(' · ') || 'No matching event types'}</p>
-        <div className="actions">{offset > 0 && <Link href={pageHref(Math.max(0, offset - limit))}>← Previous</Link>}
-          {catalog.next_offset !== null && catalog.next_offset <= 100000 && <Link href={pageHref(catalog.next_offset)}>Next →</Link>}</div></>}
+      })}</Localized></div> : <p className="muted"><Localized>{events ? 'No audit events match these filters.' : 'Audit API unavailable or filters invalid. Use timezone-qualified timestamps and ensure the start precedes the end.'}</Localized></p>}</Localized>
+      <Localized>{catalog && <><p className="muted"><Localized>{Object.entries(catalog.event_type_counts).map(([name, count]) => `${name}: ${count}`).join(' · ') || 'No matching event types'}</Localized></p>
+        <div className="actions"><Localized>{offset > 0 && <Link href={pageHref(Math.max(0, offset - limit))}><Localized>{"← Previous"}</Localized></Link>}</Localized>
+          <Localized>{catalog.next_offset !== null && catalog.next_offset <= 100000 && <Link href={pageHref(catalog.next_offset)}><Localized>{"Next →"}</Localized></Link>}</Localized></div></>}</Localized>
     </section>
     <section className="panel">
-      <h2>Audit principles</h2>
+      <h2><Localized>{"Audit principles"}</Localized></h2>
       <div className="grid2">
-        <div className="notice">Formal records are append-only at database level. Corrections create a new event instead of rewriting history.</div>
-        <div className="notice">Actor names are recorded declarations, not verified user identities. Directory rows show summaries; exact profiles preserve the full recorded payload.</div>
+        <div className="notice"><Localized>{"Formal records are append-only at database level. Corrections create a new event instead of rewriting history."}</Localized></div>
+        <div className="notice"><Localized>{"Actor names are recorded declarations, not verified user identities. Directory rows show summaries; exact profiles preserve the full recorded payload."}</Localized></div>
       </div>
     </section>
   </>;

@@ -1,3 +1,5 @@
+
+import { Localized, LocalizedAttributes } from "../../../../components/localized";
 import Link from 'next/link';
 import { apiGet } from '../../../../lib/api';
 
@@ -23,40 +25,40 @@ function timeLabel(value: string | null): string {
 export default async function Page({ params }: { params: Promise<{ batchNo: string }> }) {
   const { batchNo } = await params;
   const batch = await apiGet<BatchDetail>(`/api/v1/batches/${encodeURIComponent(batchNo)}`);
-  if (!batch) return <section className="panel"><h1>Batch unavailable</h1>
-    <p className="muted">This batch was not found or the API is unavailable.</p>
-    <Link href="/production/batches">← All batches</Link></section>;
+  if (!batch) return <section className="panel"><h1><Localized>{"Batch unavailable"}</Localized></h1>
+    <p className="muted"><Localized>{"This batch was not found or the API is unavailable."}</Localized></p>
+    <Link href="/production/batches"><Localized>{"← All batches"}</Localized></Link></section>;
 
   return <>
-    <div className="top"><div><div className="eyebrow">PRODUCTION BATCH</div><h1>{batch.batch_no}</h1>
-      <p className="muted">Software and authorization references for this recorded batch.</p></div>
-      <span className={'status ' + (batch.status === 'ACTIVE' ? 'pass' : 'warning')}>{batch.status}</span></div>
+    <div className="top"><div><div className="eyebrow"><Localized>{"PRODUCTION BATCH"}</Localized></div><h1><Localized>{batch.batch_no}</Localized></h1>
+      <p className="muted"><Localized>{"Software and authorization references for this recorded batch."}</Localized></p></div>
+      <span className={'status ' + (batch.status === 'ACTIVE' ? 'pass' : 'warning')}><Localized>{batch.status}</Localized></span></div>
     <div className="grid2">
-      <section className="panel"><h2>Batch record</h2><div className="kv">
-        <span>Release</span><b>{batch.software.version || '—'}</b>
-        <span>Snapshot</span><b>{batch.software.snapshot_no || '—'}</b>
-        <span>Started</span><b>{timeLabel(batch.started_at)}</b>
-        <span>Ended</span><b>{timeLabel(batch.ended_at)}</b>
-        <span>Note</span><b>{batch.note || '—'}</b>
+      <section className="panel"><h2><Localized>{"Batch record"}</Localized></h2><div className="kv">
+        <span><Localized>{"Release"}</Localized></span><b><Localized>{batch.software.version || '—'}</Localized></b>
+        <span><Localized>{"Snapshot"}</Localized></span><b><Localized>{batch.software.snapshot_no || '—'}</Localized></b>
+        <span><Localized>{"Started"}</Localized></span><b><Localized>{timeLabel(batch.started_at)}</Localized></b>
+        <span><Localized>{"Ended"}</Localized></span><b><Localized>{timeLabel(batch.ended_at)}</Localized></b>
+        <span><Localized>{"Note"}</Localized></span><b><Localized>{batch.note || '—'}</Localized></b>
       </div></section>
-      <section className="panel"><h2>Production context</h2><div className="kv">
-        <span>Deployment</span><b>{batch.deployment ? <Link href={`/deployments/${encodeURIComponent(batch.deployment.deployment_no)}`}>{batch.deployment.deployment_no} · {batch.deployment.status}</Link> : 'Missing deployment'}</b>
-        <span>Actual software</span><b>{batch.deployment?.actual ? `${batch.deployment.actual.version || '—'} · ${batch.deployment.actual.snapshot_no || '—'}` : 'Not reported'}</b>
-        <span>Authorization</span><b>{batch.authorization ? <Link href={`/distribution/authorizations/${encodeURIComponent(batch.authorization.authorization_no)}`}>{batch.authorization.authorization_no} · {batch.authorization.status}</Link> : 'Missing authorization'}</b>
-        <span>Authorization batch limit</span><b>{batch.authorization?.batch_limit ?? 'No limit recorded'}</b>
-        <span>Changeover</span><b>{batch.changeover ? `${batch.changeover.changeover_no} · ${batch.changeover.status}` : 'None linked'}</b>
+      <section className="panel"><h2><Localized>{"Production context"}</Localized></h2><div className="kv">
+        <span><Localized>{"Deployment"}</Localized></span><b><Localized>{batch.deployment ? <Link href={`/deployments/${encodeURIComponent(batch.deployment.deployment_no)}`}><Localized>{batch.deployment.deployment_no}</Localized><Localized>{" · "}</Localized><Localized>{batch.deployment.status}</Localized></Link> : 'Missing deployment'}</Localized></b>
+        <span><Localized>{"Actual software"}</Localized></span><b><Localized>{batch.deployment?.actual ? `${batch.deployment.actual.version || '—'} · ${batch.deployment.actual.snapshot_no || '—'}` : 'Not reported'}</Localized></b>
+        <span><Localized>{"Authorization"}</Localized></span><b><Localized>{batch.authorization ? <Link href={`/distribution/authorizations/${encodeURIComponent(batch.authorization.authorization_no)}`}><Localized>{batch.authorization.authorization_no}</Localized><Localized>{" · "}</Localized><Localized>{batch.authorization.status}</Localized></Link> : 'Missing authorization'}</Localized></b>
+        <span><Localized>{"Authorization batch limit"}</Localized></span><b><Localized>{batch.authorization?.batch_limit ?? 'No limit recorded'}</Localized></b>
+        <span><Localized>{"Changeover"}</Localized></span><b><Localized>{batch.changeover ? `${batch.changeover.changeover_no} · ${batch.changeover.status}` : 'None linked'}</Localized></b>
       </div></section>
     </div>
-    <section className="panel"><h2>Reference consistency</h2>
-      <p className="muted">These checks compare recorded identifiers; they do not independently verify what was flashed on a production line.</p>
+    <section className="panel"><h2><Localized>{"Reference consistency"}</Localized></h2>
+      <p className="muted"><Localized>{"These checks compare recorded identifiers; they do not independently verify what was flashed on a production line."}</Localized></p>
       <div className="kv">
-        <span>Authorization release</span><b>{matchLabel(batch.matches.authorized_release)}</b>
-        <span>Authorization snapshot</span><b>{matchLabel(batch.matches.authorized_snapshot)}</b>
-        <span>Reported deployment release</span><b>{matchLabel(batch.matches.deployed_release)}</b>
-        <span>Reported deployment snapshot</span><b>{matchLabel(batch.matches.deployed_snapshot)}</b>
-        <span>Changeover deployment</span><b>{batch.changeover ? matchLabel(batch.matches.changeover_deployment) : 'No changeover linked'}</b>
+        <span><Localized>{"Authorization release"}</Localized></span><b><Localized>{matchLabel(batch.matches.authorized_release)}</Localized></b>
+        <span><Localized>{"Authorization snapshot"}</Localized></span><b><Localized>{matchLabel(batch.matches.authorized_snapshot)}</Localized></b>
+        <span><Localized>{"Reported deployment release"}</Localized></span><b><Localized>{matchLabel(batch.matches.deployed_release)}</Localized></b>
+        <span><Localized>{"Reported deployment snapshot"}</Localized></span><b><Localized>{matchLabel(batch.matches.deployed_snapshot)}</Localized></b>
+        <span><Localized>{"Changeover deployment"}</Localized></span><b><Localized>{batch.changeover ? matchLabel(batch.matches.changeover_deployment) : 'No changeover linked'}</Localized></b>
       </div>
     </section>
-    <p className="datasource"><Link href="/production/batches">← All batches</Link></p>
+    <p className="datasource"><Link href="/production/batches"><Localized>{"← All batches"}</Localized></Link></p>
   </>;
 }

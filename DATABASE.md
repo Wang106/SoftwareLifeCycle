@@ -251,3 +251,20 @@ statuses and do not change transaction-level batch-limit enforcement.
 ## Delivery revision read migration — 2026-10-02
 
 No migration is needed. Existing migration 0007 provides uq_delivery_package_revision, ix_delivery_package_items_package_id and ix_distributions_package_id. Profile COUNT/conditional COUNT/distinct-control queries scope by the exact package UUID; artifact rows use outer join, deterministic filename/UUID order and SQL LIMIT/OFFSET. Missing metadata remains visible in defensive reads. Counts and filename sorting can grow in cost with stored rows; no constant-latency guarantee or general load benchmark is claimed. Required head remains 0017_deployment_actual_version.
+
+## Default Chinese and English interface — 2026-10-02
+
+All 63 page entry points and all 14 preparation forms now use the shared bilingual
+interface, default Chinese. The language-only cookie persists the selected preference;
+UI switching preserves form state, request_id, raw enum values, JSON and exact links.
+Recorded evidence/identifiers stay original. See [interface contract](docs/i18n.md).
+API 0.18.3 and schema 0017_deployment_actual_version are unchanged; no migration.
+Public staging remains read-only. Authenticated submission and OIDC configuration are
+still pending. Roadmap checked scope stays 34/44 (77%); bilingual coverage is an
+additional UI requirement, not completion of the Phase 6 submission gate.
+
+Verification: frontend 291 passed (77 localization/coverage checks plus 214 command
+checks); final Next/OpenNext production build passed. Full backend: 733 passed,
+3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
+tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
+input/option values for 14 forms. Live verification is recorded after deployment.

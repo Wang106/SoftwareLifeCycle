@@ -1,3 +1,5 @@
+
+import { Localized, LocalizedAttributes } from "../../../../components/localized";
 import Link from 'next/link';
 import { apiGet } from '../../../../lib/api';
 
@@ -17,53 +19,53 @@ type AuthorizationDetail = {
 export default async function Page({ params }: { params: Promise<{ authorizationNo: string }> }) {
   const { authorizationNo } = await params;
   const authorization = await apiGet<AuthorizationDetail>(`/api/v1/authorizations/${encodeURIComponent(authorizationNo)}/profile`);
-  if (!authorization) return <section className="panel"><h1>Authorization unavailable</h1>
-    <p className="muted">This authorization was not found or the API is unavailable.</p>
-    <Link href="/distribution/authorizations">← All authorizations</Link></section>;
+  if (!authorization) return <section className="panel"><h1><Localized>{"Authorization unavailable"}</Localized></h1>
+    <p className="muted"><Localized>{"This authorization was not found or the API is unavailable."}</Localized></p>
+    <Link href="/distribution/authorizations"><Localized>{"← All authorizations"}</Localized></Link></section>;
 
   const distribution = authorization.distribution;
   const deliveryHref = distribution?.package_no && distribution.package_revision
     ? `/distribution/deliveries/${encodeURIComponent(distribution.package_no)}/${distribution.package_revision}` : null;
   return <>
-    <div className="top"><div><div className="eyebrow">PRODUCTION GOVERNANCE</div><h1>{authorization.authorization_no}</h1>
-      <p className="muted">Authorization for a specified release, snapshot, customer, site and line.</p></div>
-      <span className={'status ' + (authorization.status === 'APPROVED' ? 'pass' : 'warning')}>{authorization.status}</span></div>
-    <p><Link href={`/commands?${new URLSearchParams({operation: 'deployment', target: authorization.id})}`}>Prepare deployment expectation →</Link> · Review exact current approved scope first.</p>
+    <div className="top"><div><div className="eyebrow"><Localized>{"PRODUCTION GOVERNANCE"}</Localized></div><h1><Localized>{authorization.authorization_no}</Localized></h1>
+      <p className="muted"><Localized>{"Authorization for a specified release, snapshot, customer, site and line."}</Localized></p></div>
+      <span className={'status ' + (authorization.status === 'APPROVED' ? 'pass' : 'warning')}><Localized>{authorization.status}</Localized></span></div>
+    <p><Link href={`/commands?${new URLSearchParams({operation: 'deployment', target: authorization.id})}`}><Localized>{"Prepare deployment expectation →"}</Localized></Link><Localized>{" · Review exact current approved scope first."}</Localized></p>
     <div className="grid2">
-      <section className="panel"><h2>Authorized scope</h2><div className="kv">
-        <span>Customer UUID</span><b>{authorization.customer?.id || 'Unavailable'}</b>
-        <span>Project UUID</span><b>{authorization.project?.id || 'Unavailable'}</b>
-        <span>Application release UUID</span><b>{authorization.release?.id || 'Unavailable'}</b>
-        <span>Customer</span><b>{authorization.customer ? `${authorization.customer.name} · ${authorization.customer.code}` : '—'}</b>
-        <span>Project</span><b>{authorization.project ? `${authorization.project.name} · ${authorization.project.code}` : '—'}</b>
-        <span>Release</span><b>{authorization.release ? <Link href={authorization.release.type === 'APPLICATION' ? `/releases/application/${authorization.release.id}` : '/releases/application'}>{authorization.release.type} {authorization.release.version}</Link> : '—'}</b>
-        <span>Snapshot</span><b>{authorization.snapshot?.snapshot_no || '—'}</b>
-        <span>Site / line</span><b>{authorization.site_code} / {authorization.line_code}</b>
-        <span>Purpose</span><b>{authorization.purpose}</b>
+      <section className="panel"><h2><Localized>{"Authorized scope"}</Localized></h2><div className="kv">
+        <span><Localized>{"Customer UUID"}</Localized></span><b><Localized>{authorization.customer?.id || 'Unavailable'}</Localized></b>
+        <span><Localized>{"Project UUID"}</Localized></span><b><Localized>{authorization.project?.id || 'Unavailable'}</Localized></b>
+        <span><Localized>{"Application release UUID"}</Localized></span><b><Localized>{authorization.release?.id || 'Unavailable'}</Localized></b>
+        <span><Localized>{"Customer"}</Localized></span><b><Localized>{authorization.customer ? `${authorization.customer.name} · ${authorization.customer.code}` : '—'}</Localized></b>
+        <span><Localized>{"Project"}</Localized></span><b><Localized>{authorization.project ? `${authorization.project.name} · ${authorization.project.code}` : '—'}</Localized></b>
+        <span><Localized>{"Release"}</Localized></span><b><Localized>{authorization.release ? <Link href={authorization.release.type === 'APPLICATION' ? `/releases/application/${authorization.release.id}` : '/releases/application'}><Localized>{authorization.release.type}</Localized> <Localized>{authorization.release.version}</Localized></Link> : '—'}</Localized></b>
+        <span><Localized>{"Snapshot"}</Localized></span><b><Localized>{authorization.snapshot?.snapshot_no || '—'}</Localized></b>
+        <span><Localized>{"Site / line"}</Localized></span><b><Localized>{authorization.site_code}</Localized><Localized>{" / "}</Localized><Localized>{authorization.line_code}</Localized></b>
+        <span><Localized>{"Purpose"}</Localized></span><b><Localized>{authorization.purpose}</Localized></b>
       </div></section>
-      <section className="panel"><h2>Distribution prerequisite</h2>
-        {distribution ? <div className="kv">
-          <span>Delivery</span><b>{deliveryHref ? <Link href={deliveryHref}>{distribution.package_no} Rev{distribution.package_revision}</Link> : 'Missing delivery link'}</b>
-          <span>Distribution</span><b><Link href={`/distribution/distributions/${encodeURIComponent(distribution.distribution_no)}`}>{distribution.distribution_no}</Link></b>
-          <span>Distribution status</span><b>{distribution.status}</b>
-        </div> : <p className="muted">No distribution linked to this authorization.</p>}
+      <section className="panel"><h2><Localized>{"Distribution prerequisite"}</Localized></h2>
+        <Localized>{distribution ? <div className="kv">
+          <span><Localized>{"Delivery"}</Localized></span><b><Localized>{deliveryHref ? <Link href={deliveryHref}><Localized>{distribution.package_no}</Localized><Localized>{" Rev"}</Localized><Localized>{distribution.package_revision}</Localized></Link> : 'Missing delivery link'}</Localized></b>
+          <span><Localized>{"Distribution"}</Localized></span><b><Link href={`/distribution/distributions/${encodeURIComponent(distribution.distribution_no)}`}><Localized>{distribution.distribution_no}</Localized></Link></b>
+          <span><Localized>{"Distribution status"}</Localized></span><b><Localized>{distribution.status}</Localized></b>
+        </div> : <p className="muted"><Localized>{"No distribution linked to this authorization."}</Localized></p>}</Localized>
         <code className="hash">{authorization.snapshot?.content_hash || 'No snapshot hash'}</code>
       </section>
     </div>
-    <section className="panel"><h2>Restrictions and batch usage</h2>
-      <p>{authorization.restriction_note || 'No restriction note recorded.'}</p>
-      <div className="kv"><span>Approved at</span><b>{authorization.approved_at ? new Date(authorization.approved_at).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—'}</b>
-        <span>Batch limit</span><b>{authorization.batch_limit ?? 'No limit recorded'}</b>
-        <span>Recorded batches</span><b>{authorization.history_counts.batches}</b>
-        <span>Unfilled slots (count only)</span><b>{authorization.batch_limit === null ? 'No limit recorded' : Math.max(0, authorization.batch_limit - authorization.history_counts.batches)}</b>
+    <section className="panel"><h2><Localized>{"Restrictions and batch usage"}</Localized></h2>
+      <p><Localized>{authorization.restriction_note || 'No restriction note recorded.'}</Localized></p>
+      <div className="kv"><span><Localized>{"Approved at"}</Localized></span><b><Localized>{authorization.approved_at ? new Date(authorization.approved_at).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—'}</Localized></b>
+        <span><Localized>{"Batch limit"}</Localized></span><b><Localized>{authorization.batch_limit ?? 'No limit recorded'}</Localized></b>
+        <span><Localized>{"Recorded batches"}</Localized></span><b><Localized>{authorization.history_counts.batches}</Localized></b>
+        <span><Localized>{"Unfilled slots (count only)"}</Localized></span><b><Localized>{authorization.batch_limit === null ? 'No limit recorded' : Math.max(0, authorization.batch_limit - authorization.history_counts.batches)}</Localized></b>
       </div>
     </section>
-    <section className="panel"><h2>Recorded production history</h2>
-      <p className="muted">{authorization.notice}</p>
-      <p><Link href={`/deployments?${new URLSearchParams({authorization_id: authorization.id})}`}>{authorization.history_counts.deployments} recorded deployments →</Link></p>
-      <p><Link href={`/production/batches?${new URLSearchParams({authorization_id: authorization.id})}`}>{authorization.history_counts.batches} recorded batches →</Link></p>
-      <p className="muted">Review software observations and binding evidence in paginated catalogs scoped to this exact authorization.</p>
+    <section className="panel"><h2><Localized>{"Recorded production history"}</Localized></h2>
+      <p className="muted"><Localized>{authorization.notice}</Localized></p>
+      <p><Link href={`/deployments?${new URLSearchParams({authorization_id: authorization.id})}`}><Localized>{authorization.history_counts.deployments}</Localized><Localized>{" recorded deployments →"}</Localized></Link></p>
+      <p><Link href={`/production/batches?${new URLSearchParams({authorization_id: authorization.id})}`}><Localized>{authorization.history_counts.batches}</Localized><Localized>{" recorded batches →"}</Localized></Link></p>
+      <p className="muted"><Localized>{"Review software observations and binding evidence in paginated catalogs scoped to this exact authorization."}</Localized></p>
     </section>
-    <p className="datasource"><Link href="/distribution/authorizations">← All authorizations</Link></p>
-  <p><Link href={`/activity?${new URLSearchParams({entity_type: 'SOFTWARE_AUTHORIZATION', entity_id: authorization.id})}`}>Recorded audit events →</Link></p></>;
+    <p className="datasource"><Link href="/distribution/authorizations"><Localized>{"← All authorizations"}</Localized></Link></p>
+  <p><Link href={`/activity?${new URLSearchParams({entity_type: 'SOFTWARE_AUTHORIZATION', entity_id: authorization.id})}`}><Localized>{"Recorded audit events →"}</Localized></Link></p></>;
 }

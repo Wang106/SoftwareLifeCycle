@@ -1,3 +1,5 @@
+
+import { Localized, LocalizedAttributes } from "../../../../../components/localized";
 import Link from 'next/link';
 import { apiGet } from '../../../../../lib/api';
 
@@ -43,7 +45,7 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
     apiGet<DecisionHistory>(`${apiPath}/decisions`),
     apiGet<Downstream>(`${apiPath}/downstream`),
   ]);
-  if (!profile) return <section className="panel"><h1>Software passport unavailable</h1><p className="muted">The application release was not found or the API could not be reached.</p><Link href="/releases/application">Back to releases →</Link></section>;
+  if (!profile) return <section className="panel"><h1><Localized>{"Software passport unavailable"}</Localized></h1><p className="muted"><Localized>{"The application release was not found or the API could not be reached."}</Localized></p><Link href="/releases/application"><Localized>{"Back to releases →"}</Localized></Link></section>;
 
   const decision = decisionResponse?.decision;
   const formallyReleased = decision?.decision === 'RELEASE' && decision.is_current_snapshot;
@@ -51,52 +53,52 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
   const deliveryRows = downstream?.deliveries.filter(row => !decision?.snapshot_no || row.snapshot_no === decision.snapshot_no) || [];
 
   return <>
-    <div className="top"><div><div className="eyebrow">SOFTWARE PASSPORT</div><h1>ASR {profile.version}</h1><p className="muted">Exact release identity · {profile.id}</p></div><span className={'status ' + (formallyReleased ? 'pass' : 'warning')}>{lifecycle}</span></div>
+    <div className="top"><div><div className="eyebrow"><Localized>{"SOFTWARE PASSPORT"}</Localized></div><h1><Localized>{"ASR "}</Localized><Localized>{profile.version}</Localized></h1><p className="muted"><Localized>{"Exact release identity · "}</Localized><Localized>{profile.id}</Localized></p></div><span className={'status ' + (formallyReleased ? 'pass' : 'warning')}><Localized>{lifecycle}</Localized></span></div>
     <div className="cards">
-      <div className="card"><span className="muted">CURRENT SNAPSHOT</span><div className="metric">{profile.snapshot?.snapshot_no || '—'}</div><small>{profile.snapshot?.status || 'No snapshot'}</small></div>
-      <div className="card"><span className="muted">RELEASE DECISION</span><div className="metric">{decision?.decision || '—'}</div><small>{decision?.decision_no || 'No formal decision'}</small></div>
-      <div className="card"><span className="muted">APPROVAL</span><div className="metric">{decision?.approval_status || '—'}</div><small>{decision?.approval_no || 'No linked approval'}</small></div>
-      <div className="card"><span className="muted">DELIVERIES</span><div className="metric">{deliveryRows.length}</div><small>For decision snapshot</small></div>
+      <div className="card"><span className="muted"><Localized>{"CURRENT SNAPSHOT"}</Localized></span><div className="metric"><Localized>{profile.snapshot?.snapshot_no || '—'}</Localized></div><small><Localized>{profile.snapshot?.status || 'No snapshot'}</Localized></small></div>
+      <div className="card"><span className="muted"><Localized>{"RELEASE DECISION"}</Localized></span><div className="metric"><Localized>{decision?.decision || '—'}</Localized></div><small><Localized>{decision?.decision_no || 'No formal decision'}</Localized></small></div>
+      <div className="card"><span className="muted"><Localized>{"APPROVAL"}</Localized></span><div className="metric"><Localized>{decision?.approval_status || '—'}</Localized></div><small><Localized>{decision?.approval_no || 'No linked approval'}</Localized></small></div>
+      <div className="card"><span className="muted"><Localized>{"DELIVERIES"}</Localized></span><div className="metric"><Localized>{deliveryRows.length}</Localized></div><small><Localized>{"For decision snapshot"}</Localized></small></div>
     </div>
     <div className="grid2">
-      <section className="panel"><h2>Release identity</h2><div className="kv">
-        <span>Software</span><b>{profile.software ? `${profile.software.name} · ${profile.software.code}` : '—'}</b>
-        <span>Customer</span><b>{profile.customer?.name || '—'}</b>
-        <span>Project</span><b>{profile.project ? `${profile.project.name} · ${profile.project.code}` : '—'}</b>
-        <span>Standard Base</span><b>{profile.base_release ? <Link href={`/releases/standard/${encodeURIComponent(profile.base_release.id)}`}>SSR {profile.base_release.version}</Link> : '—'}</b>
-        <span>Release status</span><b>{profile.status}</b>
-        <span>Snapshot hash</span><code style={{overflowWrap: 'anywhere'}}>{profile.snapshot?.content_hash || '—'}</code>
+      <section className="panel"><h2><Localized>{"Release identity"}</Localized></h2><div className="kv">
+        <span><Localized>{"Software"}</Localized></span><b><Localized>{profile.software ? `${profile.software.name} · ${profile.software.code}` : '—'}</Localized></b>
+        <span><Localized>{"Customer"}</Localized></span><b><Localized>{profile.customer?.name || '—'}</Localized></b>
+        <span><Localized>{"Project"}</Localized></span><b><Localized>{profile.project ? `${profile.project.name} · ${profile.project.code}` : '—'}</Localized></b>
+        <span><Localized>{"Standard Base"}</Localized></span><b><Localized>{profile.base_release ? <Link href={`/releases/standard/${encodeURIComponent(profile.base_release.id)}`}><Localized>{"SSR "}</Localized><Localized>{profile.base_release.version}</Localized></Link> : '—'}</Localized></b>
+        <span><Localized>{"Release status"}</Localized></span><b><Localized>{profile.status}</Localized></b>
+        <span><Localized>{"Snapshot hash"}</Localized></span><code style={{overflowWrap: 'anywhere'}}>{profile.snapshot?.content_hash || '—'}</code>
       </div></section>
-      <section className="panel"><h2>Formal release decision</h2>{decision ? <div className="kv">
-        <span>Decision</span><b>{decision.decision_no} · {decision.decision}</b>
-        <span>Decision snapshot</span><b>{decision.snapshot_no || '—'}{decision.is_current_snapshot ? ' · CURRENT' : ' · NOT CURRENT'}</b>
-        <span>Readiness</span><b>{decision.readiness_status}</b>
-        <span>Approval</span><b>{decision.approval_no || '—'} · {decision.approval_status || 'Unknown'}</b>
-        <span>Decided by</span><b>{decision.decided_by}</b>
-        <span>Decided at</span><b>{decision.decided_at.slice(0, 16).replace('T', ' ')}</b>
-        <span>Notes</span><b>{decision.decision_notes || '—'}</b>
-      </div> : <p className="muted">No formal release decision is recorded for this exact application release.</p>}
-      {decision && !decision.is_current_snapshot && <p className="muted">The recorded decision belongs to an older snapshot. The current snapshot is not presented as formally released.</p>}</section>
+      <section className="panel"><h2><Localized>{"Formal release decision"}</Localized></h2><Localized>{decision ? <div className="kv">
+        <span><Localized>{"Decision"}</Localized></span><b><Localized>{decision.decision_no}</Localized><Localized>{" · "}</Localized><Localized>{decision.decision}</Localized></b>
+        <span><Localized>{"Decision snapshot"}</Localized></span><b><Localized>{decision.snapshot_no || '—'}</Localized><Localized>{decision.is_current_snapshot ? ' · CURRENT' : ' · NOT CURRENT'}</Localized></b>
+        <span><Localized>{"Readiness"}</Localized></span><b><Localized>{decision.readiness_status}</Localized></b>
+        <span><Localized>{"Approval"}</Localized></span><b><Localized>{decision.approval_no || '—'}</Localized><Localized>{" · "}</Localized><Localized>{decision.approval_status || 'Unknown'}</Localized></b>
+        <span><Localized>{"Decided by"}</Localized></span><b><Localized>{decision.decided_by}</Localized></b>
+        <span><Localized>{"Decided at"}</Localized></span><b><Localized>{decision.decided_at.slice(0, 16).replace('T', ' ')}</Localized></b>
+        <span><Localized>{"Notes"}</Localized></span><b><Localized>{decision.decision_notes || '—'}</Localized></b>
+      </div> : <p className="muted"><Localized>{"No formal release decision is recorded for this exact application release."}</Localized></p>}</Localized>
+      <Localized>{decision && !decision.is_current_snapshot && <p className="muted"><Localized>{"The recorded decision belongs to an older snapshot. The current snapshot is not presented as formally released."}</Localized></p>}</Localized></section>
     </div>
-    <section className="panel tablewrap"><h2>Formal decision history</h2>
-      <p className="muted">Every recorded decision remains visible with its frozen snapshot and approval. A historical decision does not release the current snapshot.</p>
-      {decisionHistory ? <><table><thead><tr><th>Decision</th><th>Snapshot / hash</th><th>Readiness</th><th>Approval</th><th>Decided by / at</th><th>Notes</th></tr></thead><tbody>
-        {decisionHistory.decisions.map(row => <tr key={row.decision_no}>
-          <td><b>{row.decision_no}</b><div><span className={'status ' + (row.decision === 'RELEASE' && row.is_current_snapshot ? 'pass' : 'warning')}>{row.decision}</span></div></td>
-          <td>{row.snapshot_no || '—'} · {row.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}<div className="muted"><code>{row.snapshot_content_hash ? `${row.snapshot_content_hash.slice(0, 16)}…` : 'Hash unavailable'}</code></div></td>
-          <td>{row.readiness_status}</td>
-          <td>{row.approval_no ? <Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}>{row.approval_no}</Link> : '—'}<div className="muted">{row.approval_status || 'Unknown'}</div></td>
-          <td>{row.decided_by}<div className="muted">{row.decided_at.slice(0, 16).replace('T', ' ')} UTC</div></td>
-          <td>{row.decision_notes || '—'}</td>
-        </tr>)}</tbody></table>{decisionHistory.decisions.length === 0 && <p className="muted">No formal decisions recorded.</p>}</> : <p className="muted">Decision history API unavailable.</p>}
+    <section className="panel tablewrap"><h2><Localized>{"Formal decision history"}</Localized></h2>
+      <p className="muted"><Localized>{"Every recorded decision remains visible with its frozen snapshot and approval. A historical decision does not release the current snapshot."}</Localized></p>
+      <Localized>{decisionHistory ? <><table><thead><tr><th><Localized>{"Decision"}</Localized></th><th><Localized>{"Snapshot / hash"}</Localized></th><th><Localized>{"Readiness"}</Localized></th><th><Localized>{"Approval"}</Localized></th><th><Localized>{"Decided by / at"}</Localized></th><th><Localized>{"Notes"}</Localized></th></tr></thead><tbody>
+        <Localized>{decisionHistory.decisions.map(row => <tr key={row.decision_no}>
+          <td><b><Localized>{row.decision_no}</Localized></b><div><span className={'status ' + (row.decision === 'RELEASE' && row.is_current_snapshot ? 'pass' : 'warning')}><Localized>{row.decision}</Localized></span></div></td>
+          <td><Localized>{row.snapshot_no || '—'}</Localized><Localized>{" · "}</Localized><Localized>{row.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}</Localized><div className="muted"><code>{row.snapshot_content_hash ? `${row.snapshot_content_hash.slice(0, 16)}…` : 'Hash unavailable'}</code></div></td>
+          <td><Localized>{row.readiness_status}</Localized></td>
+          <td><Localized>{row.approval_no ? <Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}><Localized>{row.approval_no}</Localized></Link> : '—'}</Localized><div className="muted"><Localized>{row.approval_status || 'Unknown'}</Localized></div></td>
+          <td><Localized>{row.decided_by}</Localized><div className="muted"><Localized>{row.decided_at.slice(0, 16).replace('T', ' ')}</Localized><Localized>{" UTC"}</Localized></div></td>
+          <td><Localized>{row.decision_notes || '—'}</Localized></td>
+        </tr>)}</Localized></tbody></table><Localized>{decisionHistory.decisions.length === 0 && <p className="muted"><Localized>{"No formal decisions recorded."}</Localized></p>}</Localized></> : <p className="muted"><Localized>{"Decision history API unavailable."}</Localized></p>}</Localized>
     </section>
-    <section className="panel tablewrap"><h2>Authorized outbound chain</h2><p className="muted">Only recorded downstream objects are shown; this passport does not infer approval or authorization.</p>
-      <table><thead><tr><th>Stage</th><th>Record</th><th>Context</th><th>Snapshot</th><th>Status</th></tr></thead><tbody>
-        {deliveryRows.map(row => <tr key={row.id}><td>Delivery</td><td><Link href={`/distribution/deliveries/${encodeURIComponent(row.package_no)}/${row.revision}`}><b>{row.package_no} Rev{row.revision}</b></Link></td><td>{row.recipient_code}</td><td>{row.snapshot_no || '—'}</td><td>{row.status}</td></tr>)}
-        {(downstream?.distributions || []).map(row => <tr key={row.id}><td>Distribution</td><td><Link href={`/distribution/distributions/${encodeURIComponent(row.distribution_no)}`}><b>{row.distribution_no}</b></Link></td><td>{row.package_no} Rev{row.package_revision} · {row.recipient_code}</td><td>—</td><td>{row.status}</td></tr>)}
-        {(downstream?.authorizations || []).map(row => <tr key={row.id}><td>Authorization</td><td><Link href={`/distribution/authorizations/${encodeURIComponent(row.authorization_no)}`}><b>{row.authorization_no}</b></Link></td><td>{row.distribution_no || 'No distribution'} · {row.site_code}/{row.line_code}</td><td>{row.snapshot_no || '—'}</td><td>{row.status}</td></tr>)}
-      </tbody></table>{!deliveryRows.length && !downstream?.distributions.length && !downstream?.authorizations.length && <p className="muted">No outbound records linked to this release.</p>}
+    <section className="panel tablewrap"><h2><Localized>{"Authorized outbound chain"}</Localized></h2><p className="muted"><Localized>{"Only recorded downstream objects are shown; this passport does not infer approval or authorization."}</Localized></p>
+      <table><thead><tr><th><Localized>{"Stage"}</Localized></th><th><Localized>{"Record"}</Localized></th><th><Localized>{"Context"}</Localized></th><th><Localized>{"Snapshot"}</Localized></th><th><Localized>{"Status"}</Localized></th></tr></thead><tbody>
+        <Localized>{deliveryRows.map(row => <tr key={row.id}><td><Localized>{"Delivery"}</Localized></td><td><Link href={`/distribution/deliveries/${encodeURIComponent(row.package_no)}/${row.revision}`}><b><Localized>{row.package_no}</Localized><Localized>{" Rev"}</Localized><Localized>{row.revision}</Localized></b></Link></td><td><Localized>{row.recipient_code}</Localized></td><td><Localized>{row.snapshot_no || '—'}</Localized></td><td><Localized>{row.status}</Localized></td></tr>)}</Localized>
+        <Localized>{(downstream?.distributions || []).map(row => <tr key={row.id}><td><Localized>{"Distribution"}</Localized></td><td><Link href={`/distribution/distributions/${encodeURIComponent(row.distribution_no)}`}><b><Localized>{row.distribution_no}</Localized></b></Link></td><td><Localized>{row.package_no}</Localized><Localized>{" Rev"}</Localized><Localized>{row.package_revision}</Localized><Localized>{" · "}</Localized><Localized>{row.recipient_code}</Localized></td><td><Localized>{"—"}</Localized></td><td><Localized>{row.status}</Localized></td></tr>)}</Localized>
+        <Localized>{(downstream?.authorizations || []).map(row => <tr key={row.id}><td><Localized>{"Authorization"}</Localized></td><td><Link href={`/distribution/authorizations/${encodeURIComponent(row.authorization_no)}`}><b><Localized>{row.authorization_no}</Localized></b></Link></td><td><Localized>{row.distribution_no || 'No distribution'}</Localized><Localized>{" · "}</Localized><Localized>{row.site_code}</Localized><Localized>{"/"}</Localized><Localized>{row.line_code}</Localized></td><td><Localized>{row.snapshot_no || '—'}</Localized></td><td><Localized>{row.status}</Localized></td></tr>)}</Localized>
+      </tbody></table><Localized>{!deliveryRows.length && !downstream?.distributions.length && !downstream?.authorizations.length && <p className="muted"><Localized>{"No outbound records linked to this release."}</Localized></p>}</Localized>
     </section>
-    <p className="datasource"><Link href={pagePath}>← Release profile</Link></p>
+    <p className="datasource"><Link href={pagePath}><Localized>{"← Release profile"}</Localized></Link></p>
   </>;
 }

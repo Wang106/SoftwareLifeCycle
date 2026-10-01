@@ -303,3 +303,12 @@ limits in its existing serialized transaction and atomically commits audit.
 ## Delivery revision read migration — 2026-10-02
 
 API 0.18.3 adds GET-only exact delivery profile and artifact paging. Distribution preparation keeps the exact package UUID; no recipient/policy permission is inferred from the count or displayed page. Existing Delivery/Distribution authorization, actor, retry, row-lock and atomic-audit contracts remain unchanged. No new write or migration is added.
+
+## Bilingual presentation — 2026-10-02
+
+All 14 forms translate labels, choices and validation display only. Original option
+values, request_id, exact scope, actor binding, confirmation and frozen request JSON
+remain unchanged. Language switching neither remounts forms nor sends commands.
+All executable API contracts/locks and atomic audits remain unchanged; no migration.
+Language preference is the only new browser cookie; no request or credential persistence.
+See [interface contract](i18n.md).

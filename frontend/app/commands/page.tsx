@@ -1,3 +1,5 @@
+
+import { Localized, LocalizedAttributes } from "../../components/localized";
 import CommandWorkbench from '../../components/command-workbench';
 import { Operation, Fields, resourceTypes } from '../../lib/command-draft';
 
@@ -13,8 +15,8 @@ export default async function Page({ searchParams }: {
   const initialContext: Partial<Fields> = { productionLine: bounded('line'), release: bounded('release'), snapshot: bounded('snapshot'), criterion: bounded('criterion'),
     entityType: resourceTypes.includes(bounded('entity_type', 30)) ? bounded('entity_type', 30) : '' };
   return <>
-    <div className="top"><div><div className="eyebrow">CONTROLLED COMMANDS</div><h1>Prepare a lifecycle request</h1>
-      <p className="muted">Validate, review and copy a lifecycle command request (fourteen supported forms) for your controlled API client.</p></div></div>
+    <div className="top"><div><div className="eyebrow"><Localized>{"CONTROLLED COMMANDS"}</Localized></div><h1><Localized>{"Prepare a lifecycle request"}</Localized></h1>
+      <p className="muted"><Localized>{"Validate, review and copy a lifecycle command request (fourteen supported forms) for your controlled API client."}</Localized></p></div></div>
     <CommandWorkbench key={`${operation}:${target}:${step}:${JSON.stringify(initialContext)}`} initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} />
   </>;
 }

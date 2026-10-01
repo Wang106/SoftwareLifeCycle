@@ -169,7 +169,7 @@ contract and limits are in [docs/write-contracts.md](docs/write-contracts.md).
 The /commands server page selects bounded initial form context; a client component
 uses a transport-free pure helper to validate and freeze a request. Field/target
 changes invalidate review; confirmation enables clipboard export with a stable key.
-Only React memory is used. No token, API-origin input, browser storage, mutation
+Business requests use only React memory. No token, API-origin input, business-request browser storage, mutation
 route or POST transport is introduced. Backend security/atomicity remains authoritative
 for later controlled-client execution. See docs/controlled-write-ui.md.
 
@@ -226,3 +226,20 @@ Legacy detail responses remain compatible; other consumer migrations remain open
 ## Delivery revision read migration — 2026-10-02
 
 The delivery revision frontend uses an exact profile and a paginated artifact endpoint (API 0.18.3). Aggregate counts omit child histories; manifest metadata is joined only for the bounded window, retaining missing references through an outer join. Distribution review uses the exact package UUID catalog. Legacy consumers remain compatible; all write/security boundaries are unchanged.
+
+## Default Chinese and English interface — 2026-10-02
+
+All 63 page entry points and all 14 preparation forms now use the shared bilingual
+interface, default Chinese. The language-only cookie persists the selected preference;
+UI switching preserves form state, request_id, raw enum values, JSON and exact links.
+Recorded evidence/identifiers stay original. See [interface contract](docs/i18n.md).
+API 0.18.3 and schema 0017_deployment_actual_version are unchanged; no migration.
+Public staging remains read-only. Authenticated submission and OIDC configuration are
+still pending. Roadmap checked scope stays 34/44 (77%); bilingual coverage is an
+additional UI requirement, not completion of the Phase 6 submission gate.
+
+Verification: frontend 291 passed (77 localization/coverage checks plus 214 command
+checks); final Next/OpenNext production build passed. Full backend: 733 passed,
+3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
+tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
+input/option values for 14 forms. Live verification is recorded after deployment.

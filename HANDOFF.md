@@ -414,3 +414,20 @@ consumers, approved OIDC/session/controlled target, submission/recovery,
 correction/revocation and operations remain pending.
 
 Verification: 19 new delivery profile/artifact tests pass within the complete Python 3.12 backend suite: 733 passed, 3568 warnings, no skips, including 103 real PostgreSQL 16 migrated-schema concurrency/integration tests. Frontend: 214 passed, no skips; final Next/OpenNext Cloudflare production build passed. Eleven local SSR checks passed for full totals, exact UUID/revision links, first/next paging, empty/missing parents, lost metadata, beyond-end page, unavailable/invalid/array pagination, missing profile without fallback, invalid revision without API calls and profile/artifact-only reads. No migration. Online verification after feature commit `1efe0c28e2c5d68a36b00103b540329a38b1df04`: Render deployment `dep-dava0k6417fc73ds081g` is live for that commit (finished 2026-10-01T18:03:49Z). Health returned 200 with API 0.18.3 and revision 0017_deployment_actual_version; read-only PostgreSQL SQL independently confirmed that revision. DP-0226 revision 1 profile returned 200, exact package UUID, counts 3 artifacts/1 distribution, policy counts 2 ALLOW/1 APPROVAL_REQUIRED/0 OTHER and 1 distinct control. Two one-item artifact pages returned distinct exact UUIDs with total 3, next offsets 1/2 and no storage references. Missing exact revision returned 404; limit 101 returned 422. Empty Delivery/Distribution POSTs returned 403 read_only_mode. Cloudflare live detail, first/next artifact paging with unchanged full totals and exact-package distribution catalog were verified in the browser; no business writes were submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live feature behavior is frontend evidence. The first Render log query failed with a provider Loki 502/503; a subsequent query succeeded with no recent error logs, without application changes.
+
+## Default Chinese and English interface — 2026-10-02
+
+All 63 page entry points and all 14 preparation forms now use the shared bilingual
+interface, default Chinese. The language-only cookie persists the selected preference;
+UI switching preserves form state, request_id, raw enum values, JSON and exact links.
+Recorded evidence/identifiers stay original. See [interface contract](docs/i18n.md).
+API 0.18.3 and schema 0017_deployment_actual_version are unchanged; no migration.
+Public staging remains read-only. Authenticated submission and OIDC configuration are
+still pending. Roadmap checked scope stays 34/44 (77%); bilingual coverage is an
+additional UI requirement, not completion of the Phase 6 submission gate.
+
+Verification: frontend 291 passed (77 localization/coverage checks plus 214 command
+checks); final Next/OpenNext production build passed. Full backend: 733 passed,
+3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
+tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
+input/option values for 14 forms. Live verification is recorded after deployment.

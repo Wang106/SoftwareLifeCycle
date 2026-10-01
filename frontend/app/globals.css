@@ -11,3 +11,9 @@
 .commandform{display:grid;gap:16px;max-width:760px}.commandform label{display:grid;gap:6px;font-size:13px}.commandform input,.commandform select,.commandform textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font:inherit}.commandform textarea{min-height:90px;resize:vertical}.commandform button,.commandconfirm+button{padding:10px 16px;cursor:pointer}.commandform button:disabled,.commandconfirm+button:disabled{opacity:.5;cursor:default}.commandconfirm{display:flex;align-items:flex-start;gap:10px;margin:16px 0}.commandconfirm input{margin-top:3px}.commandform p{margin:0}.commandform code,.commandconfirm code{overflow-wrap:anywhere}
 
 .commandfields{display:grid;gap:16px;border:0;margin:0;padding:0;min-width:0}
+
+.language-switch{position:fixed;right:116px;top:14px;z-index:20;display:flex;gap:2px;padding:2px;background:var(--panel,#fff);border:1px solid #dbe1e8;border-radius:8px}
+.language-switch button{padding:5px 10px;border:0;border-radius:5px;background:transparent;color:#475569;cursor:pointer;font:inherit;font-size:13px}
+.language-switch button[aria-pressed=true]{background:#e6f1ff;color:#174c9c;font-weight:700}
+.language-switch button:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+@media(max-width:720px){.language-switch{position:static;margin:8px 12px 0 auto;width:max-content}.appbar .search{max-width:55%}.appactions{gap:8px}}

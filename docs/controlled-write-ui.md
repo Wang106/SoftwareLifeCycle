@@ -221,3 +221,11 @@ permission is inferred from history counts or acknowledgment. Submission is pend
 ## Delivery revision read migration — 2026-10-02
 
 Delivery revision context now uses bounded profile/artifact reads. Full totals stay independent of displayed rows; the exact package UUID remains the Distribution preparation target. Policy/control display is recorded evidence, not permission or successful execution. Confirmation/copy remains transport-free; authenticated submission/recovery and approved identity/target remain pending.
+
+## Bilingual interface — 2026-10-02
+
+All 14 preparation forms support default Chinese and selectable English. Earlier
+no-browser-storage descriptions refer to business requests and credentials; the new
+`slc_language` cookie stores only language preference. Switching preserves inputs,
+review/confirmation, request_id and raw exported JSON. No submission capability is
+added. See [interface contract](i18n.md).

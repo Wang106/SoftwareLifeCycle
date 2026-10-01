@@ -1,3 +1,5 @@
+
+import { Localized, LocalizedAttributes } from "../../../components/localized";
 import Link from 'next/link';
 import { apiGet } from '../../../lib/api';
 
@@ -16,32 +18,32 @@ type Snapshot = {
 export default async function Page({ params }: { params: Promise<{ snapshotNo: string }> }) {
   const { snapshotNo } = await params;
   const snapshot = await apiGet<Snapshot>(`/api/v1/snapshots/${encodeURIComponent(snapshotNo)}`);
-  if (!snapshot) return <section className="panel"><h1>Snapshot unavailable</h1><p className="muted">The exact snapshot was not found or the API could not be reached. No substitute snapshot is shown.</p><Link href="/search">Search records →</Link></section>;
+  if (!snapshot) return <section className="panel"><h1><Localized>{"Snapshot unavailable"}</Localized></h1><p className="muted"><Localized>{"The exact snapshot was not found or the API could not be reached. No substitute snapshot is shown."}</Localized></p><Link href="/search"><Localized>{"Search records →"}</Localized></Link></section>;
   const releasePath = snapshot.release ? `/releases/${snapshot.release.type === 'STANDARD' ? 'standard' : 'application'}/${encodeURIComponent(snapshot.release.id)}` : null;
   return <>
-    <p><Link href={`/resources?entity_type=SNAPSHOT&entity_id=${snapshot.id}`}>Materials & evidence references →</Link></p>
-    <div className="top"><div><div className="eyebrow">EXACT FROZEN SNAPSHOT</div><h1>{snapshot.snapshot_no}</h1><p className="muted">Snapshot #{snapshot.snapshot_number} · {snapshot.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}</p></div><span className="status">{snapshot.status}</span></div>
-    <section className="panel"><h2>Snapshot identity</h2><div className="kv">
-      <span>Snapshot UUID</span><b>{snapshot.id}</b>
-      <span>Release UUID</span><b>{snapshot.release?.id || 'Unavailable'}</b>
-      <span>Release</span><b>{snapshot.release && releasePath ? <Link href={releasePath}>{snapshot.release.type} {snapshot.release.version}</Link> : 'Release unavailable'}</b>
-      <span>Frozen at</span><b>{snapshot.created_at.slice(0, 16).replace('T', ' ')} UTC</b>
-      <span>Content hash</span><code style={{overflowWrap: 'anywhere'}}>{snapshot.content_hash}</code>
-    </div><p className="muted">This page shows only this snapshot’s frozen files and recipient rules. Current release status does not establish approval of this snapshot.</p>
-      {!snapshot.is_current_snapshot && <p className="muted">A newer snapshot exists. These historical records are not replaced by the current manifest.</p>}
+    <p><Link href={`/resources?entity_type=SNAPSHOT&entity_id=${snapshot.id}`}><Localized>{"Materials & evidence references →"}</Localized></Link></p>
+    <div className="top"><div><div className="eyebrow"><Localized>{"EXACT FROZEN SNAPSHOT"}</Localized></div><h1><Localized>{snapshot.snapshot_no}</Localized></h1><p className="muted"><Localized>{"Snapshot #"}</Localized><Localized>{snapshot.snapshot_number}</Localized><Localized>{" · "}</Localized><Localized>{snapshot.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}</Localized></p></div><span className="status"><Localized>{snapshot.status}</Localized></span></div>
+    <section className="panel"><h2><Localized>{"Snapshot identity"}</Localized></h2><div className="kv">
+      <span><Localized>{"Snapshot UUID"}</Localized></span><b><Localized>{snapshot.id}</Localized></b>
+      <span><Localized>{"Release UUID"}</Localized></span><b><Localized>{snapshot.release?.id || 'Unavailable'}</Localized></b>
+      <span><Localized>{"Release"}</Localized></span><b><Localized>{snapshot.release && releasePath ? <Link href={releasePath}><Localized>{snapshot.release.type}</Localized> <Localized>{snapshot.release.version}</Localized></Link> : 'Release unavailable'}</Localized></b>
+      <span><Localized>{"Frozen at"}</Localized></span><b><Localized>{snapshot.created_at.slice(0, 16).replace('T', ' ')}</Localized><Localized>{" UTC"}</Localized></b>
+      <span><Localized>{"Content hash"}</Localized></span><code style={{overflowWrap: 'anywhere'}}>{snapshot.content_hash}</code>
+    </div><p className="muted"><Localized>{"This page shows only this snapshot’s frozen files and recipient rules. Current release status does not establish approval of this snapshot."}</Localized></p>
+      <Localized>{!snapshot.is_current_snapshot && <p className="muted"><Localized>{"A newer snapshot exists. These historical records are not replaced by the current manifest."}</Localized></p>}</Localized>
     </section>
-    <section className="panel tablewrap"><h2>Frozen manifest · {snapshot.artifacts.length} files</h2><table><thead><tr><th>File / component</th><th>Full SHA-256</th><th>Classification / distribution</th><th>AI policy</th><th>Frozen recipient rules</th></tr></thead><tbody>
-      {snapshot.artifacts.map(row => <tr key={row.id} id={`artifact-${row.id}`}>
-        <td><b>{row.filename}</b><div className="muted">Snapshot artifact UUID: {row.id}</div><div className="muted">{row.artifact_type} · {row.component_code} {row.component_version || ''}</div></td>
+    <section className="panel tablewrap"><h2><Localized>{"Frozen manifest · "}</Localized><Localized>{snapshot.artifacts.length}</Localized><Localized>{" files"}</Localized></h2><table><thead><tr><th><Localized>{"File / component"}</Localized></th><th><Localized>{"Full SHA-256"}</Localized></th><th><Localized>{"Classification / distribution"}</Localized></th><th><Localized>{"AI policy"}</Localized></th><th><Localized>{"Frozen recipient rules"}</Localized></th></tr></thead><tbody>
+      <Localized>{snapshot.artifacts.map(row => <tr key={row.id} id={`artifact-${row.id}`}>
+        <td><b><Localized>{row.filename}</Localized></b><div className="muted"><Localized>{"Snapshot artifact UUID: "}</Localized><Localized>{row.id}</Localized></div><div className="muted"><Localized>{row.artifact_type}</Localized><Localized>{" · "}</Localized><Localized>{row.component_code}</Localized> <Localized>{row.component_version || ''}</Localized></div></td>
         <td><code style={{overflowWrap: 'anywhere', display: 'block', maxWidth: 240}}>{row.sha256}</code></td>
-        <td>{row.classification}<div>{row.distribution_level}</div></td><td>{row.ai_access_policy}</td>
-        <td>{row.distribution_level === 'INTERNAL_ONLY' ? 'External distribution denied' : row.policy_rules.length ? row.policy_rules.map((rule, index) => <div key={index}>{rule.recipient_type} {rule.recipient_code || ''} · {rule.purpose} · {rule.decision}</div>) : 'No frozen rule recorded'}</td>
-      </tr>)}
-    </tbody></table>{snapshot.artifacts.length === 0 && <p className="muted">No frozen artifacts recorded for this snapshot.</p>}</section>
-    <p><Link href={`/snapshots/${encodeURIComponent(snapshot.snapshot_no)}/compare`}>Compare frozen files and policies →</Link></p>
-    {snapshot.release && <p><Link href={`/commands?${new URLSearchParams({operation: 'test-release', target: snapshot.release.id, snapshot: snapshot.id})}`}>Prepare test draft for this exact snapshot →</Link></p>}
-    {snapshot.release && <p><Link href={`/commands?${new URLSearchParams({operation: 'delivery', target: snapshot.release.id})}`}>Prepare delivery for this release →</Link> · Review the latest approved RELEASE decision first; this snapshot is not automatically selected.</p>}
-    {snapshot.release && <p><Link href={`/releases/${encodeURIComponent(snapshot.release.id)}/snapshots`}>View snapshot history →</Link></p>}
-    {releasePath && <p><Link href={releasePath}>← Release profile</Link></p>}
+        <td><Localized>{row.classification}</Localized><div><Localized>{row.distribution_level}</Localized></div></td><td><Localized>{row.ai_access_policy}</Localized></td>
+        <td><Localized>{row.distribution_level === 'INTERNAL_ONLY' ? 'External distribution denied' : row.policy_rules.length ? row.policy_rules.map((rule, index) => <div key={index}><Localized>{rule.recipient_type}</Localized> <Localized>{rule.recipient_code || ''}</Localized><Localized>{" · "}</Localized><Localized>{rule.purpose}</Localized><Localized>{" · "}</Localized><Localized>{rule.decision}</Localized></div>) : 'No frozen rule recorded'}</Localized></td>
+      </tr>)}</Localized>
+    </tbody></table><Localized>{snapshot.artifacts.length === 0 && <p className="muted"><Localized>{"No frozen artifacts recorded for this snapshot."}</Localized></p>}</Localized></section>
+    <p><Link href={`/snapshots/${encodeURIComponent(snapshot.snapshot_no)}/compare`}><Localized>{"Compare frozen files and policies →"}</Localized></Link></p>
+    <Localized>{snapshot.release && <p><Link href={`/commands?${new URLSearchParams({operation: 'test-release', target: snapshot.release.id, snapshot: snapshot.id})}`}><Localized>{"Prepare test draft for this exact snapshot →"}</Localized></Link></p>}</Localized>
+    <Localized>{snapshot.release && <p><Link href={`/commands?${new URLSearchParams({operation: 'delivery', target: snapshot.release.id})}`}><Localized>{"Prepare delivery for this release →"}</Localized></Link><Localized>{" · Review the latest approved RELEASE decision first; this snapshot is not automatically selected."}</Localized></p>}</Localized>
+    <Localized>{snapshot.release && <p><Link href={`/releases/${encodeURIComponent(snapshot.release.id)}/snapshots`}><Localized>{"View snapshot history →"}</Localized></Link></p>}</Localized>
+    <Localized>{releasePath && <p><Link href={releasePath}><Localized>{"← Release profile"}</Localized></Link></p>}</Localized>
   </>;
 }

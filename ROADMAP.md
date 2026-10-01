@@ -101,3 +101,22 @@ not provider configuration or production-readiness certification.
    monitoring, alerts and incident procedures.
 7. Separate demo/staging/company environments, disable non-demo seed, approve
    network/data governance and validate recovery before loading company data.
+
+## Bilingual UI and planning estimate — 2026-10-02
+
+The additional bilingual requirement covers all 63 current pages and 14 forms, with
+default Chinese, remembered English selection and unchanged command semantics.
+The original roadmap denominator remains 44; Phase 6 stays 3/5 and overall 34/44.
+
+Estimated remaining focused development packages: **8–12 to controlled internal use**;
+**16–24 total to a production-ready review**, including those initial packages. These
+are planning ranges, not release commitments. Identity/provider approvals, a controlled
+non-public environment, correction policy and real data/network decisions can expand
+the scope. One package should deliver one testable behavior and its verification.
+
+Suggested package groups: remaining bounded consumers (1–2); approved OIDC/session and
+controlled target (2–3); authenticated submission, uncertain-result recovery and result
+trace for all forms (3–4); append-only corrections/revocations (2–3); CI, environment
+separation, monitoring, backups/restore drills and security/data acceptance (8–12).
+Several groups can overlap, so these are not mechanically additive. Never enable
+public staging writes to satisfy a submission milestone.
