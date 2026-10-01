@@ -4,6 +4,8 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Added configurable OIDC authentication for writes with strict HTTPS configuration, asymmetric algorithm allow-list, signature/issuer/audience/time validation and fail-closed ACTIVE principal resolution.
+- Preserved public staging read-only precedence and controlled local `AUTH_MODE=disabled` compatibility; scoped project/software authorization remains deliberately unenforced.
 - Added provider-neutral user/service principals, global role assignments, software membership and project membership in migration `0015_identity_roles`; no credentials or grants are seeded.
 - Defined planned role requirements for every write contract while keeping authentication/authorization explicitly unenforced and public staging read-only.
 - Added an executable contract inventory covering every FastAPI write route, with a drift test and explicit identity, authorization, audit, idempotency and concurrency gaps.

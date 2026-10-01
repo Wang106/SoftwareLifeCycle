@@ -22,6 +22,7 @@ Use PostgreSQL for end-to-end testing: migrations depend on PostgreSQL `JSONB` a
    DATABASE_URL=<test database internal PostgreSQL URL>
    SEED_ON_STARTUP=true
    READ_ONLY_MODE=true
+   AUTH_MODE=disabled
    CORS_ORIGINS=https://softwarelifecycle.whf969.com
    ```
 

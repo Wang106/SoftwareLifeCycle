@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.concurrency import run_in_threadpool
 
 from app.api.releases import router as releases_router
 from app.api.dashboard import router as dashboard_router
@@ -24,8 +25,9 @@ from app.api.production_catalog import router as production_catalog_router
 from app.api.governance_catalog import router as governance_catalog_router
 from app.core.config import settings
 from app.core.db import engine
+from app.auth import AuthenticationError, authenticate_write_request
 
-APP_VERSION = "0.9.0"
+APP_VERSION = "0.10.0"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -57,11 +59,21 @@ app.include_router(governance_catalog_router)
 
 @app.middleware("http")
 async def read_only_guard(request: Request, call_next):
-    if settings.read_only_mode and request.method not in {"GET", "HEAD", "OPTIONS"}:
+    is_write = request.method not in {"GET", "HEAD", "OPTIONS"}
+    if settings.read_only_mode and is_write:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={"detail": "read_only_mode"},
         )
+    if is_write and settings.auth_mode == "oidc":
+        try:
+            await run_in_threadpool(authenticate_write_request, request, settings)
+        except AuthenticationError as exc:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": str(exc)},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
     return await call_next(request)
 
 @app.get("/health")

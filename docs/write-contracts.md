@@ -2,7 +2,7 @@
 
 This is the reviewed baseline for every non-read FastAPI route. The executable source is `backend/app/write_contracts.py`; `backend/tests/test_write_contracts.py` fails when a write route is added, removed or renamed without updating that inventory.
 
-This inventory is descriptive, not an access-control implementation. Every current write route has `authentication=NONE` and `authorization=NONE`. The public sample service must therefore keep `READ_ONLY_MODE=true`.
+This inventory is descriptive, not an authorization implementation. Every current write route has `authentication=OIDC_WHEN_ENABLED` and `authorization=NONE`. The public sample service must therefore keep `READ_ONLY_MODE=true`; merely authenticating a principal does not grant a scoped role.
 
 The intended scoped roles are recorded in the executable contracts and defined in `SECURITY.md`: snapshot creation uses software-maintainer/project-contributor scope; review actions use reviewer; release decisions use release authority; delivery/distribution use distribution authority; production authorization uses production authority; deployment/changeover/batch use production operator. `PLATFORM_ADMIN` is a future exceptional override. None of these roles is enforced yet.
 
@@ -33,4 +33,4 @@ The intended scoped roles are recorded in the executable contracts and defined i
 
 ## Review rule
 
-Before a new write route can merge, its contract must state scope, actor source, authentication, authorization, audit, idempotency and concurrency behavior. Before any route can be exposed beyond controlled local development, replace `NONE` authentication/authorization with enforced policy and add positive and negative integration tests.
+Before a new write route can merge, its contract must state scope, actor source, authentication, authorization, audit, idempotency and concurrency behavior. Before any route can be exposed beyond controlled local development, configure OIDC, replace `NONE` authorization with enforced scoped policy and add positive and negative integration tests.

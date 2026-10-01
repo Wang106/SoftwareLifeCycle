@@ -18,6 +18,14 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://slc:slc_dev_password@postgres:5432/software_lifecycle}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,https://softwarelifecycle.whf969.com}
       SEED_ON_STARTUP: ${SEED_ON_STARTUP:-true}
+      READ_ONLY_MODE: ${READ_ONLY_MODE:-false}
+      AUTH_MODE: ${AUTH_MODE:-disabled}
+      OIDC_ISSUER_URL: ${OIDC_ISSUER_URL:-}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:-}
+      OIDC_ALGORITHMS: ${OIDC_ALGORITHMS:-RS256}
+      OIDC_LEEWAY_SECONDS: ${OIDC_LEEWAY_SECONDS:-30}
+      OIDC_JWKS_TIMEOUT_SECONDS: ${OIDC_JWKS_TIMEOUT_SECONDS:-5}
     ports: ["8000:8000"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"]

@@ -22,7 +22,7 @@ def test_current_write_contracts_remain_non_public_and_explicitly_unauthenticate
     assert WRITE_CONTRACTS
     for contract in WRITE_CONTRACTS.values():
         assert contract.public_exposure == "READ_ONLY_BLOCKED"
-        assert contract.authentication == "NONE"
+        assert contract.authentication == "OIDC_WHEN_ENABLED"
         assert contract.authorization == "NONE"
         assert contract.actor_source in {"NONE", "DECLARED_OPTIONAL", "DECLARED_REQUIRED"}
         assert contract.audit in {"NONE", "ATOMIC_APPEND"}

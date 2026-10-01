@@ -28,7 +28,7 @@ class WriteContract:
     concurrency: ConcurrencyGuarantee
     planned_roles: frozenset[str]
     known_gap: str
-    authentication: Literal["NONE"] = "NONE"
+    authentication: Literal["OIDC_WHEN_ENABLED"] = "OIDC_WHEN_ENABLED"
     authorization: Literal["NONE"] = "NONE"
     public_exposure: Literal["READ_ONLY_BLOCKED"] = "READ_ONLY_BLOCKED"
 

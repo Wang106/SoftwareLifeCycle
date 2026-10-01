@@ -2,11 +2,11 @@
 
 ## Current status
 
-The repository now has a provider-neutral identity and scoped-role data model. It does **not** yet authenticate requests or enforce authorization. The public sample API must continue using `READ_ONLY_MODE=true` until token validation, scope resolution and permission tests are implemented.
+The repository has a provider-neutral identity/scoped-role model and configurable OIDC authentication for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token and an ACTIVE local principal matching `(issuer, subject)`. Project/software authorization is **not** yet enforced. The public sample API must continue using `READ_ONLY_MODE=true`.
 
 ## Authentication boundary
 
-The intended boundary is an external OpenID Connect (OIDC) provider such as a company SSO. The API will validate an issuer-signed token and map its stable `(issuer, subject)` pair to a local `security_principals` record.
+The boundary is an external OpenID Connect (OIDC) provider such as a company SSO. The API validates a configured issuer's signing key through its explicit HTTPS JWKS URL, the configured audience, expiry/issued-at claims and a fixed asymmetric-algorithm allow-list. It then maps the stable `(issuer, subject)` pair to a local `security_principals` record.
 
 The database intentionally stores no passwords, password hashes, access tokens, refresh tokens or client secrets. Selecting and configuring an actual OIDC provider remains a deployment decision.
 
@@ -48,16 +48,20 @@ Disabled principals must be denied even if the external token is otherwise valid
 - production authorization: production authority;
 - deployment/changeover/batch: production operator.
 
-These are design targets only until an authentication dependency and authorization checks are attached to the routes. Current contracts still state `authentication=NONE` and `authorization=NONE`.
+These roles are design targets until authorization checks are attached to the routes. Current contracts state `authentication=OIDC_WHEN_ENABLED` and `authorization=NONE`. `AUTH_MODE=disabled` preserves controlled local development compatibility and must not be used to expose writes publicly.
 
 ## Required enforcement sequence
 
-1. Select the OIDC issuer and accepted audience; define signing-key rotation and outage behavior.
-2. Validate token signature, issuer, audience, expiry and subject; never trust unsigned identity headers.
-3. Resolve the active local principal from `(issuer, subject)`.
-4. Resolve the target software/project from stored relationships.
-5. Require an active scoped role or the exceptional global admin role.
-6. Derive audit actor identity from the authenticated principal, preserving old declared actor strings as historical data.
-7. Add positive, unauthenticated, disabled-principal, wrong-project and insufficient-role integration tests.
+1. Select and configure the approved OIDC issuer/audience/JWKS URL; define signing-key rotation and outage behavior.
+2. Resolve the target software/project from stored relationships.
+3. Require an active scoped role or the exceptional global admin role.
+4. Derive audit actor identity from the authenticated principal, preserving old declared actor strings as historical data.
+5. Add wrong-project and insufficient-role integration tests in addition to the existing token/principal denial tests.
 
-No public write form or non-read-only deployment should be enabled before this sequence is complete.
+No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
+
+## OIDC configuration
+
+Set `AUTH_MODE=oidc` together with `OIDC_ISSUER_URL`, `OIDC_AUDIENCE` and an explicit `OIDC_JWKS_URL`. Optional settings are `OIDC_ALGORITHMS` (approved asymmetric algorithms only), `OIDC_LEEWAY_SECONDS` and `OIDC_JWKS_TIMEOUT_SECONDS`. URLs must use HTTPS and cannot contain credentials, query strings or fragments.
+
+The JWKS URL is operator configuration, never a token-provided URL. Invalid/missing tokens, invalid claims, unknown principals and disabled principals fail with HTTP 401 and a Bearer challenge. `READ_ONLY_MODE=true` takes precedence and returns the existing HTTP 403 without contacting the identity provider.

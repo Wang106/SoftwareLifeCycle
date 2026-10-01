@@ -41,7 +41,8 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 ## Phase 5 — Identity and authorization (recommended next)
 
 - [x] Define provider-neutral user/service principals, global roles, software membership and project membership
-- [ ] Select/configure an OIDC provider and add authentication without storing secrets or tokens in lifecycle records
+- [x] Add configurable OIDC Bearer validation and ACTIVE local-principal resolution without storing tokens
+- [ ] Select/configure the approved OIDC issuer, audience and JWKS endpoint in a target environment
 - [ ] Enforce customer/project/resource authorization in the API and test denial paths
 - [ ] Bind new audit actors to authenticated principals while preserving historical declared actors
 - [ ] Define admin, reviewer, release authority, distribution authority and production roles
