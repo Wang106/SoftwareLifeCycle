@@ -38,3 +38,15 @@ export type DeploymentDetail = {
     note: string | null;
   }[];
 };
+
+/** Bounded profile omits embedded history; catalogs remain the history source. */
+export type DeploymentProfile = Omit<DeploymentDetail, 'changeovers' | 'batches'> & {
+  software_observation: string;
+  history_counts: { changeovers: number; batches: number };
+  notice: string;
+  provenance: {
+    authorization: { authorization_no: string; status: string } | null;
+    distribution: { distribution_no: string; status: string } | null;
+    delivery: { package_no: string; revision: number; status: string; release_id: string; snapshot_id: string } | null;
+  };
+};

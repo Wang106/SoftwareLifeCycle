@@ -2,7 +2,7 @@
 
 ## Handoff identity
 
-- Date: 2026-10-01 (Asia/Shanghai)
+- Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
 - Verified baseline: `210b124e3b2a0b3a04b9ddcb75f913e3a514d2a9`
@@ -351,3 +351,21 @@ No backend/API/schema/migration/login/transport/public setting changes; API 0.18
 head 0017. Roadmap remains 34/44 (77%), Phase 6 3/5 (60%). Provider/session/controlled
 target, permission-aware selection, uncertain outcomes and broader corrections remain.
 Verification: 214 frontend tests passed (38 added); production Next/OpenNext build passed; seven SSR context/default checks passed; full backend suite passed 688 tests including 103 real PostgreSQL 16 concurrency/integration tests, with no skips. No migration or backend contract change. Online verification after feature commit `210b124e3b2a0b3a04b9ddcb75f913e3a514d2a9`: Cloudflare serves all 14 forms; exact snapshot/authorization/deployment context, explicit purpose/source, UTC conversion, review invalidation and confirmed copy were exercised without business submission. Repeated Deployment copy retained the same body/key. `/health/ready` returned 200 with API 0.18.0 and revision 0017; Test Release, Deployment and Changeover POST probes each returned 403 `{"detail":"read_only_mode"}`. Read-only Render SQL independently confirmed `0017_deployment_actual_version`. Render backend remains live on bbd8a42; no backend redeploy was required. Cloudflare rollout was verified by live page behavior; a provider deployment ID was not available.
+
+## Deployment detail bounded-read package — 2026-10-02
+
+Developed from GitHub main `ae344d72a442d9c7533b77e0712a7d56b0f129e1`.
+Approved identity/session/controlled target remain unconfigured, so this package
+advances the documented legacy-consumer migration without opening write access.
+The exact deployment profile replaces frontend legacy detail/provenance reads,
+omits embedded histories, reports complete batch/changeover counts and links to
+existing bounded catalogs. Decision scope uses the delivered release/snapshot.
+Stored MATCH and observed UUID-pair state are shown separately; missing references
+stay null. Old endpoints remain compatible. Counts are not permissions, capacity
+or a transaction-consistent receipt; database count cost can still grow with rows.
+Existing deployment_id indexes suffice; no new migration. API version is 0.18.1,
+required Alembic head remains 0017_deployment_actual_version.
+Only this consumer is migrated; remaining compatibility lists/details, approved
+OIDC/session, authenticated submission/recovery, corrections and operations remain.
+Roadmap remains 34/44 (77%), Phase 4 8/9 and Phase 6 3/5 (60%).
+Verification: 11 new deployment-profile tests passed, including exact scope, missing references, legacy shape, stored/observed mismatch, 106/107 history counts without row loading and unchanged SQL query count. Full Python 3.12 backend suite: 699 passed, 3267 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Four SSR checks passed for large history/exact catalog links, empty/missing delivery, unavailable profile and profile-only API calls. No migration. Online verification follows the scoped push.

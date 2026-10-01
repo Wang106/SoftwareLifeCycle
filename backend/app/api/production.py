@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field, model_validator
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -78,7 +78,7 @@ def _release_ref(db: Session, release_id, snapshot_id):
     }
 
 
-def _deployment_detail(db: Session, deployment: Deployment):
+def _deployment_detail(db: Session, deployment: Deployment, *, include_history: bool = True):
     authorization = db.get(SoftwareAuthorization, deployment.authorization_id)
     line = db.get(ProductionLine, deployment.production_line_id)
     site = db.get(ManufacturingSite, line.site_id) if line else None
@@ -88,12 +88,12 @@ def _deployment_detail(db: Session, deployment: Deployment):
         select(SoftwareChangeover)
         .where(SoftwareChangeover.deployment_id == deployment.id)
         .order_by(SoftwareChangeover.changed_at)
-    ).all()
+    ).all() if include_history else []
     batches = db.scalars(
         select(ProductionBatch)
         .where(ProductionBatch.deployment_id == deployment.id)
         .order_by(ProductionBatch.started_at)
-    ).all()
+    ).all() if include_history else []
     return {
         "id": str(deployment.id),
         "deployment_no": deployment.deployment_no,
@@ -263,13 +263,17 @@ def get_deployment_provenance(deployment_no: str, db: Session = Depends(get_db))
     deployment = db.scalars(select(Deployment).where(Deployment.deployment_no == deployment_no)).first()
     if deployment is None:
         raise HTTPException(status_code=404, detail="deployment not found")
+    return _deployment_provenance(db, deployment)
+
+
+def _deployment_provenance(db: Session, deployment: Deployment, *, include_decisions: bool = True):
     authorization = db.get(SoftwareAuthorization, deployment.authorization_id)
     distribution = db.get(Distribution, authorization.distribution_id) if authorization and authorization.distribution_id else None
     package = db.get(DeliveryPackage, distribution.delivery_package_id) if distribution else None
     decisions = db.scalars(select(ReleaseDecision).where(
         ReleaseDecision.release_id == package.release_id,
         ReleaseDecision.snapshot_id == package.snapshot_id,
-    ).order_by(ReleaseDecision.decided_at, ReleaseDecision.decision_no)).all() if package else []
+    ).order_by(ReleaseDecision.decided_at, ReleaseDecision.decision_no)).all() if package and include_decisions else []
     approvals = {row.id: row for row in (
         db.get(ApprovalRequest, decision.approval_request_id) for decision in decisions
     ) if row is not None}
@@ -286,6 +290,29 @@ def get_deployment_provenance(deployment_no: str, db: Session = Depends(get_db))
                                if decision.approval_request_id in approvals else None}
                               for decision in decisions],
     }
+
+
+@router.get("/deployments/{deployment_no}/profile")
+def deployment_profile(deployment_no: str, db: Session = Depends(get_db)):
+    """Exact identity and counts; history stays in bounded catalogs."""
+    row = db.scalars(select(Deployment).where(Deployment.deployment_no == deployment_no)).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="deployment not found")
+    detail = _deployment_detail(db, row, include_history=False)
+    detail.pop("changeovers")
+    detail.pop("batches")
+    provenance = _deployment_provenance(db, row, include_decisions=False)
+    provenance.pop("release_decisions")
+    detail["provenance"] = provenance
+    detail["history_counts"] = {
+        "changeovers": db.scalar(select(func.count()).select_from(SoftwareChangeover).where(SoftwareChangeover.deployment_id == row.id)),
+        "batches": db.scalar(select(func.count()).select_from(ProductionBatch).where(ProductionBatch.deployment_id == row.id)),
+    }
+    # Keep stored status separate from the observed UUID pair comparison.
+    from app.api.production_catalog import observed
+    detail["software_observation"] = observed(row)
+    detail["notice"] = "Counts cover recorded deployment history. Review bounded catalogs for records; observations do not authorize production or prove physical flashing."
+    return detail
 
 
 @router.get("/batches")

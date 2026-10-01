@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 — Bounded deployment detail reads
+
+- Added exact deployment profile with full history counts and parent chain; omitted unbounded history payloads.
+- Migrated deployment detail to profile plus scoped bounded-catalog links; separated stored status from actual UUID-pair observation.
+- Preserved legacy read shapes and all 14 write contracts; no migration, API 0.18.1/head 0017, public staging read-only.
+- Verification: 11 new deployment-profile tests passed, including exact scope, missing references, legacy shape, stored/observed mismatch, 106/107 history counts without row loading and unchanged SQL query count. Full Python 3.12 backend suite: 699 passed, 3267 warnings, no skips, including 103 real PostgreSQL 16 tests. Frontend: 214 tests passed; production Next/OpenNext build passed. Four SSR checks passed for large history/exact catalog links, empty/missing delivery, unavailable profile and profile-only API calls. No migration. Online verification follows the scoped push.
+
 ## 2026-10-01 — Phase 6 final request-preparation forms
 
 - Added Test Release, Deployment and Changeover; all 14 current command forms now prepare reviewed keyed exports.

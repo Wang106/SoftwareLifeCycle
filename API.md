@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.1`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -24,7 +24,7 @@ This document is a maintained map, not a replacement for the generated OpenAPI s
 | Testing | `/api/v1/testing/dvp/catalog`, `/testing/dvp/id/{item_id}/profile`, `/testing/releases` | Bounded DVP directory plus test-release records |
 | Governance | `/api/v1/governance/approvals`, `/decisions`, exact profiles/actions | Preferred bounded governance history |
 | Distribution | `/api/v1/distribution/catalog/deliveries`, `/distributions`, `/authorizations` | Preferred bounded catalogs; exact delivery revision is significant |
-| Production | `/api/v1/production/catalog/{kind}`, `/deployments/{deployment_no}/provenance`, `/batches/{batch_no}` | `{kind}` is deployments, changeovers or batches |
+| Production | `/api/v1/production/catalog/{kind}`, `/deployments/{deployment_no}/profile`, `/batches/{batch_no}` | `{kind}` is deployments, changeovers or batches |
 | Audit/resources | `/api/v1/audit/events`, `/activity/{event_no}`, `/resources` | Bounded audit review and append-only external references |
 
 Older unbounded list/detail routes such as `/api/v1/deliveries`, `/distributions`, `/authorizations`, `/deployments`, `/batches`, `/approvals` and `/activity` remain for compatibility. New directory consumers should prefer bounded catalog endpoints.
@@ -236,3 +236,22 @@ without physical flashing or actual-software updates. EVT-TR- retains hyphenated
 UUIDs; EVT-DPLOY-/EVT-CO- use UUID hex. No backend/API/schema/migration, role/actor,
 retry/transaction, authentication or public-write settings change. Submission and
 outcome recovery remain pending. See docs/controlled-write-ui.md for limits.
+
+## Bounded deployment profile (0.18.1)
+
+`GET /api/v1/deployments/{deployment_no}/profile` resolves the exact business number
+or returns 404. It returns identity, stored status, expected/actual references,
+`actual_version`, separate `software_observation`, exact authorization/distribution/
+delivery parent references and `history_counts` for changeovers/batches. It omits
+embedded `changeovers`, `batches` and `provenance.release_decisions` arrays; it does
+not load their row payloads. Missing parent references stay null.
+
+Use `/production/catalog/changeovers` and `/production/catalog/batches` with the
+returned `deployment_id`; decisions use `/governance/decisions` with the delivered
+release and snapshot UUIDs, not inferred expected/current versions. Those existing
+catalogs default to 50 rows, allow at most 100 and expose total/next_offset.
+Counts and profile fields are live read observations, not a transaction receipt,
+remaining batch capacity or authorization. COUNT work may grow with history even
+though response size and query count remain bounded. The old deployment detail and
+provenance endpoints retain their complete legacy shapes; other legacy consumers
+remain to migrate. No write contract, identity configuration or schema change.

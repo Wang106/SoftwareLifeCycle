@@ -201,3 +201,12 @@ UTC equivalence, null omission, impossible dates, exact notes and route encoding
 `npm run build` validates Next.js/TypeScript integration. No database migration or
 backend contract change is required by this UI package. Browser/online checks are
 reported separately; helper tests are not a provider-backed submission end-to-end test.
+
+## Deployment context read boundary
+
+The deployment detail reads the bounded profile (API 0.18.1): exact target, expected/
+actual UUIDs and actual_version remain available for request preparation. Complete
+history counts link to existing deployment-scoped paginated catalogs. Decision links
+pin the delivered release and snapshot. No history, latest changeover or previous
+release is auto-selected for a command. Old read APIs and all write exports stay
+compatible; authenticated submission/result recovery remain pending.

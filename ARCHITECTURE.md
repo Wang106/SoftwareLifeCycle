@@ -202,3 +202,16 @@ without physical flashing or actual-software updates. EVT-TR- retains hyphenated
 UUIDs; EVT-DPLOY-/EVT-CO- use UUID hex. No backend/API/schema/migration, role/actor,
 retry/transaction, authentication or public-write settings change. Submission and
 outcome recovery remain pending. See docs/controlled-write-ui.md for limits.
+
+## Deployment profile read migration — 2026-10-02
+
+The frontend deployment detail now reads the exact `/deployments/{deployment_no}/profile`
+(API 0.18.1), which omits unbounded batch/changeover/decision arrays. Existing indexed
+`deployment_id` count queries supply full history totals; linked bounded catalogs
+review exact deployment history and exact delivered release/snapshot decisions.
+Stored status and software-pair observation remain separate; missing context stays
+null. Counts are observations, not quotas, authorization or a consistent write receipt.
+No migration is needed: existing child foreign-key indexes serve count scope.
+Legacy endpoints retain their old shapes. All 14 write contracts, exact scope,
+trusted actors, replay/locks and atomic audit are unchanged; public staging remains
+read-only and provider-backed submission/other consumer migrations remain pending.
