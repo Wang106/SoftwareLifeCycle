@@ -26,8 +26,9 @@ from app.api.governance_catalog import router as governance_catalog_router
 from app.core.config import settings
 from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
+from app.authorization import AuthorizationError
 
-APP_VERSION = "0.10.0"
+APP_VERSION = "0.11.0"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -37,6 +38,14 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(AuthorizationError)
+async def authorization_error_handler(_request: Request, exc: AuthorizationError):
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"detail": str(exc)},
+    )
 app.include_router(releases_router, prefix="/api/v1")
 app.include_router(dashboard_router)
 app.include_router(approvals_router)

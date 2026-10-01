@@ -1,6 +1,6 @@
 """Test-only version browsing; no production permission is implied."""
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.testing import DvpExecution, DvpItem, TestRelease
 from app.api.dvp_catalog import serialize_executions
 from app.services.testing_release import TestReleaseError, TestReleaseInput, create_test_draft
+from app.authorization import authorize_release
 
 router = APIRouter(prefix='/api/v1/testing/releases', tags=['test releases'])
 
@@ -97,7 +98,18 @@ def test_executions(test_release_no: str, limit: int = Query(50, ge=1, le=200),
 
 
 @router.post('', status_code=201)
-def create_test_release(data: TestReleaseInput, response: Response, db: Session = Depends(get_db)):
+def create_test_release(
+    data: TestReleaseInput,
+    response: Response,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_release(
+        request,
+        db,
+        data.release_id,
+        project_roles=frozenset({"CONTRIBUTOR"}),
+    )
     try:
         row, created = create_test_draft(db, data)
         db.commit(); db.refresh(row)

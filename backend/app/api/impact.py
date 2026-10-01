@@ -3,7 +3,7 @@
 A shared software product is a review lead, not proof of release impact.
 """
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -16,6 +16,7 @@ from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.impact import IssueImpactAssessment
 from app.models.testing import IssueDvpItem, DvpItem, DvpExecution
 from app.services.impact_assessment import AssessmentError, AssessmentInput, record_assessment
+from app.authorization import authorize_issue_assessment
 
 router = APIRouter(prefix="/api/v1/issues", tags=["impact"])
 
@@ -161,7 +162,14 @@ def assessment_history(issue_no: str, limit: int = Query(50, ge=1, le=200), db: 
 
 
 @router.post('/{issue_no}/impact-assessments', status_code=201)
-def create_assessment(issue_no: str, data: AssessmentInput, response: Response, db: Session = Depends(get_db)):
+def create_assessment(
+    issue_no: str,
+    data: AssessmentInput,
+    response: Response,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_issue_assessment(request, db, issue_no, data.release_id)
     try:
         row, created = record_assessment(db, issue_no, data)
         db.commit()

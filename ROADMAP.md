@@ -43,10 +43,11 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Define provider-neutral user/service principals, global roles, software membership and project membership
 - [x] Add configurable OIDC Bearer validation and ACTIVE local-principal resolution without storing tokens
 - [ ] Select/configure the approved OIDC issuer, audience and JWKS endpoint in a target environment
-- [ ] Enforce customer/project/resource authorization in the API and test denial paths
+- [x] Enforce exact project/software/resource authorization on every current write route
+- [x] Add denial tests for wrong project, wrong software, insufficient role and suspended membership
 - [ ] Bind new audit actors to authenticated principals while preserving historical declared actors
-- [ ] Define admin, reviewer, release authority, distribution authority and production roles
-- [ ] Keep the public demo read-only until the security acceptance criteria pass
+- [x] Define admin, reviewer, release authority, distribution authority and production roles
+- [x] Keep the public demo read-only until the security acceptance criteria pass
 
 Exit gate: protected operations reject unauthenticated and out-of-scope actors; positive and negative integration tests pass; security decisions are documented.
 

@@ -1,9 +1,10 @@
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.services.approval import ApprovalError, ApprovalService
+from app.authorization import authorize_approval
 
 router = APIRouter(prefix="/api/v1/approvals", tags=["approvals"])
 
@@ -27,7 +28,9 @@ def approval_action(
     approval_no: str,
     payload: ApprovalActionRequest,
     db: Session = Depends(get_db),
+    request: Request = None,
 ):
+    authorize_approval(request, db, approval_no, "REVIEWER")
     try:
         approval = ApprovalService(db).act(
             approval_no=approval_no,
@@ -45,7 +48,9 @@ def create_release_decision(
     approval_no: str,
     payload: ReleaseDecisionRequest,
     db: Session = Depends(get_db),
+    request: Request = None,
 ):
+    authorize_approval(request, db, approval_no, "RELEASE_AUTHORITY")
     try:
         row = ApprovalService(db).create_release_decision(
             approval_no=approval_no,

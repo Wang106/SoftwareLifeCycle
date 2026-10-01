@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.10.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.11.0`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -56,8 +56,9 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 
 - `READ_ONLY_MODE=true` rejects every method except GET, HEAD and OPTIONS with HTTP 403. The public sample API must use this mode.
 - `AUTH_MODE=oidc` requires a valid configured OIDC Bearer token and an ACTIVE matching local principal for every write. `READ_ONLY_MODE` takes precedence.
+- In OIDC mode, every current write route additionally requires its exact active project/software role or the exceptional `PLATFORM_ADMIN` override. Scope is resolved from stored relationships; a client-supplied project alone is not authorization evidence.
 - `AUTH_MODE=disabled` preserves controlled local development compatibility; it is not appropriate for public writes.
-- Project/software authorization is not implemented yet. Actor names remain unverified request declarations rather than the authenticated principal.
+- Actor names remain request declarations and can differ from the authenticated principal; audit-actor binding is the next security step.
 - Issue impact and acceptance-link writes use client-generated request IDs for retry handling; other commands do not all provide the same idempotency guarantee.
 - Current approval/release-decision and delivery/distribution/authorization service writes record audit events in the same transaction.
 - Snapshot and exact UUID bindings take precedence over matching version, name or display code.
@@ -66,7 +67,7 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 
 ## Error conventions visible in current APIs
 
-- `403` — read-only guard blocks a write.
+- `403` — read-only guard blocks a write or the authenticated principal lacks the exact active scope/role.
 - `401` — OIDC mode rejects a missing/invalid token or an unknown/disabled principal.
 - `404` — exact business record does not exist.
 - `409` — conflicting state, ambiguous legacy identifier or incompatible release/snapshot scope.

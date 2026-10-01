@@ -29,7 +29,7 @@ class WriteContract:
     planned_roles: frozenset[str]
     known_gap: str
     authentication: Literal["OIDC_WHEN_ENABLED"] = "OIDC_WHEN_ENABLED"
-    authorization: Literal["NONE"] = "NONE"
+    authorization: Literal["SCOPED_WHEN_OIDC"] = "SCOPED_WHEN_OIDC"
     public_exposure: Literal["READ_ONLY_BLOCKED"] = "READ_ONLY_BLOCKED"
 
 
@@ -92,7 +92,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="NONE",
         concurrency="NONE",
         planned_roles=frozenset({"PRODUCTION_AUTHORITY"}),
-        known_gap="Audit records an unavailable actor; creation does not authenticate an authority.",
+        known_gap="Authenticated authority is not yet recorded as the audit actor.",
     ),
     ("POST", "/api/v1/deployments"): WriteContract(
         operation="Create deployment expectation",
@@ -142,7 +142,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"REVIEWER"}),
-        known_gap="Declared actor is untrusted; no project authorization is enforced.",
+        known_gap="Declared actor can differ from the authenticated reviewer.",
     ),
     ("POST", "/api/v1/changes/{request_no}/acceptance-dvp-links"): WriteContract(
         operation="Append acceptance-to-DVP assignment",
@@ -152,7 +152,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"CONTRIBUTOR"}),
-        known_gap="Declared actor is untrusted; no project authorization is enforced.",
+        known_gap="Declared actor can differ from the authenticated contributor.",
     ),
     ("POST", "/api/v1/testing/releases"): WriteContract(
         operation="Create purpose-limited test release draft",
@@ -162,7 +162,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"CONTRIBUTOR"}),
-        known_gap="Declared actor is untrusted; no project authorization is enforced.",
+        known_gap="Declared actor can differ from the authenticated contributor.",
     ),
     ("POST", "/api/v1/resources"): WriteContract(
         operation="Append external resource reference",
@@ -172,6 +172,6 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"CONTRIBUTOR"}),
-        known_gap="Declared actor is untrusted; registering a location does not verify access.",
+        known_gap="Declared actor can differ from the authenticated contributor; location access is not verified.",
     ),
 }

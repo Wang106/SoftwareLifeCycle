@@ -4,10 +4,12 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Enforced exact active project/software roles on all 14 current write routes whenever OIDC mode is enabled, with `PLATFORM_ADMIN` as the only scope-free override.
+- Added fail-closed scope resolution through release, SCR, approval, distribution, authorization, deployment and supported resource relationships, plus wrong-scope/role/suspension denial tests.
 - Added configurable OIDC authentication for writes with strict HTTPS configuration, asymmetric algorithm allow-list, signature/issuer/audience/time validation and fail-closed ACTIVE principal resolution.
-- Preserved public staging read-only precedence and controlled local `AUTH_MODE=disabled` compatibility; scoped project/software authorization remains deliberately unenforced.
+- Preserved public staging read-only precedence and controlled local `AUTH_MODE=disabled` compatibility.
 - Added provider-neutral user/service principals, global role assignments, software membership and project membership in migration `0015_identity_roles`; no credentials or grants are seeded.
-- Defined planned role requirements for every write contract while keeping authentication/authorization explicitly unenforced and public staging read-only.
+- Defined role requirements for every write contract and kept public staging read-only throughout the identity/authorization work.
 - Added an executable contract inventory covering every FastAPI write route, with a drift test and explicit identity, authorization, audit, idempotency and concurrency gaps.
 - Added the cross-ChatGPT/Codex handoff protocol and established GitHub `main` as the source of truth.
 - Added maintained project status, roadmap, architecture, API and database references.

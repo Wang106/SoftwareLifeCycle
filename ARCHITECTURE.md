@@ -11,8 +11,8 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.10.0
-domain/query services + read-only guard
+FastAPI 0.11.0
+OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
       v
@@ -76,7 +76,7 @@ Most UI pages use read-only catalog/profile endpoints. Newer catalogs are bounde
 
 ### Trust boundary
 
-Current actor fields are still request data, not the authenticated principal. The database has provider-neutral user/service principals and scoped grants; configurable OIDC mode validates write-request identity, but route-level project/software authorization is not enforced yet. CORS is browser policy, not authorization. Until the `SECURITY.md` enforcement sequence is complete, public deployment must contain sample data only and remain read-only.
+Current actor fields are still request data, not the authenticated principal. The database has provider-neutral user/service principals and scoped grants; configurable OIDC mode validates write-request identity and enforces exact active project/software roles on all current write routes. Scope is derived through stored release, SCR, distribution, authorization and deployment relationships. CORS is browser policy, not authorization. Until an approved provider is configured and audit actors are bound to authenticated identities, public deployment must contain sample data only and remain read-only.
 
 ### Failure behavior
 

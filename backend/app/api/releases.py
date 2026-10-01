@@ -1,11 +1,12 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from app.core.db import SessionLocal
 from app.models.core import Release
 from app.models.snapshot import ReleaseSnapshot
 from app.services.snapshot import SnapshotError, SnapshotService
+from app.authorization import authorize_release
 
 router = APIRouter(prefix="/releases", tags=["releases"])
 
@@ -47,7 +48,18 @@ def list_snapshots(release_id: uuid.UUID, limit: int = Query(20, ge=1, le=100),
     }
 
 @router.post("/{release_id}/create-snapshot", status_code=201)
-def create_snapshot(release_id: uuid.UUID, db: Session = Depends(get_db)):
+def create_snapshot(
+    release_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_release(
+        request,
+        db,
+        release_id,
+        project_roles=frozenset({"CONTRIBUTOR"}),
+        software_roles=frozenset({"SOFTWARE_MAINTAINER"}),
+    )
     try:
         s = SnapshotService().create(db, release_id)
         return {"id": str(s.id), "snapshot_no": s.snapshot_no, "content_hash": s.content_hash, "status": s.status}

@@ -1,7 +1,7 @@
 import uuid
 
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,12 @@ from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distri
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.production import Deployment, ProductionBatch
 from app.services.distribution import DistributionError, DistributionService
+from app.authorization import (
+    authorize_delivery_package,
+    authorize_distribution,
+    authorize_project,
+    authorize_release,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["distribution"])
 
@@ -258,7 +264,17 @@ def get_delivery_revision(package_no: str, revision: int, db: Session = Depends(
 
 
 @router.post("/deliveries", status_code=201)
-def create_delivery(payload: DeliveryCreate, db: Session = Depends(get_db)):
+def create_delivery(
+    payload: DeliveryCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_release(
+        request,
+        db,
+        payload.release_id,
+        project_roles=frozenset({"DISTRIBUTION_AUTHORITY"}),
+    )
     try:
         row = DistributionService(db).create_delivery(
             release_id=payload.release_id,
@@ -301,7 +317,14 @@ def get_distribution(distribution_no: str, db: Session = Depends(get_db)):
 
 
 @router.post("/distributions", status_code=201)
-def create_distribution(payload: DistributionCreate, db: Session = Depends(get_db)):
+def create_distribution(
+    payload: DistributionCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_delivery_package(
+        request, db, payload.delivery_package_id, "DISTRIBUTION_AUTHORITY"
+    )
     try:
         row = DistributionService(db).create_distribution(
             delivery_package_id=payload.delivery_package_id,
@@ -349,7 +372,17 @@ def get_authorization(authorization_no: str, db: Session = Depends(get_db)):
 
 
 @router.post("/authorizations", status_code=201)
-def create_authorization(payload: AuthorizationCreate, db: Session = Depends(get_db)):
+def create_authorization(
+    payload: AuthorizationCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    # The service verifies that this project matches the stored application release
+    # and distribution chain before committing the authorization.
+    authorize_project(request, db, payload.project_id, "PRODUCTION_AUTHORITY")
+    authorize_distribution(
+        request, db, payload.distribution_id, "PRODUCTION_AUTHORITY"
+    )
     try:
         row = DistributionService(db).create_authorization(
             release_id=payload.release_id,

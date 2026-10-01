@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from app.models.production import (
 )
 from app.models.snapshot import ReleaseSnapshot
 from app.services.production import ProductionError, ProductionService
+from app.authorization import authorize_authorization, authorize_deployment
 
 
 router = APIRouter(prefix="/api/v1", tags=["production"])
@@ -311,7 +312,14 @@ def get_batch(batch_no: str, db: Session = Depends(get_db)):
 
 
 @router.post("/deployments", status_code=201)
-def create_deployment(payload: DeploymentCreate, db: Session = Depends(get_db)):
+def create_deployment(
+    payload: DeploymentCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_authorization(
+        request, db, payload.authorization_id, "PRODUCTION_OPERATOR"
+    )
     try:
         row = ProductionService(db).create_deployment(**payload.model_dump())
         return {"id": str(row.id), "deployment_no": row.deployment_no, "status": row.status}
@@ -320,7 +328,13 @@ def create_deployment(payload: DeploymentCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/deployments/{deployment_no}/actual")
-def report_actual(deployment_no: str, payload: ActualSoftwareReport, db: Session = Depends(get_db)):
+def report_actual(
+    deployment_no: str,
+    payload: ActualSoftwareReport,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
     try:
         row = ProductionService(db).report_actual(deployment_no, **payload.model_dump())
         return {"deployment_no": row.deployment_no, "status": row.status}
@@ -329,7 +343,13 @@ def report_actual(deployment_no: str, payload: ActualSoftwareReport, db: Session
 
 
 @router.post("/deployments/{deployment_no}/changeovers", status_code=201)
-def create_changeover(deployment_no: str, payload: ChangeoverCreate, db: Session = Depends(get_db)):
+def create_changeover(
+    deployment_no: str,
+    payload: ChangeoverCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
     try:
         row = ProductionService(db).create_changeover(deployment_no, **payload.model_dump())
         return {"id": str(row.id), "changeover_no": row.changeover_no, "status": row.status}
@@ -338,7 +358,13 @@ def create_changeover(deployment_no: str, payload: ChangeoverCreate, db: Session
 
 
 @router.post("/deployments/{deployment_no}/batches", status_code=201)
-def create_batch(deployment_no: str, payload: BatchCreate, db: Session = Depends(get_db)):
+def create_batch(
+    deployment_no: str,
+    payload: BatchCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
     try:
         row = ProductionService(db).create_batch(deployment_no, **payload.model_dump())
         return {"id": str(row.id), "batch_no": row.batch_no, "status": row.status}

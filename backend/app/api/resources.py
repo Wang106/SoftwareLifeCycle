@@ -1,11 +1,12 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.resource import ResourceLink
 from app.services.resource_links import ResourceInput, ResourceError, EntityType, LocationKind, register_link
+from app.authorization import authorize_resource
 
 router = APIRouter(prefix='/api/v1/resources',tags=['resource references'])
 
@@ -40,7 +41,13 @@ def resource_detail(resource_id: uuid.UUID, db: Session = Depends(get_db)):
 
 
 @router.post('',status_code=201)
-def create_resource(data: ResourceInput, response: Response, db: Session = Depends(get_db)):
+def create_resource(
+    data: ResourceInput,
+    response: Response,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_resource(request, db, data.entity_type, data.entity_id)
     try:
         row,created = register_link(db,data)
         db.commit(); db.refresh(row)

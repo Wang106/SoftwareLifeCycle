@@ -2,7 +2,7 @@
 
 ## Current status
 
-The repository has a provider-neutral identity/scoped-role model and configurable OIDC authentication for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token and an ACTIVE local principal matching `(issuer, subject)`. Project/software authorization is **not** yet enforced. The public sample API must continue using `READ_ONLY_MODE=true`.
+The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and audit actors are not yet bound to authenticated identities.
 
 ## Authentication boundary
 
@@ -35,9 +35,11 @@ Disabled principals must be denied even if the external token is otherwise valid
 | Project | `PRODUCTION_AUTHORITY` | Create production authorization scope |
 | Project | `PRODUCTION_OPERATOR` | Record deployment, actual software, changeover and batch activity |
 
-`PLATFORM_ADMIN` is the intended universal override. Other roles apply only to active grants in the exact software product or project resolved from stored foreign keys. Client-supplied customer/project identifiers are not authorization evidence.
+`PLATFORM_ADMIN` is the universal write override and remains exceptional. Other roles apply only to active grants in the exact software product or project resolved from stored foreign keys. Client-supplied customer/project identifiers are not authorization evidence. Production authorization checks both the supplied project grant and the stored distribution/release scope before its domain service verifies that the complete chain matches.
 
-## Planned write policy
+Resource references resolve project scope through the target project, release, snapshot, SCR, DVP item, test release, DVP execution or all project-linked SCRs for an issue. Supplier/customer targets have no authoritative project/software relationship in the current schema, so only `PLATFORM_ADMIN` can attach those references in OIDC mode.
+
+## Enforced write policy
 
 `backend/app/write_contracts.py` records the planned role set for every current write route. Examples:
 
@@ -48,15 +50,15 @@ Disabled principals must be denied even if the external token is otherwise valid
 - production authorization: production authority;
 - deployment/changeover/batch: production operator.
 
-These roles are design targets until authorization checks are attached to the routes. Current contracts state `authentication=OIDC_WHEN_ENABLED` and `authorization=NONE`. `AUTH_MODE=disabled` preserves controlled local development compatibility and must not be used to expose writes publicly.
+These roles are enforced whenever OIDC mode is enabled. Current contracts state `authentication=OIDC_WHEN_ENABLED` and `authorization=SCOPED_WHEN_OIDC`; a drift test also requires every registered write route to invoke an authorization guard. `AUTH_MODE=disabled` preserves controlled local development compatibility and must not be used to expose writes publicly.
 
 ## Required enforcement sequence
 
 1. Select and configure the approved OIDC issuer/audience/JWKS URL; define signing-key rotation and outage behavior.
-2. Resolve the target software/project from stored relationships.
-3. Require an active scoped role or the exceptional global admin role.
+2. **Implemented:** resolve the target software/project from stored relationships.
+3. **Implemented:** require an active scoped role or the exceptional global admin role.
 4. Derive audit actor identity from the authenticated principal, preserving old declared actor strings as historical data.
-5. Add wrong-project and insufficient-role integration tests in addition to the existing token/principal denial tests.
+5. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract denial tests already cover wrong project/software, insufficient role and suspended membership.
 
 No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
 

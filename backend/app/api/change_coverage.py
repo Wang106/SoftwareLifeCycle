@@ -1,9 +1,10 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.services.change_coverage import AssignmentInput, CoverageError, record_assignment, report_coverage
+from app.authorization import authorize_change
 
 router = APIRouter(prefix='/api/v1/changes', tags=['change coverage'])
 
@@ -18,7 +19,14 @@ def change_coverage(request_no: str, release_id: uuid.UUID | None = None,
 
 
 @router.post('/{request_no}/acceptance-dvp-links', status_code=201)
-def assign_acceptance(request_no: str, data: AssignmentInput, response: Response, db: Session = Depends(get_db)):
+def assign_acceptance(
+    request_no: str,
+    data: AssignmentInput,
+    response: Response,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_change(request, db, request_no, "CONTRIBUTOR")
     try:
         row, created = record_assignment(db, request_no, data)
         db.commit(); db.refresh(row)
