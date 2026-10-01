@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `1efe0c28e2c5d68a36b00103b540329a38b1df04` — `feat: bound exact delivery revision profiles and artifact reads` (developed from `ec983d0434afd6e014c69d58e371f46ce323606c`)
+- Reviewed repository baseline: `9e30aaf374bc8b7f6a920902bd988e3794c4510f` — `fix: localize demo audit summaries and policy labels` (developed from `38d66578d6f8ddae9c8d344b16ac878eae6c20d3`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details are migrated to bounded profile/catalog reads. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details are migrated to bounded profile/catalog reads. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -389,4 +389,49 @@ Verification: frontend 292 passed (78 localization/coverage checks plus 214 comm
 checks); final Next/OpenNext production build passed. Full backend: 733 passed,
 3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
 tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
-input/option values for 14 forms. Live verification is recorded after deployment.
+input/option values for 14 forms. Live bilingual/persistence/immutable-request checks passed; rollout evidence is recorded in HANDOFF.md.
+
+## Bilingual rollout verification — 2026-10-02
+
+Development mode: **Codex**. Feature commit `3cf9aaaeefa1cd025878be84d56c0af272869c7d`
+adds the shared interface; `38d66578d6f8ddae9c8d344b16ac878eae6c20d3` fills dynamic
+state markers; final UI commit `9e30aaf374bc8b7f6a920902bd988e3794c4510f` fills demo
+audit summaries and policy labels. All were pushed to main. No backend code/schema
+change; API 0.18.3 and required database revision 0017_deployment_actual_version.
+
+Final frontend: **292 passed**, no skips; Next/OpenNext Cloudflare production build
+passed. Full backend: **733 passed**, 3568 existing deprecation warnings, no skips;
+103 collected real PostgreSQL migrated-schema integration/concurrency tests are included.
+Local production SSR: 126 existing-route/language checks, invalid preference fallback,
+14 forms' identical raw input/option values. Additional populated Snapshot/Dashboard
+checks in both languages verify state/policy/summary translation while preserving exact
+UUIDs, hashes, filenames and unknown authored evidence; bilingual 404 recovery passes.
+
+Live Cloudflare UI was verified after the final UI commit: missing preference first
+rendered Chinese; switching immediately updated text/title, preserved target, reviewed
+request ID and confirmation state, and produced byte-identical confirmed clipboard JSON
+in both languages. Clipboard was compared after async copy completion. English selection
+survived reload and navigation; Chinese was restored. SNAP-008 shows current/frozen,
+confidentiality, component and AI-policy translations with unchanged UUIDs/hashes/files.
+Dashboard demo activity summaries are Chinese. No business command was submitted.
+Cloudflare provider deployment ID/commit metadata is unavailable through installed
+tools; live final feature behavior is the frontend deployment evidence.
+
+Render's existing backend deployment `dep-dava0k6417fc73ds081g` remains live for
+`1efe0c28e2c5d68a36b00103b540329a38b1df04`; this frontend-only package did not
+redeploy unchanged backend code. Health returned HTTP 200 ready/API 0.18.3/head 0017;
+read-only PostgreSQL SQL independently confirmed `0017_deployment_actual_version`.
+Empty Snapshot and exact Deployment Batch POST probes returned HTTP 403 read_only_mode.
+Public staging remains read-only. Sampled browser errors came from the browser metadata
+extension, not the application source; no application runtime error was observed in
+that sample. The unrelated `frontend/app/activity/page 2.tsx` was absent and was not
+created, adopted or removed.
+
+Current-page bilingual coverage is complete; roadmap scope stays **34/44 (77%)**.
+Phase 4 8/9, Phase 5 8/9, Phase 6 3/5, Phase 7 0/6. Remaining preparation versus
+submission distinction remains: OIDC/session/controlled target, submission/recovery/
+result trace, broader append-only correction/revocation, remaining bounded consumers
+and production operations. Planning estimate remains 8–12 more focused packages to
+controlled internal use, 16–24 total to a production-ready review, subject to approvals.
+Suggested next code package: migrate remaining release detail/trace consumers to bounded
+profiles/catalogs while approved identity/session and controlled target are specified.

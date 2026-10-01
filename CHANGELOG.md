@@ -5,7 +5,7 @@
 - Added shared locale provider, dictionary/templates and persisted language-only cookie; Chinese is the default on initial SSR and invalid preferences. Switch updates title/lang without remounting forms.
 - Localized all 63 current pages, navigation/shared catalogs, 14 preparation forms, validation/status text and error/not-found recovery. Explicit option values preserve raw API tokens. Original customer evidence, IDs, links, code and exported JSON remain unchanged.
 - Added localization/AST coverage tests and interface documentation; no backend/API/schema change, API 0.18.3/head 0017, no migration. Public staging remains read-only; roadmap stays 34/44.
-- Verification: frontend 292 tests, full backend 733 tests (103 real PostgreSQL), final Cloudflare build; 126 local bilingual SSR checks, invalid cookie fallback and stable raw form values for 14 operations. Live verification follows deployment.
+- Verification: frontend 292 tests, full backend 733 tests (103 real PostgreSQL), final Cloudflare build; 126 local bilingual SSR checks, invalid cookie fallback and stable raw form values for 14 operations. Live bilingual/persistence/immutable-request checks passed; see rollout evidence below.
 
 
 ## 2026-10-02 — Exact delivery revision bounded reads
@@ -166,3 +166,48 @@ This project does not yet publish tagged releases. Entries below summarize repos
 ## Maintenance rule
 
 Every completed `开发` task adds an entry under **Unreleased** describing behavior, data/API changes and verification. When a tagged release is introduced, move the relevant entries under that version and date; do not rewrite historical Git-derived milestones.
+
+## Bilingual rollout verification — 2026-10-02
+
+Development mode: **Codex**. Feature commit `3cf9aaaeefa1cd025878be84d56c0af272869c7d`
+adds the shared interface; `38d66578d6f8ddae9c8d344b16ac878eae6c20d3` fills dynamic
+state markers; final UI commit `9e30aaf374bc8b7f6a920902bd988e3794c4510f` fills demo
+audit summaries and policy labels. All were pushed to main. No backend code/schema
+change; API 0.18.3 and required database revision 0017_deployment_actual_version.
+
+Final frontend: **292 passed**, no skips; Next/OpenNext Cloudflare production build
+passed. Full backend: **733 passed**, 3568 existing deprecation warnings, no skips;
+103 collected real PostgreSQL migrated-schema integration/concurrency tests are included.
+Local production SSR: 126 existing-route/language checks, invalid preference fallback,
+14 forms' identical raw input/option values. Additional populated Snapshot/Dashboard
+checks in both languages verify state/policy/summary translation while preserving exact
+UUIDs, hashes, filenames and unknown authored evidence; bilingual 404 recovery passes.
+
+Live Cloudflare UI was verified after the final UI commit: missing preference first
+rendered Chinese; switching immediately updated text/title, preserved target, reviewed
+request ID and confirmation state, and produced byte-identical confirmed clipboard JSON
+in both languages. Clipboard was compared after async copy completion. English selection
+survived reload and navigation; Chinese was restored. SNAP-008 shows current/frozen,
+confidentiality, component and AI-policy translations with unchanged UUIDs/hashes/files.
+Dashboard demo activity summaries are Chinese. No business command was submitted.
+Cloudflare provider deployment ID/commit metadata is unavailable through installed
+tools; live final feature behavior is the frontend deployment evidence.
+
+Render's existing backend deployment `dep-dava0k6417fc73ds081g` remains live for
+`1efe0c28e2c5d68a36b00103b540329a38b1df04`; this frontend-only package did not
+redeploy unchanged backend code. Health returned HTTP 200 ready/API 0.18.3/head 0017;
+read-only PostgreSQL SQL independently confirmed `0017_deployment_actual_version`.
+Empty Snapshot and exact Deployment Batch POST probes returned HTTP 403 read_only_mode.
+Public staging remains read-only. Sampled browser errors came from the browser metadata
+extension, not the application source; no application runtime error was observed in
+that sample. The unrelated `frontend/app/activity/page 2.tsx` was absent and was not
+created, adopted or removed.
+
+Current-page bilingual coverage is complete; roadmap scope stays **34/44 (77%)**.
+Phase 4 8/9, Phase 5 8/9, Phase 6 3/5, Phase 7 0/6. Remaining preparation versus
+submission distinction remains: OIDC/session/controlled target, submission/recovery/
+result trace, broader append-only correction/revocation, remaining bounded consumers
+and production operations. Planning estimate remains 8–12 more focused packages to
+controlled internal use, 16–24 total to a production-ready review, subject to approvals.
+Suggested next code package: migrate remaining release detail/trace consumers to bounded
+profiles/catalogs while approved identity/session and controlled target are specified.

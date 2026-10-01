@@ -267,4 +267,4 @@ Verification: frontend 292 passed (78 localization/coverage checks plus 214 comm
 checks); final Next/OpenNext production build passed. Full backend: 733 passed,
 3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
 tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
-input/option values for 14 forms. Live verification is recorded after deployment.
+input/option values for 14 forms. Live bilingual/persistence/immutable-request checks passed; rollout evidence is recorded in HANDOFF.md.
