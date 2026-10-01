@@ -27,29 +27,52 @@ class ProductionService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_deployment(
+    def _lock(self, model, row_id):
+        return self.db.scalar(select(model).where(model.id == row_id)
+            .with_for_update().execution_options(populate_existing=True))
+
+    def create_deployment(self, deployment_no, authorization_id, production_line_id,
+                          actor_context=None, request_id=None):
+        with atomic_command(self.db, ProductionError):
+            return self._create_deployment(deployment_no, authorization_id,
+                production_line_id, actor_context, request_id)
+
+    def _create_deployment(
         self,
         deployment_no: str,
         authorization_id,
         production_line_id,
         actor_context: ActorContext | None = None,
+        request_id=None,
     ):
         actor = actor_context or ActorContext.legacy(None)
+        authorization = self._lock(SoftwareAuthorization, authorization_id)
+        request_content = {"deployment_no": deployment_no,
+            "authorization_id": str(authorization_id), "production_line_id": str(production_line_id)}
+        existing = retry_result(self.db, Deployment, request_id, "EVT-DPLOY-",
+                                request_content, actor, ProductionError)
+        if existing is not None:
+            self.db.commit()
+            return existing
         if self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
         ).first():
             raise ProductionError("Deployment number already exists")
 
-        authorization = self.db.get(SoftwareAuthorization, authorization_id)
         if not authorization or authorization.status != "APPROVED":
             raise ProductionError("Deployment requires an approved production authorization")
 
-        line = self.db.get(ProductionLine, production_line_id)
-        site = self.db.get(ManufacturingSite, line.site_id) if line else None
+        # Parent order: Authorization -> Site -> Line. The join only locks Site.
+        site = self.db.scalar(select(ManufacturingSite).join(
+            ProductionLine, ProductionLine.site_id == ManufacturingSite.id
+        ).where(ProductionLine.id == production_line_id).with_for_update(of=ManufacturingSite)
+          .execution_options(populate_existing=True))
+        line = self._lock(ProductionLine, production_line_id)
         if not line or not site or line.status != "ACTIVE" or site.status != "ACTIVE":
             raise ProductionError("Deployment requires an active manufacturing site and line")
         if (
-            site.customer_id != authorization.customer_id
+            line.site_id != site.id
+            or site.customer_id != authorization.customer_id
             or site.project_id != authorization.project_id
             or site.site_code != authorization.site_code
             or line.line_code != authorization.line_code
@@ -64,6 +87,8 @@ class ProductionService:
             expected_snapshot_id=authorization.snapshot_id,
             status="PENDING",
         )
+        if request_id is not None:
+            row.id = request_id
         self.db.add(row)
         commit_with_audit(
             self.db,
@@ -83,13 +108,20 @@ class ProductionService:
                     "expected_snapshot_id": str(row.expected_snapshot_id),
                     "status": row.status,
                     "actor_source": actor.source,
+                    "request": request_content if request_id is not None else None,
                 },
             },
         )
         self.db.refresh(row)
         return row
 
-    def report_actual(
+    def report_actual(self, deployment_no, actual_release_id, actual_snapshot_id,
+                      deployed_at=None, actor_context=None):
+        with atomic_command(self.db, ProductionError):
+            return self._report_actual(deployment_no, actual_release_id,
+                actual_snapshot_id, deployed_at, actor_context)
+
+    def _report_actual(
         self,
         deployment_no: str,
         actual_release_id,
@@ -100,6 +132,7 @@ class ProductionService:
         actor = actor_context or ActorContext.legacy(None)
         deployment = self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
+            .with_for_update().execution_options(populate_existing=True)
         ).first()
         if not deployment:
             raise ProductionError("Deployment not found")
@@ -153,7 +186,13 @@ class ProductionService:
         self.db.refresh(deployment)
         return deployment
 
-    def create_changeover(
+    def create_changeover(self, deployment_no, changeover_no, from_release_id,
+                         changed_at=None, note=None, actor_context=None, request_id=None):
+        with atomic_command(self.db, ProductionError):
+            return self._create_changeover(deployment_no, changeover_no,
+                from_release_id, changed_at, note, actor_context, request_id)
+
+    def _create_changeover(
         self,
         deployment_no: str,
         changeover_no: str,
@@ -161,13 +200,23 @@ class ProductionService:
         changed_at=None,
         note: str | None = None,
         actor_context: ActorContext | None = None,
+        request_id=None,
     ):
         actor = actor_context or ActorContext.legacy(None)
         deployment = self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
+            .with_for_update().execution_options(populate_existing=True)
         ).first()
         if not deployment:
             raise ProductionError("Deployment not found")
+        request_content = {"deployment_no": deployment_no, "changeover_no": changeover_no,
+            "from_release_id": str(from_release_id), "changed_at": timestamp_content(changed_at),
+            "note": note}
+        existing = retry_result(self.db, SoftwareChangeover, request_id, "EVT-CO-",
+                                request_content, actor, ProductionError)
+        if existing is not None:
+            self.db.commit()
+            return existing
         if self.db.scalars(
             select(SoftwareChangeover).where(
                 SoftwareChangeover.changeover_no == changeover_no
@@ -186,9 +235,12 @@ class ProductionService:
             from_release_id=from_release_id,
             to_release_id=deployment.expected_release_id,
             status="COMPLETED",
-            changed_at=changed_at or datetime.now(timezone.utc),
+            changed_at=(changed_at.replace(tzinfo=changed_at.tzinfo or timezone.utc)
+                        if changed_at else datetime.now(timezone.utc)),
             note=note,
         )
+        if request_id is not None:
+            row.id = request_id
         self.db.add(row)
         commit_with_audit(
             self.db,
@@ -210,6 +262,7 @@ class ProductionService:
                     "to_release_id": str(row.to_release_id),
                     "status": row.status,
                     "actor_source": actor.source,
+                    "request": request_content if request_id is not None else None,
                 },
             },
         )

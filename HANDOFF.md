@@ -63,7 +63,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Compatibility-list migration remains |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
-| Phase 6 — Controlled write experience | 0 / 5 | 0% | Three safety slices implemented; broad items partial |
+| Phase 6 — Controlled write experience | 0 / 5 | 0% | Four safety slices implemented; broad items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **31 / 44** | **70%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
@@ -79,7 +79,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 51 backend test modules; the latest full run passed all 573 tests under Python 3.12, including 63 real PostgreSQL tests without skips.
+- 53 backend test modules; the latest full run passed all 641 tests under Python 3.12, including 90 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -87,7 +87,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 1. No approved OIDC issuer, audience or JWKS endpoint is configured in a target environment.
 2. There is no audited principal/grant administration API or browser login/session flow.
 3. Snapshot/Batch, Approval/Decision and the distribution chain now provide optional request-ID idempotency; several other commands still lack it.
-4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment, actual-software and Changeover remain unfinished.
+4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment/Changeover now have retry and locks; actual-software retry/version controls remain unfinished.
 5. Actual-software reporting is a mutable overwrite without an optimistic-concurrency token or explicit correction command, although every report is now audited.
 6. Some legacy list/history endpoints remain unbounded.
 7. CI, backup/restore, monitoring, alerting and incident runbooks are not present.
@@ -95,7 +95,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 
 ## Recommended next development package
 
-The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **deployment/changeover retry safety and actual-software conflict control**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
+The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **actual-software retry, optimistic conflict detection and correction semantics**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
 
 ### Scope
 
@@ -138,7 +138,7 @@ POST https://softwarelifecycle-api-test.onrender.com/api/v1/deployments
 GET  https://softwarelifecycle.whf969.com
 ```
 
-Expected public state after this package deploys: API `0.16.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
+Expected public state after this package deploys: API `0.17.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
 
 ## Working-tree caution
 
@@ -214,3 +214,16 @@ Frontend returned HTTP 200 with Dashboard HTML. No frontend code or separate
 frontend deployment was required.
 
 Test environment note: the first full run had 63 PostgreSQL connection errors because the disposable local server retained a stale shutdown PID file. The test runtime was restarted with clean shutdown/wait handling; the complete rerun above passed. No application or staging database was altered to resolve this.
+
+## Phase 6 fourth package — current development report
+
+Development mode: **Codex**. Starting main is
+`8955c8d4039850ecc0bb5c0907f5c10f26a1eb4c`. API `0.17.0` adds optional request-ID
+retry and locks for Deployment/Changeover, preserving trusted actor/scope, HTTP 201
+and legacy duplicate-number behavior. Actual reporting now shares Deployment locking
+for consistent atomic before/after audit and Batch ordering, but has no request-ID,
+optimistic token or correction contract yet. No migration/frontend change is needed.
+Request-ID coverage is 13/14 (93%); row serialization/scope/actor/atomic audit are
+14/14. Broad roadmap stays 31/44 (70%): actual-version protection, UI/correction,
+provider configuration and operations are unfinished. Next package is actual-software
+retry and optimistic conflict/correction. Full Python 3.12 suite: **641 passed, 2821 warnings, no skips**, including **90 real PostgreSQL 16.15 tests**. Single Alembic head `0016_authenticated_audit_actors` and PostgreSQL SQL generation passed. No new migration or frontend build/change. Deployment verification follows the scoped push.

@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.16.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.17.0`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -59,7 +59,7 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 - In OIDC mode, every current write route additionally requires its exact active project/software role or the exceptional `PLATFORM_ADMIN` override. Scope is resolved from stored relationships; a client-supplied project alone is not authorization evidence.
 - `AUTH_MODE=disabled` preserves controlled local development compatibility; it is not appropriate for public writes.
 - For atomically audited writes in OIDC mode, stored actor names come from the authenticated principal. Audit events also expose `actor_principal_id`, full `actor_display_name` and the original `declared_actor_name`. Disabled mode retains legacy declaration behavior.
-- Snapshot, production-batch creation, approval actions, release decisions, deliveries, distributions and production authorizations now accept optional client-generated request IDs, in addition to the existing request-ID commands. Other commands still have incomplete retry protection.
+- Snapshot, production-batch creation, approval actions, release decisions, deliveries, distributions, production authorizations, deployments and changeovers now accept optional client-generated request IDs, in addition to the existing request-ID commands. Other commands still have incomplete retry protection.
 - All 14 current command routes record an audit event in the same transaction as their domain change. Snapshot and production audit payloads retain exact release, snapshot, authorization, deployment and before/after identifiers as applicable.
 - Snapshot and exact UUID bindings take precedence over matching version, name or display code.
 - Bounded catalogs validate filters, limit and offset; totals/counts apply to the full filtered result, not just the visible page.
@@ -145,3 +145,30 @@ all current latest-decision writers/readers. Locks refresh ORM state and last th
 atomic domain/audit commit. Unique UUID/business constraints guard cross-parent races;
 all validation/constraint/audit/commit failures roll back. No migration, public writes,
 correction/revocation or automatic server retry is introduced.
+
+## Deployment / Changeover retry contract (0.17.0)
+
+`POST /deployments` and `/deployments/{deployment_no}/changeovers` add optional UUID
+`request_id`. Existing payloads and HTTP 201 shapes stay compatible. Same key/content/
+trusted actor reuses the existing domain row and audit. Returned status is the row's
+current stored status, not a historical response-body ledger. Changed content/actor,
+legacy evidence missing, or duplicate number under another/no key returns 409;
+malformed UUID returns 422. Keys are global within each domain table.
+
+Deployment compares deployment number, authorization UUID and production-line UUID.
+Changeover compares deployment number, changeover number, source release UUID,
+changed_at and note. UTC-equivalent timestamps match; naive changed_at means UTC.
+Omission remains distinct from explicit time and generates server time only once.
+Replay precedes mutable parent/domain checks, but every HTTP call still needs current
+exact project PRODUCTION_OPERATOR scope and trusted actor resolution.
+
+New Deployment locks Authorization -> Site -> Line, refreshes cached state, verifies
+approved authorization, active parents and exact customer/project/site/line scope.
+New Changeover locks Deployment and retains existing source/target checks. Distinct
+changeover numbers remain append history; no single-use transition rule is invented.
+Actual reporting now uses the same Deployment lock as Changeover and Batch, ensuring
+serialized before/after audit state and batch eligibility checks. Actual reports
+still lack request-ID replay, optimistic tokens and explicit correction semantics;
+repeated reports append new events and may overwrite the previous actual state.
+All validation/constraint/audit/commit failures roll back. No migration, automatic
+server retry, frontend write UI or write-enabled public deployment is added.

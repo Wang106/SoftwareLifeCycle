@@ -141,3 +141,22 @@ Release serialization ensures supported new decisions commit before dependent ch
 Cross-parent global-key/business-number conflicts roll back all domain/items/audit.
 Real PostgreSQL tests apply the full migration chain in disposable schemas and observe
 blocking, both ordering directions, stale-state refresh and lock release after failure.
+
+## Deployment / Changeover locks and retry storage (API 0.17.0)
+
+No migration: existing `deployments.id`, `software_changeovers.id` and audit JSONB
+request evidence implement optional request UUIDs with existing EVT-DPLOY-/EVT-CO-
+event numbers. Existing global UUID/number constraints are retained; history is not
+backfilled. Changeover timestamps normalize naive input to UTC; omission remains
+null in canonical request evidence while creation generates its timestamp once.
+
+Deployment creation locks Authorization -> Site -> Line, using FOR UPDATE OF Site
+on the parent join. It refreshes rows and checks exact scope before insert. It does
+not lock existing Deployment after Authorization, preserving Batch's opposite
+parent direction. Changeover, actual reporting and Batch all start with Deployment;
+only Batch subsequently acquires Authorization. Locks last through atomic audit
+commit; validation/constraint/audit/commit failures roll back. Actual rows have no
+version column or request ledger, so latest committed reports still overwrite state.
+Real migrated PostgreSQL tests observe blocking, cross-parent uniqueness races,
+stale authorization/site/line/deployment refresh, audit rollback, timestamp equivalence,
+actual-before history, actual/Batch ordering and absence of reversed-lock deadlock.

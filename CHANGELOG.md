@@ -4,6 +4,12 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Fourth-package full Python 3.12 verification: 641 passed, 2821 warnings, no skips; 90 real PostgreSQL 16.15 tests. Single Alembic head and PostgreSQL SQL generation passed.
+
+- API `0.17.0`: Deployment/Changeover optional request-ID replay, content/actor conflict, UTC Changeover time semantics and transaction locks. Deployment locks Authorization -> Site -> Line; Changeover locks Deployment. Legacy payloads/HTTP 201 and distinct-number history remain compatible.
+- Actual reporting now locks/refreshes Deployment before reading audited before-state, coordinating with Changeover/Batch; it still lacks retry/version conflict protection. Validation/constraint/audit/commit failures roll back. No migration/backfill/frontend changes.
+- Added 41 unit/route cases and 27 actual PostgreSQL cases for retry, scope/actor/policy, parent refresh, global unique races, rollback, actual audit/Batch ordering and deadlock avoidance. Request-ID coverage is 13/14 (93%); broad roadmap stays 31/44 (70%).
+
 - Verified distribution-chain deployment `dep-dav0af5g1s2s73d55420` for `42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5`: live API `0.16.0`, database `0016_authenticated_audit_actors`, public writes 403 `read_only_mode`, read smoke endpoints 200 and frontend 200 with Dashboard HTML.
 
 - Third-package full verification: 573 passed, 2326 warnings, no skips; 63 real PostgreSQL 16.15 cases. Single Alembic head and PostgreSQL SQL generation passed, no migration/frontend change. A disposable PostgreSQL startup error was fixed before the successful full rerun.

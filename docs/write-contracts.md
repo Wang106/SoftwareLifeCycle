@@ -14,9 +14,9 @@ The enforced scoped roles are recorded in the executable contracts and defined i
 | `POST /api/v1/deliveries` | Release/snapshot/recipient/artifacts | Authenticated; optional declaration retained | Atomic append | Optional request ID | Release then ApprovalRequest row locks | Legacy duplicate number/revision rejection |
 | `POST /api/v1/distributions` | Package/recipient | Authenticated | Atomic append | Optional request ID | Package row lock | Legacy duplicate number rejection |
 | `POST /api/v1/authorizations` | Distribution/customer/project/site/line | Authenticated | Atomic append | Optional request ID | Release then Package then Distribution row locks | Legacy duplicate number rejection |
-| `POST /api/v1/deployments` | Authorization/line | Authenticated | Atomic append | Duplicate rejection | None | Scope rows are not locked |
-| `POST /api/v1/deployments/{deployment_no}/actual` | Deployment/release/snapshot | Authenticated | Atomic append | Mutable overwrite | None | No optimistic lock |
-| `POST /api/v1/deployments/{deployment_no}/changeovers` | Deployment/releases | Authenticated | Atomic append | Duplicate rejection | None | Deployment row is not locked |
+| `POST /api/v1/deployments` | Authorization/line | Authenticated | Atomic append | Optional request ID | Authorization then Site then Line row locks | Legacy duplicate number rejection |
+| `POST /api/v1/deployments/{deployment_no}/actual` | Deployment/release/snapshot | Authenticated | Atomic append | Mutable overwrite | Deployment row lock | No request-ID or optimistic lock |
+| `POST /api/v1/deployments/{deployment_no}/changeovers` | Deployment/releases | Authenticated | Atomic append | Optional request ID | Deployment row lock | Distinct-number history; no correction/revocation |
 | `POST /api/v1/deployments/{deployment_no}/batches` | Deployment/authorization/changeover | Authenticated | Atomic append | Optional request ID | Deployment then shared Authorization row locks | No-key legacy duplicate number returns conflict |
 | `POST /api/v1/issues/{issue_no}/impact-assessments` | Issue/release/snapshot | Authenticated; declaration retained | Atomic append | Request ID | Issue row lock | No correction/supersession command |
 | `POST /api/v1/changes/{request_no}/acceptance-dvp-links` | SCR/criterion/DVP | Authenticated; declaration retained | Atomic append | Request ID | SCR row lock | No correction/supersession command |
@@ -151,6 +151,40 @@ validation/flush/audit/commit rollback and artifact-order semantics.
 and cross-parent races, stale ORM refresh, child/event rollback, lock release, and
 new release decisions competing with Delivery/Authorization in both orderings.
 
-Current request-ID/row-lock coverage is **11/14 (79%)**. The remaining routes are
+At the third package, request-ID/row-lock coverage was **11/14 (79%)**. The remaining routes were
 Deployment creation, actual-software reporting and Changeover creation. Scope/actor/
 atomic-audit coverage remains 14/14; these counts do not certify an OIDC deployment.
+
+## Phase 6 fourth package: Deployment and Changeover
+
+Optional UUID request_id reuses domain IDs and existing atomic audit request evidence.
+Deployment compares number, authorization UUID and line UUID; Changeover compares
+deployment/number/source release UUID, UTC-normalized changed_at and exact note.
+Naive time means UTC, omitted time differs from explicit time. Keys are global within
+each table; matching actor/content returns the existing row (current stored status)
+without another domain/event. Conflicting key/legacy evidence/duplicate number returns
+409; invalid UUID returns 422. HTTP 201 shapes and unkeyed compatibility are unchanged.
+Current scope and trusted actor checks precede every replay.
+
+- Deployment locks/refreshes Authorization -> Site -> Line, validates approved/active
+  parents and exact scope, then inserts/audits/commits. Duplicate-number reads do not
+  lock an existing Deployment after Authorization; cross-parent unique races roll back.
+- Changeover locks/refreshes Deployment. Successful keyed recovery precedes mutable
+  source/target validation; new work retains every rule. Distinct numbers remain
+  history records, not a newly enforced single-use transition.
+- Actual reporting now locks/refreshes Deployment before reading before-state.
+  Batch/Changeover use the same first lock, so actual/audit/batch eligibility follow
+  committed ordering. Actual remains a mutable overwrite without request-ID/version
+  protection, and each successful report still creates a new atomic audit event.
+- Validation, constraint, audit-after-flush and commit failures roll back all changes
+  and release locks. No migration/backfill/server retry/correction/public writes exist.
+
+`test_production_retry.py` covers retry, fields/actors/legacy, exact active role,
+parent validation, UTC semantics and failure rollback. Real independent-session
+`test_production_concurrency_postgres.py` verifies actual blocking, independent-parent
+UUID/number conflicts, stale parents, rollback/lock release, sequential actual-before
+history, actual/Batch ordering and no reversed-lock deadlock.
+
+Current request-ID coverage is **13/14 (93%)**; all 14 declare row-lock serialization,
+exact scope, trusted actor and atomic audit. Row locking alone does not provide stale
+client conflict detection. The remaining retry/version package is actual-software reporting.

@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.16.0
+FastAPI 0.17.0
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -131,3 +131,18 @@ locks and never acquires Release afterward. No cyclic reverse acquisition is add
 The tested contract covers supported command paths under READ COMMITTED; arbitrary
 SQL edits or future transition routes must implement their own consistent lock order.
 Legacy/no-key calls keep duplicate rejection; no full production-readiness claim follows.
+
+## Production command serialization (0.17.0)
+
+Deployment creation uses optional domain UUID/audit request evidence and locks
+Authorization, Site, Line in order. Its duplicate-number check is an unlocked read;
+it never acquires an existing Deployment after Authorization, avoiding the reverse
+of Batch's Deployment -> Authorization order. Unique constraints remain the final
+guard for independent-parent UUID/number races.
+
+Changeover creation uses optional UUID/audit evidence and locks Deployment through
+commit. Actual reporting now locks/refreshes that same Deployment; Batch already
+locks Deployment then Authorization. Actual-before audit values and batch eligibility
+therefore follow committed state. This gives row serialization, not actual-report
+idempotency or optimistic conflict detection. No migration is needed; next work is
+a retry/version contract for actual-software reporting and append-only correction.

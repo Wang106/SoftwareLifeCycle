@@ -27,6 +27,7 @@ router = APIRouter(prefix="/api/v1", tags=["production"])
 
 
 class DeploymentCreate(BaseModel):
+    request_id: uuid.UUID | None = None
     deployment_no: str
     authorization_id: uuid.UUID
     production_line_id: uuid.UUID
@@ -39,6 +40,7 @@ class ActualSoftwareReport(BaseModel):
 
 
 class ChangeoverCreate(BaseModel):
+    request_id: uuid.UUID | None = None
     changeover_no: str
     from_release_id: uuid.UUID
     changed_at: datetime | None = None

@@ -65,7 +65,7 @@ Historical/seed records and `AUTH_MODE=disabled` writes have a null principal re
 3. **Implemented:** require an active scoped role or the exceptional global admin role.
 4. **Implemented:** derive audit actors from the authenticated principal and preserve request declarations separately for every current write.
 5. **Implemented:** append audit events atomically for snapshot and production commands.
-6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval actions and release decisions also support these safeguards; Delivery, Distribution and Production Authorization also implement optional-key replay and locks; Deployment, actual-software and Changeover remain unfinished.
+6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval actions and release decisions also support these safeguards; Delivery, Distribution and Production Authorization also implement optional-key replay and locks; Deployment and Changeover now also implement optional-key replay and locks. Actual reporting shares the Deployment lock but still lacks retry/version conflict protection.
 7. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract tests already cover wrong scope/role, suspended membership and actor mismatch.
 
 No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
@@ -121,3 +121,19 @@ latest-release-decision checks. Recovery of an already committed keyed write doe
 recheck mutable parent eligibility, but never bypasses current HTTP permission.
 No provider, public write UI or write-enabled public target is configured; staging
 continues to be sample-only and read-only.
+
+## Production retry trust boundary (0.17.0)
+
+Every Deployment/Changeover HTTP retry still checks the current exact active project
+PRODUCTION_OPERATOR grant before trusted actor resolution and stored evidence lookup.
+Replays bind all audit identity fields, including principal, full display identity,
+declaration and authentication mode. A request UUID or matching name grants no access;
+suspended grants deny recovery. Legacy no-key calls remain compatible with duplicate
+business-number rejection and existing disabled-auth behavior.
+
+Deployment creation verifies current approved authorization and exact active site/line
+scope after parent locks. Changeover retains source/target release rules. Shared
+Deployment locking coordinates actual reporting, Changeover and Batch through audit
+commit; it does not reject a stale client's actual overwrite. Actual retry, optimistic
+version and correction behavior remain explicit gaps. Public staging remains read-only,
+without an approved provider, login/grant administration or public write forms.
