@@ -8,7 +8,7 @@
 - No backend/schema/API change or migration; API 0.18.0/head 0017 and public read-only settings remain.
 
 
-- Verification: frontend 111 passed; Next.js/OpenNext builds; complete backend 688 passed, no skips, including 103 real PostgreSQL tests; six local SSR context/input cases passed. Online verification follows the scoped push.
+- Verification: frontend 111 passed; Next.js/OpenNext builds; complete backend 688 passed, no skips, including 103 real PostgreSQL tests; six local SSR context/input cases passed. Feature commit `5c95c961fb1907bf473dbec012adc4e1b66bf431` is pushed to main. Live Cloudflare UI verified all eight choices, exact Issue/release/snapshot and SCR/criterion prefill, explicit DVP selection, review confirmation, stable Impact copy, credential-URL rejection, inert local-path Resource preparation/copy and edit invalidation. No business submission was made. Health returned 200 with API 0.18.0 and database revision 0017_deployment_actual_version; Impact, Acceptance-to-DVP and Resource write probes each returned 403 read_only_mode. Unchanged Render backend deployment dep-dav0vf0473hc73a8vl10 remains live at bbd8a42b567c4f5b2c83017c570e47039442f3af. Cloudflare live behavior is verified; a provider deployment ID/commit binding was not available.
 
 ## Governance request-preparation forms — 2026-10-01
 

@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `961994af31da607a5b36066ee7998eb3c4ea60bc` — `feat: prepare reviewed approval and release decision requests` (developed from `e7db963e55437dad00f12a267848c759841d5198`)
+- Reviewed repository baseline: `5c95c961fb1907bf473dbec012adc4e1b66bf431` — `feat: prepare reviewed impact assignments and resource references` (developed from `cdf36deb6c89a36224edcfcaddf331bad1f6cdd1`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -274,4 +274,4 @@ authenticated submission, uncertain outcomes and general correction/revocation r
 No backend/API/schema change or migration; API 0.18.0, head 0017. Roadmap remains
 34/44 (77%), Phase 6 3/5 (60%); preparation is not successful business execution.
 
-Frontend tests: 111 passed, no skips (55 added evidence/reference cases). Next.js production build within OpenNext and Cloudflare Worker bundling passed; existing build/deprecation warnings remain. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Six local SSR cases passed: impact/assignment/resource context, invalid entity type, oversized release UUID, ignored location prefill and Create entry. No migration or backend code change. Online verification follows the scoped push.
+Frontend tests: 111 passed, no skips (55 added evidence/reference cases). Next.js production build within OpenNext and Cloudflare Worker bundling passed; existing build/deprecation warnings remain. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Six local SSR cases passed: impact/assignment/resource context, invalid entity type, oversized release UUID, ignored location prefill and Create entry. No migration or backend code change. Feature commit `5c95c961fb1907bf473dbec012adc4e1b66bf431` is pushed to main. Live Cloudflare UI verified all eight choices, exact Issue/release/snapshot and SCR/criterion prefill, explicit DVP selection, review confirmation, stable Impact copy, credential-URL rejection, inert local-path Resource preparation/copy and edit invalidation. No business submission was made. Health returned 200 with API 0.18.0 and database revision 0017_deployment_actual_version; Impact, Acceptance-to-DVP and Resource write probes each returned 403 read_only_mode. Unchanged Render backend deployment dep-dav0vf0473hc73a8vl10 remains live at bbd8a42b567c4f5b2c83017c570e47039442f3af. Cloudflare live behavior is verified; a provider deployment ID/commit binding was not available.
