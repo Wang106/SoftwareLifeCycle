@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**Phase 6 seventh package adds Approval Action/Release Decision preparation; five of 14 command forms now prepare requests; public staging remains read-only.**
+**Phase 6 eighth package adds Impact/Acceptance-to-DVP/Resource preparation; eight of 14 command forms now prepare requests; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -51,7 +51,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). This schema verification belongs to the prior backend package; current frontend verification is recorded below.
 
 
-- Five of 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 56 cases; authenticated submission remains pending.
+- Eight of 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 111 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -61,7 +61,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 
 ## Next stage
 
-1. Extend request preparation to Impact Assessment, Acceptance-to-DVP Link and Resource, with exact context and evidence.
+1. Extend request preparation to Delivery, Distribution and Authorization, with artifact/recipient/scope evidence.
 2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
 3. Extend correction/revocation beyond actual reports, preserving formal history.
 4. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
@@ -260,3 +260,18 @@ Render connector confirms dep-dav0vf0473hc73a8vl10 remains live for unchanged ba
 commit bbd8a42. Fresh health returned 200 / API 0.18.0 / exact database revision
 0017_deployment_actual_version; harmless approval-action and release-decision POSTs
 both returned 403 read_only_mode. Public settings remain unchanged.
+
+## Phase 6 eighth package — evidence and resource request preparation
+
+Codex adds Impact Assessment, Acceptance-to-DVP Link and Resource preparation.
+Exact issue/release/snapshot and SCR/criterion context can be prefilled from evidence
+pages; criterion/DVP and judgment/assignment UUIDs are visible. Resource locations
+are validated text references, never fetched/opened/uploaded. The helper follows
+existing text trimming, explicit judgments and hyphenated audit UUID suffixes;
+review/confirmation/stable copy and edit/context invalidation remain transport-free.
+Eight of 14 forms now prepare requests; six forms, approved OIDC/session/target,
+authenticated submission, uncertain outcomes and general correction/revocation remain.
+No backend/API/schema change or migration; API 0.18.0, head 0017. Roadmap remains
+34/44 (77%), Phase 6 3/5 (60%); preparation is not successful business execution.
+
+Frontend tests: 111 passed, no skips (55 added evidence/reference cases). Next.js production build within OpenNext and Cloudflare Worker bundling passed; existing build/deprecation warnings remain. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Six local SSR cases passed: impact/assignment/resource context, invalid entity type, oversized release UUID, ignored location prefill and Create entry. No migration or backend code change. Online verification follows the scoped push.

@@ -132,3 +132,57 @@ test('governance repeated confirmed exports retain content/key; source edits can
     assert.throws(() => exportRequest(confirm(review, false)), /Confirm/);
   }
 });
+const impactFields = {...blankFields,target:'ISS? #%',release,snapshot,decision:'NEEDS_REVIEW',actor:' Reviewer ',reason:' Evidence reason\n ',evidence:' reference '};
+const assignmentFields = {...blankFields,target:'SCR? #%',criterion:release,dvp:snapshot,actor:' Contributor ',reason:' Assignment reason '};
+const resourceFields = {...blankFields,target:release,entityType:'RELEASE',title:' Evidence ',locationKind:'WEB_URL',location:' https://example.com/evidence?q=@review ',description:' Description ',actor:' Contributor ',reason:' Reference reason '};
+test('impact export pins exact release/snapshot, normalizes API text and uses hyphenated audit UUID',()=>{
+ const review=prepare('impact',impactFields,key);
+ assert.equal(review.draft.path,'/api/v1/issues/ISS%3F%20%23%25/impact-assessments');
+ assert.equal(review.draft.trace,'/issues/ISS%3F%20%23%25');
+ assert.equal(review.draft.audit,`/activity/EVT-IMPACT-${key}`);
+ assert.deepEqual(exported('impact',impactFields).body,{request_id:key,release_id:release,snapshot_id:snapshot,decision:'NEEDS_REVIEW',actor_name:'Reviewer',reason:'Evidence reason',evidence_ref:'reference'});
+ assert.equal(exported('impact',{...impactFields,evidence:'  '}).body.evidence_ref,null);
+});
+for(const decision of ['AFFECTED','NOT_AFFECTED','NEEDS_REVIEW']){
+ test(`explicit impact judgment ${decision} is retained`,()=>assert.equal(exported('impact',{...impactFields,decision}).body.decision,decision));
+}
+for(const changes of [{target:'../ISS'},{release:'bad'},{snapshot:''},{decision:''},{decision:'PASS'},{reason:'  '},{reason:'R'.repeat(4001)},{evidence:'E'.repeat(2001)},{actor:'A'.repeat(121)}]){
+ test(`invalid impact content ${JSON.stringify(changes).slice(0,80)} rejected`,()=>assert.throws(()=>prepare('impact',{...impactFields,...changes},key)));
+}
+test('acceptance link pins criterion and DVP UUID, trims reason/actor and uses exact SCR trace',()=>{
+ const review=prepare('acceptance',assignmentFields,key);
+ assert.equal(review.draft.path,'/api/v1/changes/SCR%3F%20%23%25/acceptance-dvp-links');
+ assert.equal(review.draft.trace,'/changes/SCR%3F%20%23%25/coverage');
+ assert.equal(review.draft.audit,`/activity/EVT-AC-${key}`);
+ assert.deepEqual(exported('acceptance',assignmentFields).body,{request_id:key,criterion_id:release,dvp_item_id:snapshot,actor_name:'Contributor',reason:'Assignment reason'});
+});
+for(const changes of [{criterion:''},{dvp:'bad'},{target:'..'},{actor:'  '},{reason:''}]){
+ test(`invalid assignment ${JSON.stringify(changes)} rejected`,()=>assert.throws(()=>prepare('acceptance',{...assignmentFields,...changes},key)));
+}
+test('resource export uses exact target UUID, canonical trimmed text and original URL spelling',()=>{
+ const review=prepare('resource',resourceFields,key);
+ assert.equal(review.draft.path,'/api/v1/resources');assert.equal(review.draft.trace,`/resources/${key}`);
+ assert.equal(review.draft.audit,`/activity/EVT-LK-${key}`);
+ assert.deepEqual(exported('resource',resourceFields).body,{request_id:key,actor_name:'Contributor',reason:'Reference reason',entity_type:'RELEASE',entity_id:release,title:'Evidence',location_kind:'WEB_URL',location:'https://example.com/evidence?q=@review',description:'Description'});
+ assert.equal(exported('resource',{...resourceFields,description:' '}).body.description,'');
+});
+for(const [locationKind,location] of [['WEB_URL','http://example.com:8080/%20data#evidence'],['LOCAL_PATH','/srv/evidence/file.pdf'],['LOCAL_PATH','C:\\evidence\\file.pdf'],['LOCAL_PATH','D:/evidence/file.pdf'],['NETWORK_PATH','\\\\server\\share\\file.pdf'],['NETWORK_PATH','//server/share/file.pdf']]){
+ test(`valid reference ${locationKind} ${location} remains text without normalization`,()=>assert.equal(exported('resource',{...resourceFields,locationKind,location}).body.location,location));
+}
+for(const location of ['javascript:alert(1)','file:///tmp/x','https://user:pass@example.com/x','https://@example.com/x','https:///example.com','https://example.com:65536/x','https://example.com/%0a','https://example.com/%7F','https://example.com/a b','https://example.com\\x','https://example.com/%invalid']){
+ test(`unsafe or malformed web reference ${location} rejected`,()=>assert.throws(()=>prepare('resource',{...resourceFields,location},key)));
+}
+for(const [locationKind,location] of [['LOCAL_PATH','relative/file'],['LOCAL_PATH','//server/share'],['LOCAL_PATH','C:relative'],['NETWORK_PATH','//server'],['NETWORK_PATH','\\\\server\\'],['NETWORK_PATH','/srv/share'],['','/tmp/a']]){
+ test(`invalid path/kind ${locationKind} ${location} rejected`,()=>assert.throws(()=>prepare('resource',{...resourceFields,locationKind,location},key)));
+}
+for(const changes of [{entityType:'APPROVAL'},{entityType:''},{target:'bad'},{title:''},{title:'T'.repeat(241)},{reason:'R\nX'},{actor:'A\nB'},{description:'D\tX'},{description:'D'.repeat(4001)},{location:'L'.repeat(4001)}]){
+ test(`invalid resource content ${JSON.stringify(changes).slice(0,80)} rejected`,()=>assert.throws(()=>prepare('resource',{...resourceFields,...changes},key)));
+}
+test('all three evidence forms keep immutable confirmed exports; unconfirmed or revoked exports fail',()=>{
+ for(const [operation,source] of [['impact',impactFields],['acceptance',assignmentFields],['resource',resourceFields]]){
+  const fields={...source};const raw=prepare(operation,fields,key);assert.throws(()=>exportRequest(raw),/Confirm/);
+  const review=confirm(raw,true);const before=exportRequest(review);fields.reason='Changed';fields.target=snapshot;fields.location='https://different.example/';
+  assert.equal(exportRequest(review),before);assert.throws(()=>{review.draft.payload.reason='Forged';},TypeError);
+  assert.throws(()=>exportRequest(confirm(review,false)),/Confirm/);
+ }
+});

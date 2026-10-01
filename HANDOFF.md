@@ -95,7 +95,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 
 ## Recommended next development package
 
-The first Phase 6 package below is implemented for Snapshot and Production Batch. The fifth package completes actual-software keyed retry/version/correction; next extend **Impact Assessment/Acceptance-to-DVP/Resource request preparation**, then approved identity/submission and broader correction/revocation contracts, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
+The first Phase 6 package below is implemented for Snapshot and Production Batch. The fifth package completes actual-software keyed retry/version/correction; next extend **Delivery/Distribution/Authorization request preparation**, then approved identity/submission and broader correction/revocation contracts, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
 
 ### Scope
 
@@ -300,3 +300,18 @@ Render connector confirms dep-dav0vf0473hc73a8vl10 remains live for unchanged ba
 commit bbd8a42. Fresh health returned 200 / API 0.18.0 / exact database revision
 0017_deployment_actual_version; harmless approval-action and release-decision POSTs
 both returned 403 read_only_mode. Public settings remain unchanged.
+
+## Phase 6 eighth package — evidence and resource request preparation
+
+Codex adds Impact Assessment, Acceptance-to-DVP Link and Resource preparation.
+Exact issue/release/snapshot and SCR/criterion context can be prefilled from evidence
+pages; criterion/DVP and judgment/assignment UUIDs are visible. Resource locations
+are validated text references, never fetched/opened/uploaded. The helper follows
+existing text trimming, explicit judgments and hyphenated audit UUID suffixes;
+review/confirmation/stable copy and edit/context invalidation remain transport-free.
+Eight of 14 forms now prepare requests; six forms, approved OIDC/session/target,
+authenticated submission, uncertain outcomes and general correction/revocation remain.
+No backend/API/schema change or migration; API 0.18.0, head 0017. Roadmap remains
+34/44 (77%), Phase 6 3/5 (60%); preparation is not successful business execution.
+
+Frontend tests: 111 passed, no skips (55 added evidence/reference cases). Next.js production build within OpenNext and Cloudflare Worker bundling passed; existing build/deprecation warnings remain. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Six local SSR cases passed: impact/assignment/resource context, invalid entity type, oversized release UUID, ignored location prefill and Create entry. No migration or backend code change. Online verification follows the scoped push.

@@ -7,7 +7,7 @@ to enable public writes. The current `/commands` workspace prepares requests onl
 | --- | --- | --- | --- |
 | First | Snapshot, actual-software report/correction, Batch | Request preparation implemented | Approved target, login/session, authenticated submission and uncertain-result recovery |
 | Next | Approval Action, Release Decision | Request preparation implemented; exact step UUID visible in approval detail | Permission-aware pickers, authenticated submission and outcome verification |
-| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | API retry contracts exist; forms pending | Exact scope/context pickers and judgment/reference validation |
+| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Request preparation implemented | Permission-aware context pickers, authenticated submission and outcome verification |
 | Later | Delivery, Distribution, Authorization | API retry/locks exist; forms pending | Artifact policy/recipient/scope pickers and complete chain confirmation |
 | Later | Test Release, Deployment, Changeover | API retry/locks exist; forms pending | Purpose/location/source pickers; activation/revocation contracts where absent |
 
@@ -62,6 +62,45 @@ expected audit records may not exist. Prepared/copied requests are never labeled
 successful writes. A business-number link alone does not prove this request succeeded;
 verify the API result and matching audit evidence after controlled execution.
 
+## Evidence and reference preparation
+
+Eight of 14 commands now have request-preparation forms; this counts preparation,
+not authenticated submission or full Phase 6 completion. Impact evidence links prefill
+issue number and exact release/frozen-snapshot UUIDs. No missing snapshot is invented.
+Impact requires AFFECTED/NOT_AFFECTED/NEEDS_REVIEW, reason and declared operator;
+optional evidence_ref is text only. Shared software, matching versions or PASS tests
+never select the judgment. The evidence page may show a newer snapshot later;
+review the exported snapshot UUID and the matching event, not latest status alone.
+
+Coverage displays criterion/DVP UUIDs and can prefill an exact criterion within its
+SCR. A DVP UUID is explicitly supplied; no first item/default assignment is selected.
+The backend checks both objects belong to the SCR. Assignment does not prove execution
+or readiness. Impact/assignment reasons and actor names are trimmed as in Pydantic;
+blank evidence references become null. Resource text is trimmed, optional description
+becomes the empty string, and text length/control checks follow its existing schema.
+
+Resource requires one of the ten existing target types, target UUID, title, explicit
+location kind, location, reason and declared operator. Its WEB_URL checks form a
+stricter preparation subset: explicit lowercase HTTP(S) authority, no embedded
+credentials/backslashes/whitespace, invalid ports, malformed escapes or decoded controls.
+The original trimmed URL is preserved; it is not fetched or normalized into a different
+location. LOCAL_PATH accepts absolute POSIX/Windows drive paths; NETWORK_PATH requires
+server and share. Paths/URLs are text inputs and previews, not auto-opened links,
+file uploads, verified access or distribution permission. Supplier/customer registration
+still requires PLATFORM_ADMIN in OIDC mode. Input references must not contain secrets.
+
+Expected event numbers use hyphenated UUIDs: EVT-IMPACT-{UUID}, EVT-AC-{UUID},
+EVT-LK-{UUID}, unlike earlier commands' hex suffixes. Impact links to bounded issue
+judgment history, assignment to SCR coverage with assignment IDs, and Resource to its
+request UUID detail. Historical pages may truncate or change; use exact API outcome
+and matching audit evidence after execution. No dedicated assessment detail endpoint,
+provider-backed execution or generalized supersession/revocation is claimed.
+
+Only bounded release/snapshot/criterion/entity-type query context is consumed.
+Array/oversized release/snapshot/criterion context stays empty; malformed UUID text fails preparation; context changes remount the workspace and
+invalidate old review. Sensitive locations/reasons/operators are not query-prefilled.
+No backend/schema, migration, transport, browser storage or auth configuration changes.
+
 ## Boundary and remaining acceptance
 
 The workspace has no fetch/POST transport, server mutation route, API-origin picker,
@@ -71,7 +110,7 @@ Public API remains READ_ONLY_MODE=true. The workspace does not bypass OIDC, exac
 scope, trusted actor, row locking, versions, limits or atomic audit; it makes no write.
 
 Actual authenticated submission, permission-aware pickers, stale-context refresh,
-uncertain-result resolution, success/error trace and the other nine forms remain pending.
+uncertain-result resolution, success/error trace and the other six forms remain pending.
 Configure an approved OIDC provider/session and a separately approved controlled
 write target before implementing production submission. Avoid exposing auth-disabled
 writes through a frontend proxy. General correction/revocation workflows remain open.

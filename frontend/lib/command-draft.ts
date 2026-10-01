@@ -1,9 +1,10 @@
 /** Request preparation only. This module has no transport or persistence. */
-export type Operation = 'snapshot' | 'actual' | 'batch' | 'approval' | 'decision';
+export type Operation = 'snapshot' | 'actual' | 'batch' | 'approval' | 'decision' | 'impact' | 'acceptance' | 'resource';
 export type Fields = {
   target: string; release: string; snapshot: string; version: string;
   reason: string; timestamp: string; batch: string; changeover: string; note: string;
   step: string; actor: string; action: string; decisionNo: string; readiness: string; decision: string;
+  criterion: string; dvp: string; evidence: string; entityType: string; title: string; locationKind: string; location: string; description: string;
 };
 export type Draft = Readonly<{
   operation: Operation; path: string; payload: Readonly<Record<string, string | number | null>>;
@@ -13,8 +14,11 @@ export type Review = Readonly<{ draft: Draft; confirmed: boolean }>;
 export const blankFields: Fields = {
   target: '', release: '', snapshot: '', version: '', reason: '', timestamp: '',
   batch: '', changeover: '', note: '', step: '', actor: '', action: '',
-  decisionNo: '', readiness: '', decision: '',
+  decisionNo: '', readiness: '', decision: '', criterion: '', dvp: '', evidence: '',
+  entityType: '', title: '', locationKind: '', location: '', description: '',
 };
+export const resourceTypes = ['SUPPLIER','CUSTOMER','PROJECT','RELEASE','SNAPSHOT','SCR','ISSUE','DVP_ITEM','TEST_RELEASE','DVP_EXECUTION'];
+export const locationKinds = ['WEB_URL','LOCAL_PATH','NETWORK_PATH'];
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function validUuid(value: string): boolean { return uuidPattern.test(value); }
 function uuid(value: string, label: string): string {
@@ -35,6 +39,32 @@ function declaredText(value: string, label: string, max: number): string {
     throw new Error(`${label} must contain 1–${max} characters without control characters.`);
   }
   return value; // Actor/readiness/decision declarations retain exact API semantics.
+}
+function cleanText(value: string, label: string, max: number, required = true, controls = false): string {
+  const text = value.trim();
+  if (value.length > max || (required && !text) || (controls && /[\u0000-\u001f\u007f]/.test(text))) {
+    throw new Error(`${label} must ${required ? 'contain nonblank text and ' : ''}use at most ${max} characters${controls ? ' without control characters' : ''}.`);
+  }
+  return text;
+}
+function resourceLocation(kind: string, raw: string): string {
+  const value = cleanText(raw, 'Location', 4000, true, true);
+  if (kind === 'WEB_URL') {
+    // Stricter preparation subset: explicit HTTP(S) authority, no normalization/fetch.
+    if (!/^https?:\/\/[^/?#]/.test(value) || /[\s\\]/.test(value)) throw new Error('Use an HTTP(S) URL without spaces or backslashes.');
+    try {
+      const url = new URL(value);
+      if (!url.hostname || url.username || url.password || value.slice(value.indexOf('://') + 3).split(/[/?#]/, 1)[0].includes('@')
+          || /[\u0000-\u001f\u007f]/.test(decodeURIComponent(value))) throw new Error('unsafe URL');
+    } catch { throw new Error('Use a valid HTTP(S) URL without credentials, invalid ports or encoded controls.'); }
+  } else if (kind === 'LOCAL_PATH') {
+    if (!((value.startsWith('/') && !value.startsWith('//')) || /^[A-Za-z]:[\\/]/.test(value))) {
+      throw new Error('Local path must be absolute POSIX or Windows drive path.');
+    }
+  } else if (kind === 'NETWORK_PATH') {
+    if (!/^(?:\\\\|\/\/)[^\\/]+[\\/][^\\/]+/.test(value)) throw new Error('Network path must include a server and share.');
+  } else { throw new Error('Select an explicit location kind.'); }
+  return value;
 }
 function timestamp(value: string): string | null {
   if (!value.trim()) return null;
@@ -62,6 +92,38 @@ export function prepare(operation: Operation, fields: Fields, requestId: string)
     path = `/api/v1/releases/${target}/create-snapshot`;
     trace = `/releases/${target}/snapshots`;
     audit = `/activity/EVT-SN-${key.replaceAll("-", "")}`;
+  } else if (operation === 'impact' || operation === 'acceptance' || operation === 'resource') {
+    payload.actor_name = cleanText(fields.actor, 'Declared operator', 120);
+    payload.reason = cleanText(fields.reason, 'Reason', 4000, true, operation === 'resource');
+    if (operation === 'impact') {
+      const issue = identifier(fields.target, 'Issue number', 50);
+      payload.release_id = uuid(fields.release, 'Release');
+      payload.snapshot_id = uuid(fields.snapshot, 'Snapshot');
+      if (!['AFFECTED','NOT_AFFECTED','NEEDS_REVIEW'].includes(fields.decision)) throw new Error('Select an explicit impact judgment.');
+      payload.decision = fields.decision;
+      payload.evidence_ref = cleanText(fields.evidence, 'Evidence reference', 2000, false) || null;
+      path = `/api/v1/issues/${encodeURIComponent(issue)}/impact-assessments`;
+      trace = `/issues/${encodeURIComponent(issue)}`;
+      audit = `/activity/EVT-IMPACT-${key}`;
+    } else if (operation === 'acceptance') {
+      const request = identifier(fields.target, 'SCR number', 50);
+      payload.criterion_id = uuid(fields.criterion, 'Acceptance criterion');
+      payload.dvp_item_id = uuid(fields.dvp, 'DVP item');
+      path = `/api/v1/changes/${encodeURIComponent(request)}/acceptance-dvp-links`;
+      trace = `/changes/${encodeURIComponent(request)}/coverage`;
+      audit = `/activity/EVT-AC-${key}`;
+    } else {
+      if (!resourceTypes.includes(fields.entityType)) throw new Error('Select an explicit resource object type.');
+      payload.entity_type = fields.entityType;
+      payload.entity_id = uuid(fields.target, 'Resource object');
+      payload.actor_name = cleanText(fields.actor, 'Declared operator', 120, true, true);
+      payload.title = cleanText(fields.title, 'Title', 240, true, true);
+      payload.location_kind = fields.locationKind;
+      payload.location = resourceLocation(fields.locationKind, fields.location);
+      payload.description = cleanText(fields.description, 'Description', 4000, false, true);
+      path = '/api/v1/resources'; trace = `/resources/${key}`;
+      audit = `/activity/EVT-LK-${key}`;
+    }
   } else if (operation === 'approval' || operation === 'decision') {
     const target = identifier(fields.target, 'Approval number', 50);
     const encoded = encodeURIComponent(target);

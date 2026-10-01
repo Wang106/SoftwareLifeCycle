@@ -210,3 +210,7 @@ Approval preparation requires expected_step_id and an explicit APPROVED/RETURNED
 action. Decision readiness_status/decision remain exact declarations, not computed
 readiness or newly enforced enums. Declared actor text is not authenticated identity.
 Approval detail exposes existing step UUIDs and preparation links; no API shape changes.
+
+## Evidence/reference request preparation
+
+/commands additionally prepares Impact Assessment, Acceptance-to-DVP and Resource bodies with their existing required request UUIDs. Actor/reason/reference normalization follows their Pydantic schemas; resources use a stricter syntactic URL/path subset. No API request/response or authorization changes. Copy method/path/body as instructions; send only body through the controlled API client.

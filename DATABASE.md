@@ -194,3 +194,7 @@ no event exists merely because a user prepared or copied a request.
 ## Governance request preparation
 
 Approval/Decision request preparation reads already exposed approval step UUIDs; it needs no table, column, request ledger or migration. Existing ApprovalAction/ReleaseDecision IDs and EVT-AP-/EVT-RD- audit evidence implement keyed execution. API remains 0.18.0 and Alembic head remains 0017_deployment_actual_version.
+
+## Evidence/reference request preparation
+
+Evidence/reference preparation adds no persistence or migration. Existing domain request UUIDs and atomic audit rows implement execution: EVT-IMPACT-{UUID}, EVT-AC-{UUID}, EVT-LK-{UUID} retain hyphenated suffixes. Draft/copy actions insert nothing. Required head remains 0017_deployment_actual_version.

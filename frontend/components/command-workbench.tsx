@@ -1,17 +1,18 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { blankFields, confirm, exportRequest, Fields, Operation, prepare, Review } from '../lib/command-draft';
+import { blankFields, confirm, exportRequest, Fields, Operation, prepare, Review, resourceTypes, locationKinds } from '../lib/command-draft';
 
 const labels: Record<Operation, string> = {
   snapshot: 'Freeze Snapshot', actual: 'Report / correct actual software', batch: 'Create Production Batch',
   approval: 'Record Approval Action', decision: 'Record Release Decision',
+  impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
-export default function CommandWorkbench({ initialOperation, initialTarget, initialStep }: {
-  initialOperation: Operation; initialTarget: string; initialStep: string;
+export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext }: {
+  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>;
 }) {
   const [operation, setOperation] = useState<Operation>(initialOperation);
-  const [fields, setFields] = useState<Fields>({ ...blankFields, target: initialTarget, step: initialStep });
+  const [fields, setFields] = useState<Fields>({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
   const [review, setReview] = useState<Review | null>(null);
   const [message, setMessage] = useState('');
   const [copying, setCopying] = useState(false);
@@ -46,7 +47,37 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
         <label>Command<select value={operation} onChange={event => {
           setOperation(event.target.value as Operation); setFields({ ...blankFields }); setReview(null); setMessage('');
         }}>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-        {input('target', operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, operation === 'snapshot' ? 36 : 50)}
+        {input('target', operation === 'resource' ? 'Resource object UUID' : operation === 'impact' ? 'Issue number' : operation === 'acceptance' ? 'SCR number' : operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, operation === 'snapshot' || operation === 'resource' ? 36 : 50)}
+        {(operation === 'impact' || operation === 'acceptance' || operation === 'resource') && <>
+          {input('actor', 'Declared operator — retained text, not authenticated identity', true, 120)}
+          <label>Reason<textarea required maxLength={4000} value={fields.reason} onChange={event => edit('reason', event.target.value)} /></label>
+          <p className="muted">The API authenticates separately and checks exact scope. Preparation does not verify object membership, evidence or permission.</p>
+          {operation === 'impact' && <>
+            {input('release', 'Release UUID', true, 36)}{input('snapshot', 'Frozen snapshot UUID', true, 36)}
+            <label>Impact judgment<select required value={fields.decision} onChange={event => edit('decision', event.target.value)}>
+              <option value="">Select a judgment</option>{['AFFECTED','NOT_AFFECTED','NEEDS_REVIEW'].map(value => <option key={value}>{value}</option>)}
+            </select></label>
+            {input('evidence', 'Optional evidence reference — text only', false, 2000)}
+            <p className="muted">A shared version or test PASS does not establish impact. Review the exact frozen snapshot; this appends a judgment and does not supersede an earlier record.</p>
+          </>}
+          {operation === 'acceptance' && <>
+            {input('criterion', 'Acceptance criterion UUID', true, 36)}{input('dvp', 'DVP item UUID', true, 36)}
+            <p className="muted">Both objects must belong to this exact SCR. Assignment does not prove test execution or release readiness.</p>
+            {fields.target.trim() && <Link href={`/changes/${encodeURIComponent(fields.target.trim())}/coverage`}>Review exact SCR coverage →</Link>}
+          </>}
+          {operation === 'resource' && <>
+            <label>Resource object type<select required value={fields.entityType} onChange={event => edit('entityType', event.target.value)}>
+              <option value="">Select an object type</option>{resourceTypes.map(value => <option key={value}>{value}</option>)}
+            </select></label>
+            {input('title', 'Resource title', true, 240)}
+            <label>Location kind<select required value={fields.locationKind} onChange={event => edit('locationKind', event.target.value)}>
+              <option value="">Select a location kind</option>{locationKinds.map(value => <option key={value}>{value}</option>)}
+            </select></label>
+            {input('location', 'Resource location — text only, never opened or fetched', true, 4000)}
+            <label>Optional description<textarea maxLength={4000} value={fields.description} onChange={event => edit('description', event.target.value)} /></label>
+            <p className="muted">HTTP(S) references exclude embedded credentials and encoded controls. Paths must be absolute local paths or server/share paths. These are references, not uploaded files, verified availability or distribution rights. Supplier/customer registration requires PLATFORM_ADMIN in OIDC mode.</p>
+          </>}
+        </>}
         {(operation === 'approval' || operation === 'decision') && <>
           {input('actor', 'Declared operator — retained request text, not authenticated identity', true, 120)}
           <p className="muted">The controlled API client must authenticate separately. In OIDC mode the API binds the actual actor to its trusted principal; this declaration never grants a role.</p>

@@ -167,3 +167,7 @@ a controlled target; a frontend must not proxy auth-disabled public writes.
 ## Governance request preparation
 
 Approval/Decision preparation requires explicitly entered declared operator text and labels it as evidence, never authentication or a scoped grant. Exact step/context links can be stale; the API still enforces REVIEWER/RELEASE_AUTHORITY, trusted actor binding, row locks and atomic audit for every call. Readiness/decision text is a declaration rather than a security or eligibility check. No login/token field, transport, persistence or public-write permission is added.
+
+## Evidence/reference request preparation
+
+Impact/assignment/resource preparation never establishes candidate membership, scope, identity, test execution or file access. Resource positions are inert text, with no URL fetch, local/UNC open or upload; credentials/control characters are rejected for WEB_URL. Supplier/customer targets still require PLATFORM_ADMIN in OIDC mode. Explicit declarations never replace trusted principals. Public read-only, current scoped guards, actor binding and atomic audit remain unchanged.

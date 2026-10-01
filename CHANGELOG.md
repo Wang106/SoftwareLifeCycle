@@ -1,5 +1,15 @@
 # Changelog
 
+## Evidence/reference request preparation — 2026-10-01
+
+- Codex adds Impact, Acceptance-to-DVP and Resource preparation: explicit UUIDs/judgments/reasons, canonical text, immutable confirmation/copy and expected record/audit links.
+- Evidence/coverage pages expose exact UUIDs and context entries; missing snapshots/items are not invented. Resource URL/path text is validated without fetching/opening/uploading.
+- Eight of 14 forms prepare requests (57% of forms); login/submission/result recovery and six forms remain. Overall roadmap remains 34/44 (77%), Phase 6 3/5 (60%).
+- No backend/schema/API change or migration; API 0.18.0/head 0017 and public read-only settings remain.
+
+
+- Verification: frontend 111 passed; Next.js/OpenNext builds; complete backend 688 passed, no skips, including 103 real PostgreSQL tests; six local SSR context/input cases passed. Online verification follows the scoped push.
+
 ## Governance request-preparation forms — 2026-10-01
 
 - Codex adds Approval Action/Release Decision preparation with explicit step/action, exact declarations, immutable review/confirmation/copy and business/audit links.

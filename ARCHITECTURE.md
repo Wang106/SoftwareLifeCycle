@@ -176,3 +176,7 @@ for later controlled-client execution. See docs/controlled-write-ui.md.
 ## Governance request preparation
 
 Approval/Decision preparation extends the same pure-helper boundary. Existing governance detail supplies visible step UUIDs for bounded initial context; changing step context remounts the form. The backend remains authoritative for current-step, approved-snapshot binding, trusted actor and atomic audit.
+
+## Evidence/reference request preparation
+
+The same transport-free helper now covers eight preparation forms. Bounded issue/release/snapshot and SCR/criterion context comes from read pages. Context changes remount the workbench. Resource locations stay inert text; no external fetch or filesystem service is introduced. Existing API services remain the business/authorization/atomicity authority.

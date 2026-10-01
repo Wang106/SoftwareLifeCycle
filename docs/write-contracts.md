@@ -253,3 +253,7 @@ See [controlled-write-ui.md](controlled-write-ui.md) for scope and pending accep
 ## Governance request preparation
 
 Approval/Decision forms extend /commands using the same confirmed immutable export. Approval requires an explicit expected_step_id and supported action; exact readiness/decision/actor declarations and comments/notes are retained. Exact business/history and EVT-AP-/EVT-RD- links are expected execution evidence, not success claims. All existing API retry, scope, actor, locking and rollback contracts remain unchanged; no migration is needed.
+
+## Evidence/reference request preparation
+
+Impact/Acceptance-to-DVP/Resource preparation uses the existing required request-ID bodies and text normalization. It requires explicit target UUIDs, judgment/reason, and resource entity/location kinds. Event links use hyphenated EVT-IMPACT-/EVT-AC-/EVT-LK- UUIDs; current bounded history is not proof of this request outcome. Resource locations are never fetched/opened. No command API, permission, actor, transaction, retry or migration behavior changes; full submission/correction remains pending.
