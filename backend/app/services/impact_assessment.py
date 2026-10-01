@@ -9,6 +9,8 @@ from app.models.change import Issue, IssueChangeRequestRelation, SoftwareChangeR
 from app.models.core import Release
 from app.models.snapshot import ReleaseSnapshot
 from app.models.impact import IssueImpactAssessment
+from app.models.audit import AuditEvent
+from app.actor import ActorContext, idempotent_actor_matches
 from app.services.audit import AuditEventService
 
 
@@ -38,15 +40,27 @@ class AssessmentError(ValueError):
     pass
 
 
-def record_assessment(db: Session, issue_no: str, data: AssessmentInput):
+def record_assessment(
+    db: Session,
+    issue_no: str,
+    data: AssessmentInput,
+    actor_context: ActorContext | None = None,
+):
+    resolved_actor = actor_context or ActorContext.legacy(data.actor_name)
     # Serializes issue review writes, including concurrent retries.
     issue = db.scalars(select(Issue).where(Issue.issue_no == issue_no).with_for_update()).first()
     if issue is None:
         raise AssessmentError('issue not found')
     existing = db.get(IssueImpactAssessment, data.request_id)
-    fields = ('release_id', 'snapshot_id', 'decision', 'reason', 'evidence_ref', 'actor_name')
+    fields = ('release_id', 'snapshot_id', 'decision', 'reason', 'evidence_ref')
     if existing:
-        if existing.issue_id != issue.id or any(getattr(existing, field) != getattr(data, field) for field in fields):
+        event = db.scalars(select(AuditEvent).where(
+            AuditEvent.event_no == f'EVT-IMPACT-{data.request_id}'
+        )).first()
+        if (existing.issue_id != issue.id
+            or any(getattr(existing, field) != getattr(data, field) for field in fields)
+            or existing.actor_name != resolved_actor.name
+            or not idempotent_actor_matches(event, resolved_actor)):
             raise AssessmentError('request_id already used for a different assessment')
         return existing, False
     release = db.get(Release, data.release_id)
@@ -61,12 +75,14 @@ def record_assessment(db: Session, issue_no: str, data: AssessmentInput):
     if release.software_id not in software_ids:
         raise AssessmentError('release is not a candidate from linked SCR software')
     assessment = IssueImpactAssessment(id=data.request_id, issue_id=issue.id,
-        **{field: getattr(data, field) for field in fields})
+        actor_name=resolved_actor.name, **{field: getattr(data, field) for field in fields})
     db.add(assessment)
     db.flush()
     AuditEventService(db).record(event_no=f'EVT-IMPACT-{data.request_id}', event_type='ISSUE_IMPACT',
         action='ASSESS', entity_type='Issue', entity_id=issue.id, entity_ref=issue.issue_no,
-        actor_name=data.actor_name, summary=f'{issue.issue_no}: {release.version} / {snapshot.snapshot_no} → {data.decision}'[:240],
+        **resolved_actor.audit_fields(),
+        summary=f'{issue.issue_no}: {release.version} / {snapshot.snapshot_no} → {data.decision}'[:240],
         detail=data.reason, payload={'assessment_id': str(assessment.id), 'release_id': str(release.id),
-            'snapshot_id': str(snapshot.id), 'snapshot_no': snapshot.snapshot_no, 'decision': data.decision})
+            'snapshot_id': str(snapshot.id), 'snapshot_no': snapshot.snapshot_no,
+            'decision': data.decision, 'actor_source': resolved_actor.source})
     return assessment, True

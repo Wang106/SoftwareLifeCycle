@@ -7,10 +7,12 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import or_, select
 from app.models.change import AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation, SoftwareChangeRequest
 from app.models.acceptance import AcceptanceDvpLink
+from app.models.audit import AuditEvent
 from app.models.core import ApplicationReleaseDetail, Release
 from app.models.snapshot import ReleaseSnapshot
 from app.models.testing import ChangePointDvpItem, DvpExecution, DvpItem, DvpPlan, IssueDvpItem
 from app.services.audit import AuditEventService
+from app.actor import ActorContext, idempotent_actor_matches
 
 
 class CoverageError(ValueError):
@@ -164,13 +166,20 @@ class AssignmentInput(BaseModel):
         return value.strip()
 
 
-def record_assignment(db, request_no, data):
+def record_assignment(db, request_no, data, actor_context: ActorContext | None = None):
+    resolved_actor = actor_context or ActorContext.legacy(data.actor_name)
     change = get_change(db, request_no, lock=True)
     existing = db.get(AcceptanceDvpLink, data.request_id)
     if existing:
         criterion = db.get(AcceptanceCriterion, existing.criterion_id)
-        if criterion.change_request_id != change.id or any(getattr(existing, field) != getattr(data, field)
-            for field in ('criterion_id', 'dvp_item_id', 'actor_name', 'reason')):
+        event = db.scalars(select(AuditEvent).where(
+            AuditEvent.event_no == f'EVT-AC-{data.request_id}'
+        )).first()
+        if (criterion.change_request_id != change.id
+            or any(getattr(existing, field) != getattr(data, field)
+                for field in ('criterion_id', 'dvp_item_id', 'reason'))
+            or existing.actor_name != resolved_actor.name
+            or not idempotent_actor_matches(event, resolved_actor)):
             raise CoverageError('request_id already used for different content')
         return existing, False
     criterion = db.get(AcceptanceCriterion, data.criterion_id)
@@ -184,10 +193,12 @@ def record_assignment(db, request_no, data):
         AcceptanceDvpLink.dvp_item_id == item.id)).first():
         raise CoverageError('criterion/test pair already assigned; retry with its original request_id')
     row = AcceptanceDvpLink(id=data.request_id, criterion_id=data.criterion_id, dvp_item_id=data.dvp_item_id,
-        actor_name=data.actor_name, reason=data.reason)
+        actor_name=resolved_actor.name, reason=data.reason)
     db.add(row); db.flush()
     AuditEventService(db).record(event_no=f'EVT-AC-{data.request_id}', event_type='ACCEPTANCE_DVP', action='ASSIGN',
         entity_type='SoftwareChangeRequest', entity_id=change.id, entity_ref=change.request_no,
-        actor_name=data.actor_name, summary=f'{change.request_no}: {criterion.criterion_no} → {item.item_no}'[:240],
-        detail=data.reason, payload={'assignment_id': str(row.id), 'criterion_id': str(criterion.id), 'dvp_item_id': str(item.id)})
+        **resolved_actor.audit_fields(),
+        summary=f'{change.request_no}: {criterion.criterion_no} → {item.item_no}'[:240],
+        detail=data.reason, payload={'assignment_id': str(row.id), 'criterion_id': str(criterion.id),
+            'dvp_item_id': str(item.id), 'actor_source': resolved_actor.source})
     return row, True

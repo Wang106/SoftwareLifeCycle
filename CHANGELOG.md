@@ -4,6 +4,8 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Added migration `0016_authenticated_audit_actors`; new OIDC-mode audit events store the authenticated principal UUID/full display name and preserve the original request declaration separately.
+- Bound actor-bearing governance, distribution, impact, trace-assignment, test-release and resource domain records to the authenticated principal while retaining legacy behavior when authentication is disabled.
 - Enforced exact active project/software roles on all 14 current write routes whenever OIDC mode is enabled, with `PLATFORM_ADMIN` as the only scope-free override.
 - Added fail-closed scope resolution through release, SCR, approval, distribution, authorization, deployment and supported resource relationships, plus wrong-scope/role/suspension denial tests.
 - Added configurable OIDC authentication for writes with strict HTTPS configuration, asymmetric algorithm allow-list, signature/issuer/audience/time validation and fail-closed ACTIVE principal resolution.

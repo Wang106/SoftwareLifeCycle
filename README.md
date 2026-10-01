@@ -255,8 +255,9 @@ Legacy `/api/v1/approvals` and its detail/write formats remain unchanged; those 
 `GET /api/v1/audit/events` returns `{items,total,event_type_counts,limit,offset,next_offset}`.
 The legacy `/api/v1/activity` array and `/api/v1/activity/{event_no}` exact profile remain unchanged.
 Filters: exact `event_type`, `entity_type` (case-sensitive, preserving legacy mixed-case types),
-`entity_ref`, `entity_id` UUID, `action`, `actor_name`; literal substring `q` searches event number,
-reference, summary, actor, event type and action, excluding long detail and JSON payload.
+`entity_ref`, `entity_id` UUID, `action`, `actor_name`, `actor_principal_id`; literal substring `q`
+searches event number, reference, summary, trusted/declared actor names, event type and action,
+excluding long detail and JSON payload.
 `occurred_from` is inclusive and `occurred_before` exclusive. Both require explicit timezone offsets
 and normalize to UTC; invalid bounds and unknown query parameters return 422.
 Limits: `limit` 1–200, `offset` 0–100000; deterministic newest occurred time/event number/UUID order.
@@ -266,10 +267,10 @@ catalog, not a transactionally fixed export or a complete audit coverage guarant
 
 Activity uses this catalog with preserved pagination filters, exact Snapshot/Release Decision links,
 and UUID-scoped entity history from event profiles and Release Decision profiles. Original event
-references are retained even when a business object no longer resolves. Actor names are recorded
-declarations, not authenticated identities. Existing `Issue` / `SoftwareChangeRequest` audit types
-are supported without rewriting historical events. No migration, seed changes, history backfill,
-new write API or change to public test read-only mode is included.
+references are retained even when a business object no longer resolves. New OIDC-mode audited
+writes record the authenticated principal UUID/full display name and retain request declarations
+separately. Historical events are not rewritten. Existing `Issue` / `SoftwareChangeRequest` audit
+types remain supported, and public test mode remains read-only.
 
 
 ### Atomic governance and distribution audit recording
@@ -285,12 +286,12 @@ creation captures exact package revision and scope. Draft authorization creation
 production. Numbers still follow existing duplicate rejection rules; no new idempotency or
 concurrent-approval guarantee is introduced. Invalid approval actions are rejected before step mutation.
 
-Actors supplied by existing requests are declarations. Existing distribution/authorization APIs
-have no actor field, so events explicitly record `Not recorded` / `actor_source=NOT_PROVIDED` rather
-than inventing an authenticated operator. There are no new routes or public write forms. Existing
-POST contracts and READ_ONLY_MODE enforcement remain unchanged; protected write behavior is tested
-only in isolated test databases. No historical backfill or seed mutation is performed, so previous
-seeded events remain the original nine events and do not imply complete auto-audit coverage.
+When OIDC is enabled, atomically audited routes use the authenticated principal as the domain and
+audit actor; request actor strings are retained only as declarations. Distribution/authorization
+requests need no actor field because the authenticated principal supplies it. Disabled local mode
+keeps the legacy `Not recorded` / declared behavior. There are no new public write forms, no
+historical identity backfill and no seed mutation; previous seeded events remain unverified history
+and do not imply complete auto-audit coverage.
 
 Approval, exact Delivery revision, Distribution and Authorization profiles link to UUID-scoped
 Activity history. Delivery event catalog rows resolve revision from the recorded package UUID in

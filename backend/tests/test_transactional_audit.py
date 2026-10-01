@@ -11,6 +11,8 @@ from app.models.audit import AuditEvent
 from app.services.approval import ApprovalService,ApprovalError
 from app.services.distribution import DistributionService,DistributionError
 from app.services.audit import AuditEventService
+from app.actor import ActorContext
+from app.models.security import SecurityPrincipal
 from app.api.activity import audit_catalog,AuditFilters,get_activity
 
 @pytest.fixture
@@ -60,6 +62,29 @@ def test_full_controlled_chain_records_five_operations(controlled):
     assert dist.status=='READY' and auth.status=='DRAFT'
     assert all(e.actor_name=='Not recorded' and e.payload_json['actor_source']=='NOT_PROVIDED' for e in events if e.entity_type in ['DISTRIBUTION','SOFTWARE_AUTHORIZATION'])
     assert len({e.event_no for e in events})==6 and all(len(e.event_no)<=50 for e in events)
+
+
+def test_authenticated_actor_replaces_declaration_and_preserves_it(controlled):
+    db,_,_,approval,*_=controlled
+    principal=SecurityPrincipal(issuer='https://identity.example.com',subject='reviewer-1',
+        principal_type='USER',display_name='Trusted Reviewer')
+    db.add(principal);db.commit()
+    actor=ActorContext(name='Trusted Reviewer',principal_id=principal.id,
+        display_name=principal.display_name,declared_name='Claimed Manager',
+        source='AUTHENTICATED_PRINCIPAL')
+    ApprovalService(db).act(approval.approval_no,'Claimed Manager','APPROVED','Reviewed',
+        actor_context=actor)
+    action=db.scalars(select(ApprovalAction)).one()
+    event=db.scalars(select(AuditEvent)).one()
+    assert action.actor_name=='Trusted Reviewer'
+    assert event.actor_name==event.actor_display_name=='Trusted Reviewer'
+    assert event.actor_principal_id==principal.id
+    assert event.declared_actor_name=='Claimed Manager'
+    assert event.payload_json['actor_source']=='AUTHENTICATED_PRINCIPAL'
+    detail=get_activity(event.event_no,db)
+    assert detail['actor_principal_id']==str(principal.id)
+    assert detail['declared_actor_name']=='Claimed Manager'
+    assert audit_catalog(AuditFilters(actor_principal_id=principal.id),db)['total']==1
 
 
 @pytest.mark.parametrize('action',['RETURNED','REJECTED'])

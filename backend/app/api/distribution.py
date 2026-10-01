@@ -17,6 +17,7 @@ from app.authorization import (
     authorize_project,
     authorize_release,
 )
+from app.actor import resolve_actor
 
 router = APIRouter(prefix="/api/v1", tags=["distribution"])
 
@@ -275,6 +276,7 @@ def create_delivery(
         payload.release_id,
         project_roles=frozenset({"DISTRIBUTION_AUTHORITY"}),
     )
+    actor = resolve_actor(request, payload.created_by)
     try:
         row = DistributionService(db).create_delivery(
             release_id=payload.release_id,
@@ -285,6 +287,7 @@ def create_delivery(
             purpose=payload.purpose,
             snapshot_artifact_ids=payload.snapshot_artifact_ids,
             created_by=payload.created_by,
+            actor_context=actor,
         )
         return {"id": str(row.id), "package_no": row.package_no, "revision": row.revision, "status": row.status}
     except DistributionError as exc:
@@ -325,12 +328,14 @@ def create_distribution(
     authorize_delivery_package(
         request, db, payload.delivery_package_id, "DISTRIBUTION_AUTHORITY"
     )
+    actor = resolve_actor(request)
     try:
         row = DistributionService(db).create_distribution(
             delivery_package_id=payload.delivery_package_id,
             distribution_no=payload.distribution_no,
             recipient_type=payload.recipient_type,
             recipient_code=payload.recipient_code,
+            actor_context=actor,
         )
         return {"id": str(row.id), "distribution_no": row.distribution_no, "status": row.status}
     except DistributionError as exc:
@@ -383,6 +388,7 @@ def create_authorization(
     authorize_distribution(
         request, db, payload.distribution_id, "PRODUCTION_AUTHORITY"
     )
+    actor = resolve_actor(request)
     try:
         row = DistributionService(db).create_authorization(
             release_id=payload.release_id,
@@ -395,6 +401,7 @@ def create_authorization(
             purpose=payload.purpose,
             batch_limit=payload.batch_limit,
             restriction_note=payload.restriction_note,
+            actor_context=actor,
         )
         return {"id": str(row.id), "authorization_no": row.authorization_no, "status": row.status}
     except DistributionError as exc:

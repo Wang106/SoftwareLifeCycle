@@ -2,7 +2,7 @@
 
 ## Current status
 
-The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and audit actors are not yet bound to authenticated identities.
+The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. Atomically audited writes bind their actor to that principal. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and snapshot/production commands still lack complete actor/audit coverage.
 
 ## Authentication boundary
 
@@ -52,13 +52,20 @@ Resource references resolve project scope through the target project, release, s
 
 These roles are enforced whenever OIDC mode is enabled. Current contracts state `authentication=OIDC_WHEN_ENABLED` and `authorization=SCOPED_WHEN_OIDC`; a drift test also requires every registered write route to invoke an authorization guard. `AUTH_MODE=disabled` preserves controlled local development compatibility and must not be used to expose writes publicly.
 
+## Authenticated audit actors
+
+For every current route with `audit=ATOMIC_APPEND`, OIDC mode ignores request actor text as an authority. Domain actor fields and `audit_events.actor_name` use the authenticated principal's display name. The event also stores the exact `actor_principal_id`, full `actor_display_name` and original `declared_actor_name`; the latter is evidence of what the client submitted, not who was authenticated. Authenticated idempotent retries must match the original principal and declaration.
+
+Historical/seed records and `AUTH_MODE=disabled` writes have a null principal reference and retain legacy declared/`Not recorded` behavior. There is no identity backfill. Snapshot creation and the four production command paths have `actor_binding=NO_ACTOR_SINK` because they still lack atomic audit events.
+
 ## Required enforcement sequence
 
 1. Select and configure the approved OIDC issuer/audience/JWKS URL; define signing-key rotation and outage behavior.
 2. **Implemented:** resolve the target software/project from stored relationships.
 3. **Implemented:** require an active scoped role or the exceptional global admin role.
-4. Derive audit actor identity from the authenticated principal, preserving old declared actor strings as historical data.
-5. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract denial tests already cover wrong project/software, insufficient role and suspended membership.
+4. **Implemented for atomically audited writes:** derive domain/audit actors from the authenticated principal and preserve request declarations separately.
+5. Add atomic authenticated audit events to snapshot and production commands.
+6. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract tests already cover wrong scope/role, suspended membership and actor mismatch.
 
 No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
 

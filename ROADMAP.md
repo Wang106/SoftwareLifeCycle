@@ -45,7 +45,8 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [ ] Select/configure the approved OIDC issuer, audience and JWKS endpoint in a target environment
 - [x] Enforce exact project/software/resource authorization on every current write route
 - [x] Add denial tests for wrong project, wrong software, insufficient role and suspended membership
-- [ ] Bind new audit actors to authenticated principals while preserving historical declared actors
+- [x] Bind atomically audited writes to authenticated principals while preserving request declarations
+- [ ] Add atomic authenticated audit events to snapshot and production command paths
 - [x] Define admin, reviewer, release authority, distribution authority and production roles
 - [x] Keep the public demo read-only until the security acceptance criteria pass
 

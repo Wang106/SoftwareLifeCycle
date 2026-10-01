@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.services.change_coverage import AssignmentInput, CoverageError, record_assignment, report_coverage
 from app.authorization import authorize_change
+from app.actor import resolve_actor
 
 router = APIRouter(prefix='/api/v1/changes', tags=['change coverage'])
 
@@ -27,8 +28,9 @@ def assign_acceptance(
     request: Request = None,
 ):
     authorize_change(request, db, request_no, "CONTRIBUTOR")
+    actor = resolve_actor(request, data.actor_name)
     try:
-        row, created = record_assignment(db, request_no, data)
+        row, created = record_assignment(db, request_no, data, actor_context=actor)
         db.commit(); db.refresh(row)
         response.status_code = 201 if created else 200
         return {'id': str(row.id), 'criterion_id': str(row.criterion_id), 'dvp_item_id': str(row.dvp_item_id),

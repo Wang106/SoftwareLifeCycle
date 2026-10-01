@@ -1,6 +1,6 @@
 # Test database and API deployment
 
-This guide is for **demo data only**. The API has no user authentication or project-level authorization yet. `READ_ONLY_MODE=true` blocks writes, but it does not restrict who can read a public endpoint. Never load company files, customer data, passwords, or other sensitive records into an internet-facing test database.
+This guide is for **demo data only**. The repository supports configurable OIDC authentication and scoped write authorization, but the public sample deployment intentionally keeps `AUTH_MODE=disabled` and `READ_ONLY_MODE=true`. Read-only mode blocks writes but does not restrict who can read a public endpoint. Never load company files, customer data, passwords, or other sensitive records into an internet-facing test database.
 
 ## Choose a test database
 
@@ -27,12 +27,12 @@ Use PostgreSQL for end-to-end testing: migrations depend on PostgreSQL `JSONB` a
    ```
 
    Both `postgres://` and `postgresql://` provider URLs are normalized to the installed `psycopg` driver. Preserve provider-required SSL options. The API service must listen on the host-provided `PORT`, which `entrypoint.sh` already uses.
-4. Set the web service health check to `/health/ready`. Wait until it reports `status: ready` and revision `0015_identity_roles`. The demo Seed is idempotent, so restarting this **test** service does not duplicate the named demo chain.
+4. Set the web service health check to `/health/ready`. Wait until it reports `status: ready` and revision `0016_authenticated_audit_actors`. The demo Seed is idempotent, so restarting this **test** service does not duplicate the named demo chain.
 5. Test `https://<public-api-host>/health/ready`, `/api/v1/releases/application`, `/api/v1/issues/310/impact`, and `/api/v1/activity`. A write request must return HTTP 403 with `read_only_mode`. Run `python scripts/check_staging.py https://<public-api-host>` from the repository root to check these endpoints.
 6. The Wrangler configuration sets the public test API origin as `API_BASE_URL=https://softwarelifecycle-api-test.onrender.com`. Deploy the Worker from `main` or wait for its connected Git build, then verify the homepage no longer says `Live dashboard unavailable`. To use another API origin later, change this runtime binding in the Wrangler configuration (or the Cloudflare Dashboard). Keep `DATABASE_URL` on the API service, never on Cloudflare Worker or in `NEXT_PUBLIC_*` variables.
 
-`CORS_ORIGINS` alone is not access control. The frontend fetches the API server-side, while the public API URL is still reachable by other clients. `READ_ONLY_MODE` is a temporary sample-data guard, not a substitute for future identity and permission controls.
+`CORS_ORIGINS` alone is not access control. The frontend fetches the API server-side, while the public API URL is still reachable by other clients. `READ_ONLY_MODE` remains the public sample-data guard until an approved OIDC provider is configured and every intended write path meets the audit/security exit gates.
 
 ## Later company deployment
 
-Keep the PostgreSQL engine and Alembic history. Provision a fresh internal PostgreSQL instance and API service, set `SEED_ON_STARTUP=false`, apply migration, and add authentication/authorization before loading real company data. An internet-hosted Cloudflare Worker cannot reach a private internal address without an explicitly designed network path; choose the company gateway or move the web frontend inside the internal network at that stage.
+Keep the PostgreSQL engine and Alembic history. Provision a fresh internal PostgreSQL instance and API service, set `SEED_ON_STARTUP=false`, apply migrations, configure the approved OIDC provider and scoped grants, and close remaining audit gaps before loading real company data. An internet-hosted Cloudflare Worker cannot reach a private internal address without an explicitly designed network path; choose the company gateway or move the web frontend inside the internal network at that stage.

@@ -50,6 +50,9 @@ def _event_detail(event: AuditEvent, related_release_id: str | None = None) -> d
         "related_release_id": related_release_id,
         "delivery_revision": event.payload_json.get("revision") if event.entity_type == "DELIVERY_PACKAGE" else None,
         "actor_name": event.actor_name,
+        "actor_principal_id": str(event.actor_principal_id) if event.actor_principal_id else None,
+        "actor_display_name": event.actor_display_name,
+        "declared_actor_name": event.declared_actor_name,
         "summary": event.summary,
         "detail": event.detail,
         "payload": event.payload_json,
@@ -101,6 +104,7 @@ class AuditFilters(BaseModel):
     entity_id: uuid.UUID | None = None
     action: str | None = Field(None, max_length=80)
     actor_name: str | None = Field(None, max_length=120)
+    actor_principal_id: uuid.UUID | None = None
     q: str | None = Field(None, max_length=200)
     occurred_from: datetime | None = None
     occurred_before: datetime | None = None
@@ -124,13 +128,14 @@ class AuditFilters(BaseModel):
 def audit_catalog(filters: Annotated[AuditFilters, Query()], db: Session = Depends(get_db)):
     """Read-only summaries; payload and long detail remain on exact event profiles."""
     stmt = select(AuditEvent)
-    for name in ("event_type", "entity_type", "entity_ref", "entity_id", "action", "actor_name"):
+    for name in ("event_type", "entity_type", "entity_ref", "entity_id", "action", "actor_name", "actor_principal_id"):
         value = getattr(filters, name)
         if value is not None and value != "":
             stmt = stmt.where(getattr(AuditEvent, name) == value)
     if filters.q and filters.q.strip():
         stmt = stmt.where(or_(*[column.contains(filters.q.strip(), autoescape=True)
             for column in (AuditEvent.event_no, AuditEvent.entity_ref, AuditEvent.actor_name,
+                           AuditEvent.actor_display_name, AuditEvent.declared_actor_name,
                            AuditEvent.summary, AuditEvent.event_type, AuditEvent.action)]))
     if filters.occurred_from:
         stmt = stmt.where(AuditEvent.occurred_at >= filters.occurred_from)
@@ -142,7 +147,8 @@ def audit_catalog(filters: Annotated[AuditFilters, Query()], db: Session = Depen
         .group_by(filtered.c.event_type).order_by(filtered.c.event_type)).all())
     # Avoid loading unbounded JSON/text into directory rows.
     columns = [getattr(AuditEvent, name) for name in ("id", "event_no", "event_type", "action",
-        "entity_type", "entity_id", "entity_ref", "actor_name", "summary", "occurred_at", "created_at")]
+        "entity_type", "entity_id", "entity_ref", "actor_name", "actor_principal_id",
+        "actor_display_name", "declared_actor_name", "summary", "occurred_at", "created_at")]
     delivery_revision = select(DeliveryPackage.revision).where(
         DeliveryPackage.id == AuditEvent.entity_id, AuditEvent.entity_type == "DELIVERY_PACKAGE"
     ).correlate(AuditEvent).scalar_subquery().label("delivery_revision")
@@ -150,7 +156,9 @@ def audit_catalog(filters: Annotated[AuditFilters, Query()], db: Session = Depen
         AuditEvent.occurred_at.desc(), AuditEvent.event_no.desc(), AuditEvent.id.desc()
     ).limit(filters.limit).offset(filters.offset)).mappings().all()
     items = [{**dict(row), "id": str(row["id"]),
-        "entity_id": str(row["entity_id"]) if row["entity_id"] else None} for row in rows]
+        "entity_id": str(row["entity_id"]) if row["entity_id"] else None,
+        "actor_principal_id": str(row["actor_principal_id"])
+        if row["actor_principal_id"] else None} for row in rows]
     next_offset = filters.offset + filters.limit
     return {"items": items, "total": total, "event_type_counts": counts,
         "limit": filters.limit, "offset": filters.offset,

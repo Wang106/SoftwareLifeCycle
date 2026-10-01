@@ -11,6 +11,8 @@ from app.models.change import SoftwareChangeRequest, Issue
 from app.models.snapshot import ReleaseSnapshot
 from app.models.testing import DvpItem, TestRelease, DvpExecution
 from app.models.resource import ResourceLink
+from app.models.audit import AuditEvent
+from app.actor import ActorContext, idempotent_actor_matches
 from app.services.audit import AuditEventService
 
 EntityType = Literal['SUPPLIER','CUSTOMER','PROJECT','RELEASE','SNAPSHOT','SCR','ISSUE','DVP_ITEM','TEST_RELEASE','DVP_EXECUTION']
@@ -69,11 +71,21 @@ class ResourceError(ValueError):
         super().__init__(message); self.status_code = status_code
 
 
-def register_link(db: Session, data: ResourceInput):
-    fields = data.model_dump(exclude={'request_id'})
+def register_link(
+    db: Session,
+    data: ResourceInput,
+    actor_context: ActorContext | None = None,
+):
+    resolved_actor = actor_context or ActorContext.legacy(data.actor_name)
+    fields = data.model_dump(exclude={'request_id', 'actor_name'})
+    fields['actor_name'] = resolved_actor.name
     existing = db.get(ResourceLink, data.request_id)
     if existing:
-        if any(getattr(existing,key) != value for key,value in fields.items()):
+        event = db.scalars(select(AuditEvent).where(
+            AuditEvent.event_no == f'EVT-LK-{data.request_id}'
+        )).first()
+        if (any(getattr(existing,key) != value for key,value in fields.items())
+            or not idempotent_actor_matches(event, resolved_actor)):
             raise ResourceError(409,'request ID already used with different content')
         return existing, False
     model, ref_attr, prefix = TARGETS[data.entity_type]
@@ -90,7 +102,10 @@ def register_link(db: Session, data: ResourceInput):
     row = ResourceLink(id=data.request_id, entity_ref=ref, entity_href=href, **fields)
     db.add(row); db.flush()
     AuditEventService(db).record(event_no=f'EVT-LK-{row.id}',event_type='RESOURCE_LINK',action='REGISTER',
-        entity_type='RESOURCE_LINK',entity_id=row.id,entity_ref=str(row.id),actor_name=row.actor_name,
+        entity_type='RESOURCE_LINK',entity_id=row.id,entity_ref=str(row.id),
+        **resolved_actor.audit_fields(),
         summary=f'Registered resource: {row.title}'[:240],detail=row.reason,
-        payload={'target_type':row.entity_type,'target_id':str(row.entity_id),'target_ref':row.entity_ref,'location_kind':row.location_kind})
+        payload={'target_type':row.entity_type,'target_id':str(row.entity_id),
+            'target_ref':row.entity_ref,'location_kind':row.location_kind,
+            'actor_source':resolved_actor.source})
     return row, True

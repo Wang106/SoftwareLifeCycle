@@ -7,6 +7,7 @@ from app.core.db import get_db
 from app.models.resource import ResourceLink
 from app.services.resource_links import ResourceInput, ResourceError, EntityType, LocationKind, register_link
 from app.authorization import authorize_resource
+from app.actor import resolve_actor
 
 router = APIRouter(prefix='/api/v1/resources',tags=['resource references'])
 
@@ -48,8 +49,9 @@ def create_resource(
     request: Request = None,
 ):
     authorize_resource(request, db, data.entity_type, data.entity_id)
+    actor = resolve_actor(request, data.actor_name)
     try:
-        row,created = register_link(db,data)
+        row,created = register_link(db,data,actor_context=actor)
         db.commit(); db.refresh(row)
         response.status_code = 201 if created else 200
         return serialize(row)

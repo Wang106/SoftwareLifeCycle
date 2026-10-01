@@ -5,7 +5,7 @@
 - Engine: PostgreSQL 16 in the local Compose environment.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0015_identity_roles`.
+- Required schema revision: `0016_authenticated_audit_actors`.
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
@@ -67,8 +67,9 @@ Foreign keys and stored UUIDs are the trace authority. Display numbers, versions
 | `0013` | Append-only acceptance-to-DVP links |
 | `0014` | Append-only external resource links |
 | `0015` | Provider-neutral user/service principals and scoped role grants |
+| `0016` | Authenticated principal/display binding and preserved declarations on audit events |
 
-Revision `0015` stores only external identity references and grants. It deliberately contains no password, token or client-secret columns, and no Seed identities or grants are created.
+Revision `0015` stores only external identity references and grants. It deliberately contains no password, token or client-secret columns, and no Seed identities or grants are created. Revision `0016` adds nullable actor identity columns so historical/seed audit events remain unchanged while new OIDC-mode events can reference the exact local principal and preserve the request's declared name separately.
 
 Never edit an applied migration to change history. Add a new ordered revision, import its model metadata in Alembic as required, and update `required_db_revision` in `backend/app/core/config.py` together with deployment documentation and readiness tests.
 
@@ -78,4 +79,4 @@ Never edit an applied migration to change history. Add a new ordered revision, i
 - `DATABASE_URL` belongs only in the API environment, not frontend public variables or Git.
 - Demo Seed is idempotent for named sample records but is not a production provisioning process.
 - Backup, restore, retention and disaster-recovery procedures are not yet defined and are roadmap items.
-- Before a company deployment, add authentication/authorization, review classifications and access rules, disable Seed and validate the complete migration chain on a fresh PostgreSQL database.
+- Before a company deployment, configure the approved OIDC provider and grants, review classifications/access rules, close remaining command-audit gaps, disable Seed and validate the complete migration chain on a fresh PostgreSQL database.

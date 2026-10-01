@@ -30,6 +30,7 @@ class WriteContract:
     known_gap: str
     authentication: Literal["OIDC_WHEN_ENABLED"] = "OIDC_WHEN_ENABLED"
     authorization: Literal["SCOPED_WHEN_OIDC"] = "SCOPED_WHEN_OIDC"
+    actor_binding: Literal["AUTHENTICATED_WHEN_OIDC", "NO_ACTOR_SINK"] = "AUTHENTICATED_WHEN_OIDC"
     public_exposure: Literal["READ_ONLY_BLOCKED"] = "READ_ONLY_BLOCKED"
 
 
@@ -43,6 +44,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         concurrency="NONE",
         planned_roles=frozenset({"SOFTWARE_MAINTAINER", "CONTRIBUTOR"}),
         known_gap="No actor, audit event, idempotency key or release row lock.",
+        actor_binding="NO_ACTOR_SINK",
     ),
     ("POST", "/api/v1/approvals/{approval_no}/actions"): WriteContract(
         operation="Record approval action",
@@ -52,7 +54,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="NONE",
         concurrency="NONE",
         planned_roles=frozenset({"REVIEWER"}),
-        known_gap="Declared actor is untrusted; active approval/step rows are not locked.",
+        known_gap="Active approval/step rows are not locked against concurrent actions.",
     ),
     ("POST", "/api/v1/approvals/{approval_no}/release-decision"): WriteContract(
         operation="Record release decision",
@@ -62,7 +64,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="NONE",
         concurrency="NONE",
         planned_roles=frozenset({"RELEASE_AUTHORITY"}),
-        known_gap="Declared actor is untrusted; approval is not locked against concurrent decisions.",
+        known_gap="Approval is not locked against concurrent decisions.",
     ),
     ("POST", "/api/v1/deliveries"): WriteContract(
         operation="Create delivery package revision",
@@ -72,7 +74,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="NONE",
         concurrency="NONE",
         planned_roles=frozenset({"DISTRIBUTION_AUTHORITY"}),
-        known_gap="Actor is optional; retries use duplicate rejection rather than an idempotency key.",
+        known_gap="Retries use duplicate rejection rather than an idempotency key.",
     ),
     ("POST", "/api/v1/distributions"): WriteContract(
         operation="Record distribution",
@@ -92,7 +94,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="NONE",
         concurrency="NONE",
         planned_roles=frozenset({"PRODUCTION_AUTHORITY"}),
-        known_gap="Authenticated authority is not yet recorded as the audit actor.",
+        known_gap="Retries use duplicate rejection rather than an idempotency key.",
     ),
     ("POST", "/api/v1/deployments"): WriteContract(
         operation="Create deployment expectation",
@@ -103,6 +105,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         concurrency="NONE",
         planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="No actor, audit event, idempotency key or scope row locks.",
+        actor_binding="NO_ACTOR_SINK",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/actual"): WriteContract(
         operation="Report actual deployed software",
@@ -113,6 +116,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         concurrency="NONE",
         planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="Mutable overwrite has no actor, append-only audit event or optimistic lock.",
+        actor_binding="NO_ACTOR_SINK",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/changeovers"): WriteContract(
         operation="Record software changeover",
@@ -123,6 +127,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         concurrency="NONE",
         planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="No actor, audit event, idempotency key or deployment row lock.",
+        actor_binding="NO_ACTOR_SINK",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/batches"): WriteContract(
         operation="Create production batch",
@@ -133,6 +138,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         concurrency="NONE",
         planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
         known_gap="Batch-limit check is not serialized; no actor or audit event is recorded.",
+        actor_binding="NO_ACTOR_SINK",
     ),
     ("POST", "/api/v1/issues/{issue_no}/impact-assessments"): WriteContract(
         operation="Append issue impact assessment",
@@ -142,7 +148,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"REVIEWER"}),
-        known_gap="Declared actor can differ from the authenticated reviewer.",
+        known_gap="There is no correction/supersession command for an append-only judgment.",
     ),
     ("POST", "/api/v1/changes/{request_no}/acceptance-dvp-links"): WriteContract(
         operation="Append acceptance-to-DVP assignment",
@@ -152,7 +158,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"CONTRIBUTOR"}),
-        known_gap="Declared actor can differ from the authenticated contributor.",
+        known_gap="There is no correction/supersession command for an append-only assignment.",
     ),
     ("POST", "/api/v1/testing/releases"): WriteContract(
         operation="Create purpose-limited test release draft",
@@ -162,7 +168,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"CONTRIBUTOR"}),
-        known_gap="Declared actor can differ from the authenticated contributor.",
+        known_gap="The draft lifecycle has no activation/supersession/revocation commands.",
     ),
     ("POST", "/api/v1/resources"): WriteContract(
         operation="Append external resource reference",
@@ -172,6 +178,6 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"CONTRIBUTOR"}),
-        known_gap="Declared actor can differ from the authenticated contributor; location access is not verified.",
+        known_gap="Registering a location does not verify that it exists or is accessible.",
     ),
 }

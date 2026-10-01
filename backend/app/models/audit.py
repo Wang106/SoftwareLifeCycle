@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Index, String, Text
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -32,6 +32,11 @@ class AuditEvent(Base):
     entity_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     entity_ref: Mapped[str] = mapped_column(String(120), nullable=False)
     actor_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    actor_principal_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("security_principals.id"), index=True
+    )
+    actor_display_name: Mapped[str | None] = mapped_column(String(200))
+    declared_actor_name: Mapped[str | None] = mapped_column(String(120))
     summary: Mapped[str] = mapped_column(String(240), nullable=False)
     detail: Mapped[str | None] = mapped_column(Text)
     payload_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)

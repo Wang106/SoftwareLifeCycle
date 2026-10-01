@@ -11,6 +11,7 @@ from app.models.testing import DvpExecution, DvpItem, TestRelease
 from app.api.dvp_catalog import serialize_executions
 from app.services.testing_release import TestReleaseError, TestReleaseInput, create_test_draft
 from app.authorization import authorize_release
+from app.actor import resolve_actor
 
 router = APIRouter(prefix='/api/v1/testing/releases', tags=['test releases'])
 
@@ -110,8 +111,9 @@ def create_test_release(
         data.release_id,
         project_roles=frozenset({"CONTRIBUTOR"}),
     )
+    actor = resolve_actor(request, data.actor_name)
     try:
-        row, created = create_test_draft(db, data)
+        row, created = create_test_draft(db, data, actor_context=actor)
         db.commit(); db.refresh(row)
         response.status_code = 201 if created else 200
         return basic(row)

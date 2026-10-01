@@ -8,6 +8,7 @@ from app.models.core import Release
 from app.models.snapshot import ReleaseSnapshot
 from app.models.testing import TestRelease
 from app.services.audit import AuditEventService
+from app.actor import ActorContext, idempotent_actor_matches
 
 
 class TestReleaseError(ValueError):
@@ -34,7 +35,8 @@ class TestReleaseInput(BaseModel):
         return value.strip()
 
 
-def create_test_draft(db, data):
+def create_test_draft(db, data, actor_context: ActorContext | None = None):
+    resolved_actor = actor_context or ActorContext.legacy(data.actor_name)
     release = db.scalars(select(Release).where(Release.id == data.release_id).with_for_update()).first()
     if not release:
         raise TestReleaseError('release not found', 404)
@@ -43,7 +45,10 @@ def create_test_draft(db, data):
     if existing:
         audit = db.scalars(select(AuditEvent).where(AuditEvent.event_no == event_no)).first()
         fields = ('test_release_no', 'release_id', 'snapshot_id', 'purpose_scope')
-        if any(getattr(existing, field) != getattr(data, field) for field in fields) or not audit or audit.actor_name != data.actor_name or audit.detail != data.reason:
+        if (any(getattr(existing, field) != getattr(data, field) for field in fields)
+            or not audit or audit.actor_name != resolved_actor.name
+            or audit.detail != data.reason
+            or not idempotent_actor_matches(audit, resolved_actor)):
             raise TestReleaseError('request_id already used for different or legacy content')
         return existing, False
     snapshot = db.get(ReleaseSnapshot, data.snapshot_id)
@@ -57,8 +62,10 @@ def create_test_draft(db, data):
         snapshot_id=snapshot.id, purpose_scope=data.purpose_scope, status='DRAFT')
     db.add(row); db.flush()
     AuditEventService(db).record(event_no=event_no, event_type='TEST_RELEASE', action='CREATE_DRAFT',
-        entity_type='TEST_RELEASE', entity_id=row.id, entity_ref=row.test_release_no, actor_name=data.actor_name,
+        entity_type='TEST_RELEASE', entity_id=row.id, entity_ref=row.test_release_no,
+        **resolved_actor.audit_fields(),
         summary=f'{row.test_release_no}: {release.version} / {snapshot.snapshot_no} · {row.purpose_scope}'[:240],
         detail=data.reason, payload={'release_id': str(release.id), 'snapshot_id': str(snapshot.id),
-            'snapshot_no': snapshot.snapshot_no, 'purpose_scope': row.purpose_scope, 'status': 'DRAFT'})
+            'snapshot_no': snapshot.snapshot_no, 'purpose_scope': row.purpose_scope,
+            'status': 'DRAFT', 'actor_source': resolved_actor.source})
     return row, True

@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `c342cfd3ff1ef9e00a4f05bb9a943754d68ab95a` — `feat: enforce scoped authorization on write routes`
+- Reviewed repository baseline: `07c6c5f62ddcf57c6e3f4436904b3b74fd9a1208` — `docs: record scoped authorization deployment`
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -11,7 +11,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 **Phase 5 identity and authorization foundation, still read-only in public staging.**
 
-The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication and exact scoped write authorization are implemented, but no provider is configured and audit actors are not yet bound to authenticated identities.
+The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding for atomically audited writes are implemented, but no provider is configured and snapshot/production command audit coverage remains incomplete.
 
 ## Completed and evidenced in `main`
 
@@ -27,12 +27,14 @@ The repository implements and exposes a coherent demo/test lifecycle, but it is 
 - Configurable OIDC write authentication with strict asymmetric signature, issuer, audience, time and required-claim validation plus fail-closed ACTIVE local-principal resolution.
 - Exact active project/software role enforcement for all 14 current write routes in OIDC mode, with `PLATFORM_ADMIN` as the only scope-free override.
 - Fail-closed relationship-based scope resolution plus denial tests for wrong project/software, insufficient role and suspended membership.
+- Authenticated principal UUID/full display-name binding for atomically audited OIDC writes, while preserving original request declarations and leaving historical events unchanged.
+- Migration `0016_authenticated_audit_actors` adds nullable audit identity fields and an exact principal foreign key without backfilling unverified history.
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
-- 43 backend test modules are present. On 2026-10-01, all 372 collected backend tests passed under Python 3.12 with pytest 8.4.2; Alembic reports the single head `0015_identity_roles`, and the `0014 → 0015` offline PostgreSQL SQL generation passed. The most recent frontend production build passed on 2026-09-30; this backend-only slice did not change frontend code.
+- 44 backend test modules are present. On 2026-10-01, all 377 collected backend tests passed under Python 3.12 with pytest 8.4.2; Alembic reports the single head `0016_authenticated_audit_actors`, and the `0015 → 0016` offline PostgreSQL SQL generation passed. The most recent frontend production build passed on 2026-09-30; this backend-only slice did not change frontend code.
 
 ## In progress
 
-- OIDC provider configuration and authenticated audit-actor binding. No identity provider is configured yet.
+- OIDC provider configuration plus authenticated atomic audit coverage for snapshot and production command paths. No identity provider is configured yet.
 - No separate tracked product feature was in progress when `main` was reviewed. The working tree contained an unrelated untracked duplicate file, `frontend/app/activity/page 2.tsx`; it was not used or committed by this documentation change and its ownership should be confirmed before deletion or adoption.
 
 ## Next stage
@@ -40,8 +42,8 @@ The repository implements and exposes a coherent demo/test lifecycle, but it is 
 Recommended next stage: **identity, authorization and controlled write workflows**.
 
 1. Select/configure the approved OIDC issuer, audience and explicit JWKS endpoint.
-2. Replace declared actor names with authenticated actor identity while retaining historical declarations.
-3. Record authenticated principal IDs/display names in audit events and add actor-mismatch tests.
+2. Add atomic authenticated audit events to snapshot creation and production deployment/changeover/batch commands.
+3. Add idempotency/concurrency protection to the highest-risk remaining command paths.
 4. Add provider-backed HTTP integration tests and document signing-key rotation/outage behavior.
 5. Only then evaluate controlled UI write forms and a non-read-only target environment.
 
@@ -60,8 +62,8 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository and verified online API version: `0.11.0`.
-- Required and verified online schema revision: `0015_identity_roles`.
+- Repository API version: `0.12.0`; the last verified online deployment remains `0.11.0` until this change is deployed and checked.
+- Required repository schema revision: `0016_authenticated_audit_actors`; the last verified online revision remains `0015_identity_roles` until deployment.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
@@ -72,8 +74,8 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 - OIDC authentication and scoped authorization exist, but there is no configured identity provider or browser login/session flow.
 - There is no security-principal/grant management API or audited grant lifecycle yet; migration `0015` creates no identities or permissions.
 - Public read access is suitable only for non-sensitive sample data. `CORS_ORIGINS` is not access control.
-- Actor names in current requests are declared strings and can differ from authenticated identities; authenticated actor binding remains required before writes can be exposed.
-- Snapshot and production command paths still lack atomic audit events; approval and several other commands lack idempotency and row-level concurrency protection. See `docs/write-contracts.md`.
+- Atomically audited OIDC writes use the authenticated principal and retain request declarations separately; historical/disabled-mode events remain unverified by design.
+- Snapshot and production command paths still lack atomic actor/audit events; approval and several other commands lack idempotency and row-level concurrency protection. See `docs/write-contracts.md`.
 - Some legacy list/history APIs remain unbounded; migration to bounded catalog endpoints is incomplete.
 - There is no CI workflow in the reviewed tree, so tests/builds are not enforced automatically on every push.
 - Backend tests require Python 3.12 (matching `backend/Dockerfile`). The configured package source could not resolve the repository's `pytest==9.1.1` pin during this review, so the passing run used pytest 8.4.2; verify the pin against the intended package source.

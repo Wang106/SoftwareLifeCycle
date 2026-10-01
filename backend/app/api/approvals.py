@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.services.approval import ApprovalError, ApprovalService
 from app.authorization import authorize_approval
+from app.actor import resolve_actor
 
 router = APIRouter(prefix="/api/v1/approvals", tags=["approvals"])
 
@@ -31,12 +32,14 @@ def approval_action(
     request: Request = None,
 ):
     authorize_approval(request, db, approval_no, "REVIEWER")
+    actor = resolve_actor(request, payload.actor)
     try:
         approval = ApprovalService(db).act(
             approval_no=approval_no,
             actor=payload.actor,
             action=payload.action,
             comment=payload.comment,
+            actor_context=actor,
         )
         return {"approval_no": approval.approval_no, "status": approval.status}
     except ApprovalError as exc:
@@ -51,6 +54,7 @@ def create_release_decision(
     request: Request = None,
 ):
     authorize_approval(request, db, approval_no, "RELEASE_AUTHORITY")
+    actor = resolve_actor(request, payload.decided_by)
     try:
         row = ApprovalService(db).create_release_decision(
             approval_no=approval_no,
@@ -59,6 +63,7 @@ def create_release_decision(
             readiness_status=payload.readiness_status,
             decision=payload.decision,
             notes=payload.notes,
+            actor_context=actor,
         )
         return {
             "decision_no": row.decision_no,

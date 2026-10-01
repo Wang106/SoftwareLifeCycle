@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.approval import ApprovalAction, ApprovalRequest, ApprovalStep, ReleaseDecision
 from app.models.core import Release
 from app.models.snapshot import ReleaseSnapshot
+from app.actor import ActorContext
 from app.services.audit import commit_with_audit
 
 
@@ -27,7 +28,15 @@ class ApprovalService:
             .order_by(ApprovalStep.step_order)
         ).first()
 
-    def act(self, approval_no: str, actor: str, action: str, comment: str | None = None):
+    def act(
+        self,
+        approval_no: str,
+        actor: str,
+        action: str,
+        comment: str | None = None,
+        actor_context: ActorContext | None = None,
+    ):
+        resolved_actor = actor_context or ActorContext.legacy(actor)
         approval = self.db.scalars(
             select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)
         ).first()
@@ -46,10 +55,10 @@ class ApprovalService:
         before_step_status = step.status
         step.status = action
         step.decided_at = datetime.now(timezone.utc)
-        step.approver_name = actor
+        step.approver_name = resolved_actor.name
         history = ApprovalAction(
             approval_request_id=approval.id, step_id=step.id,
-            actor_name=actor, action=action, comment=comment,
+            actor_name=resolved_actor.name, action=action, comment=comment,
             created_at=step.decided_at,
         )
         self.db.add(history)
@@ -74,7 +83,8 @@ class ApprovalService:
         commit_with_audit(self.db, lambda: dict(
             event_no=f"EVT-AP-{history.id.hex}", event_type="APPROVAL", action=action,
             entity_type="APPROVAL_REQUEST", entity_id=approval.id, entity_ref=approval.approval_no,
-            actor_name=actor, summary=f"Approval {action.lower()}", detail=comment,
+            **resolved_actor.audit_fields(),
+            summary=f"Approval {action.lower()}", detail=comment,
             occurred_at=history.created_at,
             payload={"approval_action_id": str(history.id), "step_id": str(step.id),
                 "step_order": step.step_order, "role_name": step.role_name,
@@ -82,7 +92,7 @@ class ApprovalService:
                 "snapshot_id": str(approval.snapshot_id) if approval.snapshot_id else None,
                 "before_status": before_status, "after_status": approval.status,
                 "before_step_status": before_step_status, "after_step_status": step.status,
-                "actor_source": "REQUEST_DECLARED"},
+                "actor_source": resolved_actor.source},
         ))
         self.db.refresh(approval)
         return approval
@@ -95,7 +105,9 @@ class ApprovalService:
         readiness_status: str,
         decision: str,
         notes: str | None = None,
+        actor_context: ActorContext | None = None,
     ):
+        resolved_actor = actor_context or ActorContext.legacy(decided_by)
         approval = self.db.scalars(
             select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)
         ).first()
@@ -126,7 +138,7 @@ class ApprovalService:
             approval_request_id=approval.id,
             readiness_status=readiness_status,
             decision=decision,
-            decided_by=decided_by,
+            decided_by=resolved_actor.name,
             decision_notes=notes,
             decided_at=datetime.now(timezone.utc),
         )
@@ -134,13 +146,14 @@ class ApprovalService:
         commit_with_audit(self.db, lambda: dict(
             event_no=f"EVT-RD-{row.id.hex}", event_type="RELEASE", action="DECISION_RECORDED",
             entity_type="RELEASE_DECISION", entity_id=row.id, entity_ref=row.decision_no,
-            actor_name=decided_by, summary="Release decision recorded", detail=notes,
+            **resolved_actor.audit_fields(),
+            summary="Release decision recorded", detail=notes,
             occurred_at=row.decided_at,
             payload={"decision": row.decision, "readiness_status": row.readiness_status,
                 "release_id": str(row.release_id), "snapshot_id": str(row.snapshot_id),
                 "snapshot_no": snapshot.snapshot_no, "content_hash": snapshot.content_hash,
                 "approval_id": str(approval.id), "approval_no": approval.approval_no,
-                "actor_source": "REQUEST_DECLARED"},
+                "actor_source": resolved_actor.source},
         ))
         self.db.refresh(row)
         return row

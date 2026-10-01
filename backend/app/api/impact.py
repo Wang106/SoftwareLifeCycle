@@ -17,6 +17,7 @@ from app.models.impact import IssueImpactAssessment
 from app.models.testing import IssueDvpItem, DvpItem, DvpExecution
 from app.services.impact_assessment import AssessmentError, AssessmentInput, record_assessment
 from app.authorization import authorize_issue_assessment
+from app.actor import resolve_actor
 
 router = APIRouter(prefix="/api/v1/issues", tags=["impact"])
 
@@ -170,8 +171,9 @@ def create_assessment(
     request: Request = None,
 ):
     authorize_issue_assessment(request, db, issue_no, data.release_id)
+    actor = resolve_actor(request, data.actor_name)
     try:
-        row, created = record_assessment(db, issue_no, data)
+        row, created = record_assessment(db, issue_no, data, actor_context=actor)
         db.commit()
         db.refresh(row)
         response.status_code = 201 if created else 200
