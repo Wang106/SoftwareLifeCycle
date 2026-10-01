@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**Phase 6 ninth package adds Delivery/Distribution/Authorization preparation; eleven of 14 command forms now prepare requests; public staging remains read-only.**
+**Phase 6 tenth package completes all 14 request-preparation forms; authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -51,7 +51,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). This schema verification belongs to the prior backend package; current frontend verification is recorded below.
 
 
-- Eleven of 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 176 cases; authenticated submission remains pending.
+- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 214 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -61,7 +61,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 
 ## Next stage
 
-1. Extend request preparation to Test Release, Deployment and Changeover with exact purpose/location/source context.
+1. Configure approved identity/session and a controlled write target, then implement authenticated submission and uncertain-result recovery.
 2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
 3. Extend correction/revocation beyond actual reports, preserving formal history.
 4. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
@@ -293,3 +293,21 @@ No backend/API/schema/migration changes; head remains 0017, API 0.18.0.
 Roadmap remains 34/44 (77%), Phase 6 3/5 (60%); remaining forms and provider-backed
 submission, outcome recovery and broader correction/revocation remain open.
 Frontend tests: 176 passed, no skips (65 added distribution-chain cases). Final Next.js/OpenNext Cloudflare Worker production build passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a fresh isolated /tmp cluster. Six local SSR checks passed for all three exact UUID targets, empty explicit defaults/ignored recipient-artifact-limit query prefill, missing/array targets and Create entry. Initial local next start hit the workspace networkInterfaces limitation; explicit 127.0.0.1 host resolved it without application changes. No migration. Feature commit `a8f299afddc5da23d8a5b00d53cb316b8519e46c` is pushed to main. Live Cloudflare UI verified eleven choices; exact release/package/distribution UUID entry links and visible frozen artifact/customer/project UUIDs; duplicate Delivery file rejection, review confirmation and stable copy after asynchronous clipboard completion; Distribution recipient edit invalidation; zero-limit rejection, finite export and explicit unlimited null only after clearing the limit; Authorization confirmation/copy. No business submission was made. Cloudflare live behavior is verified, but a provider deployment ID/commit binding is unavailable. Render connector confirms unchanged backend deployment dep-dav0vf0473hc73a8vl10 remains live at bbd8a42b567c4f5b2c83017c570e47039442f3af (API code 0.18.0). Current Render logs show GET /health/ready 200 at 2026-10-01T14:29:00Z. A read-only Render PostgreSQL query directly returned 0017_deployment_actual_version; provider inventory reports PostgreSQL 18, while local concurrency tests use 16.15. Direct API health-body and the three delivery/distribution/authorization 403 read_only_mode probes were blocked by workspace network policy, so fresh direct responses are not claimed. Public read-only configuration/code were unchanged; prior direct 403 evidence remains historical.
+
+## Phase 6 tenth package — final request-preparation forms
+
+Development mode: **Codex**. Starting main: `8196b214e33c5848200040f5ceaeaa2af3120353`.
+Test Release, Deployment and Changeover complete preparation for all 14 current
+commands. This is 100% of preparation forms, not authenticated submission or
+production readiness. Test drafts require exact release/frozen snapshot UUIDs and
+explicit SOFTWARE_TEST/BATTERY_TEST/CUSTOMER_TEST purpose; actor/reason follow
+existing Pydantic trimming. Deployment requires exact authorization/line UUIDs,
+creates PENDING and derives expected software from authorization at execution.
+Changeover requires explicit source UUID; target is the deployment's expected release.
+Its COMPLETED history does not prove physical flashing or update actual software.
+Existing immutable confirmation/copy, edit/context invalidation and optional UTC
+time semantics are reused. EVT-TR- uses hyphenated UUID; EVT-DPLOY-/EVT-CO- use hex.
+No backend/API/schema/migration/login/transport/public setting changes; API 0.18.0,
+head 0017. Roadmap remains 34/44 (77%), Phase 6 3/5 (60%). Provider/session/controlled
+target, permission-aware selection, uncertain outcomes and broader corrections remain.
+Verification: 214 frontend tests passed (38 added); production Next/OpenNext build passed; seven SSR context/default checks passed; full backend suite passed 688 tests including 103 real PostgreSQL 16 concurrency/integration tests, with no skips. No migration or backend contract change. Online verification follows the scoped push.

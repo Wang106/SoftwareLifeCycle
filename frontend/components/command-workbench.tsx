@@ -6,6 +6,7 @@ import { blankFields, confirm, exportRequest, Fields, Operation, prepare, Review
 const labels: Record<Operation, string> = {
   snapshot: 'Freeze Snapshot', actual: 'Report / correct actual software', batch: 'Create Production Batch',
   approval: 'Record Approval Action', decision: 'Record Release Decision',
+  'test-release': 'Create Test Release Draft', deployment: 'Create Deployment Expectation', changeover: 'Record Software Changeover',
   delivery: 'Create Delivery Package', distribution: 'Record Distribution', authorization: 'Create Production Authorization',
   impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
@@ -48,7 +49,25 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
         <label>Command<select value={operation} onChange={event => {
           setOperation(event.target.value as Operation); setFields({ ...blankFields }); setReview(null); setMessage('');
         }}>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-        {input('target', operation === 'delivery' ? 'Release UUID' : operation === 'distribution' ? 'Delivery package UUID — exact revision' : operation === 'authorization' ? 'Distribution UUID' : operation === 'resource' ? 'Resource object UUID' : operation === 'impact' ? 'Issue number' : operation === 'acceptance' ? 'SCR number' : operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, ['snapshot','resource','delivery','distribution','authorization'].includes(operation) ? 36 : 50)}
+        {input('target', operation === 'deployment' ? 'Authorization UUID' : operation === 'test-release' || operation === 'delivery' ? 'Release UUID' : operation === 'distribution' ? 'Delivery package UUID — exact revision' : operation === 'authorization' ? 'Distribution UUID' : operation === 'resource' ? 'Resource object UUID' : operation === 'impact' ? 'Issue number' : operation === 'acceptance' ? 'SCR number' : operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, ['snapshot','resource','delivery','distribution','authorization','test-release','deployment'].includes(operation) ? 36 : 50)}
+        {operation === 'test-release' && <>
+          {input('testReleaseNo', 'Test release number', true, 50)}{input('snapshot', 'Frozen snapshot UUID', true, 36)}
+          <label>Test purpose<select required value={fields.purposeScope} onChange={event => edit('purposeScope', event.target.value)}>
+            <option value="">Select a test purpose</option>{['SOFTWARE_TEST','BATTERY_TEST','CUSTOMER_TEST'].map(value => <option key={value}>{value}</option>)}
+          </select></label>
+          {input('actor', 'Declared operator — retained text, not authenticated identity', true, 120)}
+          <label>Reason<textarea required maxLength={4000} value={fields.reason} onChange={event => edit('reason', event.target.value)} /></label>
+          <p className="muted">The API requires this release's exact FROZEN snapshot and creates DRAFT. Test purpose does not activate a record, grant distribution rights or authorize production.</p>
+        </>}
+        {operation === 'deployment' && <>
+          {input('deploymentNo', 'New deployment number', true, 50)}{input('productionLine', 'Production line UUID', true, 36)}
+          <p className="muted">The API checks an APPROVED authorization and exact active customer/project/site/line scope. Expected release and snapshot come from that authorization. Creation is PENDING and does not report actual software or perform flashing.</p>
+        </>}
+        {operation === 'changeover' && <>
+          {input('changeoverNo', 'Changeover number', true, 50)}{input('fromRelease', 'Source release UUID — explicitly reviewed previous version', true, 36)}
+          <label>Optional changeover note<textarea value={fields.note} onChange={event => edit('note', event.target.value)} /></label>
+          <p className="muted">The target is the deployment's expected release; source must exist and differ. No previous version is inferred from the current actual report. The API records COMPLETED history but this does not prove physical flashing or update actual software. General reversal/revocation is pending.</p>
+        </>}
         {(operation === 'delivery' || operation === 'distribution' || operation === 'authorization') && <>
           {operation === 'delivery' && <>
             {input('packageNo', 'Package number', true, 50)}{input('revision', 'Package revision — explicit positive integer', true, 10)}
@@ -141,7 +160,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
           <label>Optional note<textarea value={fields.note} onChange={event => edit('note', event.target.value)} /></label>
           <p className="muted">Available capacity and MATCH status are informational. The API rechecks authorization, software and quota in its transaction.</p>
         </>}
-        {(operation === 'actual' || operation === 'batch') && <>
+        {(operation === 'actual' || operation === 'batch' || operation === 'changeover') && <>
           {input('timestamp', 'Optional time — e.g. 2026-10-01T08:00:00Z', false, 35)}
           <p className="muted">Use an explicit timezone. An omitted time stays null in the request; the API generates it once on success.</p>
         </>}

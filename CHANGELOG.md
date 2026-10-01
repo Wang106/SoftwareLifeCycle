@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-01 — Phase 6 final request-preparation forms
+
+- Added Test Release, Deployment and Changeover; all 14 current command forms now prepare reviewed keyed exports.
+- Added exact frozen snapshot, authorization, line and deployment context entries; no previous version, purpose or active status is inferred.
+- Preserved DRAFT/PENDING/history-only business boundaries, explicit UTC/null time semantics and existing TR hyphenated versus DPLOY/CO hex audit numbers.
+- No backend/API/schema/migration or public-write changes; API 0.18.0/head 0017 and staging read-only remain. Authenticated submission/result recovery and broader correction/revocation are pending.
+- Verification: 214 frontend tests passed (38 added); production Next/OpenNext build passed; seven SSR context/default checks passed; full backend suite passed 688 tests including 103 real PostgreSQL 16 concurrency/integration tests, with no skips. No migration or backend contract change. Online verification follows the scoped push.
+
+
 ## 2026-10-01 — Phase 6 distribution-chain request preparation
 
 - Added Delivery/Distribution/Authorization to /commands: eleven of 14 forms now prepare confirmed immutable keyed exports.

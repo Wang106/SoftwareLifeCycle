@@ -214,3 +214,13 @@ transport, login or public-write setting changes; API 0.18.0/head 0017 remain. S
 2026-10-01 distribution-chain verification: read-only Render PostgreSQL query returned
 `0017_deployment_actual_version`. No schema change was made. Direct API probes were
 blocked by workspace network policy; service readiness 200 was observed in Render logs.
+
+## Final three request-preparation forms
+
+Test Release, Deployment and Changeover complete 14/14 preparation forms using
+existing request bodies, immutable confirmation/copy and exact UUID context.
+Test Release remains DRAFT; Deployment remains PENDING; Changeover appends history
+without physical flashing or actual-software updates. EVT-TR- retains hyphenated
+UUIDs; EVT-DPLOY-/EVT-CO- use UUID hex. No backend/API/schema/migration, role/actor,
+retry/transaction, authentication or public-write settings change. Submission and
+outcome recovery remain pending. See docs/controlled-write-ui.md for limits.

@@ -1,6 +1,7 @@
 /** Request preparation only. This module has no transport or persistence. */
-export type Operation = 'snapshot' | 'actual' | 'batch' | 'approval' | 'decision' | 'impact' | 'acceptance' | 'resource' | 'delivery' | 'distribution' | 'authorization';
+export type Operation = 'snapshot' | 'actual' | 'batch' | 'approval' | 'decision' | 'impact' | 'acceptance' | 'resource' | 'delivery' | 'distribution' | 'authorization' | 'test-release' | 'deployment' | 'changeover';
 export type Fields = {
+  testReleaseNo: string; purposeScope: string; deploymentNo: string; productionLine: string; changeoverNo: string; fromRelease: string;
   target: string; release: string; snapshot: string; version: string;
   reason: string; timestamp: string; batch: string; changeover: string; note: string;
   step: string; actor: string; action: string; decisionNo: string; readiness: string; decision: string;
@@ -14,6 +15,7 @@ export type Draft = Readonly<{
 }>;
 export type Review = Readonly<{ draft: Draft; confirmed: boolean }>;
 export const blankFields: Fields = {
+  testReleaseNo: '', purposeScope: '', deploymentNo: '', productionLine: '', changeoverNo: '', fromRelease: '',
   target: '', release: '', snapshot: '', version: '', reason: '', timestamp: '',
   batch: '', changeover: '', note: '', step: '', actor: '', action: '',
   decisionNo: '', readiness: '', decision: '', criterion: '', dvp: '', evidence: '',
@@ -109,7 +111,33 @@ export function prepare(operation: Operation, fields: Fields, requestId: string)
     path = `/api/v1/releases/${target}/create-snapshot`;
     trace = `/releases/${target}/snapshots`;
     audit = `/activity/EVT-SN-${key.replaceAll("-", "")}`;
-  } else if (operation === 'delivery' || operation === 'distribution' || operation === 'authorization') {
+  } else if (operation === 'test-release') {
+    payload.release_id = uuid(fields.target, 'Release');
+    payload.snapshot_id = uuid(fields.snapshot, 'Frozen snapshot');
+    payload.test_release_no = identifier(cleanText(fields.testReleaseNo, 'Test release number', 50), 'Test release number', 50);
+    if (!['SOFTWARE_TEST','BATTERY_TEST','CUSTOMER_TEST'].includes(fields.purposeScope)) throw new Error('Select an explicit test purpose.');
+    payload.purpose_scope = fields.purposeScope;
+    payload.actor_name = cleanText(fields.actor, 'Declared operator', 120);
+    payload.reason = cleanText(fields.reason, 'Reason', 4000);
+    path = '/api/v1/testing/releases';
+    trace = `/testing/releases/${encodeURIComponent(payload.test_release_no)}`;
+    audit = `/activity/EVT-TR-${key}`;
+  } else if (operation === 'deployment') {
+    payload.authorization_id = uuid(fields.target, 'Authorization');
+    payload.production_line_id = uuid(fields.productionLine, 'Production line');
+    payload.deployment_no = identifier(fields.deploymentNo, 'Deployment number', 50);
+    path = '/api/v1/deployments'; trace = `/deployments/${encodeURIComponent(payload.deployment_no)}`;
+    audit = `/activity/EVT-DPLOY-${key.replaceAll('-', '')}`;
+  } else if (operation === 'changeover') {
+    const deployment = identifier(fields.target, 'Deployment number', 50);
+    payload.changeover_no = identifier(fields.changeoverNo, 'Changeover number', 50);
+    payload.from_release_id = uuid(fields.fromRelease, 'Source release');
+    payload.changed_at = timestamp(fields.timestamp);
+    payload.note = fields.note || null;
+    path = `/api/v1/deployments/${encodeURIComponent(deployment)}/changeovers`;
+    trace = `/deployments/${encodeURIComponent(deployment)}`;
+    audit = `/activity/EVT-CO-${key.replaceAll('-', '')}`;
+  } else if (operation === 'delivery'  || operation === 'distribution' || operation === 'authorization') {
     audit = `/activity/${operation === 'delivery' ? 'EVT-DP-' : operation === 'distribution' ? 'EVT-DS-' : 'EVT-PA-'}${key.replaceAll('-', '')}`;
     if (operation === 'delivery' || operation === 'distribution') {
       payload.recipient_type = declaredText(fields.recipientType, 'Recipient type', 50);

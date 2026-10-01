@@ -28,6 +28,7 @@ export default async function Page({ params }: { params: Promise<{ authorization
     <div className="top"><div><div className="eyebrow">PRODUCTION GOVERNANCE</div><h1>{authorization.authorization_no}</h1>
       <p className="muted">Authorization for a specified release, snapshot, customer, site and line.</p></div>
       <span className={'status ' + (authorization.status === 'APPROVED' ? 'pass' : 'warning')}>{authorization.status}</span></div>
+    <p><Link href={`/commands?${new URLSearchParams({operation: 'deployment', target: authorization.id})}`}>Prepare deployment expectation →</Link> · Review exact current approved scope first.</p>
     <div className="grid2">
       <section className="panel"><h2>Authorized scope</h2><div className="kv">
         <span>Customer UUID</span><b>{authorization.customer?.id || 'Unavailable'}</b>

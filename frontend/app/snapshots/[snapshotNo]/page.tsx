@@ -22,6 +22,7 @@ export default async function Page({ params }: { params: Promise<{ snapshotNo: s
     <p><Link href={`/resources?entity_type=SNAPSHOT&entity_id=${snapshot.id}`}>Materials & evidence references →</Link></p>
     <div className="top"><div><div className="eyebrow">EXACT FROZEN SNAPSHOT</div><h1>{snapshot.snapshot_no}</h1><p className="muted">Snapshot #{snapshot.snapshot_number} · {snapshot.is_current_snapshot ? 'CURRENT' : 'HISTORICAL'}</p></div><span className="status">{snapshot.status}</span></div>
     <section className="panel"><h2>Snapshot identity</h2><div className="kv">
+      <span>Snapshot UUID</span><b>{snapshot.id}</b>
       <span>Release UUID</span><b>{snapshot.release?.id || 'Unavailable'}</b>
       <span>Release</span><b>{snapshot.release && releasePath ? <Link href={releasePath}>{snapshot.release.type} {snapshot.release.version}</Link> : 'Release unavailable'}</b>
       <span>Frozen at</span><b>{snapshot.created_at.slice(0, 16).replace('T', ' ')} UTC</b>
@@ -38,6 +39,7 @@ export default async function Page({ params }: { params: Promise<{ snapshotNo: s
       </tr>)}
     </tbody></table>{snapshot.artifacts.length === 0 && <p className="muted">No frozen artifacts recorded for this snapshot.</p>}</section>
     <p><Link href={`/snapshots/${encodeURIComponent(snapshot.snapshot_no)}/compare`}>Compare frozen files and policies →</Link></p>
+    {snapshot.release && <p><Link href={`/commands?${new URLSearchParams({operation: 'test-release', target: snapshot.release.id, snapshot: snapshot.id})}`}>Prepare test draft for this exact snapshot →</Link></p>}
     {snapshot.release && <p><Link href={`/commands?${new URLSearchParams({operation: 'delivery', target: snapshot.release.id})}`}>Prepare delivery for this release →</Link> · Review the latest approved RELEASE decision first; this snapshot is not automatically selected.</p>}
     {snapshot.release && <p><Link href={`/releases/${encodeURIComponent(snapshot.release.id)}/snapshots`}>View snapshot history →</Link></p>}
     {releasePath && <p><Link href={releasePath}>← Release profile</Link></p>}

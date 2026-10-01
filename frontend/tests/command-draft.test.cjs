@@ -240,3 +240,50 @@ test('positive integer storage bounds are accepted without rounding',()=>{
  assert.equal(exported('delivery',{...deliveryFields,revision:'2147483647'}).body.revision,2147483647);
  assert.equal(exported('authorization',{...authorizationFields,limit:'2147483647'}).body.batch_limit,2147483647);
 });
+const testReleaseFields={...blankFields,target:release,snapshot,testReleaseNo:' TR? #% ',purposeScope:'SOFTWARE_TEST',actor:' Contributor ',reason:' Frozen test scope\n '};
+const deploymentFields={...blankFields,target:release,productionLine:snapshot,deploymentNo:'DEP? #%'};
+const changeoverFields={...blankFields,target:'DEP? #%',fromRelease:release,changeoverNo:'CO? #%',note:' Exact history\n'};
+test('test release pins exact frozen UUIDs, normalized schema text and hyphenated event UUID',()=>{
+ const review=prepare('test-release',testReleaseFields,key);
+ assert.equal(review.draft.path,'/api/v1/testing/releases');assert.equal(review.draft.trace,'/testing/releases/TR%3F%20%23%25');
+ assert.equal(review.draft.audit,`/activity/EVT-TR-${key}`);
+ assert.deepEqual(exported('test-release',testReleaseFields).body,{request_id:key,release_id:release,snapshot_id:snapshot,test_release_no:'TR? #%',purpose_scope:'SOFTWARE_TEST',actor_name:'Contributor',reason:'Frozen test scope'});
+});
+for(const purposeScope of ['SOFTWARE_TEST','BATTERY_TEST','CUSTOMER_TEST']){
+ test(`explicit test purpose ${purposeScope} retains bounded test scope`,()=>assert.equal(exported('test-release',{...testReleaseFields,purposeScope}).body.purpose_scope,purposeScope));
+}
+for(const changes of [{target:''},{snapshot:'bad'},{purposeScope:''},{purposeScope:'PRODUCTION'},{purposeScope:'software_test'},{testReleaseNo:' '},{testReleaseNo:'TR/A'},{testReleaseNo:'T'.repeat(51)},{testReleaseNo:' '+'T'.repeat(50)},{actor:''},{actor:'A'.repeat(121)},{reason:' '},{reason:'R'.repeat(4001)}]){
+ test(`invalid test draft ${JSON.stringify(changes).slice(0,60)} rejected`,()=>assert.throws(()=>prepare('test-release',{...testReleaseFields,...changes},key)));
+}
+test('deployment expectation uses exact authorization and line IDs without invented software or actor',()=>{
+ const review=prepare('deployment',deploymentFields,key);
+ assert.equal(review.draft.path,'/api/v1/deployments');assert.equal(review.draft.trace,'/deployments/DEP%3F%20%23%25');
+ assert.equal(review.draft.audit,'/activity/EVT-DPLOY-12345678123412341234123456789abc');
+ assert.deepEqual(exported('deployment',deploymentFields).body,{request_id:key,authorization_id:release,production_line_id:snapshot,deployment_no:'DEP? #%'});
+});
+for(const changes of [{target:'PA-001'},{productionLine:''},{productionLine:'LINE-2'},{deploymentNo:''},{deploymentNo:'..'},{deploymentNo:'DEP/A'},{deploymentNo:'D'.repeat(51)}]){
+ test(`invalid deployment ${JSON.stringify(changes)} rejected`,()=>assert.throws(()=>prepare('deployment',{...deploymentFields,...changes},key)));
+}
+test('changeover exports explicit source and exact note, with encoded deployment history and hex audit',()=>{
+ const review=prepare('changeover',changeoverFields,key);
+ assert.equal(review.draft.path,'/api/v1/deployments/DEP%3F%20%23%25/changeovers');assert.equal(review.draft.trace,'/deployments/DEP%3F%20%23%25');
+ assert.equal(review.draft.audit,'/activity/EVT-CO-12345678123412341234123456789abc');
+ assert.deepEqual(exported('changeover',changeoverFields).body,{request_id:key,changeover_no:'CO? #%',from_release_id:release,changed_at:null,note:' Exact history\n'});
+ assert.equal(exported('changeover',{...changeoverFields,note:''}).body.note,null);
+});
+test('changeover UTC equivalence matches but omission stays distinct',()=>{
+ const utc=exported('changeover',{...changeoverFields,timestamp:'2026-10-01T08:00:00Z'});
+ assert.deepEqual(utc,exported('changeover',{...changeoverFields,timestamp:'2026-10-01T16:00:00+08:00'}));
+ assert.notDeepEqual(utc,exported('changeover',changeoverFields));
+});
+for(const changes of [{target:''},{target:'DEP/A'},{changeoverNo:''},{changeoverNo:'..'},{changeoverNo:'C'.repeat(51)},{fromRelease:''},{fromRelease:'ASR 2.3.3'},{timestamp:'2026-02-30T08:00:00Z'},{timestamp:'2026-10-01T08:00:00'},{timestamp:'2026-10-01T08:00:00+24:00'}]){
+ test(`invalid changeover ${JSON.stringify(changes)} rejected`,()=>assert.throws(()=>prepare('changeover',{...changeoverFields,...changes},key)));
+}
+test('last three command reviews require confirmation and retain stable immutable content/keys',()=>{
+ for(const [operation,source] of [['test-release',testReleaseFields],['deployment',deploymentFields],['changeover',changeoverFields]]){
+  const fields={...source};const raw=prepare(operation,fields,key);assert.throws(()=>exportRequest(raw),/Confirm/);
+  const review=confirm(raw,true),before=exportRequest(review);fields.purposeScope='PRODUCTION';fields.productionLine=key;fields.fromRelease=key;
+  assert.equal(exportRequest(review),before);assert.throws(()=>{review.draft.payload.status='APPROVED';},TypeError);
+  assert.throws(()=>exportRequest(confirm(review,false)),/Confirm/);
+ }
+});

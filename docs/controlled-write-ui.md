@@ -9,7 +9,7 @@ to enable public writes. The current `/commands` workspace prepares requests onl
 | Next | Approval Action, Release Decision | Request preparation implemented; exact step UUID visible in approval detail | Permission-aware pickers, authenticated submission and outcome verification |
 | Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Request preparation implemented | Permission-aware context pickers, authenticated submission and outcome verification |
 | Next | Delivery, Distribution, Authorization | Request preparation implemented | Artifact policy/recipient/scope pickers and complete chain confirmation |
-| Later | Test Release, Deployment, Changeover | API retry/locks exist; forms pending | Purpose/location/source pickers; activation/revocation contracts where absent |
+| Next | Test Release, Deployment, Changeover | Request preparation implemented | Purpose/location/source pickers; activation/revocation contracts where absent |
 
 ## Implemented workspace
 
@@ -64,7 +64,7 @@ verify the API result and matching audit evidence after controlled execution.
 
 ## Evidence and reference preparation
 
-Eleven of 14 commands now have request-preparation forms; this counts preparation,
+All 14 commands now have request-preparation forms; this counts preparation,
 not authenticated submission or full Phase 6 completion. Impact evidence links prefill
 issue number and exact release/frozen-snapshot UUIDs. No missing snapshot is invented.
 Impact requires AFFECTED/NOT_AFFECTED/NEEDS_REVIEW, reason and declared operator;
@@ -141,6 +141,43 @@ links use the exact business number. Expected audit links use EVT-DP-/EVT-DS-/EV
 with UUID hex. These are expected post-execution records, not confirmation of a write.
 Permission-aware file/recipient/scope pickers and full chain acceptance remain open.
 
+## Final preparation forms
+
+Test Release requires release UUID, exact FROZEN snapshot UUID, test number,
+explicit SOFTWARE_TEST/BATTERY_TEST/CUSTOMER_TEST purpose, declared actor and reason.
+Snapshot entry preselects only its stored release/snapshot IDs, never purpose or status.
+Number/actor/reason trim as in Pydantic; raw schema limits are checked before trimming,
+and the number additionally uses the route-safe preparation subset. The API checks
+snapshot membership under its current locks. It creates DRAFT, with no activation,
+supersession, production authorization or permission to distribute. Its expected
+EVT-TR-{UUID} audit number retains hyphens.
+
+Deployment takes authorization UUID, line UUID and new number. An authorization
+profile can prefill its exact UUID; a manufacturing line entry can prefill only the
+line UUID while leaving authorization empty. No line or authorization is guessed.
+The API checks APPROVED authorization, ACTIVE site/line and exact stored scope,
+then derives expected release/snapshot and creates PENDING. Neither a copied
+expectation nor an existing MATCH observation proves actual physical flashing.
+No actual software, actor or status input is invented; trusted actor resolution
+remains in the API. EVT-DPLOY-{UUID.hex} links to existing execution audit semantics.
+
+Changeover entry uses the exact deployment business number and leaves source empty.
+The operator explicitly supplies a source release UUID; the API checks existence
+and source differs from target. The target is the deployment expected release,
+not an inferred current-actual or latest software version. Optional time follows
+existing explicit-zone/calendar checks and UTC normalization; omission stays null,
+with a server time generated only on execution. Notes keep exact text or null.
+Creation appends COMPLETED history, without performing flashing, changing actual
+software, reversing batches or enforcing a new single-use transition. Expected
+audit is EVT-CO-{UUID.hex}. Trace goes to deployment history and its bounded
+changeover catalog; these views are not an exact per-request success receipt.
+
+Line query context is a bounded scalar (36 characters); arrays/oversized values
+stay empty, malformed UUIDs fail preparation, and changes remount/invalidate review.
+Source/time/operator/reason/purpose/status are never query-prefilled. All 14 forms
+now prepare requests, while permission-aware selection, authenticated execution,
+uncertain-result recovery and lifecycle activation/correction remain pending.
+
 ## Boundary and remaining acceptance
 
 The workspace has no fetch/POST transport, server mutation route, API-origin picker,
@@ -150,7 +187,7 @@ Public API remains READ_ONLY_MODE=true. The workspace does not bypass OIDC, exac
 scope, trusted actor, row locking, versions, limits or atomic audit; it makes no write.
 
 Actual authenticated submission, permission-aware pickers, stale-context refresh,
-uncertain-result resolution, success/error trace and the other three forms remain pending.
+uncertain-result resolution, success/error trace remain pending.
 Configure an approved OIDC provider/session and a separately approved controlled
 write target before implementing production submission. Avoid exposing auth-disabled
 writes through a frontend proxy. General correction/revocation workflows remain open.
