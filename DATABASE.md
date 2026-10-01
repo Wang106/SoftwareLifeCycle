@@ -198,3 +198,15 @@ Approval/Decision request preparation reads already exposed approval step UUIDs;
 ## Evidence/reference request preparation
 
 Evidence/reference preparation adds no persistence or migration. Existing domain request UUIDs and atomic audit rows implement execution: EVT-IMPACT-{UUID}, EVT-AC-{UUID}, EVT-LK-{UUID} retain hyphenated suffixes. Draft/copy actions insert nothing. Required head remains 0017_deployment_actual_version.
+
+## Distribution-chain request preparation
+
+Delivery/Distribution/Authorization forms prepare existing keyed bodies with explicit
+revision/artifact UUIDs, exact recipients/purpose and customer/project/site/line scope.
+Finite limits and unlimited null require explicit choices; no default quota is inferred.
+The backend still selects/validates the approved snapshot and policies under its current
+locks; authorization creation stays DRAFT. Distribution creation does not send files or
+acknowledge receipt. Existing exact roles, trusted actor binding, retry and atomic audit
+remain unchanged. EVT-DP-/EVT-DS-/EVT-PA- links use UUID hex. No API/schema/migration,
+transport, login or public-write setting changes; API 0.18.0/head 0017 remain. See
+`docs/controlled-write-ui.md` for preparation subsets and remaining submission work.

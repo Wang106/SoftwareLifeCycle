@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-01 — Phase 6 distribution-chain request preparation
+
+- Added Delivery/Distribution/Authorization to /commands: eleven of 14 forms now prepare confirmed immutable keyed exports.
+- Added exact revision/package/distribution context entries and visible artifact/customer/project/release UUIDs. No file or recipient is auto-selected.
+- Delivery canonicalizes a distinct frozen-artifact set; explicit revision and finite quota enforce PostgreSQL integer bounds. Unlimited is an explicit choice. Exact policy/declaration text is retained.
+- Authorization creation remains DRAFT; preparation does not send files, acknowledge receipt, authenticate or submit.
+- No backend/API/schema/migration changes; API 0.18.0/head 0017 and public read-only protection remain.
+- Frontend tests: 176 passed, no skips (65 added distribution-chain cases). Final Next.js/OpenNext Cloudflare Worker production build passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a fresh isolated /tmp cluster. Six local SSR checks passed for all three exact UUID targets, empty explicit defaults/ignored recipient-artifact-limit query prefill, missing/array targets and Create entry. Initial local next start hit the workspace networkInterfaces limitation; explicit 127.0.0.1 host resolved it without application changes. No migration. Online verification follows the scoped push.
+
+
 ## Evidence/reference request preparation — 2026-10-01
 
 - Codex adds Impact, Acceptance-to-DVP and Resource preparation: explicit UUIDs/judgments/reasons, canonical text, immutable confirmation/copy and expected record/audit links.

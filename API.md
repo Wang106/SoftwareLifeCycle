@@ -214,3 +214,15 @@ Approval detail exposes existing step UUIDs and preparation links; no API shape 
 ## Evidence/reference request preparation
 
 /commands additionally prepares Impact Assessment, Acceptance-to-DVP and Resource bodies with their existing required request UUIDs. Actor/reason/reference normalization follows their Pydantic schemas; resources use a stricter syntactic URL/path subset. No API request/response or authorization changes. Copy method/path/body as instructions; send only body through the controlled API client.
+
+## Distribution-chain request preparation
+
+Delivery/Distribution/Authorization forms prepare existing keyed bodies with explicit
+revision/artifact UUIDs, exact recipients/purpose and customer/project/site/line scope.
+Finite limits and unlimited null require explicit choices; no default quota is inferred.
+The backend still selects/validates the approved snapshot and policies under its current
+locks; authorization creation stays DRAFT. Distribution creation does not send files or
+acknowledge receipt. Existing exact roles, trusted actor binding, retry and atomic audit
+remain unchanged. EVT-DP-/EVT-DS-/EVT-PA- links use UUID hex. No API/schema/migration,
+transport, login or public-write setting changes; API 0.18.0/head 0017 remain. See
+`docs/controlled-write-ui.md` for preparation subsets and remaining submission work.

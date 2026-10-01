@@ -1,13 +1,15 @@
 /** Request preparation only. This module has no transport or persistence. */
-export type Operation = 'snapshot' | 'actual' | 'batch' | 'approval' | 'decision' | 'impact' | 'acceptance' | 'resource';
+export type Operation = 'snapshot' | 'actual' | 'batch' | 'approval' | 'decision' | 'impact' | 'acceptance' | 'resource' | 'delivery' | 'distribution' | 'authorization';
 export type Fields = {
   target: string; release: string; snapshot: string; version: string;
   reason: string; timestamp: string; batch: string; changeover: string; note: string;
   step: string; actor: string; action: string; decisionNo: string; readiness: string; decision: string;
+  packageNo: string; revision: string; artifacts: string; recipientType: string; recipientCode: string; purpose: string;
+  distributionNo: string; authorizationNo: string; customer: string; project: string; site: string; line: string; limitMode: string; limit: string;
   criterion: string; dvp: string; evidence: string; entityType: string; title: string; locationKind: string; location: string; description: string;
 };
 export type Draft = Readonly<{
-  operation: Operation; path: string; payload: Readonly<Record<string, string | number | null>>;
+  operation: Operation; path: string; payload: Readonly<Record<string, string | number | null | readonly string[]>>;
   trace: string; audit: string;
 }>;
 export type Review = Readonly<{ draft: Draft; confirmed: boolean }>;
@@ -15,6 +17,8 @@ export const blankFields: Fields = {
   target: '', release: '', snapshot: '', version: '', reason: '', timestamp: '',
   batch: '', changeover: '', note: '', step: '', actor: '', action: '',
   decisionNo: '', readiness: '', decision: '', criterion: '', dvp: '', evidence: '',
+  packageNo: '', revision: '', artifacts: '', recipientType: '', recipientCode: '', purpose: '', distributionNo: '',
+  authorizationNo: '', customer: '', project: '', site: '', line: '', limitMode: '', limit: '',
   entityType: '', title: '', locationKind: '', location: '', description: '',
 };
 export const resourceTypes = ['SUPPLIER','CUSTOMER','PROJECT','RELEASE','SNAPSHOT','SCR','ISSUE','DVP_ITEM','TEST_RELEASE','DVP_EXECUTION'];
@@ -46,6 +50,19 @@ function cleanText(value: string, label: string, max: number, required = true, c
     throw new Error(`${label} must ${required ? 'contain nonblank text and ' : ''}use at most ${max} characters${controls ? ' without control characters' : ''}.`);
   }
   return text;
+}
+function positiveInteger(value: string, label: string): number {
+  if (!/^[1-9]\d*$/.test(value) || !Number.isSafeInteger(Number(value)) || Number(value) > 2147483647) {
+    throw new Error(`${label} must be an explicit positive PostgreSQL integer (1–2147483647).`);
+  }
+  return Number(value);
+}
+function artifactIds(value: string): readonly string[] {
+  const lines = value.trim().split(/\r?\n/);
+  if (!value.trim() || lines.length > 200) throw new Error('Supply 1–200 snapshot artifact UUIDs, one per line.');
+  const ids = lines.map(line => uuid(line, 'Snapshot artifact'));
+  if (new Set(ids).size !== ids.length) throw new Error('Duplicate snapshot artifact UUIDs are not allowed.');
+  return Object.freeze(ids.sort()); // The API treats file ordering as equivalent; retain an immutable set.
 }
 function resourceLocation(kind: string, raw: string): string {
   const value = cleanText(raw, 'Location', 4000, true, true);
@@ -86,12 +103,48 @@ function timestamp(value: string): string | null {
 export function prepare(operation: Operation, fields: Fields, requestId: string): Review {
   const key = uuid(requestId, 'Request ID');
   let path: string, trace: string, audit: string;
-  const payload: Record<string, string | number | null> = { request_id: key };
+  const payload: Record<string, string | number | null | readonly string[]> = { request_id: key };
   if (operation === 'snapshot') {
     const target = uuid(fields.target, 'Release');
     path = `/api/v1/releases/${target}/create-snapshot`;
     trace = `/releases/${target}/snapshots`;
     audit = `/activity/EVT-SN-${key.replaceAll("-", "")}`;
+  } else if (operation === 'delivery' || operation === 'distribution' || operation === 'authorization') {
+    audit = `/activity/${operation === 'delivery' ? 'EVT-DP-' : operation === 'distribution' ? 'EVT-DS-' : 'EVT-PA-'}${key.replaceAll('-', '')}`;
+    if (operation === 'delivery' || operation === 'distribution') {
+      payload.recipient_type = declaredText(fields.recipientType, 'Recipient type', 50);
+      payload.recipient_code = declaredText(fields.recipientCode, 'Recipient code', 80);
+      if (operation === 'delivery') {
+        payload.release_id = uuid(fields.target, 'Release');
+        payload.package_no = identifier(fields.packageNo, 'Package number', 50);
+        payload.revision = positiveInteger(fields.revision, 'Revision');
+        payload.purpose = declaredText(fields.purpose, 'Purpose', 50);
+        payload.snapshot_artifact_ids = artifactIds(fields.artifacts);
+        payload.created_by = fields.actor ? declaredText(fields.actor, 'Declared creator', 120) : null;
+        path = '/api/v1/deliveries';
+        trace = `/distribution/deliveries/${encodeURIComponent(payload.package_no)}/${payload.revision}`;
+      } else {
+        payload.delivery_package_id = uuid(fields.target, 'Delivery package');
+        payload.distribution_no = identifier(fields.distributionNo, 'Distribution number', 50);
+        path = '/api/v1/distributions';
+        trace = `/distribution/distributions/${encodeURIComponent(payload.distribution_no)}`;
+      }
+    } else {
+      payload.distribution_id = uuid(fields.target, 'Distribution');
+      payload.release_id = uuid(fields.release, 'Application release');
+      payload.authorization_no = identifier(fields.authorizationNo, 'Authorization number', 50);
+      payload.customer_id = uuid(fields.customer, 'Customer');
+      payload.project_id = uuid(fields.project, 'Project');
+      payload.site_code = declaredText(fields.site, 'Site code', 80);
+      payload.line_code = declaredText(fields.line, 'Line code', 80);
+      payload.purpose = declaredText(fields.purpose, 'Purpose', 50);
+      if (!['FINITE', 'UNLIMITED'].includes(fields.limitMode)) throw new Error('Explicitly select a finite batch limit or unlimited scope.');
+      if (fields.limitMode === 'UNLIMITED' && fields.limit !== '') throw new Error('Clear the finite limit before choosing unlimited scope.');
+      payload.batch_limit = fields.limitMode === 'FINITE' ? positiveInteger(fields.limit, 'Batch limit') : null;
+      payload.restriction_note = fields.note || null;
+      path = '/api/v1/authorizations';
+      trace = `/distribution/authorizations/${encodeURIComponent(payload.authorization_no)}`;
+    }
   } else if (operation === 'impact' || operation === 'acceptance' || operation === 'resource') {
     payload.actor_name = cleanText(fields.actor, 'Declared operator', 120);
     payload.reason = cleanText(fields.reason, 'Reason', 4000, true, operation === 'resource');

@@ -6,6 +6,7 @@ import { blankFields, confirm, exportRequest, Fields, Operation, prepare, Review
 const labels: Record<Operation, string> = {
   snapshot: 'Freeze Snapshot', actual: 'Report / correct actual software', batch: 'Create Production Batch',
   approval: 'Record Approval Action', decision: 'Record Release Decision',
+  delivery: 'Create Delivery Package', distribution: 'Record Distribution', authorization: 'Create Production Authorization',
   impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
 export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext }: {
@@ -47,7 +48,36 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
         <label>Command<select value={operation} onChange={event => {
           setOperation(event.target.value as Operation); setFields({ ...blankFields }); setReview(null); setMessage('');
         }}>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-        {input('target', operation === 'resource' ? 'Resource object UUID' : operation === 'impact' ? 'Issue number' : operation === 'acceptance' ? 'SCR number' : operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, operation === 'snapshot' || operation === 'resource' ? 36 : 50)}
+        {input('target', operation === 'delivery' ? 'Release UUID' : operation === 'distribution' ? 'Delivery package UUID — exact revision' : operation === 'authorization' ? 'Distribution UUID' : operation === 'resource' ? 'Resource object UUID' : operation === 'impact' ? 'Issue number' : operation === 'acceptance' ? 'SCR number' : operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, ['snapshot','resource','delivery','distribution','authorization'].includes(operation) ? 36 : 50)}
+        {(operation === 'delivery' || operation === 'distribution' || operation === 'authorization') && <>
+          {operation === 'delivery' && <>
+            {input('packageNo', 'Package number', true, 50)}{input('revision', 'Package revision — explicit positive integer', true, 10)}
+            {input('actor', 'Optional declared creator — text, not authenticated identity', false, 120)}
+            <label>Snapshot artifact UUIDs — one per line<textarea required maxLength={8000} value={fields.artifacts} onChange={event => edit('artifacts', event.target.value)} /></label>
+            <p className="muted">Choose exact frozen artifact UUIDs from the approved decision snapshot. The API selects the latest RELEASE decision and checks approval, file membership, INTERNAL_ONLY and recipient/purpose rules. This form cannot pin a decision or certify eligibility.</p>
+          </>}
+          {operation === 'distribution' && <>
+            {input('distributionNo', 'Distribution number', true, 50)}
+            <p className="muted">The package UUID identifies one exact revision. Recipient values must exactly match that package. Creating a record does not send files or acknowledge receipt.</p>
+          </>}
+          {(operation === 'delivery' || operation === 'distribution') && <>
+            {input('recipientType', 'Recipient type — exact API policy value', true, 50)}
+            {input('recipientCode', 'Recipient code — exact stored value', true, 80)}
+          </>}
+          {operation === 'authorization' && <>
+            {input('authorizationNo', 'Authorization number', true, 50)}
+            {input('release', 'Application release UUID', true, 36)}{input('customer', 'Customer UUID', true, 36)}{input('project', 'Project UUID', true, 36)}
+            {input('site', 'Site code — exact value', true, 80)}{input('line', 'Line code — exact value', true, 80)}
+            <label>Batch scope<select required value={fields.limitMode} onChange={event => edit('limitMode', event.target.value)}>
+              <option value="">Select finite or unlimited scope</option><option value="FINITE">FINITE</option><option value="UNLIMITED">UNLIMITED</option>
+            </select></label>
+            {input('limit', 'Finite batch limit — clear for unlimited scope', fields.limitMode === 'FINITE', 10)}
+            <label>Optional restriction note<textarea value={fields.note} onChange={event => edit('note', event.target.value)} /></label>
+            <p className="muted">Review the full customer distribution, application release, snapshot, project, site/line and purpose chain. New authorizations are DRAFT; creation does not approve deployment or production. Unlimited scope is explicit, never a missing finite limit.</p>
+          </>}
+          {(operation === 'delivery' || operation === 'authorization') && input('purpose', 'Purpose — exact policy value', true, 50)}
+          <p className="muted">The API checks current exact scope and binds the authenticated actor separately. These declarations and copied requests grant no permission.</p>
+        </>}
         {(operation === 'impact' || operation === 'acceptance' || operation === 'resource') && <>
           {input('actor', 'Declared operator — retained text, not authenticated identity', true, 120)}
           <label>Reason<textarea required maxLength={4000} value={fields.reason} onChange={event => edit('reason', event.target.value)} /></label>

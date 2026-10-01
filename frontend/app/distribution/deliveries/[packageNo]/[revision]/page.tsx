@@ -32,6 +32,8 @@ export default async function Page({ params }: { params: Promise<{ packageNo: st
       <span className={'status ' + (delivery.status === 'DISTRIBUTED' ? 'pass' : 'warning')}>{delivery.status}</span></div>
     <div className="grid2">
       <section className="panel"><h2>Delivery context</h2><div className="kv">
+        <span>Exact package UUID</span><b>{delivery.id}</b>
+        <span>Recipient type</span><b>{delivery.recipient.type}</b>
         <span>Recipient</span><b>{delivery.recipient.name} · {delivery.recipient.code}</b>
         <span>Purpose</span><b>{delivery.purpose}</b>
         <span>Release</span><b>{delivery.release ? <Link href={delivery.release.type === 'APPLICATION' ? `/releases/application/${delivery.release.id}` : '/releases/application'}>{delivery.release.type} {delivery.release.version}</Link> : '—'}</b>
@@ -48,7 +50,7 @@ export default async function Page({ params }: { params: Promise<{ packageNo: st
     <section className="panel tablewrap"><h2>Frozen artifact manifest</h2>
       <table><thead><tr><th>Artifact</th><th>Type</th><th>SHA-256</th><th>Distribution level</th><th>Policy decision</th><th>Control</th></tr></thead>
         <tbody>{delivery.items.map(item => <tr key={item.snapshot_artifact_id}>
-          <td><b>{item.filename}</b></td><td>{item.artifact_type}</td><td><code>{item.sha256}</code></td>
+          <td><b>{item.filename}</b><div className="muted">Snapshot artifact UUID: {item.snapshot_artifact_id}</div></td><td>{item.artifact_type}</td><td><code>{item.sha256}</code></td>
           <td>{item.distribution_level.replaceAll('_', ' ')}</td>
           <td><span className={'status ' + (item.policy_decision === 'ALLOW' ? 'pass' : 'warning')}>{item.policy_decision.replaceAll('_', ' ')}</span></td>
           <td>{item.control_reference || '—'}</td>
@@ -56,6 +58,8 @@ export default async function Page({ params }: { params: Promise<{ packageNo: st
       {delivery.items.length === 0 && <p className="muted">No artifacts recorded for this package revision.</p>}
     </section>
     <section className="panel"><h2>Distribution records</h2>
+      <p><Link href={`/commands?${new URLSearchParams({operation: 'distribution', target: delivery.id})}`}>Prepare distribution for this exact package revision →</Link></p>
+      <p className="muted">Copy the exact recipient values above; this entry does not preselect or certify a recipient.</p>
       {delivery.distributions.length ? <table><thead><tr><th>Distribution</th><th>Status</th><th>Sent</th><th>Acknowledged</th></tr></thead>
         <tbody>{delivery.distributions.map(row => <tr key={row.id}><td><Link href={`/distribution/distributions/${encodeURIComponent(row.distribution_no)}`}><b>{row.distribution_no}</b></Link></td><td>{row.status}</td>
           <td>{row.sent_at ? row.sent_at.slice(0, 16).replace('T', ' ') : '—'}</td>

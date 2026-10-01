@@ -180,3 +180,15 @@ Approval/Decision preparation extends the same pure-helper boundary. Existing go
 ## Evidence/reference request preparation
 
 The same transport-free helper now covers eight preparation forms. Bounded issue/release/snapshot and SCR/criterion context comes from read pages. Context changes remount the workbench. Resource locations stay inert text; no external fetch or filesystem service is introduced. Existing API services remain the business/authorization/atomicity authority.
+
+## Distribution-chain request preparation
+
+Delivery/Distribution/Authorization forms prepare existing keyed bodies with explicit
+revision/artifact UUIDs, exact recipients/purpose and customer/project/site/line scope.
+Finite limits and unlimited null require explicit choices; no default quota is inferred.
+The backend still selects/validates the approved snapshot and policies under its current
+locks; authorization creation stays DRAFT. Distribution creation does not send files or
+acknowledge receipt. Existing exact roles, trusted actor binding, retry and atomic audit
+remain unchanged. EVT-DP-/EVT-DS-/EVT-PA- links use UUID hex. No API/schema/migration,
+transport, login or public-write setting changes; API 0.18.0/head 0017 remain. See
+`docs/controlled-write-ui.md` for preparation subsets and remaining submission work.

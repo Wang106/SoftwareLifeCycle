@@ -30,6 +30,9 @@ export default async function Page({ params }: { params: Promise<{ authorization
       <span className={'status ' + (authorization.status === 'APPROVED' ? 'pass' : 'warning')}>{authorization.status}</span></div>
     <div className="grid2">
       <section className="panel"><h2>Authorized scope</h2><div className="kv">
+        <span>Customer UUID</span><b>{authorization.customer?.id || 'Unavailable'}</b>
+        <span>Project UUID</span><b>{authorization.project?.id || 'Unavailable'}</b>
+        <span>Application release UUID</span><b>{authorization.release?.id || 'Unavailable'}</b>
         <span>Customer</span><b>{authorization.customer ? `${authorization.customer.name} · ${authorization.customer.code}` : '—'}</b>
         <span>Project</span><b>{authorization.project ? `${authorization.project.name} · ${authorization.project.code}` : '—'}</b>
         <span>Release</span><b>{authorization.release ? <Link href={authorization.release.type === 'APPLICATION' ? `/releases/application/${authorization.release.id}` : '/releases/application'}>{authorization.release.type} {authorization.release.version}</Link> : '—'}</b>

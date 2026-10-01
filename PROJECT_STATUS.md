@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**Phase 6 eighth package adds Impact/Acceptance-to-DVP/Resource preparation; eight of 14 command forms now prepare requests; public staging remains read-only.**
+**Phase 6 ninth package adds Delivery/Distribution/Authorization preparation; eleven of 14 command forms now prepare requests; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -51,7 +51,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). This schema verification belongs to the prior backend package; current frontend verification is recorded below.
 
 
-- Eight of 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 111 cases; authenticated submission remains pending.
+- Eleven of 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 176 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -61,7 +61,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 
 ## Next stage
 
-1. Extend request preparation to Delivery, Distribution and Authorization, with artifact/recipient/scope evidence.
+1. Extend request preparation to Test Release, Deployment and Changeover with exact purpose/location/source context.
 2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
 3. Extend correction/revocation beyond actual reports, preserving formal history.
 4. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
@@ -275,3 +275,21 @@ No backend/API/schema change or migration; API 0.18.0, head 0017. Roadmap remain
 34/44 (77%), Phase 6 3/5 (60%); preparation is not successful business execution.
 
 Frontend tests: 111 passed, no skips (55 added evidence/reference cases). Next.js production build within OpenNext and Cloudflare Worker bundling passed; existing build/deprecation warnings remain. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Six local SSR cases passed: impact/assignment/resource context, invalid entity type, oversized release UUID, ignored location prefill and Create entry. No migration or backend code change. Feature commit `5c95c961fb1907bf473dbec012adc4e1b66bf431` is pushed to main. Live Cloudflare UI verified all eight choices, exact Issue/release/snapshot and SCR/criterion prefill, explicit DVP selection, review confirmation, stable Impact copy, credential-URL rejection, inert local-path Resource preparation/copy and edit invalidation. No business submission was made. Health returned 200 with API 0.18.0 and database revision 0017_deployment_actual_version; Impact, Acceptance-to-DVP and Resource write probes each returned 403 read_only_mode. Unchanged Render backend deployment dep-dav0vf0473hc73a8vl10 remains live at bbd8a42b567c4f5b2c83017c570e47039442f3af. Cloudflare live behavior is verified; a provider deployment ID/commit binding was not available.
+
+## Phase 6 ninth package — distribution-chain request preparation
+
+Development mode: **Codex**. Starting main: `89d355f51a0b67c3e796f7e5a00941290e94fd54`.
+Delivery, Distribution and Production Authorization extend the confirmed immutable
+/commands export. Eleven of 14 forms prepare requests; no authenticated submission,
+file sending, receipt acknowledgment or authorization approval is added.
+Delivery requires an explicit package revision and 1–200 distinct frozen artifact
+UUIDs, sorted as an immutable set; policy/recipient strings retain exact spelling.
+Distribution targets an exact package UUID/revision. Authorization requires exact
+distribution/release/customer/project IDs, purpose/site/line, and an explicit finite
+positive PostgreSQL integer limit or unlimited selection. New API records remain DRAFT.
+Context links do not preselect artifacts/recipients/capacity or pin a release decision.
+Expected audit events use existing EVT-DP-/EVT-DS-/EVT-PA- plus UUID hex.
+No backend/API/schema/migration changes; head remains 0017, API 0.18.0.
+Roadmap remains 34/44 (77%), Phase 6 3/5 (60%); remaining forms and provider-backed
+submission, outcome recovery and broader correction/revocation remain open.
+Frontend tests: 176 passed, no skips (65 added distribution-chain cases). Final Next.js/OpenNext Cloudflare Worker production build passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a fresh isolated /tmp cluster. Six local SSR checks passed for all three exact UUID targets, empty explicit defaults/ignored recipient-artifact-limit query prefill, missing/array targets and Create entry. Initial local next start hit the workspace networkInterfaces limitation; explicit 127.0.0.1 host resolved it without application changes. No migration. Online verification follows the scoped push.

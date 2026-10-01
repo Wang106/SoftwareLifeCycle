@@ -26,6 +26,7 @@ export default async function Page({ params }: { params: Promise<{ distributionN
       <span className={'status ' + (record.status === 'ACKNOWLEDGED' ? 'pass' : 'warning')}>{record.status}</span></div>
     <div className="grid2">
       <section className="panel"><h2>Package and recipient</h2><div className="kv">
+        <span>Distribution UUID</span><b>{record.id}</b>
         <span>Delivery</span><b>{record.delivery ? <Link href={`/distribution/deliveries/${encodeURIComponent(record.delivery.package_no)}/${record.delivery.revision}`}>{record.delivery.package_no} Rev{record.delivery.revision}</Link> : 'Missing delivery link'}</b>
         <span>Release version</span><b>{record.release_version || '—'}</b>
         <span>Snapshot</span><b>{record.snapshot_no || '—'}</b>
@@ -39,6 +40,7 @@ export default async function Page({ params }: { params: Promise<{ distributionN
       </div></section>
     </div>
     <section className="panel tablewrap"><h2>Linked production authorizations</h2>
+      <p><Link href={`/commands?${new URLSearchParams({operation: 'authorization', target: record.id})}`}>Prepare draft authorization for this distribution →</Link></p>
       {record.authorizations.length ? <table><thead><tr><th>Authorization</th><th>Site / line</th><th>Status</th></tr></thead>
         <tbody>{record.authorizations.map(row => <tr key={row.authorization_no}>
           <td><Link href={`/distribution/authorizations/${encodeURIComponent(row.authorization_no)}`}><b>{row.authorization_no}</b></Link></td><td>{row.site_code} / {row.line_code}</td><td>{row.status}</td>

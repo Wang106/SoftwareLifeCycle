@@ -257,3 +257,15 @@ Approval/Decision forms extend /commands using the same confirmed immutable expo
 ## Evidence/reference request preparation
 
 Impact/Acceptance-to-DVP/Resource preparation uses the existing required request-ID bodies and text normalization. It requires explicit target UUIDs, judgment/reason, and resource entity/location kinds. Event links use hyphenated EVT-IMPACT-/EVT-AC-/EVT-LK- UUIDs; current bounded history is not proof of this request outcome. Resource locations are never fetched/opened. No command API, permission, actor, transaction, retry or migration behavior changes; full submission/correction remains pending.
+
+## Distribution-chain request preparation
+
+Delivery/Distribution/Authorization forms prepare existing keyed bodies with explicit
+revision/artifact UUIDs, exact recipients/purpose and customer/project/site/line scope.
+Finite limits and unlimited null require explicit choices; no default quota is inferred.
+The backend still selects/validates the approved snapshot and policies under its current
+locks; authorization creation stays DRAFT. Distribution creation does not send files or
+acknowledge receipt. Existing exact roles, trusted actor binding, retry and atomic audit
+remain unchanged. EVT-DP-/EVT-DS-/EVT-PA- links use UUID hex. No API/schema/migration,
+transport, login or public-write setting changes; API 0.18.0/head 0017 remain. See
+`docs/controlled-write-ui.md` for preparation subsets and remaining submission work.

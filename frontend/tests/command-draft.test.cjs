@@ -186,3 +186,57 @@ test('all three evidence forms keep immutable confirmed exports; unconfirmed or 
   assert.throws(()=>exportRequest(confirm(review,false)),/Confirm/);
  }
 });
+const deliveryFields = {...blankFields,target:release,packageNo:'PK? #%',revision:'2',artifacts:`${snapshot.toUpperCase()}\n${release}`,recipientType:' CUSTOMER ',recipientCode:' CUS-001 ',purpose:' PRODUCTION ',actor:' Declared creator '};
+const distributionFields = {...blankFields,target:snapshot,distributionNo:'DS? #%',recipientType:'CUSTOMER',recipientCode:'CUS-001'};
+const authorizationFields = {...blankFields,target:snapshot,release,authorizationNo:'PA? #%',customer:release,project:snapshot,site:' SITE ',line:' LINE ',purpose:'PRODUCTION',limitMode:'FINITE',limit:'3',note:' Exact restriction\n'};
+test('delivery exports exact declarations, canonical frozen artifact set and exact revision trace',()=>{
+ const review=prepare('delivery',deliveryFields,key);
+ assert.equal(review.draft.path,'/api/v1/deliveries');assert.equal(review.draft.trace,'/distribution/deliveries/PK%3F%20%23%25/2');
+ assert.equal(review.draft.audit,'/activity/EVT-DP-12345678123412341234123456789abc');
+ assert.deepEqual(exported('delivery',deliveryFields).body,{request_id:key,release_id:release,package_no:'PK? #%',revision:2,snapshot_artifact_ids:[release,snapshot],recipient_type:' CUSTOMER ',recipient_code:' CUS-001 ',purpose:' PRODUCTION ',created_by:' Declared creator '});
+ assert.deepEqual(exported('delivery',{...deliveryFields,artifacts:`${release}\r\n${snapshot}`,actor:''}).body.snapshot_artifact_ids,[release,snapshot]);
+ assert.equal(exported('delivery',{...deliveryFields,actor:''}).body.created_by,null);
+});
+test('distribution requires an exact package UUID, carries no invented operator and has scoped traces',()=>{
+ const review=prepare('distribution',distributionFields,key);
+ assert.equal(review.draft.path,'/api/v1/distributions');assert.equal(review.draft.trace,'/distribution/distributions/DS%3F%20%23%25');
+ assert.equal(review.draft.audit,'/activity/EVT-DS-12345678123412341234123456789abc');
+ assert.deepEqual(exported('distribution',distributionFields).body,{request_id:key,delivery_package_id:snapshot,distribution_no:'DS? #%',recipient_type:'CUSTOMER',recipient_code:'CUS-001'});
+});
+test('authorization exports explicit finite scope and exact restriction without approval fields',()=>{
+ const review=prepare('authorization',authorizationFields,key);
+ assert.equal(review.draft.path,'/api/v1/authorizations');assert.equal(review.draft.trace,'/distribution/authorizations/PA%3F%20%23%25');
+ assert.equal(review.draft.audit,'/activity/EVT-PA-12345678123412341234123456789abc');
+ assert.deepEqual(exported('authorization',authorizationFields).body,{request_id:key,distribution_id:snapshot,release_id:release,authorization_no:'PA? #%',customer_id:release,project_id:snapshot,site_code:' SITE ',line_code:' LINE ',purpose:'PRODUCTION',batch_limit:3,restriction_note:' Exact restriction\n'});
+ assert.equal(exported('authorization',{...authorizationFields,limitMode:'UNLIMITED',limit:'',note:''}).body.batch_limit,null);
+ assert.equal(exported('authorization',{...authorizationFields,note:''}).body.restriction_note,null);
+});
+for(const value of ['', '0','-1','1.2','01',' 1','1 ','1e3','2147483648','9007199254740992','Infinity']) {
+ test(`invalid revision ${JSON.stringify(value)} rejected`,()=>assert.throws(()=>prepare('delivery',{...deliveryFields,revision:value},key),/Revision/));
+ test(`invalid finite quota ${JSON.stringify(value)} cannot silently become unlimited`,()=>assert.throws(()=>prepare('authorization',{...authorizationFields,limit:value},key),/Batch limit/));
+}
+for(const changes of [{limitMode:''},{limitMode:'finite'},{limitMode:'UNLIMITED',limit:'3'},{limitMode:'UNLIMITED',limit:' '}]) {
+ test(`ambiguous quota mode ${JSON.stringify(changes)} rejected`,()=>assert.throws(()=>prepare('authorization',{...authorizationFields,...changes},key)));
+}
+for(const changes of [{target:'bad'},{packageNo:'../PK'},{packageNo:'P'.repeat(51)},{artifacts:''},{artifacts:'bad'},{artifacts:`${release}\n\n${snapshot}`},{artifacts:`${release}\n${release.toUpperCase()}`},{artifacts:Array(201).fill(release).join('\n')},{recipientType:''},{recipientType:'R'.repeat(51)},{recipientCode:' '},{recipientCode:'C'.repeat(81)},{purpose:''},{purpose:'P\nQ'},{actor:' '},{actor:'A'.repeat(121)}]) {
+ test(`invalid delivery input ${JSON.stringify(changes).slice(0,70)} rejected`,()=>assert.throws(()=>prepare('delivery',{...deliveryFields,...changes},key)));
+}
+for(const changes of [{target:'PK-001'},{distributionNo:''},{distributionNo:'..'},{distributionNo:'D'.repeat(51)},{recipientType:'TYPE\t'},{recipientCode:''}]) {
+ test(`invalid distribution input ${JSON.stringify(changes)} rejected`,()=>assert.throws(()=>prepare('distribution',{...distributionFields,...changes},key)));
+}
+for(const changes of [{target:''},{release:'ASR 2.3.4'},{customer:'CUS-001'},{project:'PROJ'},{authorizationNo:'PA/A'},{authorizationNo:'P'.repeat(51)},{site:''},{site:'S'.repeat(81)},{line:' '},{line:'L\n'},{purpose:' '},{purpose:'P'.repeat(51)}]) {
+ test(`invalid authorization input ${JSON.stringify(changes).slice(0,70)} rejected`,()=>assert.throws(()=>prepare('authorization',{...authorizationFields,...changes},key)));
+}
+test('distribution chain reviews keep immutable nested artifacts and stable keys with confirmation gates',()=>{
+ for(const [operation,source] of [['delivery',deliveryFields],['distribution',distributionFields],['authorization',authorizationFields]]) {
+  const fields={...source};const raw=prepare(operation,fields,key);assert.throws(()=>exportRequest(raw),/Confirm/);
+  const review=confirm(raw,true);const before=exportRequest(review);fields.limit='999';fields.artifacts='';fields.recipientCode='OTHER';
+  assert.equal(exportRequest(review),before);assert.throws(()=>{review.draft.payload.batch_limit=999;},TypeError);
+  if(operation==='delivery')assert.throws(()=>review.draft.payload.snapshot_artifact_ids.push(key),TypeError);
+  assert.throws(()=>exportRequest(confirm(review,false)),/Confirm/);
+ }
+});
+test('positive integer storage bounds are accepted without rounding',()=>{
+ assert.equal(exported('delivery',{...deliveryFields,revision:'2147483647'}).body.revision,2147483647);
+ assert.equal(exported('authorization',{...authorizationFields,limit:'2147483647'}).body.batch_limit,2147483647);
+});

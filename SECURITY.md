@@ -171,3 +171,15 @@ Approval/Decision preparation requires explicitly entered declared operator text
 ## Evidence/reference request preparation
 
 Impact/assignment/resource preparation never establishes candidate membership, scope, identity, test execution or file access. Resource positions are inert text, with no URL fetch, local/UNC open or upload; credentials/control characters are rejected for WEB_URL. Supplier/customer targets still require PLATFORM_ADMIN in OIDC mode. Explicit declarations never replace trusted principals. Public read-only, current scoped guards, actor binding and atomic audit remain unchanged.
+
+## Distribution-chain request preparation
+
+Delivery/Distribution/Authorization forms prepare existing keyed bodies with explicit
+revision/artifact UUIDs, exact recipients/purpose and customer/project/site/line scope.
+Finite limits and unlimited null require explicit choices; no default quota is inferred.
+The backend still selects/validates the approved snapshot and policies under its current
+locks; authorization creation stays DRAFT. Distribution creation does not send files or
+acknowledge receipt. Existing exact roles, trusted actor binding, retry and atomic audit
+remain unchanged. EVT-DP-/EVT-DS-/EVT-PA- links use UUID hex. No API/schema/migration,
+transport, login or public-write setting changes; API 0.18.0/head 0017 remain. See
+`docs/controlled-write-ui.md` for preparation subsets and remaining submission work.

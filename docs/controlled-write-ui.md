@@ -8,7 +8,7 @@ to enable public writes. The current `/commands` workspace prepares requests onl
 | First | Snapshot, actual-software report/correction, Batch | Request preparation implemented | Approved target, login/session, authenticated submission and uncertain-result recovery |
 | Next | Approval Action, Release Decision | Request preparation implemented; exact step UUID visible in approval detail | Permission-aware pickers, authenticated submission and outcome verification |
 | Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Request preparation implemented | Permission-aware context pickers, authenticated submission and outcome verification |
-| Later | Delivery, Distribution, Authorization | API retry/locks exist; forms pending | Artifact policy/recipient/scope pickers and complete chain confirmation |
+| Next | Delivery, Distribution, Authorization | Request preparation implemented | Artifact policy/recipient/scope pickers and complete chain confirmation |
 | Later | Test Release, Deployment, Changeover | API retry/locks exist; forms pending | Purpose/location/source pickers; activation/revocation contracts where absent |
 
 ## Implemented workspace
@@ -64,7 +64,7 @@ verify the API result and matching audit evidence after controlled execution.
 
 ## Evidence and reference preparation
 
-Eight of 14 commands now have request-preparation forms; this counts preparation,
+Eleven of 14 commands now have request-preparation forms; this counts preparation,
 not authenticated submission or full Phase 6 completion. Impact evidence links prefill
 issue number and exact release/frozen-snapshot UUIDs. No missing snapshot is invented.
 Impact requires AFFECTED/NOT_AFFECTED/NEEDS_REVIEW, reason and declared operator;
@@ -101,6 +101,46 @@ Array/oversized release/snapshot/criterion context stays empty; malformed UUID t
 invalidate old review. Sensitive locations/reasons/operators are not query-prefilled.
 No backend/schema, migration, transport, browser storage or auth configuration changes.
 
+## Distribution-chain preparation
+
+Delivery/Distribution/Authorization use the same immutable review, explicit confirmation
+and stable request UUID export. No transport, authentication, persistence, migration
+or command API behavior changes. Catalogs expose preparation entries; exact package
+revision and distribution pages prefill only their stored UUID target. Frozen manifest
+pages show artifact UUIDs and a release-only Delivery entry. It does not preselect files,
+recipients, purposes, revision or capacity, and it does not pin a release decision.
+
+Delivery requires release UUID, package number, explicit revision, exact recipient
+and purpose strings, and 1–200 distinct snapshot artifact UUIDs, one per line. UUIDs
+normalize to lowercase, duplicates (including case variants) fail, ordering is sorted
+and the nested array is frozen. This matches API order-insensitive retry semantics.
+The existing backend selects the latest RELEASE decision under locks and validates
+approval, snapshot membership, INTERNAL_ONLY and frozen recipient/purpose policy.
+A displayed historical/current snapshot is not proof of the selected decision. The
+UI cannot freeze this choice; controlled execution must inspect its exact outcome.
+Optional created_by retains exact declaration or null and is not authentication.
+
+Distribution takes a package UUID identifying one exact revision, business number
+and explicit recipient strings. The API checks exact recipient equality and package
+eligibility. Recording READY does not send files, record sent/acknowledged times,
+or certify customer receipt. No actor field is invented for this API.
+
+Authorization requires distribution/release/customer/project UUIDs, number, purpose,
+site/line and explicit FINITE or UNLIMITED scope. FINITE needs an integer 1–2147483647;
+blank/zero/fraction/exponent/padded/overflow values fail. UNLIMITED exports null only
+when the finite field is empty. Revision has the same positive integer storage bound.
+The UI adds these stricter syntactic subsets without changing Pydantic or legacy callers.
+Policy/recipient/site/line strings preserve exact spelling, including outer spaces,
+with nonblank/control/column-length checks; business numbers are trimmed and route-safe.
+Restriction text retains exact content or null. No actor/approval/status field is invented.
+The API verifies the customer application release, exact distributed snapshot and
+purpose chain; creation is DRAFT, not APPROVED or permission to deploy/produce.
+
+Delivery trace links include package number AND revision; Distribution/Authorization
+links use the exact business number. Expected audit links use EVT-DP-/EVT-DS-/EVT-PA-
+with UUID hex. These are expected post-execution records, not confirmation of a write.
+Permission-aware file/recipient/scope pickers and full chain acceptance remain open.
+
 ## Boundary and remaining acceptance
 
 The workspace has no fetch/POST transport, server mutation route, API-origin picker,
@@ -110,7 +150,7 @@ Public API remains READ_ONLY_MODE=true. The workspace does not bypass OIDC, exac
 scope, trusted actor, row locking, versions, limits or atomic audit; it makes no write.
 
 Actual authenticated submission, permission-aware pickers, stale-context refresh,
-uncertain-result resolution, success/error trace and the other six forms remain pending.
+uncertain-result resolution, success/error trace and the other three forms remain pending.
 Configure an approved OIDC provider/session and a separately approved controlled
 write target before implementing production submission. Avoid exposing auth-disabled
 writes through a frontend proxy. General correction/revocation workflows remain open.
