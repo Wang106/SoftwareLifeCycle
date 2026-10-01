@@ -7,7 +7,7 @@
 - Five of 14 command forms prepare requests. Login, authenticated submission, provider-backed outcome handling and nine other forms remain incomplete.
 - No backend/API/schema change; API 0.18.0, head 0017 and public read-only settings remain. Roadmap remains 34/44 (77%), Phase 6 3/5 (60%).
 
-- Verification: 56 frontend tests; Next.js/OpenNext builds; complete backend 688 passed, no skips, including 103 real PostgreSQL tests. Local preparation SSR passed. No new migration.
+- Verification: 56 frontend tests; Next.js/OpenNext builds; complete backend 688 passed, no skips, including 103 real PostgreSQL tests. Local preparation SSR passed. No new migration. Live approval/decision review/copy and edit-invalidation passed; health 200, API 0.18.0/schema 0017, both governance writes 403 read_only_mode. Feature commit 961994a is pushed; Cloudflare live behavior verified without deployment ID, unchanged Render backend remains live.
 
 ## Request-preparation workspace — 2026-10-01
 

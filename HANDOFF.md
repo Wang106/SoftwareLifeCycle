@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `dc3a20841b7e58bb6638e3914ff298e5d0047a3e`
-- Baseline subject: `feat: add reviewed request preparation for snapshot and production commands`
+- Verified baseline: `961994af31da607a5b36066ee7998eb3c4ea60bc`
+- Baseline subject: `feat: prepare reviewed approval and release decision requests`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -287,4 +287,16 @@ requests; the other nine, approved OIDC/session/target, submission, uncertain ou
 and general correction/revocation remain. No backend change or migration; API 0.18.0,
 head 0017. Roadmap scope remains 34/44 (77%), Phase 6 3/5 (60%).
 
-Frontend helper tests: 56 passed, no skips (26 added governance cases). Next.js and OpenNext/Cloudflare Worker production builds passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Local SSR checks passed for approval/decision exact target/step context, oversized-step rejection and Create entry. No migration or backend change. Online checks follow the scoped push.
+Frontend helper tests: 56 passed, no skips (26 added governance cases). Next.js and OpenNext/Cloudflare Worker production builds passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a new isolated /tmp cluster. Local SSR checks passed for approval/decision exact target/step context, oversized-step rejection and Create entry. No migration or backend change. Feature commit `961994af31da607a5b36066ee7998eb3c4ea60bc` was pushed to main.
+Live Cloudflare approval detail APR-0121 shows exact step UUIDs and no fabricated
+pending-step link for its closed state. Its decision-preparation link retains the
+approval number. Both new forms were reviewed/confirmed/copied in the live browser;
+repeated copies retained identical keys/content, editing decision/step removed the
+old review, and switching operation cleared old fields. No business POST was sent.
+The initial browser tab still showed the prior workspace during automatic deployment;
+fresh navigation then exposed the new detail/forms. Live feature behavior is verified;
+Cloudflare deployment ID/commit metadata remains unavailable through installed tools.
+Render connector confirms dep-dav0vf0473hc73a8vl10 remains live for unchanged backend
+commit bbd8a42. Fresh health returned 200 / API 0.18.0 / exact database revision
+0017_deployment_actual_version; harmless approval-action and release-decision POSTs
+both returned 403 read_only_mode. Public settings remain unchanged.
