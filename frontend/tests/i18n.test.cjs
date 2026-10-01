@@ -74,7 +74,7 @@ for(const file of [...files('app'),...files('components')].filter(f=>!f.endsWith
 }
 
 test('record-derived UI markers and fallback states translate in Chinese',()=>{
- for(const label of ['CHECK','CONSISTENT','CURRENT','ELIGIBLE','HISTORICAL','INVALID','NOT DEPLOYED','TEST','UNASSIGNED','VALID','differ','pending','unknown',' · CURRENT',' · NOT CURRENT']) {
+ for(const label of ['CHECK','CONSISTENT','CURRENT','ELIGIBLE','HISTORICAL','INVALID','NOT DEPLOYED','TEST','UNASSIGNED','VALID','differ','pending','unknown',' · CURRENT',' · NOT CURRENT','SCR-142 moved to IN TEST','DVP-032 execution #2 passed','SNAP-008 frozen','APR-0121 approved','RD-0081 released ASR 2.3.4','DIST-0326 acknowledged','PA-0081 approved','DEP-0081 software matched','PB-1005-A started','CONFIDENTIAL','STRICTLY_CONFIDENTIAL','LOCAL_ONLY','MAIN_APPLICATION','CALIBRATION','EUROPE','AMERICAS']) {
   assert.match(translateText(label,'zh'),/[\u4e00-\u9fff]/,label);
   assert.equal(translateText(label,'en'),label);
  }

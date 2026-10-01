@@ -307,7 +307,7 @@ provide a consistent historical snapshot during concurrent writes.
 All 63 page entry points and all 14 preparation forms now use the shared bilingual
 interface, default Chinese. The language-only cookie persists the selected preference;
 UI switching preserves form state, request_id, raw enum values, JSON and exact links.
-Recorded evidence/identifiers stay original. See [interface contract](docs/i18n.md).
+Stored evidence and identifiers stay original; known demo summaries have display translations. See [interface contract](docs/i18n.md).
 API 0.18.3 and schema 0017_deployment_actual_version are unchanged; no migration.
 Public staging remains read-only. Authenticated submission and OIDC configuration are
 still pending. Roadmap checked scope stays 34/44 (77%); bilingual coverage is an
