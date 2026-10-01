@@ -10,7 +10,7 @@ The demo dataset follows one consistent frozen release path:
 
 `SNAP-008 → APR-0121 → RD-0081 → DP-0226 → DIST-0326 → PA-0081 → DEP-0081 → CO-0032 → PB-1005-A`
 
-The Activity workspace is backed by an append-only audit ledger. PostgreSQL rejects updates and deletes to formal audit events; corrections must be recorded as new events.
+The Activity workspace is backed by an append-only audit ledger. PostgreSQL rejects updates and deletes to formal audit events; corrections must be recorded as new events. All 14 current command routes create their domain change and audit event atomically, and OIDC mode binds those events to the authenticated principal.
 
 ## Project handoff and source of truth
 
@@ -134,7 +134,7 @@ For Cloudflare Workers Builds, also add any variables needed during static gener
 
 ## Backend deployment
 
-For a sample-only online test database, API service, read-only guard, Cloudflare connection, and smoke check, see [Test database and API deployment](docs/staging-api.md). The test environment should contain demo records only; user authentication and project permissions are not implemented yet.
+For a sample-only online test database, API service, read-only guard, Cloudflare connection, and smoke check, see [Test database and API deployment](docs/staging-api.md). The test environment should contain demo records only. OIDC authentication and scoped project/software permissions exist in code, but no provider is configured and public staging remains read-only.
 
 Build and run `backend/Dockerfile` with a managed PostgreSQL database. At minimum configure:
 
@@ -171,7 +171,7 @@ The product baseline is available at `docs/baseline-v1.1.html`.
 
 `GET /api/v1/issues/{issue_no}/impact/{release_id}` shows the latest **frozen** snapshot, its frozen component versions, and the latest execution per linked DVP item matching that exact release and snapshot. Candidate software matching and a PASS result do not establish issue impact. The Issue page links to these evidence pages and reads append-only judgment history from `GET /api/v1/issues/{issue_no}/impact-assessments` (default latest 50, maximum 200, `truncated` indicates more history).
 
-`POST /api/v1/issues/{issue_no}/impact-assessments` accepts `request_id` (client-generated UUID), `release_id`, `snapshot_id`, `decision` (`AFFECTED`, `NOT_AFFECTED`, `NEEDS_REVIEW`), nonblank `reason` and `actor_name`, and optional `evidence_ref`. The snapshot must be frozen, belong to the release, and the release software must match a linked SCR. New requests return 201; identical retries return 200 without another audit event; reusing an ID with different content returns 409. Correct a judgment by submitting a **new** request ID; earlier records remain. Judgment and `ISSUE_IMPACT` audit event commit in the same transaction. Reviewer names are declared inputs, not authenticated identities. This write endpoint remains blocked by `READ_ONLY_MODE=true` on the public test API; no public write form is exposed.
+`POST /api/v1/issues/{issue_no}/impact-assessments` accepts `request_id` (client-generated UUID), `release_id`, `snapshot_id`, `decision` (`AFFECTED`, `NOT_AFFECTED`, `NEEDS_REVIEW`), nonblank `reason` and `actor_name`, and optional `evidence_ref`. The snapshot must be frozen, belong to the release, and the release software must match a linked SCR. New requests return 201; identical retries return 200 without another audit event; reusing an ID with different content returns 409. Correct a judgment by submitting a **new** request ID; earlier records remain. Judgment and `ISSUE_IMPACT` audit event commit in the same transaction. In OIDC mode the authenticated principal is authoritative and the submitted reviewer name is retained only as a declaration. This write endpoint remains blocked by `READ_ONLY_MODE=true` on the public test API; no public write form is exposed.
 
 Migration `0012_issue_impact_assessments` creates the history table with PostgreSQL UPDATE/DELETE rejection trigger. No existing migration or Seed data is changed, and a judgment for an older snapshot is not automatically applied to the latest snapshot. History has a bounded latest-record list, without a pagination cursor yet. PostgreSQL locking serializes writes for one issue; SQLite tests verify transaction behavior but do not simulate concurrent PostgreSQL connections.
 
@@ -181,9 +181,9 @@ Migration `0012_issue_impact_assessments` creates the history table with Postgre
 
 Optional `release_id` (UUID) selects verification context; `snapshot_no` selects a historical frozen snapshot of that release, otherwise the latest frozen snapshot is used. Selecting a snapshot without a release returns 422; mismatched scope/snapshot returns 409; missing SCR/release returns 404. Only executions for the exact release and snapshot count, and the greatest execution number per item wins. A later FAIL overrides an earlier PASS. Assignment percentage and all-assigned-tests PASS counts are separate; with no frozen context execution counts are unknown. The full SCR plan includes tests with no assignment, rather than silently omitting pending tests. This report does not change release readiness/approval gates. Definitions and assignments are current records and are **not** frozen by historical release snapshots.
 
-`POST /api/v1/changes/{request_no}/acceptance-dvp-links` accepts `request_id` (UUID), `criterion_id`, `dvp_item_id`, nonblank `actor_name` and `reason`. Both criterion and DVP plan must belong to that SCR. New assignments return 201; identical request retries return 200 with no duplicate audit; conflicting IDs or repeated criterion/test pairs return 409. Assignment and `ACCEPTANCE_DVP` audit event commit atomically. A criterion may require multiple tests: all assigned tests must PASS in the selected context to display PASSED. The coverage response includes assignment IDs, declared reviewer, reason and time. Reviewer names are not authenticated identities.
+`POST /api/v1/changes/{request_no}/acceptance-dvp-links` accepts `request_id` (UUID), `criterion_id`, `dvp_item_id`, nonblank `actor_name` and `reason`. Both criterion and DVP plan must belong to that SCR. New assignments return 201; identical request retries return 200 with no duplicate audit; conflicting IDs or repeated criterion/test pairs return 409. Assignment and `ACCEPTANCE_DVP` audit event commit atomically. A criterion may require multiple tests: all assigned tests must PASS in the selected context to display PASSED. The coverage response includes assignment IDs, declared reviewer, reason and time. In OIDC mode the authenticated principal is authoritative and the declared reviewer is preserved separately.
 
-Migration `0013_acceptance_dvp_links` adds the assignment table, unique criterion/test pair and PostgreSQL append-only trigger. Existing records and Seed are unchanged; acceptance links are not inferred from test names or created by Seed. No assignment removal/revocation workflow is provided yet. Public test API remains `READ_ONLY_MODE=true`, and `/changes/{request_no}/coverage` exposes only read/query controls. Writes are for a controlled local development environment until authentication and permissions are implemented.
+Migration `0013_acceptance_dvp_links` adds the assignment table, unique criterion/test pair and PostgreSQL append-only trigger. Existing records and Seed are unchanged; acceptance links are not inferred from test names or created by Seed. No assignment removal/revocation workflow is provided yet. Public test API remains `READ_ONLY_MODE=true`, and `/changes/{request_no}/coverage` exposes only read/query controls. Writes remain limited to controlled local development until an approved OIDC provider is configured and the remaining write-safety gates pass.
 
 ### DVP catalog and bounded execution history
 
@@ -201,9 +201,9 @@ DVP detail now reads profile and paginated history separately, preserves filter 
 
 `GET /api/v1/testing/releases/{test_release_no}/executions` lists only records explicitly referencing that Test Release, with bounded `limit` (1–200, default 50) and `offset`. Ordering uses recorded time and execution UUID; execution numbers alone are not globally unique across different DVP items. Inconsistent release/snapshot bindings remain visible and flagged. Detail summary outcomes exclude those mismatched records and use the latest execution number per matching item; executions without a Test Release reference are not counted. Executed item counts do not establish complete planned coverage. Frozen file metadata does not grant download/distribution rights, and ACTIVE test status is not a production permission.
 
-`POST /api/v1/testing/releases` creates a **DRAFT** using `request_id` (UUID), unique `test_release_no`, `release_id`, `snapshot_id`, `purpose_scope` (SOFTWARE_TEST, BATTERY_TEST or CUSTOMER_TEST), nonblank `actor_name` and `reason`. Unknown fields such as a client-supplied ACTIVE status are rejected. The snapshot must be frozen and match the release; existing approval/production decisions are not required to create a testing draft. Identical retries return 200 instead of 201, without another audit; conflicting request IDs or duplicate numbers return 409. Domain creation and the TEST_RELEASE audit event commit atomically. Existing legacy rows are never overwritten. Audit records carry the declared reviewer and reason; names are not verified identities.
+`POST /api/v1/testing/releases` creates a **DRAFT** using `request_id` (UUID), unique `test_release_no`, `release_id`, `snapshot_id`, `purpose_scope` (SOFTWARE_TEST, BATTERY_TEST or CUSTOMER_TEST), nonblank `actor_name` and `reason`. Unknown fields such as a client-supplied ACTIVE status are rejected. The snapshot must be frozen and match the release; existing approval/production decisions are not required to create a testing draft. Identical retries return 200 instead of 201, without another audit; conflicting request IDs or duplicate numbers return 409. Domain creation and the TEST_RELEASE audit event commit atomically. Existing legacy rows are never overwritten. In OIDC mode audit identity comes from the authenticated principal and the declared reviewer remains separately visible.
 
-Public test mode continues to reject POST with 403. The create API is for a controlled development environment; there is no public write form or activation/supersession/revocation workflow yet. No migration or Seed modifications are introduced by this round; head remains `0013_acceptance_dvp_links`. Current catalog pages do not provide an external test-system protocol.
+Public test mode continues to reject POST with 403. The create API is for a controlled development environment; there is no public write form or activation/supersession/revocation workflow yet. That round introduced no migration or Seed modification; later identity work advances the current head to `0016_authenticated_audit_actors`. Current catalog pages do not provide an external test-system protocol.
 
 ### Materials and evidence references (round 6)
 
@@ -215,7 +215,7 @@ Public test mode continues to reject POST with 403. The create API is for a cont
 
 Locations are HTTP(S) URLs without embedded user/password (WEB_URL), absolute POSIX/Windows drive paths (LOCAL_PATH), or UNC/server-share paths (NETWORK_PATH). Relative paths, unsupported schemes, malformed ports and control characters are rejected. Validation is syntactic only. Neither the server nor browser automatically fetches a location; web addresses require an explicit user click and open without referrer. Local/share paths are displayed as escaped text. Do not register credentials, expiring signed URLs or private company locations in the public test database. Registration does not upload files, verify evidence contents, establish tester identity or grant artifact distribution permission.
 
-Migration `0014_resource_links` adds the indexed reference table and PostgreSQL trigger rejecting UPDATE/DELETE. New registrations and their RESOURCE_LINK audit event commit together; no update/delete API is exposed. Seed is unchanged and creates no sample references, so the test catalog initially shows a real empty state. Public test mode remains READ_ONLY_MODE=true and rejects POST; actor names remain declarations. Corrections, revocation, attachment upload and access-control workflows remain future work.
+Migration `0014_resource_links` adds the indexed reference table and PostgreSQL trigger rejecting UPDATE/DELETE. New registrations and their RESOURCE_LINK audit event commit together; no update/delete API is exposed. Seed is unchanged and creates no sample references, so the test catalog initially shows a real empty state. Public test mode remains READ_ONLY_MODE=true and rejects POST; OIDC mode binds the trusted principal and retains submitted actor text as a declaration. Corrections, revocation, attachment upload and access-control workflows remain future work.
 
 ### Bounded delivery, distribution and authorization catalogs (round 7)
 
@@ -225,7 +225,7 @@ The three `/distribution/...` directory pages now use these catalogs, show exact
 
 Delivery rows include artifact/distribution counts; distribution rows include linked authorization counts and acknowledgment timestamps. Authorization rows show registered batch count, deployment count and finite remaining batch capacity (clamped to zero); unlimited capacity remains null. All batch statuses count, matching the existing production service's limit rule. Counts, remaining capacity and an APPROVED status do not grant permission to deploy/create batches: existing write services continue enforcing actual software, authorization, changeover and batch constraints.
 
-Legacy `/api/v1/deliveries`, `/distributions`, `/authorizations` list formats and all detail/write routes remain unchanged (legacy lists are still unbounded). This round introduces no migration, Seed changes or writes; head stays `0014_resource_links`, and the public test API stays read-only.
+Legacy `/api/v1/deliveries`, `/distributions`, `/authorizations` list formats and all detail/write routes remain unchanged (legacy lists are still unbounded). That catalog round introduced no migration, Seed changes or writes; later identity work advances the current head to `0016_authenticated_audit_actors`, and the public test API stays read-only.
 
 For reproducible backend test setup, run `python -m pip install -r backend/requirements-dev.txt`; HTTP query validation tests use Starlette TestClient/httpx. Runtime container dependencies remain in requirements.txt.
 
@@ -237,7 +237,7 @@ For reproducible backend test setup, run `python -m pip install -r backend/requi
 
 Binding flags compare stored authorization/software/location relationships; actual software separately reports NOT_RECORDED, PARTIAL, MATCH or MISMATCH by stored IDs. A row's domain status is preserved even if it conflicts with the observed software. Batch records resolve their original deployment and optional changeover, never the latest deployment of a line. Missing context stays visible. Structural observations do not prove physical installation or grant production permission. Legacy deployment/batch/site detail and write routes remain unchanged; legacy lists remain unbounded.
 
-No migration, Seed changes or writes are introduced. Revision remains `0014_resource_links`; public test access remains read-only.
+That production-catalog round introduced no migration, Seed changes or writes; later identity work advances the current head to `0016_authenticated_audit_actors`. Public test access remains read-only.
 
 ### Bounded approvals, actions and exact release decisions (round 9)
 
@@ -245,9 +245,9 @@ New GET endpoints `/api/v1/governance/approvals` and `/decisions` accept exact `
 
 `/api/v1/governance/approvals/{approval_no}` returns profile/target and at most 200 ordered steps, with `step_total`, `steps_truncated`, `action_total`; it never loads actions. `/approvals/{approval_no}/actions` supports exact `action`, limit/offset, newest timestamp/UUID ordering, filtered totals/counts and step binding consistency. Unrelated or missing step references are visible and flagged. `/api/v1/governance/decisions/{decision_no}` resolves that exact recorded Release Decision, including notes, declared actor, timestamp and original release/snapshot/approval; no latest-decision substitution is performed.
 
-Frontend `/approvals`, `/approvals/{approval_no}`, `/release-decisions`, `/release-decisions/{decision_no}` use the new APIs. SSR/ASR profiles link to their governance history. Approval actions and formal Release Decisions are presented separately. Unsupported approval target types are marked UNVERIFIED_TARGET_TYPE and cannot accidentally resolve a same-UUID Release. Structural mismatch flags are observations; current approval status does not rewrite a past Release Decision, and catalog states do not authorize delivery/production. Declared actor names remain unverified until identity integration.
+Frontend `/approvals`, `/approvals/{approval_no}`, `/release-decisions`, `/release-decisions/{decision_no}` use the new APIs. SSR/ASR profiles link to their governance history. Approval actions and formal Release Decisions are presented separately. Unsupported approval target types are marked UNVERIFIED_TARGET_TYPE and cannot accidentally resolve a same-UUID Release. Structural mismatch flags are observations; current approval status does not rewrite a past Release Decision, and catalog states do not authorize delivery/production. Declared actor names remain declarations; OIDC-mode events separately identify the authenticated principal.
 
-Legacy `/api/v1/approvals` and its detail/write formats remain unchanged; those legacy histories/lists are still unbounded. No approval state-machine, authentication choice, migration, Seed change or new write API is introduced. Revision remains `0014_resource_links`; public testing remains read-only.
+Legacy `/api/v1/approvals` and its detail/write formats remain unchanged; those legacy histories/lists are still unbounded. The bounded-governance round introduced no approval state-machine, migration, Seed change or new write API; later identity migrations advance the current revision to `0016_authenticated_audit_actors`. Public testing remains read-only.
 
 
 ### Bounded audit ledger review
@@ -273,25 +273,28 @@ separately. Historical events are not rewritten. Existing `Issue` / `SoftwareCha
 types remain supported, and public test mode remains read-only.
 
 
-### Atomic governance and distribution audit recording
+### Atomic command audit recording
 
 New calls to `ApprovalService.act()` / `create_release_decision()` and
 `DistributionService.create_delivery()` / `create_distribution()` / `create_authorization()`
-now commit a domain change and one append-only audit event in the same transaction. The internal
+plus snapshot creation and production deployment/actual/changeover/batch commands now commit a
+domain change and one append-only audit event in the same transaction. The internal
 `commit_with_audit` helper flushes domain UUIDs, records the event and commits; event/commit failures
 roll back the pending domain and ledger changes. `AuditEventService.record()` itself remains
 flush-only. Approval records capture the action UUID, step and before/after states; decisions
 capture the original Snapshot hash and approval binding; delivery/distribution/authorization
 creation captures exact package revision and scope. Draft authorization creation does not approve
-production. Numbers still follow existing duplicate rejection rules; no new idempotency or
-concurrent-approval guarantee is introduced. Invalid approval actions are rejected before step mutation.
+production. Snapshot events capture the frozen hash and artifact count; production events capture
+exact authorization, release, snapshot, deployment and before/after identifiers. Numbers still follow
+existing duplicate rejection rules; no new idempotency, row-locking or optimistic-concurrency
+guarantee is introduced. Invalid approval actions are rejected before step mutation.
 
 When OIDC is enabled, atomically audited routes use the authenticated principal as the domain and
 audit actor; request actor strings are retained only as declarations. Distribution/authorization
 requests need no actor field because the authenticated principal supplies it. Disabled local mode
 keeps the legacy `Not recorded` / declared behavior. There are no new public write forms, no
 historical identity backfill and no seed mutation; previous seeded events remain unverified history
-and do not imply complete auto-audit coverage.
+and do not acquire a verified actor retroactively.
 
 Approval, exact Delivery revision, Distribution and Authorization profiles link to UUID-scoped
 Activity history. Delivery event catalog rows resolve revision from the recorded package UUID in

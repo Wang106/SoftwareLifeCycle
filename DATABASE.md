@@ -71,6 +71,8 @@ Foreign keys and stored UUIDs are the trace authority. Display numbers, versions
 
 Revision `0015` stores only external identity references and grants. It deliberately contains no password, token or client-secret columns, and no Seed identities or grants are created. Revision `0016` adds nullable actor identity columns so historical/seed audit events remain unchanged while new OIDC-mode events can reference the exact local principal and preserve the request's declared name separately.
 
+API version `0.13.0` adds audit events for snapshot and production commands without changing the schema; revision `0016_authenticated_audit_actors` remains the required head.
+
 Never edit an applied migration to change history. Add a new ordered revision, import its model metadata in Alembic as required, and update `required_db_revision` in `backend/app/core/config.py` together with deployment documentation and readiness tests.
 
 ## Data handling rules
@@ -79,4 +81,4 @@ Never edit an applied migration to change history. Add a new ordered revision, i
 - `DATABASE_URL` belongs only in the API environment, not frontend public variables or Git.
 - Demo Seed is idempotent for named sample records but is not a production provisioning process.
 - Backup, restore, retention and disaster-recovery procedures are not yet defined and are roadmap items.
-- Before a company deployment, configure the approved OIDC provider and grants, review classifications/access rules, close remaining command-audit gaps, disable Seed and validate the complete migration chain on a fresh PostgreSQL database.
+- Before a company deployment, configure the approved OIDC provider and grants, review classifications/access rules, add required idempotency/concurrency controls, disable Seed and validate the complete migration chain on a fresh PostgreSQL database.

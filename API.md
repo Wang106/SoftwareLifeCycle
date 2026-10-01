@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.12.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.13.0`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -59,9 +59,8 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 - In OIDC mode, every current write route additionally requires its exact active project/software role or the exceptional `PLATFORM_ADMIN` override. Scope is resolved from stored relationships; a client-supplied project alone is not authorization evidence.
 - `AUTH_MODE=disabled` preserves controlled local development compatibility; it is not appropriate for public writes.
 - For atomically audited writes in OIDC mode, stored actor names come from the authenticated principal. Audit events also expose `actor_principal_id`, full `actor_display_name` and the original `declared_actor_name`. Disabled mode retains legacy declaration behavior.
-- Snapshot and production command paths still have no actor/audit sink; authorization is enforced, but those operations need atomic audit coverage before controlled exposure.
 - Issue impact and acceptance-link writes use client-generated request IDs for retry handling; other commands do not all provide the same idempotency guarantee.
-- Current approval/release-decision and delivery/distribution/authorization service writes record audit events in the same transaction.
+- All 14 current command routes record an audit event in the same transaction as their domain change. Snapshot and production audit payloads retain exact release, snapshot, authorization, deployment and before/after identifiers as applicable.
 - Snapshot and exact UUID bindings take precedence over matching version, name or display code.
 - Bounded catalogs validate filters, limit and offset; totals/counts apply to the full filtered result, not just the visible page.
 - Storage references are intentionally omitted from selected public evidence responses.

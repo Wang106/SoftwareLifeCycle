@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.12.0
+FastAPI 0.13.0
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -68,7 +68,7 @@ A release snapshot freezes artifact metadata and recipient rules. Later source-r
 
 ### Append-only formal history
 
-PostgreSQL rejects update/delete operations for audit events, issue impact assessments, acceptance-to-DVP links and resource links. Corrections are new records. Services that currently create governance/distribution records and audit events together use one transaction so both commit or both roll back.
+PostgreSQL rejects update/delete operations for audit events, issue impact assessments, acceptance-to-DVP links and resource links. Corrections are new records. Every current command service creates its domain change and audit event in one transaction so both commit or both roll back.
 
 ### Read models versus command paths
 
@@ -76,7 +76,7 @@ Most UI pages use read-only catalog/profile endpoints. Newer catalogs are bounde
 
 ### Trust boundary
 
-The database has provider-neutral user/service principals and scoped grants; configurable OIDC mode validates write-request identity and enforces exact active project/software roles on all current write routes. Scope is derived through stored release, SCR, distribution, authorization and deployment relationships. Atomically audited writes bind their domain/audit actor to the authenticated principal, while preserving any request declaration separately. Snapshot and production commands still lack actor/audit recording. CORS is browser policy, not authorization. Until an approved provider is configured and every exposed write has complete audit coverage, public deployment must contain sample data only and remain read-only.
+The database has provider-neutral user/service principals and scoped grants; configurable OIDC mode validates write-request identity and enforces exact active project/software roles on all current write routes. Scope is derived through stored release, SCR, distribution, authorization and deployment relationships. Every current command binds its audit actor to the authenticated principal and preserves any request declaration separately. CORS is browser policy, not authorization. Until an approved provider is configured and retry/concurrency controls pass their acceptance gates, public deployment must contain sample data only and remain read-only.
 
 ### Failure behavior
 

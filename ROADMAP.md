@@ -38,7 +38,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
 - [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate
 
-## Phase 5 — Identity and authorization (recommended next)
+## Phase 5 — Identity and authorization (current foundation)
 
 - [x] Define provider-neutral user/service principals, global roles, software membership and project membership
 - [x] Add configurable OIDC Bearer validation and ACTIVE local-principal resolution without storing tokens
@@ -46,13 +46,13 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Enforce exact project/software/resource authorization on every current write route
 - [x] Add denial tests for wrong project, wrong software, insufficient role and suspended membership
 - [x] Bind atomically audited writes to authenticated principals while preserving request declarations
-- [ ] Add atomic authenticated audit events to snapshot and production command paths
+- [x] Add atomic authenticated audit events to snapshot and production command paths
 - [x] Define admin, reviewer, release authority, distribution authority and production roles
 - [x] Keep the public demo read-only until the security acceptance criteria pass
 
 Exit gate: protected operations reject unauthenticated and out-of-scope actors; positive and negative integration tests pass; security decisions are documented.
 
-## Phase 6 — Controlled write experience
+## Phase 6 — Controlled write experience (recommended next)
 
 - [ ] Prioritize which existing command APIs require UI forms
 - [ ] Add idempotency keys and explicit conflict behavior where absent
