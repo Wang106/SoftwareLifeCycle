@@ -3,16 +3,24 @@ import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.actor import ActorContext
 from app.models.core import Artifact, ComponentDefinition, Release, ReleaseComponent
 from app.models.policy import ArtifactDistributionRule
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.snapshot_policy import SnapshotArtifactDistributionRule
+from app.services.audit import commit_with_audit
 
 class SnapshotError(ValueError):
     pass
 
 class SnapshotService:
-    def create(self, db: Session, release_id):
+    def create(
+        self,
+        db: Session,
+        release_id,
+        actor_context: ActorContext | None = None,
+    ):
+        actor = actor_context or ActorContext.legacy(None)
         release = db.get(Release, release_id)
         if not release:
             raise SnapshotError("Release not found")
@@ -134,6 +142,27 @@ class SnapshotService:
                     )
                 )
 
-        db.commit()
+        commit_with_audit(
+            db,
+            lambda: {
+                "event_no": f"EVT-SN-{snapshot.id.hex}",
+                "event_type": "SNAPSHOT",
+                "action": "FROZEN",
+                "entity_type": "RELEASE_SNAPSHOT",
+                "entity_id": snapshot.id,
+                "entity_ref": snapshot.snapshot_no,
+                **actor.audit_fields(),
+                "summary": "Release snapshot frozen",
+                "payload": {
+                    "release_id": str(release.id),
+                    "release_version": release.version,
+                    "release_type": release.release_type,
+                    "snapshot_number": snapshot.snapshot_number,
+                    "content_hash": snapshot.content_hash,
+                    "artifact_count": len(rows),
+                    "actor_source": actor.source,
+                },
+            },
+        )
         db.refresh(snapshot)
         return snapshot

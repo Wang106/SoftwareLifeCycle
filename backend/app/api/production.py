@@ -20,6 +20,7 @@ from app.models.production import (
 from app.models.snapshot import ReleaseSnapshot
 from app.services.production import ProductionError, ProductionService
 from app.authorization import authorize_authorization, authorize_deployment
+from app.actor import resolve_actor
 
 
 router = APIRouter(prefix="/api/v1", tags=["production"])
@@ -320,8 +321,11 @@ def create_deployment(
     authorize_authorization(
         request, db, payload.authorization_id, "PRODUCTION_OPERATOR"
     )
+    actor = resolve_actor(request)
     try:
-        row = ProductionService(db).create_deployment(**payload.model_dump())
+        row = ProductionService(db).create_deployment(
+            **payload.model_dump(), actor_context=actor
+        )
         return {"id": str(row.id), "deployment_no": row.deployment_no, "status": row.status}
     except ProductionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
@@ -335,8 +339,11 @@ def report_actual(
     request: Request = None,
 ):
     authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
+    actor = resolve_actor(request)
     try:
-        row = ProductionService(db).report_actual(deployment_no, **payload.model_dump())
+        row = ProductionService(db).report_actual(
+            deployment_no, **payload.model_dump(), actor_context=actor
+        )
         return {"deployment_no": row.deployment_no, "status": row.status}
     except ProductionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
@@ -350,8 +357,11 @@ def create_changeover(
     request: Request = None,
 ):
     authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
+    actor = resolve_actor(request)
     try:
-        row = ProductionService(db).create_changeover(deployment_no, **payload.model_dump())
+        row = ProductionService(db).create_changeover(
+            deployment_no, **payload.model_dump(), actor_context=actor
+        )
         return {"id": str(row.id), "changeover_no": row.changeover_no, "status": row.status}
     except ProductionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
@@ -365,8 +375,11 @@ def create_batch(
     request: Request = None,
 ):
     authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
+    actor = resolve_actor(request)
     try:
-        row = ProductionService(db).create_batch(deployment_no, **payload.model_dump())
+        row = ProductionService(db).create_batch(
+            deployment_no, **payload.model_dump(), actor_context=actor
+        )
         return {"id": str(row.id), "batch_no": row.batch_no, "status": row.status}
     except ProductionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc

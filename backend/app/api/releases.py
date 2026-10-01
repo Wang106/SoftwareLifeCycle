@@ -7,6 +7,7 @@ from app.models.core import Release
 from app.models.snapshot import ReleaseSnapshot
 from app.services.snapshot import SnapshotError, SnapshotService
 from app.authorization import authorize_release
+from app.actor import resolve_actor
 
 router = APIRouter(prefix="/releases", tags=["releases"])
 
@@ -60,8 +61,9 @@ def create_snapshot(
         project_roles=frozenset({"CONTRIBUTOR"}),
         software_roles=frozenset({"SOFTWARE_MAINTAINER"}),
     )
+    actor = resolve_actor(request)
     try:
-        s = SnapshotService().create(db, release_id)
+        s = SnapshotService().create(db, release_id, actor_context=actor)
         return {"id": str(s.id), "snapshot_no": s.snapshot_no, "content_hash": s.content_hash, "status": s.status}
     except SnapshotError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc

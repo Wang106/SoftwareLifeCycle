@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
+import uuid
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.actor import ActorContext
 from app.models.core import Release
 from app.models.distribution import SoftwareAuthorization
 from app.models.production import (
@@ -13,6 +15,7 @@ from app.models.production import (
     SoftwareChangeover,
 )
 from app.models.snapshot import ReleaseSnapshot
+from app.services.audit import commit_with_audit
 
 
 class ProductionError(ValueError):
@@ -23,7 +26,14 @@ class ProductionService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_deployment(self, deployment_no: str, authorization_id, production_line_id):
+    def create_deployment(
+        self,
+        deployment_no: str,
+        authorization_id,
+        production_line_id,
+        actor_context: ActorContext | None = None,
+    ):
+        actor = actor_context or ActorContext.legacy(None)
         if self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
         ).first():
@@ -54,11 +64,39 @@ class ProductionService:
             status="PENDING",
         )
         self.db.add(row)
-        self.db.commit()
+        commit_with_audit(
+            self.db,
+            lambda: {
+                "event_no": f"EVT-DPLOY-{row.id.hex}",
+                "event_type": "DEPLOYMENT",
+                "action": "CREATED",
+                "entity_type": "DEPLOYMENT",
+                "entity_id": row.id,
+                "entity_ref": row.deployment_no,
+                **actor.audit_fields(),
+                "summary": "Deployment expectation created",
+                "payload": {
+                    "authorization_id": str(authorization.id),
+                    "production_line_id": str(line.id),
+                    "expected_release_id": str(row.expected_release_id),
+                    "expected_snapshot_id": str(row.expected_snapshot_id),
+                    "status": row.status,
+                    "actor_source": actor.source,
+                },
+            },
+        )
         self.db.refresh(row)
         return row
 
-    def report_actual(self, deployment_no: str, actual_release_id, actual_snapshot_id, deployed_at=None):
+    def report_actual(
+        self,
+        deployment_no: str,
+        actual_release_id,
+        actual_snapshot_id,
+        deployed_at=None,
+        actor_context: ActorContext | None = None,
+    ):
+        actor = actor_context or ActorContext.legacy(None)
         deployment = self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
         ).first()
@@ -70,6 +108,15 @@ class ProductionService:
         if not release or not snapshot or snapshot.release_id != release.id:
             raise ProductionError("Actual snapshot does not belong to actual release")
 
+        before = {
+            "actual_release_id": str(deployment.actual_release_id)
+            if deployment.actual_release_id
+            else None,
+            "actual_snapshot_id": str(deployment.actual_snapshot_id)
+            if deployment.actual_snapshot_id
+            else None,
+            "status": deployment.status,
+        }
         deployment.actual_release_id = release.id
         deployment.actual_snapshot_id = snapshot.id
         deployment.deployed_at = deployed_at or datetime.now(timezone.utc)
@@ -79,7 +126,29 @@ class ProductionService:
             and snapshot.id == deployment.expected_snapshot_id
             else "MISMATCH"
         )
-        self.db.commit()
+        commit_with_audit(
+            self.db,
+            lambda: {
+                "event_no": f"EVT-DA-{uuid.uuid4().hex}",
+                "event_type": "DEPLOYMENT",
+                "action": "ACTUAL_REPORTED",
+                "entity_type": "DEPLOYMENT",
+                "entity_id": deployment.id,
+                "entity_ref": deployment.deployment_no,
+                **actor.audit_fields(),
+                "summary": "Actual deployed software reported",
+                "occurred_at": deployment.deployed_at,
+                "payload": {
+                    "before": before,
+                    "after": {
+                        "actual_release_id": str(deployment.actual_release_id),
+                        "actual_snapshot_id": str(deployment.actual_snapshot_id),
+                        "status": deployment.status,
+                    },
+                    "actor_source": actor.source,
+                },
+            },
+        )
         self.db.refresh(deployment)
         return deployment
 
@@ -90,7 +159,9 @@ class ProductionService:
         from_release_id,
         changed_at=None,
         note: str | None = None,
+        actor_context: ActorContext | None = None,
     ):
+        actor = actor_context or ActorContext.legacy(None)
         deployment = self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
         ).first()
@@ -118,7 +189,29 @@ class ProductionService:
             note=note,
         )
         self.db.add(row)
-        self.db.commit()
+        commit_with_audit(
+            self.db,
+            lambda: {
+                "event_no": f"EVT-CO-{row.id.hex}",
+                "event_type": "CHANGEOVER",
+                "action": "COMPLETED",
+                "entity_type": "SOFTWARE_CHANGEOVER",
+                "entity_id": row.id,
+                "entity_ref": row.changeover_no,
+                **actor.audit_fields(),
+                "summary": "Software changeover completed",
+                "occurred_at": row.changed_at,
+                "payload": {
+                    "deployment_id": str(deployment.id),
+                    "deployment_no": deployment.deployment_no,
+                    "authorization_id": str(deployment.authorization_id),
+                    "from_release_id": str(row.from_release_id),
+                    "to_release_id": str(row.to_release_id),
+                    "status": row.status,
+                    "actor_source": actor.source,
+                },
+            },
+        )
         self.db.refresh(row)
         return row
 
@@ -129,7 +222,9 @@ class ProductionService:
         changeover_id=None,
         started_at=None,
         note: str | None = None,
+        actor_context: ActorContext | None = None,
     ):
+        actor = actor_context or ActorContext.legacy(None)
         deployment = self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
         ).first()
@@ -173,6 +268,29 @@ class ProductionService:
             note=note,
         )
         self.db.add(row)
-        self.db.commit()
+        commit_with_audit(
+            self.db,
+            lambda: {
+                "event_no": f"EVT-PB-{row.id.hex}",
+                "event_type": "PRODUCTION_BATCH",
+                "action": "STARTED",
+                "entity_type": "PRODUCTION_BATCH",
+                "entity_id": row.id,
+                "entity_ref": row.batch_no,
+                **actor.audit_fields(),
+                "summary": "Production batch started",
+                "occurred_at": row.started_at,
+                "payload": {
+                    "deployment_id": str(deployment.id),
+                    "deployment_no": deployment.deployment_no,
+                    "authorization_id": str(authorization.id),
+                    "changeover_id": str(changeover.id) if changeover else None,
+                    "release_id": str(row.release_id),
+                    "snapshot_id": str(row.snapshot_id),
+                    "status": row.status,
+                    "actor_source": actor.source,
+                },
+            },
+        )
         self.db.refresh(row)
         return row
