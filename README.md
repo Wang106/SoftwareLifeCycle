@@ -33,6 +33,7 @@ For a development handoff, the short form is:
 The maintained project documents are:
 
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) — current phase, verified state, blockers and next handoff
+- [HANDOFF.md](HANDOFF.md) — self-contained solution summary and continuation package for another Codex task
 - [ROADMAP.md](ROADMAP.md) — completed capabilities and ordered future phases
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system boundaries, runtime flow and trust model
 - [API.md](API.md) — endpoint families, write controls and API conventions
