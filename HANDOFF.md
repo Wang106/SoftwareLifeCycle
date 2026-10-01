@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `a8f299afddc5da23d8a5b00d53cb316b8519e46c`
-- Baseline subject: `feat: prepare reviewed delivery distribution and authorization requests`
+- Verified baseline: `210b124e3b2a0b3a04b9ddcb75f913e3a514d2a9`
+- Baseline subject: `feat: prepare reviewed test deployment and changeover requests`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -350,4 +350,4 @@ time semantics are reused. EVT-TR- uses hyphenated UUID; EVT-DPLOY-/EVT-CO- use 
 No backend/API/schema/migration/login/transport/public setting changes; API 0.18.0,
 head 0017. Roadmap remains 34/44 (77%), Phase 6 3/5 (60%). Provider/session/controlled
 target, permission-aware selection, uncertain outcomes and broader corrections remain.
-Verification: 214 frontend tests passed (38 added); production Next/OpenNext build passed; seven SSR context/default checks passed; full backend suite passed 688 tests including 103 real PostgreSQL 16 concurrency/integration tests, with no skips. No migration or backend contract change. Online verification follows the scoped push.
+Verification: 214 frontend tests passed (38 added); production Next/OpenNext build passed; seven SSR context/default checks passed; full backend suite passed 688 tests including 103 real PostgreSQL 16 concurrency/integration tests, with no skips. No migration or backend contract change. Online verification after feature commit `210b124e3b2a0b3a04b9ddcb75f913e3a514d2a9`: Cloudflare serves all 14 forms; exact snapshot/authorization/deployment context, explicit purpose/source, UTC conversion, review invalidation and confirmed copy were exercised without business submission. Repeated Deployment copy retained the same body/key. `/health/ready` returned 200 with API 0.18.0 and revision 0017; Test Release, Deployment and Changeover POST probes each returned 403 `{"detail":"read_only_mode"}`. Read-only Render SQL independently confirmed `0017_deployment_actual_version`. Render backend remains live on bbd8a42; no backend redeploy was required. Cloudflare rollout was verified by live page behavior; a provider deployment ID was not available.
