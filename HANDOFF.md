@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `5c95c961fb1907bf473dbec012adc4e1b66bf431`
-- Baseline subject: `feat: prepare reviewed impact assignments and resource references`
+- Verified baseline: `a8f299afddc5da23d8a5b00d53cb316b8519e46c`
+- Baseline subject: `feat: prepare reviewed delivery distribution and authorization requests`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
 | API | FastAPI + SQLAlchemy services | Render API version `0.18.0`, health verified ready |
-| Database | PostgreSQL 16 + Alembic | Required/verified revision `0017_deployment_actual_version` |
+| Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0017_deployment_actual_version` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
 | Engineering source | GitHub `main` | Baseline above was pushed successfully |
@@ -326,10 +326,10 @@ Delivery requires an explicit package revision and 1–200 distinct frozen artif
 UUIDs, sorted as an immutable set; policy/recipient strings retain exact spelling.
 Distribution targets an exact package UUID/revision. Authorization requires exact
 distribution/release/customer/project IDs, purpose/site/line, and an explicit finite
-positive PostgreSQL integer limit or unlimited selection. New API records remain DRAFT.
+positive PostgreSQL integer limit or unlimited selection. New Authorization records remain DRAFT.
 Context links do not preselect artifacts/recipients/capacity or pin a release decision.
 Expected audit events use existing EVT-DP-/EVT-DS-/EVT-PA- plus UUID hex.
 No backend/API/schema/migration changes; head remains 0017, API 0.18.0.
 Roadmap remains 34/44 (77%), Phase 6 3/5 (60%); remaining forms and provider-backed
 submission, outcome recovery and broader correction/revocation remain open.
-Frontend tests: 176 passed, no skips (65 added distribution-chain cases). Final Next.js/OpenNext Cloudflare Worker production build passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a fresh isolated /tmp cluster. Six local SSR checks passed for all three exact UUID targets, empty explicit defaults/ignored recipient-artifact-limit query prefill, missing/array targets and Create entry. Initial local next start hit the workspace networkInterfaces limitation; explicit 127.0.0.1 host resolved it without application changes. No migration. Online verification follows the scoped push.
+Frontend tests: 176 passed, no skips (65 added distribution-chain cases). Final Next.js/OpenNext Cloudflare Worker production build passed. Complete Python 3.12 backend suite: 688 passed, 3179 warnings, no skips, including 103 real PostgreSQL 16.15 tests in a fresh isolated /tmp cluster. Six local SSR checks passed for all three exact UUID targets, empty explicit defaults/ignored recipient-artifact-limit query prefill, missing/array targets and Create entry. Initial local next start hit the workspace networkInterfaces limitation; explicit 127.0.0.1 host resolved it without application changes. No migration. Feature commit `a8f299afddc5da23d8a5b00d53cb316b8519e46c` is pushed to main. Live Cloudflare UI verified eleven choices; exact release/package/distribution UUID entry links and visible frozen artifact/customer/project UUIDs; duplicate Delivery file rejection, review confirmation and stable copy after asynchronous clipboard completion; Distribution recipient edit invalidation; zero-limit rejection, finite export and explicit unlimited null only after clearing the limit; Authorization confirmation/copy. No business submission was made. Cloudflare live behavior is verified, but a provider deployment ID/commit binding is unavailable. Render connector confirms unchanged backend deployment dep-dav0vf0473hc73a8vl10 remains live at bbd8a42b567c4f5b2c83017c570e47039442f3af (API code 0.18.0). Current Render logs show GET /health/ready 200 at 2026-10-01T14:29:00Z. A read-only Render PostgreSQL query directly returned 0017_deployment_actual_version; provider inventory reports PostgreSQL 18, while local concurrency tests use 16.15. Direct API health-body and the three delivery/distribution/authorization 403 read_only_mode probes were blocked by workspace network policy, so fresh direct responses are not claimed. Public read-only configuration/code were unchanged; prior direct 403 evidence remains historical.

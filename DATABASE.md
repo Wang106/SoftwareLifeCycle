@@ -2,7 +2,7 @@
 
 ## Current baseline
 
-- Engine: PostgreSQL 16 in the local Compose environment.
+- Engine: PostgreSQL 16 in the local Compose environment; current Render inventory reports PostgreSQL 18. The local real-concurrency regression uses 16.15.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
 - Required schema revision: `0017_deployment_actual_version`.
@@ -210,3 +210,7 @@ acknowledge receipt. Existing exact roles, trusted actor binding, retry and atom
 remain unchanged. EVT-DP-/EVT-DS-/EVT-PA- links use UUID hex. No API/schema/migration,
 transport, login or public-write setting changes; API 0.18.0/head 0017 remain. See
 `docs/controlled-write-ui.md` for preparation subsets and remaining submission work.
+
+2026-10-01 distribution-chain verification: read-only Render PostgreSQL query returned
+`0017_deployment_actual_version`. No schema change was made. Direct API probes were
+blocked by workspace network policy; service readiness 200 was observed in Render logs.
