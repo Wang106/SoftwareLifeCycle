@@ -385,7 +385,7 @@ Public staging remains read-only. Authenticated submission and OIDC configuratio
 still pending. Roadmap checked scope stays 34/44 (77%); bilingual coverage is an
 additional UI requirement, not completion of the Phase 6 submission gate.
 
-Verification: frontend 291 passed (77 localization/coverage checks plus 214 command
+Verification: frontend 292 passed (78 localization/coverage checks plus 214 command
 checks); final Next/OpenNext production build passed. Full backend: 733 passed,
 3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
 tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw

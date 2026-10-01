@@ -1350,5 +1350,21 @@
   "Back to dashboard": "返回仪表盘",
   "Page unavailable": "页面不可用",
   "Please try loading this page again.": "请重新加载此页面。",
-  "Retry loading": "重新加载"
+  "Retry loading": "重新加载",
+  "API": "API",
+  "CHECK": "待核查",
+  "CONSISTENT": "一致",
+  "CURRENT": "当前",
+  "ELIGIBLE": "符合条件",
+  "HISTORICAL": "历史",
+  "INVALID": "无效",
+  "NOT DEPLOYED": "尚未部署",
+  "TEST": "测试",
+  "UNASSIGNED": "未分配",
+  "VALID": "有效",
+  "differ": "不一致",
+  "pending": "待报告",
+  "unknown": "未知",
+  "· CURRENT": "· 当前",
+  "· NOT CURRENT": "· 非当前"
 }

@@ -5,7 +5,7 @@
 - Added shared locale provider, dictionary/templates and persisted language-only cookie; Chinese is the default on initial SSR and invalid preferences. Switch updates title/lang without remounting forms.
 - Localized all 63 current pages, navigation/shared catalogs, 14 preparation forms, validation/status text and error/not-found recovery. Explicit option values preserve raw API tokens. Original customer evidence, IDs, links, code and exported JSON remain unchanged.
 - Added localization/AST coverage tests and interface documentation; no backend/API/schema change, API 0.18.3/head 0017, no migration. Public staging remains read-only; roadmap stays 34/44.
-- Verification: frontend 291 tests, full backend 733 tests (103 real PostgreSQL), final Cloudflare build; 126 local bilingual SSR checks, invalid cookie fallback and stable raw form values for 14 operations. Live verification follows deployment.
+- Verification: frontend 292 tests, full backend 733 tests (103 real PostgreSQL), final Cloudflare build; 126 local bilingual SSR checks, invalid cookie fallback and stable raw form values for 14 operations. Live verification follows deployment.
 
 
 ## 2026-10-02 — Exact delivery revision bounded reads

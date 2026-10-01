@@ -72,3 +72,10 @@ for(const file of [...files('app'),...files('components')].filter(f=>!f.endsWith
   visit(source);
  });
 }
+
+test('record-derived UI markers and fallback states translate in Chinese',()=>{
+ for(const label of ['CHECK','CONSISTENT','CURRENT','ELIGIBLE','HISTORICAL','INVALID','NOT DEPLOYED','TEST','UNASSIGNED','VALID','differ','pending','unknown',' · CURRENT',' · NOT CURRENT']) {
+  assert.match(translateText(label,'zh'),/[\u4e00-\u9fff]/,label);
+  assert.equal(translateText(label,'en'),label);
+ }
+});
