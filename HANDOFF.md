@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50`
-- Baseline subject: `feat: serialize approval actions and replay release decisions safely`
+- Verified baseline: `42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5`
+- Baseline subject: `feat: make distribution chain commands retry-safe and serialize release checks`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -35,7 +35,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, verified HTTP 200 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.15.0`, health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API version `0.16.0`, health verified ready |
 | Database | PostgreSQL 16 + Alembic | Required/verified revision `0016_authenticated_audit_actors` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -204,6 +204,13 @@ atomic rollback. Release Decision also acquires Release before ApprovalRequest,
 coordinating latest-decision validation. Current route safety coverage is 11/14
 (79%); overall checked roadmap remains 31/44 (70%), with Phase 6 broad items partial.
 Next: Deployment/Changeover retry and actual-software concurrency/correction.
-Full Python 3.12 suite: **573 passed, 2326 warnings, no skips**, including **63 real PostgreSQL 16.15 tests**. This package adds 64 unit/route cases and 32 PostgreSQL cases. Single Alembic head and PostgreSQL SQL generation passed (850 lines). No frontend code/build was changed. Deployment verification follows the push.
+Full Python 3.12 suite: **573 passed, 2326 warnings, no skips**, including **63 real PostgreSQL 16.15 tests**. This package adds 64 unit/route cases and 32 PostgreSQL cases. Single Alembic head and PostgreSQL SQL generation passed (850 lines). No frontend code/build was changed. Render deployment `dep-dav0af5g1s2s73d55420` is **live** for feature commit
+`42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5` (finished 2026-10-01 15:02:05 Asia/Shanghai).
+Post-deploy health returned HTTP 200, API `0.16.0` and database revision
+`0016_authenticated_audit_actors`. Release/application, issue-impact and activity
+reads returned 200. Harmless Deployment and Snapshot writes returned 403
+`read_only_mode`; the three new retry routes also retained that rejection.
+Frontend returned HTTP 200 with Dashboard HTML. No frontend code or separate
+frontend deployment was required.
 
 Test environment note: the first full run had 63 PostgreSQL connection errors because the disposable local server retained a stale shutdown PID file. The test runtime was restarted with clean shutdown/wait handling; the complete rerun above passed. No application or staging database was altered to resolve this.

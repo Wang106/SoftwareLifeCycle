@@ -4,6 +4,8 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Verified distribution-chain deployment `dep-dav0af5g1s2s73d55420` for `42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5`: live API `0.16.0`, database `0016_authenticated_audit_actors`, public writes 403 `read_only_mode`, read smoke endpoints 200 and frontend 200 with Dashboard HTML.
+
 - Third-package full verification: 573 passed, 2326 warnings, no skips; 63 real PostgreSQL 16.15 cases. Single Alembic head and PostgreSQL SQL generation passed, no migration/frontend change. A disposable PostgreSQL startup error was fixed before the successful full rerun.
 
 - API `0.16.0`: Delivery, Distribution and Production Authorization optional request-ID replay, content/trusted-actor conflict and PostgreSQL parent-row serialization. Legacy clients and HTTP 201 shapes remain compatible; delivery file order is equivalent and duplicate IDs remain invalid.

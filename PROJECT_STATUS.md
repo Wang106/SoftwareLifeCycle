@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `fbb66ae9a2c1833a05ee2032595eb2613d1d3a50` — `feat: serialize approval actions and replay release decisions safely` (developed from `830367973b33b0025ee33fdcea0f2c3a7b71ead5`)
+- Reviewed repository baseline: `42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5` — `feat: make distribution chain commands retry-safe and serialize release checks` (developed from `a131d2f931e240d17b5c9f59d00e43a2061716bf`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -54,7 +54,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 ## In progress
 
 - Approved OIDC provider configuration remains open. Phase 6 now has three command-safety slices; the broad retry/concurrency roadmap items remain unchecked because other commands are unfinished.
-- Earlier safety-package implementation and deployment checks are complete; remaining Phase 6 commands and provider configuration are the next work.
+- All three current safety-package implementation and deployment checks are complete; remaining Phase 6 commands and provider configuration are the next work.
 - The unrelated `frontend/app/activity/page 2.tsx` was not present in this clean cloud checkout and was not recreated, adopted or deleted.
 
 ## Next stage
@@ -71,22 +71,24 @@ Roadmap progress remains **31/44 (70%)**: two broad Phase 6 items are partially 
 | Layer | Configured target | Verified 2026-10-01 | Qualification |
 | --- | --- | --- | --- |
 | Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | HTTP 200 and live dashboard HTML returned | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.15.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.16.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at Alembic revision `0016_authenticated_audit_actors` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
-Render deployment `dep-dav00btg1s2s73d4nqo0` is **live** for feature commit
-`fbb66ae9a2c1833a05ee2032595eb2613d1d3a50` (finished 2026-10-01 06:40:39 UTC).
-Post-deploy health returned HTTP 200, API `0.15.0` and revision
-`0016_authenticated_audit_actors`; harmless deployment and Snapshot POSTs returned
-HTTP 403 `read_only_mode`. Frontend returned HTTP 200 with Dashboard HTML.
-No frontend code was changed or separately deployed by this slice.
+Render deployment `dep-dav0af5g1s2s73d55420` is **live** for feature commit
+`42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5` (finished 2026-10-01 15:02:05 Asia/Shanghai).
+Post-deploy health returned HTTP 200, API `0.16.0` and database revision
+`0016_authenticated_audit_actors`. Release/application, issue-impact and activity
+reads returned 200. Harmless Deployment and Snapshot writes returned 403
+`read_only_mode`; the three new retry routes also retained that rejection.
+Frontend returned HTTP 200 with Dashboard HTML. No frontend code or separate
+frontend deployment was required.
 
 The live URLs are volatile operational state. Recheck them rather than copying this table into a future report.
 
 ## Database and API status
 
-- Repository API version: `0.16.0`; last verified online version before this push: `0.15.0`.
+- Repository and verified online API version: `0.16.0`.
 - Required and verified online schema revision: `0016_authenticated_audit_actors`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -154,6 +156,13 @@ remain compatible. No migration/backfill/public writes/frontend change is introd
 Current request-ID/row-lock coverage is **11/14 (79%)**; remaining commands are
 Deployment, actual-software report and Changeover. Exact scope, actor binding and
 atomic audit remain 14/14. Broad roadmap stays 31/44 (70%); provider configuration,
-write UI, correction/revocation and operations are still unfinished. Full Python 3.12 suite passed **573 tests, 2326 warnings, no skips**, including **63 real PostgreSQL 16.15 tests**. This package adds 64 unit/route and 32 PostgreSQL cases. Single Alembic head and PostgreSQL SQL generation (850 lines) passed; no migration/frontend build was required. Deployment verification follows the push.
+write UI, correction/revocation and operations are still unfinished. Full Python 3.12 suite passed **573 tests, 2326 warnings, no skips**, including **63 real PostgreSQL 16.15 tests**. This package adds 64 unit/route and 32 PostgreSQL cases. Single Alembic head and PostgreSQL SQL generation (850 lines) passed; no migration/frontend build was required. Render deployment `dep-dav0af5g1s2s73d55420` is **live** for feature commit
+`42e32e9b0519a2f9f2112cd5b8cae5b92aea73c5` (finished 2026-10-01 15:02:05 Asia/Shanghai).
+Post-deploy health returned HTTP 200, API `0.16.0` and database revision
+`0016_authenticated_audit_actors`. Release/application, issue-impact and activity
+reads returned 200. Harmless Deployment and Snapshot writes returned 403
+`read_only_mode`; the three new retry routes also retained that rejection.
+Frontend returned HTTP 200 with Dashboard HTML. No frontend code or separate
+frontend deployment was required.
 
 The first full run encountered a stale disposable PostgreSQL shutdown PID file (63 connection errors). The local test runtime was restarted with proper shutdown/wait; the complete rerun passed. This did not require an application or staging database change.
