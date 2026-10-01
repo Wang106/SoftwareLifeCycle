@@ -8,7 +8,7 @@ The enforced scoped roles are recorded in the executable contracts and defined i
 
 | Route | Scope | Actor | Audit | Retry | Concurrency | Main gap |
 | --- | --- | --- | --- | --- | --- | --- |
-| `POST /api/v1/releases/{release_id}/create-snapshot` | Release | Authenticated | Atomic append | None | None | Concurrent numbering is not serialized |
+| `POST /api/v1/releases/{release_id}/create-snapshot` | Release | Authenticated | Atomic append | Optional request ID | Release row lock | No-key legacy calls create a new snapshot |
 | `POST /api/v1/approvals/{approval_no}/actions` | Approval target/step | Authenticated; declaration retained | Atomic append | None | None | Step transition not locked |
 | `POST /api/v1/approvals/{approval_no}/release-decision` | Approved release/snapshot | Authenticated; declaration retained | Atomic append | None | None | Approval not locked |
 | `POST /api/v1/deliveries` | Release/snapshot/recipient/artifacts | Authenticated; optional declaration retained | Atomic append | Duplicate rejection | None | No idempotency key |
@@ -17,7 +17,7 @@ The enforced scoped roles are recorded in the executable contracts and defined i
 | `POST /api/v1/deployments` | Authorization/line | Authenticated | Atomic append | Duplicate rejection | None | Scope rows are not locked |
 | `POST /api/v1/deployments/{deployment_no}/actual` | Deployment/release/snapshot | Authenticated | Atomic append | Mutable overwrite | None | No optimistic lock |
 | `POST /api/v1/deployments/{deployment_no}/changeovers` | Deployment/releases | Authenticated | Atomic append | Duplicate rejection | None | Deployment row is not locked |
-| `POST /api/v1/deployments/{deployment_no}/batches` | Deployment/authorization/changeover | Authenticated | Atomic append | Duplicate rejection | None | Batch-limit check is not serialized |
+| `POST /api/v1/deployments/{deployment_no}/batches` | Deployment/authorization/changeover | Authenticated | Atomic append | Optional request ID | Deployment then shared Authorization row locks | No-key legacy duplicate number returns conflict |
 | `POST /api/v1/issues/{issue_no}/impact-assessments` | Issue/release/snapshot | Authenticated; declaration retained | Atomic append | Request ID | Issue row lock | No correction/supersession command |
 | `POST /api/v1/changes/{request_no}/acceptance-dvp-links` | SCR/criterion/DVP | Authenticated; declaration retained | Atomic append | Request ID | SCR row lock | No correction/supersession command |
 | `POST /api/v1/testing/releases` | Release/snapshot | Authenticated; declaration retained | Atomic append | Request ID | Release row lock | No lifecycle transition commands |
@@ -34,3 +34,51 @@ The enforced scoped roles are recorded in the executable contracts and defined i
 ## Review rule
 
 Before a new write route can merge, its contract must state scope, actor source/binding, authentication, authorization, audit, idempotency and concurrency behavior and invoke a runtime authorization guard. Audited routes must resolve a trusted actor. Before any route can be exposed beyond controlled local development, configure an approved OIDC provider, add the required idempotency/concurrency controls and complete provider-backed positive/negative integration tests.
+
+## Phase 6 first package: Snapshot and Production Batch
+
+Both endpoints accept an optional client-generated UUID `request_id`. A supplied ID
+is the business row's UUID, following the existing test-release/resource retry
+pattern. Its request evidence is stored under `audit_events.payload_json.request`
+in the same transaction, with the existing `EVT-SN-{id.hex}` or `EVT-PB-{id.hex}`
+event number. No request ledger, schema migration or historical backfill is added.
+Keys are global within each of these record types, rather than per URL target.
+
+- Every HTTP call, including a replay, first passes the existing exact-scope guard
+  and trusted actor resolution. Replay requires the same audit principal, effective
+  name, full display name and retained declaration, including disabled-mode fields.
+- Snapshot request content is the exact `release_id`; retry returns the original
+  frozen manifest even if source artifacts/version have since changed. A new freeze
+  requires a new key. Keys are not derived from content hashes.
+- Batch request content is `deployment_no`, `batch_no`, `changeover_id`, `started_at`
+  and `note`. Timestamps normalize to UTC (naive timestamps mean UTC); omitted
+  timestamps stay null in retry evidence and use a server time only on creation.
+  An explicit timestamp differs from omission. Notes and business numbers retain
+  their existing exact string semantics.
+- Identical replay returns the existing response without another business record,
+  audit event or quota consumption. Responses keep the existing HTTP 201 shape
+  for compatibility. Different content/actor or legacy rows lacking retry evidence
+  produce HTTP 409. A duplicate batch number under another key also produces 409.
+- Snapshot locks its owning Release with PostgreSQL `SELECT ... FOR UPDATE` before
+  reading the latest number. Batch locks Deployment, then its shared Authorization,
+  before counting **all** registered batches and inserting one. Multiple deployments
+  sharing one authorization therefore share the same finite quota. A null limit
+  stays unlimited; a zero/exhausted limit rejects new work.
+- Locked rows refresh earlier ORM identity-map reads. Locks remain held through
+  domain writes, audit insertion and commit under PostgreSQL READ COMMITTED.
+  Unique UUID/number constraints remain the final conflict guard across targets.
+  Validation, insert/constraint, audit and commit failures all roll back and release
+  transaction locks. No automatic server-side retry loop is introduced.
+- Replay is checked before mutable deployment status/quota validation so an already
+  committed request can be recovered after state changes, but never bypasses the
+  current HTTP permission check. A fresh request must pass every existing rule.
+- Without a key, Snapshot still creates a new freeze and Batch retains duplicate
+  business-number rejection. The same row locks and rollback guarantees apply.
+
+Verification: `tests/test_command_retry.py` covers content, actor, legacy, scope and
+failure behavior. `tests/test_command_concurrency_postgres.py` uses independent
+sessions on uniquely named **migrated** PostgreSQL schemas, verifies actual blocking
+with `pg_blocking_pids`, and checks numbering, shared limits, replays, cross-target
+conflicts, stale ORM state and rollback. Run it with `TEST_POSTGRES_URL` set to a
+throwaway development database that allows schema creation; the fixture drops only
+its own schema. Without that variable it is explicitly skipped; SQLite is rejected.

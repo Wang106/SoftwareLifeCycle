@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.13.0
+FastAPI 0.14.0
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -94,3 +94,14 @@ Frontend data pages prefer explicit unavailable/empty states over fabricated fal
 - Schema/model changes require an ordered Alembic migration and an update to `DATABASE.md`.
 - New state transitions define authorization, idempotency, concurrency and audit behavior before public exposure.
 - Deployment claims are verified with health/smoke checks and recorded in `PROJECT_STATUS.md`; configuration alone is not proof of a successful deployment.
+
+## First Phase 6 command-safety slice
+
+Snapshot and Production Batch accept optional request UUIDs without changing the
+schema: the UUID identifies the business row and the atomic audit payload stores
+its request evidence. Snapshot locks Release before retry/number lookup; Batch
+locks Deployment then shared Authorization before retry/quota evaluation. Both
+refresh previously loaded ORM rows and retain locks through commit under PostgreSQL
+READ COMMITTED. Errors roll back the complete command. No-key clients keep legacy
+behavior, while exact authorized replays create neither a record nor an audit event.
+Other command transitions still need their own concurrency/idempotency controls.

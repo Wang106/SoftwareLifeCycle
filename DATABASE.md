@@ -9,7 +9,7 @@
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
-SQLite is used by isolated tests where supported, but it does not validate PostgreSQL JSONB or database triggers. PostgreSQL is required for schema and append-only-rule verification.
+SQLite is used by isolated tests where supported, but it does not validate PostgreSQL JSONB, database triggers or row-lock concurrency. PostgreSQL is required for schema and append-only-rule verification.
 
 ## Table groups
 
@@ -82,3 +82,25 @@ Never edit an applied migration to change history. Add a new ordered revision, i
 - Demo Seed is idempotent for named sample records but is not a production provisioning process.
 - Backup, restore, retention and disaster-recovery procedures are not yet defined and are roadmap items.
 - Before a company deployment, configure the approved OIDC provider and grants, review classifications/access rules, add required idempotency/concurrency controls, disable Seed and validate the complete migration chain on a fresh PostgreSQL database.
+
+## Phase 6 retry storage and transaction locks (API 0.14.0)
+
+No new migration is needed: Snapshot and Production Batch use their existing UUID
+primary keys for optional `request_id`, and their existing atomic audit JSONB payload
+stores canonical request evidence. Historical rows are untouched and cannot be
+claimed as idempotent results without matching evidence. The schema remains at
+`0016_authenticated_audit_actors`, including the unique `(release_id, snapshot_number)`,
+`snapshot_no`, `batch_no` and audit event-number constraints.
+
+Snapshot acquires `FOR UPDATE` on Release before retry/number lookup. Batch acquires
+`FOR UPDATE` on Deployment, then SoftwareAuthorization before retry/quota lookup.
+The shared authorization serializes batches from every deployment consuming its
+quota, and count includes every registered batch regardless of status. Locked ORM
+objects use `populate_existing=True`; locks last until the business/audit transaction
+commits or rolls back. The validated isolation level is PostgreSQL READ COMMITTED.
+Database uniqueness conflicts are rolled back and mapped to HTTP 409.
+
+Real concurrency tests create a unique schema, apply the entire Alembic chain,
+observe database blocking across separate sessions, and drop that test schema.
+Set `TEST_POSTGRES_URL` only to an isolated development database permitting schema
+creation. An unset variable explicitly skips this suite; SQLite cannot stand in.

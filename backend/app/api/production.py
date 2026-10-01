@@ -46,6 +46,7 @@ class ChangeoverCreate(BaseModel):
 
 
 class BatchCreate(BaseModel):
+    request_id: uuid.UUID | None = None
     batch_no: str
     changeover_id: uuid.UUID | None = None
     started_at: datetime | None = None

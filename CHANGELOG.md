@@ -4,6 +4,11 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- API `0.14.0`: optional request-ID idempotency for Snapshot and Production Batch; identical authorized retries reuse the original result and audit, while changed content/actor or duplicate business numbers conflict. Existing no-key clients retain their behavior.
+- PostgreSQL Release row locking serializes snapshot numbering; Deployment then shared Authorization row locks serialize batch-limit checks across deployments. Validation/constraint/audit/commit failures roll back the whole command; locked ORM state is refreshed.
+- No migration or historical backfill: existing domain UUIDs and atomic audit JSONB evidence implement the retry contract; schema head remains `0016_authenticated_audit_actors`.
+- Added business retry/rollback/authorization tests and real PostgreSQL concurrency tests on isolated migrated schemas, including observed database blocking, shared quotas and cross-target conflicts. Full Python 3.12 run: 421 passed, including 13 PostgreSQL tests, no skips; single Alembic head and PostgreSQL SQL generation passed.
+
 - Added a self-contained Codex cloud handoff covering the implemented solution, verified 70% roadmap progress, operational state, risks, next development package and acceptance criteria.
 - Added trusted, atomic audit events for snapshot creation and production deployment, actual-software, changeover and batch commands; all 14 current write routes are now atomically audited.
 - Added rollback tests proving failed audit writes do not leave snapshot or production domain changes, and raised the API version to `0.13.0` without a schema migration.

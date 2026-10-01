@@ -65,7 +65,7 @@ Historical/seed records and `AUTH_MODE=disabled` writes have a null principal re
 3. **Implemented:** require an active scoped role or the exceptional global admin role.
 4. **Implemented:** derive audit actors from the authenticated principal and preserve request declarations separately for every current write.
 5. **Implemented:** append audit events atomically for snapshot and production commands.
-6. Add idempotency/concurrency safeguards for remaining high-risk state transitions.
+6. **Partially implemented:** Snapshot and production-batch creation now support optional request-ID replay and PostgreSQL row locks. Approval transitions and other writes still need safeguards.
 7. Add provider-backed HTTP integration tests after a target provider is selected; unit/route-contract tests already cover wrong scope/role, suspended membership and actor mismatch.
 
 No public write form or non-read-only deployment should be enabled before the remaining sequence is complete.
@@ -75,3 +75,19 @@ No public write form or non-read-only deployment should be enabled before the re
 Set `AUTH_MODE=oidc` together with `OIDC_ISSUER_URL`, `OIDC_AUDIENCE` and an explicit `OIDC_JWKS_URL`. Optional settings are `OIDC_ALGORITHMS` (approved asymmetric algorithms only), `OIDC_LEEWAY_SECONDS` and `OIDC_JWKS_TIMEOUT_SECONDS`. URLs must use HTTPS and cannot contain credentials, query strings or fragments.
 
 The JWKS URL is operator configuration, never a token-provided URL. Invalid/missing tokens, invalid claims, unknown principals and disabled principals fail with HTTP 401 and a Bearer challenge. `READ_ONLY_MODE=true` takes precedence and returns the existing HTTP 403 without contacting the identity provider.
+
+## Snapshot and Batch retry trust boundary
+
+Authorization and trusted actor resolution run before any HTTP retry lookup.
+Possessing a request UUID grants no access. An identical retry must match all stored
+audit actor fields; another principal with the same display name, a changed retained
+declaration, or an authentication-mode change conflicts. A suspended/revoked scoped
+grant is denied even for an already successful request. Existing exact relationship
+scope and `PLATFORM_ADMIN` rules remain unchanged.
+
+Replay reads the original frozen/business result and does not repeat a write or
+consume a second quota. New work still requires all domain checks. Release numbering
+and shared production authorization quotas are serialized through atomic domain/audit
+commit. Failure rolls back both and releases locks. These controls cover two commands;
+no OIDC provider, public write UI or production readiness is claimed. Public staging
+remains `READ_ONLY_MODE=true`.

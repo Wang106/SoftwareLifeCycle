@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.13.0`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.14.0`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -59,7 +59,7 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 - In OIDC mode, every current write route additionally requires its exact active project/software role or the exceptional `PLATFORM_ADMIN` override. Scope is resolved from stored relationships; a client-supplied project alone is not authorization evidence.
 - `AUTH_MODE=disabled` preserves controlled local development compatibility; it is not appropriate for public writes.
 - For atomically audited writes in OIDC mode, stored actor names come from the authenticated principal. Audit events also expose `actor_principal_id`, full `actor_display_name` and the original `declared_actor_name`. Disabled mode retains legacy declaration behavior.
-- Issue impact and acceptance-link writes use client-generated request IDs for retry handling; other commands do not all provide the same idempotency guarantee.
+- Snapshot and production-batch creation now accept optional client-generated request IDs, in addition to the existing request-ID commands. Other commands still have incomplete retry protection.
 - All 14 current command routes record an audit event in the same transaction as their domain change. Snapshot and production audit payloads retain exact release, snapshot, authorization, deployment and before/after identifiers as applicable.
 - Snapshot and exact UUID bindings take precedence over matching version, name or display code.
 - Bounded catalogs validate filters, limit and offset; totals/counts apply to the full filtered result, not just the visible page.
@@ -74,3 +74,24 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 - `422` — validation failure, unsupported filter or invalid bound.
 
 When an endpoint changes, update its tests and this map. Generated `/docs` remains authoritative for request/response field shapes.
+
+## Snapshot / Batch retry contract (0.14.0)
+
+`POST /api/v1/releases/{release_id}/create-snapshot` accepts no body, JSON null,
+`{}` or `{"request_id":"<UUID>"}`. The optional body rejects unknown fields.
+`POST /api/v1/deployments/{deployment_no}/batches` adds optional `request_id` to
+its existing JSON fields; existing clients and response shapes remain compatible.
+
+With a key, identical requests and the same trusted actor return the original row
+and response (HTTP 201), with no second audit or batch-limit consumption. Snapshot
+replay is tied to the release ID, not a fresh hash of changing source files. Batch
+replay compares deployment, batch number, optional changeover, timestamp and note;
+UTC-equivalent timestamps match and omission stays distinct from explicit time.
+Different content/actor, a legacy row without retry evidence, or a duplicate batch
+number under a different key returns 409. Malformed UUIDs return 422.
+
+Keys identify domain UUIDs within each record type. Without a key, Snapshot still
+creates a new record and Batch still rejects duplicate numbers. PostgreSQL locks
+serialize Release snapshot numbering and Deployment/shared Authorization batch
+quota evaluation through domain/audit commit. Replay still requires current exact
+scope authorization. See [write contracts](docs/write-contracts.md) for details.

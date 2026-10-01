@@ -9,6 +9,7 @@ from app.models.policy import ArtifactDistributionRule
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.snapshot_policy import SnapshotArtifactDistributionRule
 from app.services.audit import commit_with_audit
+from app.services.command_retry import atomic_command, retry_result
 
 class SnapshotError(ValueError):
     pass
@@ -19,11 +20,26 @@ class SnapshotService:
         db: Session,
         release_id,
         actor_context: ActorContext | None = None,
+        request_id=None,
     ):
+        with atomic_command(db, SnapshotError):
+            return self._create(db, release_id, actor_context, request_id)
+
+    def _create(self, db, release_id, actor_context, request_id):
         actor = actor_context or ActorContext.legacy(None)
-        release = db.get(Release, release_id)
+        # Lock the owning row before retry lookup and number allocation. Refresh
+        # identity-map state previously loaded by the authorization guard.
+        release = db.scalar(select(Release).where(Release.id == release_id)
+            .with_for_update().execution_options(populate_existing=True))
         if not release:
             raise SnapshotError("Release not found")
+
+        request_content = {"release_id": str(release_id)}
+        existing = retry_result(db, ReleaseSnapshot, request_id, "EVT-SN-",
+                                request_content, actor, SnapshotError)
+        if existing is not None:
+            db.commit()
+            return existing
 
         rows = db.execute(
             select(Artifact, ReleaseComponent, ComponentDefinition)
@@ -111,6 +127,8 @@ class SnapshotService:
                 "release_type": release.release_type,
             },
         )
+        if request_id is not None:
+            snapshot.id = request_id
         db.add(snapshot)
         db.flush()
 
@@ -161,6 +179,7 @@ class SnapshotService:
                     "content_hash": snapshot.content_hash,
                     "artifact_count": len(rows),
                     "actor_source": actor.source,
+                    "request": request_content if request_id is not None else None,
                 },
             },
         )

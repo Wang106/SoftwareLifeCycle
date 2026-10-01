@@ -63,7 +63,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
 | Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Compatibility-list migration remains |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
-| Phase 6 — Controlled write experience | 0 / 5 | 0% | Recommended next phase |
+| Phase 6 — Controlled write experience | 0 / 5 | 0% | Snapshot/Batch slice implemented; broad items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **31 / 44** | **70%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
@@ -79,14 +79,15 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 45 backend test modules; the latest full run passed all 379 tests under Python 3.12.
+- 47 backend test modules; the latest full run passed all 421 tests under Python 3.12, including 13 real PostgreSQL tests without skips.
+- Optional request-ID replay and PostgreSQL serialization for Snapshot numbering and shared Production Batch quotas, without a new migration.
 
 ## Current limitations and risks
 
 1. No approved OIDC issuer, audience or JWKS endpoint is configured in a target environment.
 2. There is no audited principal/grant administration API or browser login/session flow.
-3. Most command APIs do not provide request-ID idempotency.
-4. Snapshot numbering, approval transitions and production batch-limit checks lack the required row-lock/serialization guarantees.
+3. Snapshot/Batch now provide optional request-ID idempotency; several other commands still lack it.
+4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval transitions still need concurrency protection.
 5. Actual-software reporting is a mutable overwrite without an optimistic-concurrency token or explicit correction command, although every report is now audited.
 6. Some legacy list/history endpoints remain unbounded.
 7. CI, backup/restore, monitoring, alerting and incident runbooks are not present.
@@ -94,7 +95,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 
 ## Recommended next development package
 
-Start Phase 6 with **retry and concurrency safety for the highest-risk commands**. Keep public staging read-only.
+The first Phase 6 package below is implemented for Snapshot and Production Batch. Continue with **approval action/release-decision retry and concurrency safety**, and keep public staging read-only. The original scope and acceptance criteria remain below for traceability.
 
 ### Scope
 
@@ -137,7 +138,7 @@ POST https://softwarelifecycle-api-test.onrender.com/api/v1/deployments
 GET  https://softwarelifecycle.whf969.com
 ```
 
-Expected public state: API `0.13.0` or the newly deployed version, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
+Expected public state after this package deploys: API `0.14.0`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
 
 ## Working-tree caution
 
@@ -160,3 +161,14 @@ Fast handoff commands remain:
 - `检查：<范围>` — evidence-backed review without implicit mutation.
 - `汇总：SoftwareLifeCycle 当前状态` — reconstruct status from repository evidence.
 - `继续：下一阶段` — resume the highest-priority ready item.
+
+## Phase 6 first-package verification — 2026-10-01
+
+Starting main: `a5db39eccb0a5a73ea3232f455a9167f1af835a4`. API code is `0.14.0`;
+schema remains `0016_authenticated_audit_actors`. Complete backend run: 421 passed,
+1384 warnings, no skips; 13 tests use real PostgreSQL 16.15 migrated schemas and
+independent sessions. Single Alembic head and PostgreSQL SQL generation passed.
+No frontend change/build and no schema migration were needed. Optional-key/no-key,
+actor/scope and transaction details are in `docs/write-contracts.md`. Deployment
+verification will be recorded after push; the operational table above is historical.
+The unrelated duplicate frontend file was absent in this checkout and untouched.

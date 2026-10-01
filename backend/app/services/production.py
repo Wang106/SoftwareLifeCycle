@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.actor import ActorContext
@@ -16,6 +16,7 @@ from app.models.production import (
 )
 from app.models.snapshot import ReleaseSnapshot
 from app.services.audit import commit_with_audit
+from app.services.command_retry import atomic_command, retry_result, timestamp_content
 
 
 class ProductionError(ValueError):
@@ -223,13 +224,36 @@ class ProductionService:
         started_at=None,
         note: str | None = None,
         actor_context: ActorContext | None = None,
+        request_id=None,
     ):
+        with atomic_command(self.db, ProductionError):
+            return self._create_batch(deployment_no, batch_no, changeover_id,
+                                      started_at, note, actor_context, request_id)
+
+    def _create_batch(self, deployment_no, batch_no, changeover_id,
+                      started_at, note, actor_context, request_id):
         actor = actor_context or ActorContext.legacy(None)
         deployment = self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
+            .with_for_update().execution_options(populate_existing=True)
         ).first()
         if not deployment:
             raise ProductionError("Deployment not found")
+        # All deployments sharing this authorization consume one quota. The
+        # authorization lock is held through quota evaluation, insert and audit.
+        authorization = self.db.scalar(select(SoftwareAuthorization).where(
+            SoftwareAuthorization.id == deployment.authorization_id)
+            .with_for_update().execution_options(populate_existing=True))
+        request_content = {
+            "deployment_no": deployment_no, "batch_no": batch_no,
+            "changeover_id": str(changeover_id) if changeover_id else None,
+            "started_at": timestamp_content(started_at), "note": note,
+        }
+        existing = retry_result(self.db, ProductionBatch, request_id, "EVT-PB-",
+                                request_content, actor, ProductionError)
+        if existing is not None:
+            self.db.commit()
+            return existing
         if deployment.status != "MATCH":
             raise ProductionError("Production batch requires matching actual software")
         if self.db.scalars(
@@ -237,14 +261,13 @@ class ProductionService:
         ).first():
             raise ProductionError("Production batch number already exists")
 
-        authorization = self.db.get(SoftwareAuthorization, deployment.authorization_id)
         if not authorization or authorization.status != "APPROVED":
             raise ProductionError("Production batch requires an approved authorization")
-        existing_batch_count = len(self.db.scalars(
-            select(ProductionBatch).where(
+        existing_batch_count = self.db.scalar(
+            select(func.count()).select_from(ProductionBatch).where(
                 ProductionBatch.authorization_id == authorization.id
             )
-        ).all())
+        )
         if authorization.batch_limit is not None and existing_batch_count >= authorization.batch_limit:
             raise ProductionError("Production authorization batch limit has been reached")
         changeover = self.db.get(SoftwareChangeover, changeover_id) if changeover_id else None
@@ -264,9 +287,12 @@ class ProductionService:
             release_id=deployment.expected_release_id,
             snapshot_id=deployment.expected_snapshot_id,
             status="ACTIVE",
-            started_at=started_at or datetime.now(timezone.utc),
+            started_at=(started_at.replace(tzinfo=started_at.tzinfo or timezone.utc)
+                        if started_at else datetime.now(timezone.utc)),
             note=note,
         )
+        if request_id is not None:
+            row.id = request_id
         self.db.add(row)
         commit_with_audit(
             self.db,
@@ -289,6 +315,7 @@ class ProductionService:
                     "snapshot_id": str(row.snapshot_id),
                     "status": row.status,
                     "actor_source": actor.source,
+                    "request": request_content if request_id is not None else None,
                 },
             },
         )

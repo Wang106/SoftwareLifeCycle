@@ -52,11 +52,11 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 
 Exit gate: protected operations reject unauthenticated and out-of-scope actors; positive and negative integration tests pass; security decisions are documented.
 
-## Phase 6 — Controlled write experience (recommended next)
+## Phase 6 — Controlled write experience (first package in progress)
 
 - [ ] Prioritize which existing command APIs require UI forms
-- [ ] Add idempotency keys and explicit conflict behavior where absent
-- [ ] Add concurrency protection for approval and other state transitions
+- [ ] Add idempotency keys and explicit conflict behavior where absent — Snapshot and Batch implemented; remaining commands still pending
+- [ ] Add concurrency protection for approval and other state transitions — Release numbering and shared Batch quota implemented; approval transitions still pending
 - [ ] Provide correction/revocation flows using new history records, not destructive edits
 - [ ] Add validation, confirmation and trace links to every write result
 

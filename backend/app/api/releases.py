@@ -1,5 +1,7 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Body
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from app.core.db import SessionLocal
@@ -48,11 +50,17 @@ def list_snapshots(release_id: uuid.UUID, limit: int = Query(20, ge=1, le=100),
                    "is_current_snapshot": row.snapshot_number == latest_number} for row in page],
     }
 
+class SnapshotCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: uuid.UUID | None = None
+
+
 @router.post("/{release_id}/create-snapshot", status_code=201)
 def create_snapshot(
     release_id: uuid.UUID,
     db: Session = Depends(get_db),
     request: Request = None,
+    payload: Annotated[SnapshotCreate | None, Body()] = None,
 ):
     authorize_release(
         request,
@@ -63,7 +71,8 @@ def create_snapshot(
     )
     actor = resolve_actor(request)
     try:
-        s = SnapshotService().create(db, release_id, actor_context=actor)
+        s = SnapshotService().create(db, release_id, actor_context=actor,
+            request_id=payload.request_id if payload else None)
         return {"id": str(s.id), "snapshot_no": s.snapshot_no, "content_hash": s.content_hash, "status": s.status}
     except SnapshotError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
