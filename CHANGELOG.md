@@ -4,6 +4,8 @@ This project does not yet publish tagged releases. Entries below summarize repos
 
 ## Unreleased
 
+- Verified the Phase 6 first-package Render deployment for `3968f9f007e2a00a7268074e5e66cc1a0a8db2cc`: live API `0.14.0`, schema `0016_authenticated_audit_actors`, HTTP 403 `read_only_mode` for a harmless write, and available frontend (HTTP 200 / rendered Dashboard).
+
 - API `0.14.0`: optional request-ID idempotency for Snapshot and Production Batch; identical authorized retries reuse the original result and audit, while changed content/actor or duplicate business numbers conflict. Existing no-key clients retain their behavior.
 - PostgreSQL Release row locking serializes snapshot numbering; Deployment then shared Authorization row locks serialize batch-limit checks across deployments. Validation/constraint/audit/commit failures roll back the whole command; locked ORM state is refreshed.
 - No migration or historical backfill: existing domain UUIDs and atomic audit JSONB evidence implement the retry contract; schema head remains `0016_authenticated_audit_actors`.

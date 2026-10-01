@@ -5,8 +5,8 @@
 - Date: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `8147d8b1cc1c4f9a99c61af22c8318888372a4fe`
-- Baseline subject: `docs: record command audit deployment`
+- Verified baseline: `3968f9f007e2a00a7268074e5e66cc1a0a8db2cc`
+- Baseline subject: `feat: make snapshot and production batch writes retry-safe`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -35,7 +35,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, verified HTTP 200 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.13.0`, health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API version `0.14.0`, health verified ready |
 | Database | PostgreSQL 16 + Alembic | Required/verified revision `0016_authenticated_audit_actors` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -170,5 +170,8 @@ schema remains `0016_authenticated_audit_actors`. Complete backend run: 421 pass
 independent sessions. Single Alembic head and PostgreSQL SQL generation passed.
 No frontend change/build and no schema migration were needed. Optional-key/no-key,
 actor/scope and transaction details are in `docs/write-contracts.md`. Deployment
-verification will be recorded after push; the operational table above is historical.
+verification: Render `dep-dauvf1m417fc73fq13dg` is live for commit
+`3968f9f007e2a00a7268074e5e66cc1a0a8db2cc`; API health returned 200 / `0.14.0` /
+`0016_authenticated_audit_actors`, harmless deployment POST returned
+403 `read_only_mode`, and frontend returned HTTP 200 with a rendered Dashboard.
 The unrelated duplicate frontend file was absent in this checkout and untouched.
