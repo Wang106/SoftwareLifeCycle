@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-01 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `1faf903e8e3356e380bbcd16185d24c2efacf5bd` — `docs: record identity foundation deployment`
+- Reviewed repository baseline: `8256675537987ae1da236b321a573f61b35cde69` — `feat: add configurable OIDC write authentication`
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -51,7 +51,7 @@ See [ROADMAP.md](ROADMAP.md) for sequencing and acceptance gates.
 | Layer | Configured target | Verified 2026-10-01 | Qualification |
 | --- | --- | --- | --- |
 | Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | HTTP 200 and live dashboard HTML returned | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.9.0`; staging reads passed; harmless write rejected with HTTP 403 `read_only_mode` | Public sample API |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.10.0`; staging reads passed; harmless write rejected with HTTP 403 `read_only_mode` | Public sample API; OIDC authentication remains disabled while read-only mode is active |
 | Database | PostgreSQL behind the Render API | Ready at Alembic revision `0015_identity_roles` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
@@ -59,7 +59,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository API version: `0.10.0`; the last verified online deployment remains `0.9.0` until this change is deployed and checked.
+- Repository and verified online API version: `0.10.0`.
 - Required and verified online schema revision: `0015_identity_roles`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
