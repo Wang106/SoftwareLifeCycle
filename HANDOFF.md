@@ -5,9 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `a06b54ef6edaccc84ee585fd252369a85f6def45`
+- Verified baseline: `81e4e59b284b5ac6e75527d816278937089c35ad`
 - Developed from: `a06b54ef6edaccc84ee585fd252369a85f6def45`
-- Baseline subject: `docs: record pinned evidence rollout and schema verification`
+- Baseline subject: `perf: aggregate exact snapshot release coverage in SQL`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.5; health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.6; health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -587,3 +587,19 @@ Phase 6 3/5 (60%). Next: remaining SSR/component/policy/snapshot/history consume
 then approved OIDC/session/controlled target, submission/recovery/results, append-only
 correction/revocation and production operations. Planning remains 8–12 focused packages
 to controlled internal use and 16–24 total to production-ready review, conditional on approvals.
+
+Online verification after feature commit `81e4e59b284b5ac6e75527d816278937089c35ad`: Render deployment
+`dep-davk6l6q1p3s73dcp5p0` is live for this commit (finished
+2026-10-02T05:39:20.750158Z). Health returned 200 / API 0.18.6 /
+0018_asr_evidence_index; independent read-only Render SQL confirmed the revision.
+Exact ASR 2.3.4 `/coverage` and application profile coverage were compared field by
+field with the saved API 0.18.5 baseline and matched: SNAP-008 UUID
+c6f38c25-c42e-4bdb-8327-e16f7e85dd7b, change points 2/2, issues 1/1,
+required DVPs 3, executed 2, passed 2, coverage 100/100/67 and snapshot_match=true.
+Missing-release coverage returned 404. Harmless empty Snapshot and exact Deployment
+Batch POST probes returned 403 read_only_mode. Cloudflare browser refresh after the
+backend went live showed those same cards; English switching retained counts, exact
+preparation UUID, pinned snapshot and both table offsets, then Chinese was restored.
+No frontend source changed or separate frontend rollout was needed. Cloudflare provider
+commit/deployment metadata was not inspected; this is live availability/compatibility
+evidence. No public business write was submitted; staging remains read-only.

@@ -7,6 +7,22 @@
 - API 0.18.6; no migration, head remains 0018_asr_evidence_index. All command contracts/security/atomic audits stay; staging remains read-only. Roadmap stays 34/44.
 - Verification: 14 new coverage tests passed within the full Python 3.12 backend suite: **784 passed, 4873 warnings, no skips**, including **106 real PostgreSQL 16.15 tests**. Tests cover union/distinct/any-PASS semantics, exact release/snapshot exclusion, old/empty/invalid/missing selection, software/project/missing-detail scope, recorded missing metadata, 120-item growth with fixed three cold STANDARD queries and no child ORM/private text, migrated PostgreSQL aggregate results and no audit write. Existing real retry/concurrency/quota/rollback/authorization regressions passed. Frontend **293 passed, no skips**; final Next/OpenNext Cloudflare production build passed. Single Alembic head and PostgreSQL full upgrade SQL generation passed; no new migration.
 
+Online verification after feature commit `81e4e59b284b5ac6e75527d816278937089c35ad`: Render deployment
+`dep-davk6l6q1p3s73dcp5p0` is live for this commit (finished
+2026-10-02T05:39:20.750158Z). Health returned 200 / API 0.18.6 /
+0018_asr_evidence_index; independent read-only Render SQL confirmed the revision.
+Exact ASR 2.3.4 `/coverage` and application profile coverage were compared field by
+field with the saved API 0.18.5 baseline and matched: SNAP-008 UUID
+c6f38c25-c42e-4bdb-8327-e16f7e85dd7b, change points 2/2, issues 1/1,
+required DVPs 3, executed 2, passed 2, coverage 100/100/67 and snapshot_match=true.
+Missing-release coverage returned 404. Harmless empty Snapshot and exact Deployment
+Batch POST probes returned 403 read_only_mode. Cloudflare browser refresh after the
+backend went live showed those same cards; English switching retained counts, exact
+preparation UUID, pinned snapshot and both table offsets, then Chinese was restored.
+No frontend source changed or separate frontend rollout was needed. Cloudflare provider
+commit/deployment metadata was not inspected; this is live availability/compatibility
+evidence. No public business write was submitted; staging remains read-only.
+
 ## 2026-10-02 — ASR pinned evidence pagination
 
 - Added exact snapshot summary, paginated frozen artifacts and latest DVP execution per item UUID; mismatched scope is rejected and missing metadata remains visible.
