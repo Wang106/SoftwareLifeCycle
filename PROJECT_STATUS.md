@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy now has pinned artifact/rule pages; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; comparison and other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -47,11 +47,11 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 64 backend test modules are present. The complete 2026-10-03 (Asia/Shanghai) Python 3.12 run passed **839 tests**, including **109 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (5320 in this run).
+- 65 backend test modules are present. The complete 2026-10-03 (Asia/Shanghai) Python 3.12 run passed **850 tests**, including **110 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (5367 in this run).
 - Alembic has the single head `0018_asr_evidence_index`; it adds only a DVP execution scope index. Full PostgreSQL upgrade and 0018-to-0017 downgrade SQL generation passed; real PostgreSQL index upgrade/downgrade/upgrade preserved records.
 
 
-- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 316 cases; authenticated submission remains pending.
+- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 327 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -736,7 +736,7 @@ All 14 write contracts, replay/conflicts, PostgreSQL locks, exact role checks, t
 actor and atomic domain/audit writes are unchanged. Public staging remains read-only.
 
 Verification: **839 backend tests passed**, **5320 existing warnings**, no skips, under
-Python 3.12, including **109 real PostgreSQL 16.15 tests**. Twenty new backend cases
+Python 3.12, including **110 real PostgreSQL 16.15 tests**. Twenty new backend cases
 cover recording parity, null/empty/whitespace values, INTERNAL_ONLY/ALLOW observations,
 duplicate null-recipient rules, exact release/snapshot/artifact rejection, pinned pages
 across a newer snapshot, stable ordering, empty/no-snapshot/invalid selections, HTTP
@@ -782,3 +782,35 @@ for the final screenshot. Cloudflare provider deploy ID/commit metadata unavaila
 visible new behavior is frontend rollout evidence. A newer snapshot/pinned historical
 read is demonstrated locally and in tests, not by creating staging records.
 Main push succeeded, working tree clean, unrelated duplicate activity file untouched.
+
+## Exact Snapshot detail development — 2026-10-03 (Asia/Shanghai)
+
+Developed from GitHub main 27ce7b773f759fb8c6fd69f35395ab488fb7a8c1 using Codex.
+API 0.18.10 adds exact Snapshot summary, independently bounded artifact/rule pages and
+validated exact file filtering shared with existing ASR SQL projections. UI preserves
+full hashes, historical/current identity and immutable preparation/resource/history/
+compare links. Search now selects the exact frozen artifact before its retained anchor;
+selection/clear resets both offsets, normal paging preserves the other. Parent/name/
+UUID/filter mismatch fails closed, no bulk fallback. Chinese remains default and all
+new content supports English. Bare legacy detail/comparison remain compatible.
+
+No migration; single head 0018_asr_evidence_index, complete PostgreSQL upgrade SQL
+validated. Full backend: 850 passed, 5367 existing warnings, no skips; 110 real
+PostgreSQL 16.15 tests, 65 backend modules. Eleven new exact scope/count/order/growth/
+HTTP/committed-newer-Snapshot cases. Frontend 327 passed; Next/OpenNext production
+build and 10 actual production SSR groups passed. All write request-ID/scope/trusted
+actor/locking/atomic audit contracts remain unchanged. Unrelated duplicate activity
+file was neither recreated, adopted nor removed.
+
+Progress: ROADMAP acceptance items remain 34/44 (77%), Phase 4 8/9 and Phase 6 3/5.
+New docs/read-consumer-migration.md identifies 17 named consumer scope groups, with
+11/17 already complete at the reviewed baseline and 12/17 (71%) now complete. This
+new fine-grained counter explains consumer progress without prematurely checking the
+remaining broad Phase 4 item. Five pending groups: comparison, ASR passport, readiness/
+compatibility policy, release catalogs/resolver, other rich profiles/domain catalogs.
+Next comparison, then passport and remaining reads; identity/session/submission/
+recovery/corrections/ops follow. Conditional ranges 8–12 focused internal-use packages,
+16–24 total production-review packages; no commitment or staging write enablement.
+
+Commit/push and live rollout evidence will be recorded after publication; local tests
+alone do not establish deployment success.

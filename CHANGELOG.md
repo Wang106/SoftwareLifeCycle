@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-03 — Exact Snapshot summary and independently bounded manifest/rules
+
+- API 0.18.10 adds exact name/UUID public metadata pages with full hashes and artifact filtering; shares frozen SQL projections with ASR policy. No migration, head 0018.
+- Chinese-default/English exact detail preserves preparation/history/resource/compare targets. Search can reach a file beyond page one; child contexts fail independently. Legacy APIs stay compatible.
+- Backend 850 passed (110 real PostgreSQL), 5367 warnings, no skips; frontend 327 passed; production build and 10 production SSR groups passed.
+- New 17-group read-consumer ledger advances 11/17 to 12/17 (71%); ROADMAP remains 34/44 (77%). Comparison and four other broad groups remain. Staging stays read-only.
+- Publication and deployment evidence to follow; no live success claimed from local results.
+
 ## 2026-10-03 — Pinned ASR frozen policy summary and independent pages
 
 - API 0.18.9 adds SQL recording counts, bounded artifact metadata/per-row rule counts and separate exact Snapshot/artifact recipient-rule pages. Legacy bulk API unchanged; no migration, schema 0018.

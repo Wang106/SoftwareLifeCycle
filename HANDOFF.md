@@ -823,3 +823,35 @@ for the final screenshot. Cloudflare provider deploy ID/commit metadata unavaila
 visible new behavior is frontend rollout evidence. A newer snapshot/pinned historical
 read is demonstrated locally and in tests, not by creating staging records.
 Main push succeeded, working tree clean, unrelated duplicate activity file untouched.
+
+## Exact Snapshot detail development — 2026-10-03 (Asia/Shanghai)
+
+Developed from GitHub main 27ce7b773f759fb8c6fd69f35395ab488fb7a8c1 using Codex.
+API 0.18.10 adds exact Snapshot summary, independently bounded artifact/rule pages and
+validated exact file filtering shared with existing ASR SQL projections. UI preserves
+full hashes, historical/current identity and immutable preparation/resource/history/
+compare links. Search now selects the exact frozen artifact before its retained anchor;
+selection/clear resets both offsets, normal paging preserves the other. Parent/name/
+UUID/filter mismatch fails closed, no bulk fallback. Chinese remains default and all
+new content supports English. Bare legacy detail/comparison remain compatible.
+
+No migration; single head 0018_asr_evidence_index, complete PostgreSQL upgrade SQL
+validated. Full backend: 850 passed, 5367 existing warnings, no skips; 110 real
+PostgreSQL 16.15 tests, 65 backend modules. Eleven new exact scope/count/order/growth/
+HTTP/committed-newer-Snapshot cases. Frontend 327 passed; Next/OpenNext production
+build and 10 actual production SSR groups passed. All write request-ID/scope/trusted
+actor/locking/atomic audit contracts remain unchanged. Unrelated duplicate activity
+file was neither recreated, adopted nor removed.
+
+Progress: ROADMAP acceptance items remain 34/44 (77%), Phase 4 8/9 and Phase 6 3/5.
+New docs/read-consumer-migration.md identifies 17 named consumer scope groups, with
+11/17 already complete at the reviewed baseline and 12/17 (71%) now complete. This
+new fine-grained counter explains consumer progress without prematurely checking the
+remaining broad Phase 4 item. Five pending groups: comparison, ASR passport, readiness/
+compatibility policy, release catalogs/resolver, other rich profiles/domain catalogs.
+Next comparison, then passport and remaining reads; identity/session/submission/
+recovery/corrections/ops follow. Conditional ranges 8–12 focused internal-use packages,
+16–24 total production-review packages; no commitment or staging write enablement.
+
+Commit/push and live rollout evidence will be recorded after publication; local tests
+alone do not establish deployment success.

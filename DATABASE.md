@@ -343,3 +343,18 @@ adds UUID to component/filename. Totals/sorts may grow with data; measured Postg
 plans must justify additional read indexes. READ COMMITTED counts/pages are observations,
 not a transaction receipt or status/approval proof. All command locks and audit rules
 remain unchanged; migrated PostgreSQL tests verify null ordering and scope/no writes.
+
+## Exact Snapshot projections — API 0.18.10
+
+No schema migration; head 0018_asr_evidence_index. Reuse exact snapshot_no uniqueness,
+snapshot_artifacts.snapshot_id and rule.snapshot_artifact_id indexes. Shared frozen
+policy SQL projections serve ASR and exact detail, with correlated rule counts and
+joined rules; exact file UUID filtering is validated inside the selected Snapshot.
+Parent summary counts and stable LIMIT/OFFSET child projections avoid complete child
+ORM collections and growing Python ID lists. Existing FK/public fields and nullable
+release metadata behavior are retained. Tests cover 124 files/364 rules with fixed
+statement shape and bounded transfer; totals/order can still scan growing data.
+Real PostgreSQL READ COMMITTED test commits a newer Snapshot in a separate session
+between summary and page reads: exact historical pin remains, no audit write occurs.
+Reads are observations rather than a cross-request transaction receipt. Existing
+command locks, number/quota serialization and atomic audits are unchanged.

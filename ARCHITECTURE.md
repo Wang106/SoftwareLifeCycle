@@ -312,3 +312,14 @@ The page pins all navigation to the summary snapshot and independently pages art
 rules; exact artifact drilldown resets only rule offset. Mismatched summary/child/filter
 contexts fail closed for presentation. Fixed query shape bounds transfer, not SQL scans.
 Legacy bulk routes remain compatible; no command, lock, identity or audit change.
+
+## Exact Snapshot detail consumer — API 0.18.10
+
+Exact Snapshot number summary resolves parent identity without materializing children.
+Shared frozen_policy_reads SQL projections provide bounded public metadata and separate
+rules. Both page queries require the summary Snapshot UUID, optionally validate and
+filter an exact artifact, and return all parent/filter context. The server-rendered
+manifest tables page independently, retain full SHA and raw identities and fail each
+mismatched child independently. Search links select the exact file before anchoring.
+Legacy bare detail/comparison remain compatible; comparison still loads full manifests.
+No command/lock/audit architecture change or cross-read transaction guarantee.

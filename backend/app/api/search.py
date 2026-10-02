@@ -51,7 +51,7 @@ def _frozen_artifact_results(db: Session, pattern: str, limit: int) -> list[dict
         ReleaseSnapshot.id.in_({artifact.snapshot_id for artifact in rows}))).all()} if rows else {}
     return [{"type": "Frozen artifact", "label": row.filename,
              "description": f"{snapshots[row.snapshot_id].snapshot_no if row.snapshot_id in snapshots else 'Snapshot unavailable'} · SHA-256 {row.sha256[:12]}…",
-             "href": f"/snapshots/{quote(snapshots[row.snapshot_id].snapshot_no, safe='')}#artifact-{row.id}"
+             "href": f"/snapshots/{quote(snapshots[row.snapshot_id].snapshot_no, safe='')}?manifest_artifact_id={row.id}#artifact-{row.id}"
              if row.snapshot_id in snapshots else "/releases/application"} for row in rows]
 
 

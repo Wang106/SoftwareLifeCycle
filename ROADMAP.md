@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact manifest/comparison, other rich profiles/legacy catalogs and passport consumers remain
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact detail now uses bounded manifest/rule pages; comparison, other rich profiles/legacy catalogs and passport consumers remain
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -161,3 +161,16 @@ the remaining compatibility item. No checked item/denominator change: 34/44, Pha
 approved identity/session/controlled submission, result recovery/corrections and ops.
 Conditional ranges remain 8–12 internal-use packages, 16–24 total production-review
 packages; public staging stays read-only.
+
+## Exact Snapshot detail migration and progress visibility — 2026-10-03
+
+Exact detail now uses summary and independent bounded file/rule pages pinned by name
+and UUID, full hashes, and exact search file selection. Comparison remains unbounded.
+ROADMAP remains 34/44 (77%) because the Phase 4 acceptance item covers all remaining
+compatibility consumers. [Read consumer tracking](docs/read-consumer-migration.md)
+introduces 17 named scope groups: 11/17 at baseline 27ce7b7, 12/17 (71%) after this
+package. This finer counter is new, equally weighted and not production readiness;
+it does not change the ROADMAP denominator. Five remaining groups include broad
+readiness/catalog/rich-profile work. Next comparison/passport/remaining reads, then
+approved identity/session, authenticated submission/recovery/corrections and operations.
+Conditional package ranges remain 8–12 internal-use / 16–24 total production-review.

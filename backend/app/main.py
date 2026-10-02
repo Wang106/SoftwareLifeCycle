@@ -1,3 +1,4 @@
+from app.api.snapshot_views import router as snapshot_views_router
 from app.api.asr_policy import router as asr_policy_router
 from app.api.asr_components import router as asr_components_router
 from app.api.standard_release_views import router as standard_views_router
@@ -32,7 +33,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.9"
+APP_VERSION = "0.18.10"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -63,6 +64,7 @@ app.include_router(activity_router)
 app.include_router(search_router)
 app.include_router(organizations_router)
 app.include_router(impact_router)
+app.include_router(snapshot_views_router)
 app.include_router(snapshots_router)
 app.include_router(release_matrix_router)
 app.include_router(change_coverage_router)

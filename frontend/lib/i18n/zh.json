@@ -881,7 +881,7 @@
   "deployments": "部署",
   "distributions": "分发",
   "files": "文件",
-  "files ·": "文件 ·",
+  "files ·": "个文件 ·",
   "for “": "针对“",
   "historical execution record(s) belong to other snapshots.": "条历史执行记录属于其他快照。",
   "items · executed": "项目 · 已执行",
@@ -1458,5 +1458,10 @@
   "Matching rule count": "匹配规则数量",
   "No recipient rules on this page.": "本页没有接收方规则。",
   "Policy rule page unavailable. Check pagination, snapshot and artifact selection.": "政策规则页不可用，请检查分页、快照及制品选择。",
-  "Selected artifact:": "已选择的制品："
+  "Selected artifact:": "已选择的制品：",
+  "Frozen totals": "冻结记录总数",
+  "Manifest artifact page unavailable. Check pagination and exact selection.": "文件分页不可用，请检查分页参数和精确选择。",
+  "Manifest rule page unavailable. Check pagination and exact selection.": "规则分页不可用，请检查分页参数和精确选择。",
+  "All snapshot files and rules →": "全部快照文件和规则 →",
+  "rules": "条规则"
 }

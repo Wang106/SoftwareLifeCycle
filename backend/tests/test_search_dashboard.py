@@ -112,7 +112,7 @@ def test_search_traces_snapshots_and_artifacts_to_their_exact_release():
         "%SNAP-008%", 10)[0]["href"] == "/snapshots/SNAP-008"
     assert _frozen_artifact_results(RelationSession({SnapshotArtifact: [frozen],
         ReleaseSnapshot: [snapshot], Release: [application]}), "%CustomerA%", 10)[0]["href"] == (
-            f"/snapshots/SNAP-008#artifact-{frozen.id}")
+            f"/snapshots/SNAP-008?manifest_artifact_id={frozen.id}#artifact-{frozen.id}")
     assert _artifact_results(RelationSession({Artifact: [source], ReleaseComponent: [component],
         Release: [standard]}), "%Standard%", 10)[0]["href"] == f"/releases/standard/{standard.id}"
 

@@ -373,3 +373,14 @@ belong to the pinned Snapshot. No changes to any of the 14 request-ID replay/con
 role/actor, transaction lock, correction or atomic audit contracts. No migration or
 submission capability/public write target is introduced; concurrency and rollback
 regressions continue running against real PostgreSQL.
+
+## Exact Snapshot detail read migration — API 0.18.10 / schema 0018
+
+Only read consumers and shared frozen SQL projections change. Summary/file/rule pages
+bind exact number/UUID and artifact ownership. Search and immutable request-preparation
+links retain target UUIDs; no write or submission capability is added. All 14 command
+request-ID/conflict/scope/actor/audit/transaction-lock contracts remain unchanged and
+are exercised in the complete real PostgreSQL test run. No migration, staging stays
+read-only. Legacy comparison/bare manifest APIs remain; consumer migration is not yet
+complete. See read-consumer-migration.md for the 12/17 scope-group breakdown, separate
+from unchanged ROADMAP 34/44 acceptance-item accounting.

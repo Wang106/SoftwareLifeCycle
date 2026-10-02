@@ -469,3 +469,35 @@ not upgrade its status. Separate reads are not a transaction receipt. Legacy bar
 endpoint unchanged. UI policy_snapshot_id/policy_limit/policy_artifact_offset/
 policy_rule_offset/policy_artifact_id preserve exact pin and independent pages; artifact
 selection resets only rule offset. No migration, head 0018.
+
+## Exact Snapshot summary and independent manifest pages — API 0.18.10
+
+All routes start `/api/v1/snapshots/{snapshot_no}`; exact number lookup supports both
+STANDARD and APPLICATION snapshots, all statuses, including historical records.
+
+| GET suffix | Query | Response |
+| --- | --- | --- |
+| `/summary` | no query fields | Legacy identity fields without artifacts; release_id, artifact_count, rule_count |
+| `/artifacts` | required snapshot_id UUID; optional snapshot_artifact_id UUID; limit 1–100 default 50, offset 0–100000 default 0 | Public frozen file metadata, full SHA-256, rule_count; no nested rules or storage_reference |
+| `/rules` | same pin, optional artifact UUID and pagination | Rule id, exact artifact UUID, filename/component/distribution and original recipient/purpose/code/decision |
+
+Both child envelopes contain snapshot_no/release_id/snapshot_id/snapshot_artifact_id
+(or null)/total/limit/offset/next_offset/items. Name and UUID must identify the same
+Snapshot; missing/foreign Snapshot or artifact gives 404, malformed/unknown query 422.
+Beyond-end returns full total, empty items, null next_offset. Orders match ASR policy
+pages (component/filename/artifact UUID, then recipient/purpose/coalesced code/decision/
+rule UUID). Null/empty stored recipient codes and duplicate null rows remain unchanged.
+Summary preserves highest-number current flag over all statuses and release:null if
+metadata is unavailable; release_id still identifies the exact frozen FK. No latest
+substitute, authorization, hash verification or approval is established by these reads.
+
+Exact detail UI uses manifest_snapshot_id/manifest_limit/manifest_artifact_offset/
+manifest_rule_offset/manifest_artifact_id. A provided wrong parent pin fails closed.
+Both tables validate returned name/UUID/release/filter context independently. Selecting
+or clearing a file resets both offsets and filters both tables. Other paging preserves
+the other offset and exact pin. Search-generated frozen artifact links include the
+exact file query and retained #artifact-UUID anchor, even when the file was beyond the
+first page. Old bare fragment bookmarks alone locate only files on the current page;
+use the exact file query for off-page targets. Identity/full hashes/history/compare/
+resource and preparation links remain; no bulk fallback. Legacy bare detail and compare
+APIs remain compatible and unbounded. No migration; schema 0018.

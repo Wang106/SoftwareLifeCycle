@@ -298,3 +298,16 @@ and links pin the exact snapshot, with release/snapshot/artifact mismatch reject
 no bulk fallback. No authenticated read/company-data claim, new command/provider/session,
 permission change or public write enablement. All 14 exact write grants, trusted actor,
 keyed retries, locks and atomic audit contracts remain covered by full PostgreSQL tests.
+
+## Exact Snapshot read boundary — API 0.18.10
+
+Public sample read-only detail verifies exact name/UUID and selected artifact ownership;
+frontend checks every returned parent/filter context independently and never substitutes
+latest data. Both STANDARD/APPLICATION and historical/DRAFT snapshots are observations,
+not approval or distribution grants. Full hashes are recorded values, not verification.
+INTERNAL_ONLY remains externally denied even when a stored rule says ALLOW. Neither
+private storage references nor business commands are added. Resource/test/delivery
+links remain request preparation only with exact immutable targets. Snapshot/Batch
+request-ID contracts, trusted principal binding, scope checks, transaction locks and
+atomic business/audit commits remain covered by the full PostgreSQL suite. Public
+staging remains read_only_mode; authenticated submission/OIDC setup remain pending.
