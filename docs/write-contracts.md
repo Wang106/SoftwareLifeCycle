@@ -395,3 +395,12 @@ remain unchanged, and complete PostgreSQL regressions pass. No migration/submiss
 public write enablement. The compatibility comparison still exists; the migrated UI
 uses no bulk fallback. Read-consumer scope groups advance 12/17 to 13/17; broad
 ROADMAP item remains incomplete at 34/44.
+
+## ASR passport bounded consumer — 2026-10-03
+
+This package adds read-only passport endpoints and changes no command contract.
+Snapshot number allocation, quota locks, request-ID replay/conflict, exact scoped
+permission checks, authenticated actor binding and business/audit atomicity remain as
+specified above. Full real PostgreSQL backend regression must include the existing
+concurrent Snapshot/Batch cases. Read pins are observation selection, not write
+preconditions or authorization grants; public staging remains read-only.

@@ -1468,5 +1468,18 @@
   "View exact file and recorded rules →": "查看精确文件和已记录规则 →",
   "No frozen files on this comparison page.": "此比较分页没有冻结文件。",
   "Comparison file page unavailable. Check pagination, filter and exact snapshot selection.": "比较文件分页不可用，请检查分页参数、筛选和精确快照选择。",
-  "Rule comparison preserves recipients, purposes, decisions and duplicate counts. Open an exact file to page through its rules; counts do not grant distribution permission.": "规则比较保留接收方、用途、决策及重复次数。打开精确文件可分页查看规则；记录数量不授予分发权限。"
+  "Rule comparison preserves recipients, purposes, decisions and duplicate counts. Open an exact file to page through its rules; counts do not grant distribution permission.": "规则比较保留接收方、用途、决策及重复次数。打开精确文件可分页查看规则；记录数量不授予分发权限。",
+  "Selected snapshot": "选定快照",
+  "For exact release": "此精确发布",
+  "Total records": "记录总数",
+  "Page records": "本页记录数",
+  "Passport record page unavailable.": "护照记录分页暂不可用。",
+  "Passport pages retain the selected snapshot and decision UUIDs. Historical selections do not release the current snapshot.": "护照分页保留选定快照与决策的 UUID。历史选择不会使当前快照获得发布资格。",
+  "Read latest passport": "读取最新护照",
+  "SELECTED": "已选定",
+  "Deliveries use the decision snapshot UUID when a decision is selected. Distributions and authorizations cover the exact release.": "选择决策后，交付按决策快照 UUID 筛选；分发与授权覆盖此精确发布。",
+  "No outbound records on these pages.": "这些分页没有下游记录。",
+  "Next page": "下一页",
+  "Selection UUIDs": "选定 UUID",
+  "The selected decision is historical. Read the latest passport to see the latest recorded decision.": "选定决策属于历史记录。请读取最新护照以查看最新记录的决策。"
 }

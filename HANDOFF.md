@@ -929,3 +929,33 @@ Whole-manifest duplicate and nullable duplicate-rule/newer-commit behaviors are 
 locally in real PostgreSQL, without modifying staging. Fine ledger 13/17, ROADMAP 34/44.
 Feature/verification docs pushed to main, working tree clean, unrelated duplicate file
 untouched. Next ASR passport and the other three pending read groups.
+
+## ASR passport bounded development package — 2026-10-03
+
+Mode: Codex. Developed from GitHub main f63862a45b0b2e4c945f2252cc8f74d0ac25d769,
+verified against repository handoff/status/roadmap/architecture/API/database/security/
+changelog/write contracts, code, tests and latest commits. API 0.18.12 adds a fixed
+passport identity/decision summary with SQL counts and four independently bounded
+histories. Paired Snapshot/decision UUIDs or explicit `none` persist across pagination;
+summary recomputes current/latest indicators. Decision deliveries use the exact Snapshot
+FK even when metadata is missing; approval joins validate all release/Snapshot bindings.
+Historical RELEASE cannot override a newer HOLD or release current content. Release-wide
+distributions/authorizations are labeled separately. Chinese default/English, full hashes,
+raw identities, metadata, reason/actor/time, exact revision links and full counts remain.
+Individual failed pages do not turn into false zero totals or trigger bulk fallback.
+Compatibility APIs retained; no writes or schema changes. Existing request-ID retries,
+conflicts, Snapshot/quota locks, exact authorization/trusted actor/atomic audit unchanged.
+
+Validation: full backend Python 3.12, 904 passed, 5769 existing/deprecation warnings,
+no skips; includes 115 real PostgreSQL 16.15 cases, 67 backend modules. Twenty-nine
+new scope/pin/count/history/growth/strict HTTP/PostgreSQL cases. Frontend 357 passed;
+final Next/OpenNext production build and 12 actual Next SSR groups passed. PostgreSQL
+second-session commit preserves Snapshot pin and current/historical semantics; no audit
+writes. Single Alembic head 0018_asr_evidence_index and PostgreSQL upgrade SQL verified.
+No migration required. Unrelated frontend/app/activity/page 2.tsx not rebuilt/adopted/
+removed. Offset pages and mutable metadata remain live observations, not a frozen view.
+Fine read ledger 13/17 (76%) → 14/17 (82%); ROADMAP 34/44 (77%) unchanged. Pending
+readiness/compatibility policy, release catalogs/resolver, rich profiles/domain catalogs;
+then approved identity/session, authenticated submission/recovery/corrections, operations.
+Conditional remaining estimate 6–10 internal-use packages, 14–22 total production review.
+Public staging remains read-only; rollout verification will be recorded after push.

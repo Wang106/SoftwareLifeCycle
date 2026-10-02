@@ -336,3 +336,14 @@ to exact bounded detail. Navigation pins both names/UUIDs and returned parent/fi
 contexts fail closed. Legacy compatibility comparison remains; fixed query shape does
 not guarantee fixed DB runtime or a transactional read receipt. Command architecture
 and audit/actor/locking remain unchanged.
+
+## ASR passport bounded consumer — 2026-10-03
+
+`app/api/asr_passport.py` separates fixed identity/decision summary and SQL counts
+from four independently bounded histories. First summary selects latest; explicit
+paired Snapshot/decision UUIDs (or `none`) persist across navigation. Summary recomputes
+current Snapshot/latest decision indicators without changing pinned selections. The
+passport frontend consumes only these five endpoints; compatibility APIs remain for
+other callers. Typed page envelopes are checked for release and both selection pins.
+Historical selection, full counts/full hashes, failed individual pages and latest
+refresh links are explicit in Chinese-default/English UI. No write-service changes.

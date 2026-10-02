@@ -538,3 +538,35 @@ name/UUID/release/filter mismatch fails closed; a failed file page retains summa
 Each side links its exact frozen file to paginated rules on the detail page. Chinese
 default/English supported. Legacy comparison route remains compatible/unbounded.
 No migration, schema 0018; separate GETs are observations, not a transaction receipt.
+
+## ASR passport bounded consumer — 2026-10-03
+
+API 0.18.12 adds GET `/api/v1/releases/application/id/{release_id}/passport/summary`
+and `/passport/{decisions|deliveries|distributions|authorizations}`. Exact APPLICATION
+release UUID only (404 on missing/wrong type). Summary accepts either no selection
+(first observation: latest Snapshot across statuses and latest decision ordered by
+`decided_at DESC, decision_no DESC, id DESC`) or both `snapshot_id` and `decision_id`.
+Each pin is an exact owned UUID or literal `none`; omission and explicit `none` differ.
+Both pins are required on pages; one supplied pin/unknown fields/invalid UUID give 422.
+Pages default limit=50, allow 1..100, offset=0..100000; return release_id, both pins,
+delivery_scope_snapshot_id, total, limit, offset, next_offset, items. Summary returns
+profile, selection pins, selected decision and SQL counts for all four groups; no
+coverage or child arrays. Snapshot full hash and historical/current metadata remain.
+Decision metadata includes `is_selected_snapshot`, `context_consistent`; summary also
+returns `is_current_snapshot` and `is_latest_decision`. Approval is exposed only when
+its RELEASE target/release UUID/Snapshot UUID all match. Metadata absence is unknown,
+never approval. Context consistency requires the owned Snapshot to be FROZEN; recorded
+decision/approval status remains an observation, not a new write authorization.
+Deliveries use exact release_id and, when a decision is selected, decision.snapshot_id
+regardless of missing Snapshot name/metadata. Explicit no-decision selection shows
+release-wide deliveries. Distributions join their direct delivery parent by exact
+release; authorizations use their direct release FK. These last two are release-wide,
+not narrowed to decision Snapshot; no inferred grant. Pages keep selected UUIDs after
+new commits, but offset pages/counts are live observations, not a frozen database view.
+Ordering: decision time/no/id descending; package no/revision/id; distribution no/id;
+authorization no/id. Legacy profile/decision/history/downstream APIs remain compatible.
+UI query keys: passport_snapshot_id, passport_decision_id, passport_limit and four
+passport_{group}_offset values. Independent page failures preserve summary and other
+pages; no bulk fallback. Formal current badge requires selected RELEASE, current
+Snapshot, latest decision and consistent binding; historical selection cannot override
+newer HOLD. Chinese is default, English selectable, raw UUIDs/full hashes preserved.

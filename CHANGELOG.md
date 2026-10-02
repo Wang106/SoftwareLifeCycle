@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-03 — Bounded ASR passport
+
+- API 0.18.12: fixed summary/counts and four bounded histories pinned to exact release, Snapshot and decision UUIDs. Missing metadata never widens deliveries; historical RELEASE cannot override current/latest context. Legacy endpoints retained.
+- Chinese-default/English passport preserves full hashes/identity, notes/actor/time and independent failure/count/pagination displays. Read ledger 14/17 (82%); ROADMAP 34/44 unchanged.
+- No migration, head 0018; write safety/read-only mode unchanged. Full backend 904 passed (115 real PostgreSQL), 5769 warnings, no skips; frontend 357 passed, production build and 12 actual SSR groups passed.
+
 ## 2026-10-03 — Bounded SQL frozen Snapshot comparison
 
 - API 0.18.11 adds exact-pair summary and bounded file differences; SQL fields/counts/rule multisets preserve duplicates and NULL/empty codes without relying on rule UUID/order. Whole-manifest duplicate identities return 409. Legacy API remains.

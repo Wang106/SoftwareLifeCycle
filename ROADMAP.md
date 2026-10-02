@@ -186,3 +186,15 @@ policy, release catalogs/resolver, other rich profiles/domain catalogs. ROADMAP 
 Next passport, then remaining reads; approved identity/session, authenticated submission/
 recovery/corrections and operations follow. Remaining conditional planning ranges after
 this package: 7–11 focused internal-use packages, 15–23 total production-review packages.
+
+## ASR passport bounded consumer — 2026-10-03
+
+Passport now uses fixed summary counts and four pinned bounded histories; exact
+Snapshot UUID filtering survives missing metadata and historical selections cannot
+release current content. The fixed 17-group ledger advances 13/17 (76%) → 14/17 (82%).
+ROADMAP remains 34/44 (77%), Phase 4 8/9, Phase 6 3/5: remaining readiness/compatibility
+policy, release catalogs/resolver and rich profiles/domain catalogs still span the
+open read acceptance item. Next those three groups, then approved identity/session,
+authenticated submission and recovery/corrections, operations. Conditional remaining
+estimate: 6–10 focused packages toward internal use; 14–22 total toward production
+review, subject to provider configuration and broad remaining group sizes.

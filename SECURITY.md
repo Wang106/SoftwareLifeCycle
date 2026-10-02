@@ -323,3 +323,16 @@ Private storage references are excluded. No commands, write grants, principal bi
 identity provider/session or public write enablement are added. All 14 existing scope/
 request-ID/trusted actor/lock/atomic audit contracts pass the full PostgreSQL suite.
 Public staging remains read_only_mode; company-data/read-auth acceptance remains pending.
+
+## ASR passport bounded consumer — 2026-10-03
+
+Passport reads validate exact APPLICATION release and ownership of both optional/
+required UUID pins. Explicit `none` never silently selects a later record. Delivery
+Snapshot filtering uses the decision FK even if joined metadata is absent; wrong or
+missing labels cannot widen scope. Snapshot joins require release ownership; approval
+joins require target_type=RELEASE plus exact release and Snapshot bindings. Historical
+or inconsistent selected decisions cannot display the current formal-release badge,
+and a newer HOLD cannot be overridden by selecting an older RELEASE. These public
+read observations confer no authority. Existing trusted actor binding, precise write
+scope, request-ID conflict/retry behavior and atomic business/audit commit remain.
+Public staging read-only; no staging records were created for verification.

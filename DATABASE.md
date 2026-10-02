@@ -379,3 +379,16 @@ increasing data; measure plans before adding indexes. A separate PostgreSQL sess
 committing a newer Snapshot does not move the explicitly pinned pair. Reads do not
 append audits and are not cross-request transaction receipts. All command constraints,
 number/quota locks and atomic business/audit behavior remain unchanged.
+
+## ASR passport bounded consumer — 2026-10-03
+
+No migration for API 0.18.12. Existing release FK indexes and Snapshot number
+constraints suffice for correctness of the passport read slice. Summary counts use
+SQL; identity lookups are fixed and each history materializes at most 100 bounded rows.
+No whole downstream ID sets or unbounded decision arrays. Four independent totals and
+bounded ordered queries do not imply constant database work; query cost still grows
+with release history and needs measurement before adding performance indexes. Snapshot
+and decision pins select exact rows and do not create a repeatable-read snapshot of
+mutable records. Alembic head stays 0018_asr_evidence_index. PostgreSQL tests prove
+paging/scoping and a second-session commit does not retarget selected Snapshot UUID;
+existing PostgreSQL write-concurrency suite remains required and unchanged.
