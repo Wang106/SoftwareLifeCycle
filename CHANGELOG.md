@@ -422,3 +422,35 @@ and production operations. Planning estimate remains 8–12 more focused package
 controlled internal use, 16–24 total to a production-ready review, subject to approvals.
 Suggested next code package: migrate remaining release detail/trace consumers to bounded
 profiles/catalogs while approved identity/session and controlled target are specified.
+
+Online verification after feature commit `8ab38722f62b7221fe8cdf90e9c3c70cb07d935d`:
+Render deploy `dep-db03ajff3r2c73ampbrg` is live for that commit, finished
+2026-10-02T22:51:42.199751Z UTC / 2026-10-03 Asia/Shanghai. Health HTTP 200 /
+API 0.18.12 / schema 0018_asr_evidence_index; independent read-only SQL confirmed head.
+Saved legacy profile/decision/history/downstream and new summary agree on exact release
+271334c3-9a99-4dc0-a7dc-75ba5754377b, SNAP-008
+c6f38c25-c42e-4bdb-8327-e16f7e85dd7b, full hash, decision RD-0081 UUID
+f1f06f98-62a8-4a10-9fcd-f904c62702b5, APR-0121, actor/notes/time and four full counts
+(1 each). One-row pages matched every passport-used field; authorization batch_limit
+is intentionally omitted from this passport projection and remains in compatibility/
+authorization APIs. Beyond-end/invalid/missing-pin/unknown-field/foreign-pin checks
+passed. Explicit none pins returned no selected snapshot/decision. Empty Snapshot and
+Deployment Batch POST probes both returned HTTP 403 read_only_mode; no business write.
+
+Chinese Cloudflare passport showed complete counts, exact UUID selection/full hashes,
+notes/actor/time and all three outbound groups with limit=1. English retained all raw
+identities/hashes/counts. First-page navigation retained both pins, limit and independent
+cursors. Invalid delivery cursor showed unavailable/page count unknown while full count,
+decision/distribution/authorization stayed visible; repaired original Chinese view.
+Three lifecycle badge translations were added in
+`03892f7637e92a2f402118c0d4dcfb351baaf838` and revalidated: frontend 357 passed, final
+Next/OpenNext build and 12 actual SSR groups including default Chinese badge passed.
+Live reload showed Chinese 已正式发布, establishing frontend correction rollout.
+Cloudflare provider deployment/commit metadata was not exposed; no provider ID claim.
+Final screenshot retained exact history hash, counts and links. New-commit/historical/
+wrong-binding/growth scenarios are proven locally with real PostgreSQL where appropriate,
+without staging seed/mutation. Fine read ledger 14/17 (82%), ROADMAP 34/44 (77%).
+Next readiness/compatibility policy, release catalogs/resolver and other rich reads.
+Feature, translation and verification records pushed to main; unrelated duplicate file
+untouched. Public staging remains read-only. Conditional estimate 6–10 internal-use
+packages, 14–22 total toward production review.

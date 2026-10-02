@@ -1,6 +1,6 @@
 # Read-consumer migration tracking
 
-Reviewed main baseline: f63862a45b0b2e4c945f2252cc8f74d0ac25d769.
+Reviewed main feature baseline: 8ab38722f62b7221fe8cdf90e9c3c70cb07d935d (translation follow-up 03892f7637e92a2f402118c0d4dcfb351baaf838).
 Updated 2026-10-03 (Asia/Shanghai), API 0.18.12.
 
 The top-level ROADMAP counts completed acceptance items: 34/44 (77%). The remaining
