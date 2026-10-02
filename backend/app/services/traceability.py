@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from sqlalchemy import select
+from sqlalchemy import case, func, literal, select, union
 from sqlalchemy.orm import Session
 
-from app.models.change import ChangePoint, Issue, IssueChangeRequestRelation, SoftwareChangeRequest
-from app.models.testing import ChangePointDvpItem, DvpExecution, DvpItem, IssueDvpItem
+from app.models.change import ChangePoint, IssueChangeRequestRelation, SoftwareChangeRequest
+from app.models.testing import ChangePointDvpItem, DvpExecution, IssueDvpItem
 from app.models.core import ApplicationReleaseDetail, Release
 from app.models.snapshot import ReleaseSnapshot
 
@@ -45,7 +45,7 @@ class TraceabilityService:
     def __init__(self, db: Session):
         self.db = db
 
-    def _release_scr_ids(self, release: Release) -> list:
+    def _release_scr_query(self, release: Release):
         detail = self.db.get(ApplicationReleaseDetail, release.id) if release.release_type == "APPLICATION" else None
         stmt = select(SoftwareChangeRequest.id).where(SoftwareChangeRequest.software_id == release.software_id)
         if detail is not None:
@@ -53,7 +53,7 @@ class TraceabilityService:
                 (SoftwareChangeRequest.project_id == detail.project_id) |
                 (SoftwareChangeRequest.project_id.is_(None))
             )
-        return list(self.db.scalars(stmt).all())
+        return stmt
 
     def release_coverage(self, release_id, snapshot_id=None) -> CoverageResult:
         release = self.db.get(Release, release_id)
@@ -69,56 +69,67 @@ class TraceabilityService:
                 select(ReleaseSnapshot)
                 .where(ReleaseSnapshot.release_id == release.id)
                 .order_by(ReleaseSnapshot.snapshot_number.desc())
+                .limit(1)
             ).first()
 
-        scr_ids = self._release_scr_ids(release)
-        change_points = self.db.scalars(
-            select(ChangePoint).where(ChangePoint.change_request_id.in_(scr_ids))
-        ).all() if scr_ids else []
-        cp_ids = [cp.id for cp in change_points]
+        # Keep scopes relational: neither growing ID arrays nor child ORM rows
+        # cross the database boundary. UNION preserves the previous set semantics,
+        # including recorded bindings whose metadata is absent in legacy data.
+        scrs = self._release_scr_query(release).cte("coverage_scrs")
+        change_points = select(ChangePoint.id).where(
+            ChangePoint.change_request_id.in_(select(scrs.c.id))
+        ).cte("coverage_change_points")
+        cp_links = select(
+            ChangePointDvpItem.change_point_id, ChangePointDvpItem.dvp_item_id
+        ).where(ChangePointDvpItem.change_point_id.in_(select(change_points.c.id))).cte("coverage_cp_links")
+        issues = select(IssueChangeRequestRelation.issue_id).where(
+            IssueChangeRequestRelation.change_request_id.in_(select(scrs.c.id))
+        ).distinct().cte("coverage_issues")
+        issue_links = select(IssueDvpItem.issue_id, IssueDvpItem.dvp_item_id).where(
+            IssueDvpItem.issue_id.in_(select(issues.c.issue_id))
+        ).cte("coverage_issue_links")
+        required = union(
+            select(cp_links.c.dvp_item_id), select(issue_links.c.dvp_item_id)
+        ).cte("coverage_required")
 
-        cp_links = self.db.execute(
-            select(ChangePointDvpItem.change_point_id, ChangePointDvpItem.dvp_item_id)
-            .where(ChangePointDvpItem.change_point_id.in_(cp_ids))
-        ).all() if cp_ids else []
-        covered_cp_ids = {row[0] for row in cp_links}
-        dvp_ids = {row[1] for row in cp_links}
+        def count_rows(scope):
+            return select(func.count()).select_from(scope).scalar_subquery()
 
-        issue_ids = set(self.db.scalars(
-            select(IssueChangeRequestRelation.issue_id)
-            .where(IssueChangeRequestRelation.change_request_id.in_(scr_ids))
-        ).all()) if scr_ids else set()
+        def count_distinct(column):
+            return select(func.count(func.distinct(column))).scalar_subquery()
 
-        issue_links = self.db.execute(
-            select(IssueDvpItem.issue_id, IssueDvpItem.dvp_item_id)
-            .where(IssueDvpItem.issue_id.in_(issue_ids))
-        ).all() if issue_ids else []
-        covered_issue_ids = {row[0] for row in issue_links}
-        dvp_ids.update(row[1] for row in issue_links)
-
-        executions = self.db.scalars(
-            select(DvpExecution).where(
-                DvpExecution.release_id == release.id,
-                DvpExecution.dvp_item_id.in_(list(dvp_ids))
-            )
-        ).all() if dvp_ids else []
-
-        current = [
-            e for e in executions
-            if snapshot is not None and e.snapshot_id == snapshot.id
+        counts = [
+            count_rows(change_points), count_distinct(cp_links.c.change_point_id),
+            count_rows(issues), count_distinct(issue_links.c.issue_id), count_rows(required),
         ]
-        current_item_ids = {e.dvp_item_id for e in current}
-        current_pass_ids = {e.dvp_item_id for e in current if e.result == "PASS"}
+        if snapshot is not None:
+            current = select(
+                func.count(func.distinct(DvpExecution.dvp_item_id)).label("executed"),
+                func.count(func.distinct(case(
+                    (DvpExecution.result == "PASS", DvpExecution.dvp_item_id),
+                    else_=None,
+                ))).label("passed"),
+            ).where(
+                DvpExecution.release_id == release.id,
+                DvpExecution.snapshot_id == snapshot.id,
+                DvpExecution.dvp_item_id.in_(select(required.c.dvp_item_id)),
+            ).subquery()
+            counts.extend([current.c.executed, current.c.passed])
+        else:
+            counts.extend([literal(0), literal(0)])
+        cp_total, cp_covered, issue_total, issue_covered, required_total, executed, passed = (
+            self.db.execute(select(*counts)).one()
+        )
 
         return CoverageResult(
             snapshot_id=str(snapshot.id) if snapshot else None,
             snapshot_no=snapshot.snapshot_no if snapshot else None,
-            change_points_total=len(cp_ids),
-            change_points_covered=len(covered_cp_ids),
-            issues_total=len(issue_ids),
-            issues_covered=len(covered_issue_ids),
-            required_dvp_total=len(dvp_ids),
-            current_snapshot_passed=len(current_pass_ids),
-            current_snapshot_executed=len(current_item_ids),
-            snapshot_match=snapshot is not None and bool(current),
+            change_points_total=cp_total,
+            change_points_covered=cp_covered,
+            issues_total=issue_total,
+            issues_covered=issue_covered,
+            required_dvp_total=required_total,
+            current_snapshot_passed=passed,
+            current_snapshot_executed=executed,
+            snapshot_match=snapshot is not None and bool(executed),
         )

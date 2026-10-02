@@ -333,3 +333,13 @@ are read observations, not approval or write receipts. Migration 0018 adds only 
 without rewriting records. Full backend 770 tests including 105 real PostgreSQL tests
 passed; existing Snapshot/Batch/replay/quota/rollback/security regressions remain passing.
 No submission or public write enablement; correction/revocation/result flows remain pending.
+
+## Coverage read aggregation — API 0.18.6 / schema 0018
+
+No request-ID/payload/scope/actor/transaction/lock contract changes. Snapshot numbering
+and Batch finite authorization quotas still serialize on their existing PostgreSQL
+locks. Coverage is now a SQL aggregate observation of exact release/Snapshot required
+DVPs, retaining any-PASS and execution-presence semantics; it is not a command receipt
+or reserved quota. One aggregate statement does not make other profile metadata a
+transactionally consistent receipt. No migration or public submission; authenticated
+submission/recovery/results and broader append-only corrections remain pending.

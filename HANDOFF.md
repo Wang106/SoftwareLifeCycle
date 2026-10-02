@@ -5,9 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `26a170653e3892654ea23391cb95a0a41525585c`
-- Developed from: `1e82bd83bf16145393fec2b228f19b3db6d3f4ee`
-- Baseline subject: `feat: paginate ASR evidence with pinned snapshot scope`
+- Verified baseline: `a06b54ef6edaccc84ee585fd252369a85f6def45`
+- Developed from: `a06b54ef6edaccc84ee585fd252369a85f6def45`
+- Baseline subject: `docs: record pinned evidence rollout and schema verification`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 58 backend test modules; the latest full run passed all 733 tests under Python 3.12, including 103 real PostgreSQL tests without skips.
+- 61 backend test modules; the latest full run passed all 784 tests under Python 3.12, including 106 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -552,3 +552,38 @@ then approved OIDC/session/controlled target, submission/recovery/results, appen
 correction/revocation and production operations. Estimate remains 8–12 focused packages
 to controlled internal use, 16–24 total to production-ready review, conditional on approvals.
 Online verification after feature commit `26a170653e3892654ea23391cb95a0a41525585c`: Render deployment `dep-davjra8473hc73f79r90` is live for that commit (finished 2026-10-02T05:15:15Z). Health returned 200 / API 0.18.5 / 0018_asr_evidence_index. Independent read-only Render SQL confirmed both Alembic revision 0018 and the exact non-unique B-tree index columns. Exact ASR 2.3.4 summary returned SNAP-008 UUID c6f38c25-c42e-4bdb-8327-e16f7e85dd7b, 4 artifacts, 3 latest item executions and 1 other-snapshot execution. Two one-item pages for each collection returned distinct UUIDs with unchanged full totals and no private storage/result fields. Malformed snapshot/oversized limit returned 422; another release with this snapshot returned 404. Harmless empty Snapshot and exact Deployment Batch POSTs returned 403 read_only_mode. Cloudflare live Chinese evidence summary and one-item pages were verified: artifact second page retained DVP first page, then DVP second page retained artifact second page and exact snapshot; English switching retained both offsets, UUID, totals and raw hashes; Chinese restored for the final proof. Exact Snapshot preparation target remained the release UUID. No business write was submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live new feature behavior is frontend evidence. Public staging remains read-only. The initial combined read-only SQL probe was rejected because the connector accepts one prepared statement; two separate read-only queries succeeded without database mutation.
+
+## Release coverage SQL aggregates — 2026-10-02
+
+Developed from GitHub main `a06b54ef6edaccc84ee585fd252369a85f6def45`. API 0.18.6
+replaces TraceabilityService's materialized SCR/ChangePoint/issue/link IDs and full
+DVP history with relational CTE scopes and one aggregate result. Latest Snapshot
+selection now has SQL LIMIT 1. All consumers of this service benefit, including ASR
+profiles, SSR/passport coverage and readiness; their other reads are not thereby bounded.
+
+Scope and response fields are unchanged: software SCRs, plus exact project or global
+project-null SCRs when APPLICATION detail exists; legacy missing detail still includes
+all SCR projects on that software. Change points, linked issues and required DVP UUIDs
+retain distinct/set-union semantics. No Issue/DVP metadata join hides recorded bindings.
+Execution counts use only the exact release and selected Snapshot and required DVPs.
+An item with any PASS on that Snapshot remains passed even if a later execution fails;
+this coverage contract differs from the evidence table's latest-result ranking. Explicit
+missing/foreign snapshots do not fall back; missing release and empty denominator
+behavior remain unchanged. Coverage counts execution presence, not approval or permission.
+
+No migration: the existing tables, association primary keys and 0018 release/snapshot
+execution index support the query; Alembic head and required schema stay
+`0018_asr_evidence_index`. Fixed result size/query count bounds application transfer
+and child ORM loading, not database scan cost. The aggregate statement has one database
+statement snapshot; separately selected parent/Snapshot metadata and other profile reads
+remain READ COMMITTED observations, not a consistent command receipt or quota reservation.
+All 14 command contracts, scopes, actors, retry locks and business/audit atomicity remain.
+Public staging stays read-only; UI remains default Chinese/selectable English.
+
+Verification: 14 new coverage tests passed within the full Python 3.12 backend suite: **784 passed, 4873 warnings, no skips**, including **106 real PostgreSQL 16.15 tests**. Tests cover union/distinct/any-PASS semantics, exact release/snapshot exclusion, old/empty/invalid/missing selection, software/project/missing-detail scope, recorded missing metadata, 120-item growth with fixed three cold STANDARD queries and no child ORM/private text, migrated PostgreSQL aggregate results and no audit write. Existing real retry/concurrency/quota/rollback/authorization regressions passed. Frontend **293 passed, no skips**; final Next/OpenNext Cloudflare production build passed. Single Alembic head and PostgreSQL full upgrade SQL generation passed; no new migration.
+
+This is another partial Phase 4 migration, not its exit. Roadmap stays 34/44 (77%),
+Phase 6 3/5 (60%). Next: remaining SSR/component/policy/snapshot/history consumers;
+then approved OIDC/session/controlled target, submission/recovery/results, append-only
+correction/revocation and production operations. Planning remains 8–12 focused packages
+to controlled internal use and 16–24 total to production-ready review, conditional on approvals.

@@ -256,3 +256,13 @@ atomic audits are unchanged. The index-only 0018 migration grants no new access.
 Default Chinese/English presentation leaves identifiers and request exports untouched.
 Public staging stays sample-only/read-only; protected company reads still need approved
 identity/network/data/environment review.
+
+## Coverage read aggregation — API 0.18.6
+
+Coverage SQL preserves exact software/project and release/Snapshot read scopes. It loads
+no change-point descriptions, SCR requirement text or DVP actual_result body. Required
+DVP bindings and any-PASS semantics stay unchanged; counts never confer approval/write
+authority. This does not add read authentication or retire all legacy rich profiles.
+All 14 write-route role/actor bindings, request-ID locks and atomic audits remain
+unchanged and covered by complete PostgreSQL regressions. No migration, login/session
+or grant administration is added; public staging remains READ_ONLY_MODE=true.

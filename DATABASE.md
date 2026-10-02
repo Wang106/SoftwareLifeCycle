@@ -293,3 +293,15 @@ this index. Matching ORM Index is declared; no backfill, row update, new uniquen
 write lock or permission change. Real PostgreSQL downgrade/upgrade preserved execution
 rows, index column inspection passed, and generated upgrade/downgrade SQL passed.
 Window/count queries can still scan/sort history; payload/query bounds do not bound CPU.
+
+## Coverage aggregates — API 0.18.6 / schema 0018
+
+No migration or ORM schema change. Coverage scopes use SCR software/project, change-point
+SCR bindings, distinct issue/SCR relations and the UNION of both DVP binding tables.
+One SQL result returns counts; exact release/snapshot execution aggregation reuses
+`ix_dvp_executions_release_snapshot_item`. Existing binding primary keys remain.
+No metadata inner join drops legacy orphan bindings; PostgreSQL foreign keys still
+enforce normal writes. SQL count/distinct/union can scan/sort many rows, and some legacy
+scope foreign keys lack dedicated indexes; fixed transfer is not a performance guarantee.
+Additional indexing should follow measured plans/data, not a claimed constant-time result.
+No business or audit data is rewritten. Head stays `0018_asr_evidence_index`.

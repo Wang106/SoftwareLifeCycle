@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 — Shared release coverage SQL aggregates
+
+- Replaced full child/history loading and Python ID arrays with relational CTE scopes and one aggregate result; latest Snapshot selection uses LIMIT 1.
+- Preserved exact software/project/release/Snapshot scope, distinct binding union, any-PASS semantics and all response fields; other profile reads still need migration.
+- API 0.18.6; no migration, head remains 0018_asr_evidence_index. All command contracts/security/atomic audits stay; staging remains read-only. Roadmap stays 34/44.
+- Verification: 14 new coverage tests passed within the full Python 3.12 backend suite: **784 passed, 4873 warnings, no skips**, including **106 real PostgreSQL 16.15 tests**. Tests cover union/distinct/any-PASS semantics, exact release/snapshot exclusion, old/empty/invalid/missing selection, software/project/missing-detail scope, recorded missing metadata, 120-item growth with fixed three cold STANDARD queries and no child ORM/private text, migrated PostgreSQL aggregate results and no audit write. Existing real retry/concurrency/quota/rollback/authorization regressions passed. Frontend **293 passed, no skips**; final Next/OpenNext Cloudflare production build passed. Single Alembic head and PostgreSQL full upgrade SQL generation passed; no new migration.
+
 ## 2026-10-02 — ASR pinned evidence pagination
 
 - Added exact snapshot summary, paginated frozen artifacts and latest DVP execution per item UUID; mismatched scope is rejected and missing metadata remains visible.

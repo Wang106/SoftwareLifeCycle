@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.5`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.6`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -382,3 +382,20 @@ both table pagination links and explicitly distinguishes missing snapshot, unkno
 summary, invalid/unavailable page and beyond-end empty page. These are read observations;
 new executions can shift offset pages even on a pinned snapshot. ASR profile coverage
 and other legacy consumers remain unbounded. Schema head 0018, no write contract changes.
+
+## Release coverage aggregation — API 0.18.6
+
+`GET /api/v1/releases/{release_id}/coverage` and profile/readiness consumers retain their
+existing response fields and status behavior. Shared coverage calculation now uses SQL
+aggregates rather than loading child history. Distinct required DVP UUIDs are the union
+of change-point and linked-issue bindings; only executions on the exact release and
+selected Snapshot count. `current_snapshot_passed` means any PASS for that required item
+on the selected Snapshot, even if a later result fails; it is not the evidence catalog's
+latest-result metric. `dvp_execution_coverage` measures executed required items, not PASS.
+Empty denominators stay 100; `snapshot_match` requires at least one selected required
+execution. Internal explicit invalid/foreign Snapshot selection remains null without
+fallback. APPLICATION SCR scope is exact project plus project-null; missing detail
+retains the legacy software-wide fallback. API boundary missing-release validation is
+unchanged. These are read observations, not permission, write receipts or reserved quota.
+No new parameters/endpoints/migration; schema remains 0018. Other profile reads remain
+partially unbounded.

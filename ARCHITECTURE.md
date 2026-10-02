@@ -266,3 +266,15 @@ selects latest DVP evidence per item UUID, with missing metadata retained. No pr
 storage/body fields or unbounded policy arrays are loaded. Legacy evidence stays compatible;
 ASR coverage service and other legacy consumers still need migration. READ COMMITTED
 and offset semantics do not promise consistent results across concurrent DVP additions.
+
+## Coverage aggregation — API 0.18.6
+
+TraceabilityService uses reusable relational CTEs for software/project SCR scope,
+change points, linked distinct issues, association links and a UNION of required DVP
+UUIDs. One SELECT returns all coverage counters; its exact-release/snapshot execution
+aggregate counts distinct items and any-PASS items. Snapshot selection uses LIMIT 1.
+No growing Python ID lists or child ORM rows/private text are loaded. Existing profile,
+passport and readiness consumers retain their response contracts and Python rounding.
+The aggregate statement is coherent within its database statement, but parent selection
+and other profile reads remain separate READ COMMITTED observations. This does not bound
+other component/policy/history reads or certify readiness. No migration or frontend change.

@@ -120,3 +120,12 @@ trace for all forms (3–4); append-only corrections/revocations (2–3); CI, en
 separation, monitoring, backups/restore drills and security/data acceptance (8–12).
 Several groups can overlap, so these are not mechanically additive. Never enable
 public staging writes to satisfy a submission milestone.
+
+## Coverage consumer migration — 2026-10-02
+
+The shared release coverage service now returns SQL aggregates with exact release/
+Snapshot scope and preserved project/set/any-PASS semantics. No child history or growing
+ID arrays are transferred. This advances the unchecked compatibility-consumer item;
+remaining SSR/components/policy/snapshot/history reads still prevent its completion.
+No checked items or denominator change: 34/44 overall, Phase 4 8/9, Phase 6 3/5.
+Next package: continue those remaining consumers; planning ranges above remain conditional.
