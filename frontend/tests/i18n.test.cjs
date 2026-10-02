@@ -79,3 +79,16 @@ test('record-derived UI markers and fallback states translate in Chinese',()=>{
   assert.equal(translateText(label,'en'),label);
  }
 });
+
+
+test('dynamic readiness gate names, exception marker and counts translate without changing API values',()=>{
+ for(const label of ['Change Control','Issue Control','Verification','Software Integrity','Artifact Control','Distribution Control','Governance','Required changes linked to DVP','Verification-required issues linked to DVP','Required DVP executed on current snapshot','Tested snapshot equals current snapshot','Current snapshot is frozen','SHA-256 complete for formal artifacts','Artifact distribution policy complete','Approved exceptions are bound to current snapshot','EXCEPTION_GRANTED']) {
+  assert.match(translateText(label,'zh'),/[\u4e00-\u9fff]/,label);
+  assert.equal(translateText(label,'en'),label);
+ }
+ for(const count of [0,1,123]) {
+  const evidence=`${count} current-snapshot exception(s)`;
+  assert.equal(translateText(evidence,'zh'),`当前快照批准例外：${count} 个`);
+  assert.equal(translateText(evidence,'en'),evidence);
+ }
+});

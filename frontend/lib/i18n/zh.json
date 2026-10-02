@@ -1490,5 +1490,21 @@
   "Total approved exceptions": "批准例外总数",
   "Readiness exception page unavailable.": "就绪例外分页暂不可用。",
   "No approved exceptions on this page.": "此分页没有批准例外。",
-  "Artifact checks use current release declarations; evidence and exceptions use the selected current snapshot. This observation does not grant approval or write permission.": "制品检查使用当前发布声明；证据和例外使用选定的当前快照。这些读取结果不授予审批或写入权限。"
+  "Artifact checks use current release declarations; evidence and exceptions use the selected current snapshot. This observation does not grant approval or write permission.": "制品检查使用当前发布声明；证据和例外使用选定的当前快照。这些读取结果不授予审批或写入权限。",
+  "Change Control": "变更控制",
+  "Issue Control": "问题控制",
+  "Verification": "验证",
+  "Software Integrity": "软件完整性",
+  "Artifact Control": "制品控制",
+  "Distribution Control": "分发控制",
+  "Governance": "治理",
+  "Required changes linked to DVP": "必要变更已关联 DVP",
+  "Verification-required issues linked to DVP": "需要验证的问题已关联 DVP",
+  "Required DVP executed on current snapshot": "必要 DVP 已在当前快照执行",
+  "Tested snapshot equals current snapshot": "测试快照与当前快照一致",
+  "Current snapshot is frozen": "当前快照已冻结",
+  "SHA-256 complete for formal artifacts": "正式制品的 SHA-256 已完整记录",
+  "Artifact distribution policy complete": "制品分发策略已完整记录",
+  "Approved exceptions are bound to current snapshot": "批准例外已绑定当前快照",
+  "EXCEPTION_GRANTED": "例外已获准"
 }

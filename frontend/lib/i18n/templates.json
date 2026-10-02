@@ -18,5 +18,6 @@
   "{0} high severity": "{0} 个高严重程度问题",
   "{0} remaining by count": "按计数剩余 {0}",
   "{0}% current snapshot execution coverage": "当前快照执行覆盖率 {0}%",
-  "{0}: {1}": "{0}：{1}"
+  "{0}: {1}": "{0}：{1}",
+  "{0} current-snapshot exception(s)": "当前快照批准例外：{0} 个"
 }
