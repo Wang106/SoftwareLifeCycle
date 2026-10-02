@@ -1,15 +1,15 @@
 # Read-consumer migration tracking
 
-Reviewed main baseline: 27ce7b773f759fb8c6fd69f35395ab488fb7a8c1.
-Updated 2026-10-03 (Asia/Shanghai), API 0.18.10.
+Reviewed main baseline: 2f34a9aae5ac8685464555a73f48026d8e441c65.
+Updated 2026-10-03 (Asia/Shanghai), API 0.18.11.
 
 The top-level ROADMAP counts completed acceptance items: 34/44 (77%). The remaining
 Phase 4 item covers several consumers, so finishing one consumer does not complete
 that entire item. This new ledger tracks **17 named scope groups**, equally counted
-for visibility, not weighted effort or production readiness. At the reviewed baseline
-11/17 groups were migrated; this package closes exact Snapshot detail, making 12/17
-(71%, previously 65% under this same new grouping). This is a new breakdown, not a
-replacement or retrospective change to ROADMAP's denominator. A group closes only
+for visibility, not weighted effort or production readiness. At the original 27ce7b7 baseline,
+11/17 groups were migrated; exact detail made 12/17 (71%) at 2f34a9a. This package
+closes comparison, making 13/17 (76%) under the same scope grouping. This is a finer
+breakdown, not a replacement for ROADMAP's denominator. A group closes only
 when its identified frontend consumer no longer relies on the bulk read. Legacy
 compatibility APIs can still exist; removing them requires caller review.
 
@@ -26,8 +26,8 @@ compatibility APIs can still exist; removing them requires caller review.
 | 9 | ASR component declarations | Migrated | backend/app/api/asr_components.py; declarations/unlinked baseline pages |
 | 10 | ASR frozen policy | Migrated | backend/app/api/asr_policy.py; pinned metadata/rule pages |
 | 11 | Snapshot history | Already bounded | backend/app/api/releases.py; limit/before_number cursor pages |
-| 12 | Exact Snapshot detail | Migrated this package | backend/app/api/snapshot_views.py; summary and independently bounded manifest/rules; search selects exact file |
-| 13 | Snapshot comparison | Pending | backend/app/api/snapshots.py compare_snapshots still loads both complete manifests/rules; preserve duplicate detection and exact comparison semantics |
+| 12 | Exact Snapshot detail | Migrated | backend/app/api/snapshot_views.py; summary and independently bounded manifest/rules; search selects exact file |
+| 13 | Snapshot comparison | Migrated this package | backend/app/api/snapshot_comparison_views.py; SQL summary and pinned bounded differences, exact rule-inspection links; legacy API remains |
 | 14 | ASR passport | Pending | frontend/app/releases/application/[releaseId]/passport/page.tsx still calls rich profile, decisions and downstream; migrate with exact decision/Snapshot context |
 | 15 | ASR readiness and compatibility policy reads | Pending | backend/app/api/dashboard.py and services/artifact_policy.py still read whole artifact/rule/execution sets; preserve readiness and write validation semantics |
 | 16 | Release catalogs and legacy resolver | Pending | frontend release/application and release/standard catalog pages; frontend/lib/legacy-release.ts still loads application catalog for UUID/version resolution |
@@ -40,8 +40,8 @@ to ASR via the legacy resolver; no independent SSR passport migration is claimed
 No approved OIDC environment, authenticated UI submission, broad correction/revocation
 or operational release acceptance is inferred from this read work.
 
-Next: exact comparison, passport, readiness/remaining catalogs and rich reads; then
+Next: passport, readiness/remaining catalogs and rich reads; then
 approved identity/session, controlled submission and recovery/corrections, operations.
-Planning ranges remain conditional: 8–12 focused packages toward internal use and
-16–24 total toward production review, subject to remaining group sizes and provider
+Planning ranges remain conditional: 7–11 focused packages toward internal use and
+15–23 total toward production review, subject to remaining group sizes and provider
 configuration. Public staging remains read-only throughout.

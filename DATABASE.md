@@ -358,3 +358,24 @@ Real PostgreSQL READ COMMITTED test commits a newer Snapshot in a separate sessi
 between summary and page reads: exact historical pin remains, no audit write occurs.
 Reads are observations rather than a cross-request transaction receipt. Existing
 command locks, number/quota serialization and atomic audits are unchanged.
+
+## SQL frozen comparison — API 0.18.11
+
+No migration; head 0018_asr_evidence_index. Exact Snapshot lookups and existing artifact/
+rule FK indexes are reused. SQL GROUP BY/HAVING count>1 LIMIT 1 rejects duplicate file
+identities over the entire selected manifests before paging. A UNION of frozen file
+keys is left-joined to exact source/target metadata; NULL-safe IS DISTINCT FROM compares
+six fields, and bidirectional EXCEPT of grouped rule tuples plus COUNT compares policy
+multisets (NULL differs from empty, multiplicity retained). CASE classifies added/
+removed/modified/unchanged; SQL sums/counts and LIMIT/OFFSET bound transfer without
+materializing child ORM rows, nested rule arrays or growing Python ID sets. File side
+rule counts use correlated SQL counts. UUID tie rules are not part of policy identity.
+
+SQLite exercises projection semantics; the complete PostgreSQL 16.15 suite proves the
+actual EXCEPT/null ordering/duplicate behavior and all existing command locks. Growth
+from 5 to 65 comparison file identities (including 360 added rules) keeps SQL statement
+shape and returned page size fixed, not execution cost. Counts/joins/EXCEPT may scan
+increasing data; measure plans before adding indexes. A separate PostgreSQL session
+committing a newer Snapshot does not move the explicitly pinned pair. Reads do not
+append audits and are not cross-request transaction receipts. All command constraints,
+number/quota locks and atomic business/audit behavior remain unchanged.

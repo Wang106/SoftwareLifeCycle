@@ -323,3 +323,16 @@ manifest tables page independently, retain full SHA and raw identities and fail 
 mismatched child independently. Search links select the exact file before anchoring.
 Legacy bare detail/comparison remain compatible; comparison still loads full manifests.
 No command/lock/audit architecture change or cross-read transaction guarantee.
+
+## Snapshot comparison consumer — API 0.18.11
+
+Comparison now resolves exact source summary and bounded history suggestions, then
+requests SQL pair summary and one bounded difference page. Counted rule tuples and
+bidirectional EXCEPT compare recipient/purpose/code/decision with duplicates, independent
+of record UUID or insertion order. SQL duplicate validation, frozen-key UNION/joins,
+NULL-safe field comparisons and CASE classify every file before SQL filtering/paging.
+No complete Python manifest or inline rule collection is loaded. Side rule counts link
+to exact bounded detail. Navigation pins both names/UUIDs and returned parent/filter
+contexts fail closed. Legacy compatibility comparison remains; fixed query shape does
+not guarantee fixed DB runtime or a transactional read receipt. Command architecture
+and audit/actor/locking remain unchanged.

@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact detail now uses bounded manifest/rule pages; comparison, other rich profiles/legacy catalogs and passport consumers remain
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact detail/comparison now use bounded SQL pages; other rich profiles/legacy catalogs and passport consumers remain
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -174,3 +174,15 @@ it does not change the ROADMAP denominator. Five remaining groups include broad
 readiness/catalog/rich-profile work. Next comparison/passport/remaining reads, then
 approved identity/session, authenticated submission/recovery/corrections and operations.
 Conditional package ranges remain 8–12 internal-use / 16–24 total production-review.
+
+## Snapshot comparison consumer migration — 2026-10-03
+
+Comparison now uses an SQL summary and pinned bounded file differences, including
+recipient-rule duplicate multiplicity and exact per-side rule links. No full manifest
+consumer remains on this page; legacy API is retained. The same 17-group read ledger
+advances 12/17 (71%) to 13/17 (76%). Four groups remain: passport, readiness/compatibility
+policy, release catalogs/resolver, other rich profiles/domain catalogs. ROADMAP stays
+34/44 (77%), Phase 4 8/9, Phase 6 3/5; no denominator change or production approval.
+Next passport, then remaining reads; approved identity/session, authenticated submission/
+recovery/corrections and operations follow. Remaining conditional planning ranges after
+this package: 7–11 focused internal-use packages, 15–23 total production-review packages.

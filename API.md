@@ -501,3 +501,40 @@ first page. Old bare fragment bookmarks alone locate only files on the current p
 use the exact file query for off-page targets. Identity/full hashes/history/compare/
 resource and preparation links remain; no bulk fallback. Legacy bare detail and compare
 APIs remain compatible and unbounded. No migration; schema 0018.
+
+## Bounded Snapshot comparison — API 0.18.11
+
+All routes start `/api/v1/snapshots/{source_no}/comparison/{target_no}`.
+
+| GET suffix | Query | Response |
+| --- | --- | --- |
+| `/summary` | no fields | release_id; source/target identity including UUID, number, full hash/date/status; content_hash_matches; frozen version/release_type metadata_changes; full added/removed/modified/unchanged counts |
+| `/files` | required source_id/target_id UUIDs; show=changes (default) or all; limit 1–100 default 50; offset 0–100000 default 0 | exact pair identities, show, total/limit/offset/next_offset/items |
+
+Every file matches component_code + filename. Renames are added/removed; repeated file
+identity anywhere in either manifest returns 409, even outside the requested page or
+changes filter. Missing names/mismatched name–UUID pins return 404; different release
+returns 409; malformed, unknown or invalid filter/query returns 422. Self/empty reads
+are valid. Files order by component_code/filename; changes filtering and counts are SQL.
+Beyond-end retains filtered total with empty items/null next_offset. Summary counts
+always describe the complete pair, independently of files filtering/pagination.
+
+Items contain component_code/filename/change_type/changed_fields and before/after or
+null when absent. Each side has artifact_type/component_version/full sha256/
+classification/distribution_level/ai_access_policy plus exact snapshot_artifact_id and
+rule_count, without nested policy_rules or private storage_reference. Policy comparison
+uses stored recipient_type/purpose/recipient_code/decision and duplicate multiplicity;
+rule UUIDs/insertion order are irrelevant, NULL and empty codes remain distinct. This
+also removes the old helper's equal-sort-key ordering ambiguity for mixed NULL/empty
+codes; legacy bare comparison is intentionally unchanged. Rule changes are detected
+even when file/content hashes match. Counts/rules/hashes/status do not establish grants,
+hash verification or approval; INTERNAL_ONLY remains externally denied.
+
+UI calls bounded exact source summary, existing bounded history (latest 100 suggestions),
+comparison summary and one bounded file page. to/show/compare_limit/compare_offset and
+compare_source_id/compare_target_id pin pagination to both selected identities, never
+reselecting latest. Changing the comparison form resets paging. Returned summary/page
+name/UUID/release/filter mismatch fails closed; a failed file page retains summary.
+Each side links its exact frozen file to paginated rules on the detail page. Chinese
+default/English supported. Legacy comparison route remains compatible/unbounded.
+No migration, schema 0018; separate GETs are observations, not a transaction receipt.

@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; comparison and other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -47,11 +47,11 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 65 backend test modules are present. The complete 2026-10-03 (Asia/Shanghai) Python 3.12 run passed **850 tests**, including **110 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (5367 in this run).
+- 66 backend test modules are present. The complete 2026-10-03 (Asia/Shanghai) Python 3.12 run passed **875 tests**, including **111 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (5456 in this run).
 - Alembic has the single head `0018_asr_evidence_index`; it adds only a DVP execution scope index. Full PostgreSQL upgrade and 0018-to-0017 downgrade SQL generation passed; real PostgreSQL index upgrade/downgrade/upgrade preserved records.
 
 
-- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 327 cases; authenticated submission remains pending.
+- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 339 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -736,7 +736,7 @@ All 14 write contracts, replay/conflicts, PostgreSQL locks, exact role checks, t
 actor and atomic domain/audit writes are unchanged. Public staging remains read-only.
 
 Verification: **839 backend tests passed**, **5320 existing warnings**, no skips, under
-Python 3.12, including **110 real PostgreSQL 16.15 tests**. Twenty new backend cases
+Python 3.12, including **111 real PostgreSQL 16.15 tests**. Twenty new backend cases
 cover recording parity, null/empty/whitespace values, INTERNAL_ONLY/ALLOW observations,
 duplicate null-recipient rules, exact release/snapshot/artifact rejection, pinned pages
 across a newer snapshot, stable ordering, empty/no-snapshot/invalid selections, HTTP
@@ -834,3 +834,32 @@ was unavailable; observed new UI behavior is frontend rollout evidence. A new Sn
 committed between reads is tested in local PostgreSQL, not created in staging.
 Feature and verification documentation pushed to main; working tree clean. Unrelated
 duplicate activity file untouched. Comparison and other ledger gaps remain pending.
+
+## Snapshot comparison migration — 2026-10-03 (Asia/Shanghai)
+
+Developed with Codex from GitHub main 2f34a9aae5ac8685464555a73f48026d8e441c65.
+API 0.18.11 adds exact same-release comparison summaries and required-pair-UUID bounded
+file pages. SQL rejects duplicate file identities anywhere, compares frozen fields and
+counted recipient-rule multisets, and filters/pages file differences. Rule UUID/order
+are ignored, NULL/empty codes and duplicate counts preserved; this avoids the legacy
+helper's tied NULL/empty sorting ambiguity, while the legacy API remains unchanged.
+No private references/nested rule arrays/full child ORM collections. UI keeps full
+hashes, metadata/status and complete summary counts, defaults Chinese, supports English,
+pins both Snapshot identities on navigation and links per-side exact paginated rules.
+Failed/mismatched file pages retain summary without substituting data.
+
+Complete backend Python 3.12 tests: 875 passed, 5456 existing warnings, no skips,
+including 111 real PostgreSQL 16.15 tests; 66 backend test modules. Twenty-five new
+field/policy/duplicate/scope/pin/count/growth/HTTP/PostgreSQL cases. Frontend 339 passed;
+final Next/OpenNext production build and 11 actual Next SSR groups passed. Single
+Alembic head 0018_asr_evidence_index and full PostgreSQL upgrade SQL passed; no migration.
+Write request-ID/scope/trusted actor/number/quota/atomic audit contracts unchanged.
+Unrelated frontend/app/activity/page 2.tsx was not rebuilt, adopted or removed.
+
+Fine-grained read migration 12/17 (71%) → 13/17 (76%); top-level ROADMAP 34/44 (77%)
+remains because passport, readiness/compatibility policy, release catalogs/resolver and
+other rich profiles/domain catalogs still need migration. Next passport, then remaining
+reads; approved identity/session/submission/recovery/corrections/operations follow.
+Remaining conditional planning estimate 7–11 internal-use packages, 15–23 total toward
+production review. Public staging stays read-only. Publication/deployment evidence
+will be recorded after push; local checks alone do not establish live rollout.

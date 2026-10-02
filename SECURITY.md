@@ -311,3 +311,15 @@ links remain request preparation only with exact immutable targets. Snapshot/Bat
 request-ID contracts, trusted principal binding, scope checks, transaction locks and
 atomic business/audit commits remain covered by the full PostgreSQL suite. Public
 staging remains read_only_mode; authenticated submission/OIDC setup remain pending.
+
+## Frozen comparison read boundary — API 0.18.11
+
+Public sample comparison enforces exact source/target name–UUIDs, same release and
+whole-manifest duplicate rejection before paging. Summary/file context and show filter
+are checked by the frontend, with no substitute pair/bulk fallback. File hashes and
+recorded policy counts are observations, not approval/grants; exact per-side artifact
+links permit bounded rule inspection. Internal-only external denial remains visible.
+Private storage references are excluded. No commands, write grants, principal binding,
+identity provider/session or public write enablement are added. All 14 existing scope/
+request-ID/trusted actor/lock/atomic audit contracts pass the full PostgreSQL suite.
+Public staging remains read_only_mode; company-data/read-auth acceptance remains pending.

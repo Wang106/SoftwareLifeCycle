@@ -875,3 +875,32 @@ was unavailable; observed new UI behavior is frontend rollout evidence. A new Sn
 committed between reads is tested in local PostgreSQL, not created in staging.
 Feature and verification documentation pushed to main; working tree clean. Unrelated
 duplicate activity file untouched. Comparison and other ledger gaps remain pending.
+
+## Snapshot comparison migration — 2026-10-03 (Asia/Shanghai)
+
+Developed with Codex from GitHub main 2f34a9aae5ac8685464555a73f48026d8e441c65.
+API 0.18.11 adds exact same-release comparison summaries and required-pair-UUID bounded
+file pages. SQL rejects duplicate file identities anywhere, compares frozen fields and
+counted recipient-rule multisets, and filters/pages file differences. Rule UUID/order
+are ignored, NULL/empty codes and duplicate counts preserved; this avoids the legacy
+helper's tied NULL/empty sorting ambiguity, while the legacy API remains unchanged.
+No private references/nested rule arrays/full child ORM collections. UI keeps full
+hashes, metadata/status and complete summary counts, defaults Chinese, supports English,
+pins both Snapshot identities on navigation and links per-side exact paginated rules.
+Failed/mismatched file pages retain summary without substituting data.
+
+Complete backend Python 3.12 tests: 875 passed, 5456 existing warnings, no skips,
+including 111 real PostgreSQL 16.15 tests; 66 backend test modules. Twenty-five new
+field/policy/duplicate/scope/pin/count/growth/HTTP/PostgreSQL cases. Frontend 339 passed;
+final Next/OpenNext production build and 11 actual Next SSR groups passed. Single
+Alembic head 0018_asr_evidence_index and full PostgreSQL upgrade SQL passed; no migration.
+Write request-ID/scope/trusted actor/number/quota/atomic audit contracts unchanged.
+Unrelated frontend/app/activity/page 2.tsx was not rebuilt, adopted or removed.
+
+Fine-grained read migration 12/17 (71%) → 13/17 (76%); top-level ROADMAP 34/44 (77%)
+remains because passport, readiness/compatibility policy, release catalogs/resolver and
+other rich profiles/domain catalogs still need migration. Next passport, then remaining
+reads; approved identity/session/submission/recovery/corrections/operations follow.
+Remaining conditional planning estimate 7–11 internal-use packages, 15–23 total toward
+production review. Public staging stays read-only. Publication/deployment evidence
+will be recorded after push; local checks alone do not establish live rollout.

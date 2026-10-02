@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-03 — Bounded SQL frozen Snapshot comparison
+
+- API 0.18.11 adds exact-pair summary and bounded file differences; SQL fields/counts/rule multisets preserve duplicates and NULL/empty codes without relying on rule UUID/order. Whole-manifest duplicate identities return 409. Legacy API remains.
+- Chinese-default/English comparison pins both Snapshot identities, preserves full hashes/metadata/counts and links bounded per-side rule inspection. No migration, schema 0018; command safety and public read-only mode unchanged.
+- Full backend 875 passed (111 real PostgreSQL), 5456 warnings, no skips; frontend 339 passed, final production build and 11 production SSR groups passed.
+- Read scope groups advance 12/17 to 13/17 (76%); ROADMAP remains 34/44. Four broad read groups, approved identity/submission/corrections/ops remain.
+- Publication/live deployment verification pending after feature push.
+
 ## 2026-10-03 — Exact Snapshot summary and independently bounded manifest/rules
 
 - API 0.18.10 adds exact name/UUID public metadata pages with full hashes and artifact filtering; shares frozen SQL projections with ASR policy. No migration, head 0018.

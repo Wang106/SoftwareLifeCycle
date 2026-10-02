@@ -384,3 +384,14 @@ are exercised in the complete real PostgreSQL test run. No migration, staging st
 read-only. Legacy comparison/bare manifest APIs remain; consumer migration is not yet
 complete. See read-consumer-migration.md for the 12/17 scope-group breakdown, separate
 from unchanged ROADMAP 34/44 acceptance-item accounting.
+
+## Snapshot comparison consumer — API 0.18.11 / schema 0018
+
+This package adds only exact summary/difference GETs and read-only rule-inspection
+links. Pair names/UUIDs, same release, duplicate identity checks and bounded SQL policy
+comparison never approve a Snapshot or grant distribution/write capability. All 14
+request-ID/conflict/exact-scope/trusted-actor/transaction-lock/atomic-audit contracts
+remain unchanged, and complete PostgreSQL regressions pass. No migration/submission/
+public write enablement. The compatibility comparison still exists; the migrated UI
+uses no bulk fallback. Read-consumer scope groups advance 12/17 to 13/17; broad
+ROADMAP item remains incomplete at 34/44.

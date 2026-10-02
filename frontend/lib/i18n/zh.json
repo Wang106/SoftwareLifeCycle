@@ -1463,5 +1463,10 @@
   "Manifest artifact page unavailable. Check pagination and exact selection.": "文件分页不可用，请检查分页参数和精确选择。",
   "Manifest rule page unavailable. Check pagination and exact selection.": "规则分页不可用，请检查分页参数和精确选择。",
   "All snapshot files and rules →": "全部快照文件和规则 →",
-  "rules": "条规则"
+  "rules": "条规则",
+  "Recorded rule count": "已记录规则数量",
+  "View exact file and recorded rules →": "查看精确文件和已记录规则 →",
+  "No frozen files on this comparison page.": "此比较分页没有冻结文件。",
+  "Comparison file page unavailable. Check pagination, filter and exact snapshot selection.": "比较文件分页不可用，请检查分页参数、筛选和精确快照选择。",
+  "Rule comparison preserves recipients, purposes, decisions and duplicate counts. Open an exact file to page through its rules; counts do not grant distribution permission.": "规则比较保留接收方、用途、决策及重复次数。打开精确文件可分页查看规则；记录数量不授予分发权限。"
 }
