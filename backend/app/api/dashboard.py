@@ -798,23 +798,36 @@ def application_release_readiness(release_id: uuid.UUID, db: Session = Depends(g
     return _readiness_for_release(release, db)
 
 
-def _readiness_for_release(release: Release, db: Session):
+def _readiness_for_release(release: Release, db: Session, *, bounded=False):
 
     coverage = TraceabilityService(db).release_coverage(release.id).as_dict()
     artifact_summary = ArtifactPolicyService(db).summarize_release(release.id).as_dict()
     snapshot_id = uuid.UUID(coverage["snapshot_id"]) if coverage["snapshot_id"] else None
     snapshot = db.get(ReleaseSnapshot, snapshot_id) if snapshot_id else None
 
-    approved_exceptions = db.scalars(
-        select(PolicyException).where(
+    if bounded:
+        # Only the count and presence of the existing verification exemption matter
+        # to these gates. Other rule exceptions never bypass hard gate results.
+        if snapshot_id:
+            exception_total, verification_count = db.execute(select(func.count(),
+                func.coalesce(func.sum(case((PolicyException.rule_code ==
+                    "VERIFICATION_CURRENT_SNAPSHOT_COMPLETE", 1), else_=0)), 0))
+                .where(PolicyException.snapshot_id == snapshot_id, PolicyException.status == "APPROVED")).one()
+        else:
+            exception_total, verification_count = 0, 0
+        verification_exception = verification_count > 0
+        exception_scope_ok = True  # Every counted row has the exact Snapshot FK.
+        approved_exceptions = []
+    else:
+        # Preserve the compatibility endpoint's complete exception array.
+        approved_exceptions = db.scalars(select(PolicyException).where(
             PolicyException.snapshot_id == snapshot_id,
-            PolicyException.status == "APPROVED",
-        )
-    ).all() if snapshot_id else []
-    exception_by_rule = {x.rule_code: x for x in approved_exceptions}
+            PolicyException.status == "APPROVED")).all() if snapshot_id else []
+        exception_total = len(approved_exceptions)
+        verification_exception = any(x.rule_code == "VERIFICATION_CURRENT_SNAPSHOT_COMPLETE" for x in approved_exceptions)
+        exception_scope_ok = all(x.snapshot_id == snapshot_id for x in approved_exceptions)
 
     verification_raw = "PASS" if coverage["dvp_execution_coverage"] == 100 else "FAIL"
-    verification_exception = exception_by_rule.get("VERIFICATION_CURRENT_SNAPSHOT_COMPLETE")
     verification_effective = (
         "PASS" if verification_raw == "PASS"
         else "EXCEPTION_GRANTED" if verification_exception
@@ -824,7 +837,6 @@ def _readiness_for_release(release: Release, db: Session):
     sha_ok = artifact_summary["artifact_total"] > 0 and artifact_summary["sha_completeness"] == 100
     policy_ok = artifact_summary["artifact_total"] > 0 and artifact_summary["policy_completeness"] == 100
     snapshot_frozen = bool(snapshot and snapshot.status == "FROZEN")
-    exception_scope_ok = all(x.snapshot_id == snapshot_id for x in approved_exceptions)
 
     rules = [
         {
@@ -888,7 +900,7 @@ def _readiness_for_release(release: Release, db: Session):
             "rule": "Approved exceptions are bound to current snapshot",
             "raw": "PASS" if exception_scope_ok else "FAIL",
             "effective": "PASS" if exception_scope_ok else "FAIL",
-            "evidence": f'{len(approved_exceptions)} current-snapshot exception(s)',
+            "evidence": f'{exception_total} current-snapshot exception(s)',
             "exception_allowed": False,
         },
     ]
@@ -896,7 +908,7 @@ def _readiness_for_release(release: Release, db: Session):
     hard_fail = any(r["effective"] == "FAIL" for r in rules)
     overall = "NOT_READY" if hard_fail else "READY"
 
-    return {
+    result = {
         "overall": overall,
         "approval_eligible": overall == "READY",
         "coverage": coverage,
@@ -915,6 +927,11 @@ def _readiness_for_release(release: Release, db: Session):
             for x in approved_exceptions
         ],
     }
+    if bounded:
+        result.pop("exceptions")
+        result["exception_total"] = exception_total
+    return result
+
 
 
 @router.get("/approvals")

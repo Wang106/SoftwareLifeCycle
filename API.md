@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.9`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.13`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -570,3 +570,40 @@ passport_{group}_offset values. Independent page failures preserve summary and o
 pages; no bulk fallback. Formal current badge requires selected RELEASE, current
 Snapshot, latest decision and consistent binding; historical selection cannot override
 newer HOLD. Chinese is default, English selectable, raw UUIDs/full hashes preserved.
+
+## Bounded readiness and policy aggregation — 2026-10-03
+
+API 0.18.13 adds GET `/api/v1/releases/application/id/{release_id}/readiness/summary`
+and `/readiness/exceptions`. Exact APPLICATION release UUID required; missing/wrong
+release type gives 404. Summary has optional snapshot_id (UUID or literal `none`),
+unknown query fields/invalid values give 422. With no pin, observe latest Snapshot
+across statuses as before. A supplied UUID must belong to this release (404 otherwise),
+and must equal the observed current Snapshot (409 if a newer Snapshot replaced it).
+Explicit `none` succeeds only while there is no current Snapshot; it never reselects.
+Summary returns release_id, snapshot_id (UUID or `none`), snapshot{id,snapshot_no,status,content_hash},
+overall, approval_eligible, coverage, artifact_policy, exactly eight rules, exception_total;
+no exception array. Every raw/effective rule, evidence string and eligibility rule remains
+identical to compatibility readiness. Only approved verification exceptions can change
+the verification effective result; hard SHA/policy/frozen/match gates remain enforced.
+
+Exceptions requires snapshot_id UUID or `none`, limit default50/range1..100,
+offset default0/range0..100000; unknown fields/invalid arguments give 422. UUID must
+belong to exact release; this page may inspect an owned historical Snapshot. Literal
+`none` returns explicit empty selection, without fetching a later Snapshot. Page is
+APPROVED-only, ordered exception_no/id, and returns release_id, snapshot_id, total,
+limit, offset, next_offset, items{id,exception_no,status,scope,reason,
+compensating_control,rule_code,snapshot_no}. Missing child metadata is not synthesized.
+
+The UI uses readiness_snapshot_id, readiness_limit, readiness_exception_offset. Summary
+is read first; stale/mismatched/failed selection stops child reads and provides latest
+refresh. Child failure preserves eight gates/full total rather than reporting zero
+exceptions. Full Snapshot UUID/hash, reason/control and Chinese-default/English remain.
+Readiness keeps live release artifact declarations (not frozen Snapshot policy), current
+Snapshot DVP evidence and approved exceptions. Empty policy percentages remain 100 but
+zero artifacts still fail formal SHA/policy gates. Non-empty SHA (including whitespace)
+is recording completeness, not cryptographic verification. Any recorded rule makes a
+non-internal artifact policy-complete; INTERNAL_ONLY overrides eligibility flags.
+SQL EXISTS avoids multiplying artifact counts for duplicated nullable recipient rules.
+Legacy readiness/artifact endpoints and ArtifactPolicyService.evaluate remain compatible;
+legacy array routes/evaluator may still be unbounded. Current UI does not call them.
+Reads/counts/pages are live observations, not cross-request transaction receipts or grants.

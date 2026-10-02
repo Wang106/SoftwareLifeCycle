@@ -404,3 +404,13 @@ permission checks, authenticated actor binding and business/audit atomicity rema
 specified above. Full real PostgreSQL backend regression must include the existing
 concurrent Snapshot/Batch cases. Read pins are observation selection, not write
 preconditions or authorization grants; public staging remains read-only.
+
+## Bounded readiness and policy aggregation — 2026-10-03
+
+This read migration does not change write requests, declared readiness fields,
+permission scope, authenticated actor binding or commit boundaries. Snapshot allocation,
+Batch quota locks, request-ID replay/conflict and business/audit atomicity remain covered
+by the full real PostgreSQL regression suite. SQL policy summary records completeness,
+not authorization; recipient evaluate and frozen delivery validators are unchanged.
+Readiness eligibility is neither a write grant nor a cross-request concurrency token.
+No authenticated UI submission, provider configuration or staging writes are enabled.

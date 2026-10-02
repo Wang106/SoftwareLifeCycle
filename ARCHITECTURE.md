@@ -347,3 +347,15 @@ passport frontend consumes only these five endpoints; compatibility APIs remain 
 other callers. Typed page envelopes are checked for release and both selection pins.
 Historical selection, full counts/full hashes, failed individual pages and latest
 refresh links are explicit in Chinese-default/English UI. No write-service changes.
+
+## Bounded readiness and policy aggregation — 2026-10-03
+
+`asr_readiness.py` exposes fixed current summary and bounded approved-exception
+projections. The existing dashboard gate builder shares all eight rule calculations;
+a bounded option replaces the exception collection with count/presence. Compatibility
+callers retain complete exception arrays. Shared ArtifactPolicyService summary now uses
+SQL CASE/EXISTS aggregates while public fields and percentage semantics stay unchanged.
+The frontend reads current summary first, checks exact release/Snapshot identity, pins
+exception navigation and rejects stale current selections. Artifact checks remain based
+on live release declarations; DVP/exception checks remain tied to the observed current
+Snapshot. New reads do not create permissions, stored readiness receipts or write flows.

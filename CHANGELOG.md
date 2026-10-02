@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-03 — Bounded readiness and policy aggregation
+
+- API 0.18.13: fixed current summary and Snapshot-pinned approved-exception pages. Shared policy uses SQL CASE/EXISTS, preserving eight gates, nullable/empty/duplicate policy semantics and live declarations. Stale current pins return 409; legacy arrays/evaluate retained.
+- Chinese-default/English UI retains full UUID/hash, raw/effective gates, reason/control and full count on page failures. No write grants/receipt inference. Read ledger 15/17 (88%), ROADMAP 34/44 unchanged.
+- No migration, head 0018. Full backend 932 passed (119 real PostgreSQL), 6024 warnings, no skips; frontend 369 passed, production build and 10 actual SSR groups passed. Existing write safety/public read-only mode unchanged.
+
 ## 2026-10-03 — Bounded ASR passport
 
 - API 0.18.12: fixed summary/counts and four bounded histories pinned to exact release, Snapshot and decision UUIDs. Missing metadata never widens deliveries; historical RELEASE cannot override current/latest context. Legacy endpoints retained.

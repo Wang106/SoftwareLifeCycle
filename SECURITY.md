@@ -336,3 +336,16 @@ and a newer HOLD cannot be overridden by selecting an older RELEASE. These publi
 read observations confer no authority. Existing trusted actor binding, precise write
 scope, request-ID conflict/retry behavior and atomic business/audit commit remain.
 Public staging read-only; no staging records were created for verification.
+
+## Bounded readiness and policy aggregation — 2026-10-03
+
+Current readiness validates exact application release, owned Snapshot pin and
+current selection. A stale owned pin gets 409; foreign/missing UUID gets 404. Exception
+pages use exact owned Snapshot UUID and APPROVED status; explicit none never reselects.
+Approved exceptions do not bypass hard SHA/policy/frozen/match gates; only the existing
+verification exception code can affect the effective verification result. Policy SQL
+counts measure stored declarations, not actual hash verification or recipient permission.
+Existing evaluate/recipient precedence and frozen delivery write validators are unchanged.
+Summary eligibility is an observation, not permission or a persisted approval receipt.
+All scoped authorization/trusted actor/request-ID/number/quota/atomic audit contracts
+remain unchanged. Public staging stays read-only; verification creates no business data.

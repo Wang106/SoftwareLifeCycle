@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact detail/comparison and ASR passport now use bounded SQL pages; readiness/compatibility policy, release catalogs/resolver and other rich profiles/domain catalogs remain
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact detail/comparison and ASR passport now use bounded SQL pages; current readiness now uses SQL summaries and paginated approved exceptions; release catalogs/resolver and other rich profiles/domain catalogs remain
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -198,3 +198,15 @@ open read acceptance item. Next those three groups, then approved identity/sessi
 authenticated submission and recovery/corrections, operations. Conditional remaining
 estimate: 6–10 focused packages toward internal use; 14–22 total toward production
 review, subject to provider configuration and broad remaining group sizes.
+
+## Bounded readiness and policy aggregation — 2026-10-03
+
+The current readiness consumer now uses SQL policy/exception counts and a bounded
+approved-exception page, preserving existing eight gates and live declaration semantics.
+Current Snapshot pins fail closed after a newer commit. Group 15 closes under the same
+consumer-based ledger rule; compatibility arrays/evaluate are retained and are not claimed
+retired. Fine ledger 14/17 (82%) → 15/17 (88%). ROADMAP remains 34/44 (77%), Phase 4
+8/9, Phase 6 3/5: release catalogs/resolver and rich profiles/domain catalogs remain.
+Next release catalogs/exact legacy resolver, then remaining rich reads; approved identity/
+session, authenticated submission/recovery/corrections and operations follow. Conditional
+estimate: 5–9 packages toward internal use, 13–21 total toward production review.

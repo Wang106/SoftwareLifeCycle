@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from app.models.core import Artifact, ReleaseComponent
@@ -40,43 +40,26 @@ class ArtifactPolicyService:
         ).all()
 
     def summarize_release(self, release_id) -> ArtifactPolicySummary:
-        artifacts = self.release_artifacts(release_id)
-        artifact_ids = [a.id for a in artifacts]
-        rules = self.db.scalars(
-            select(ArtifactDistributionRule).where(ArtifactDistributionRule.artifact_id.in_(artifact_ids))
-        ).all() if artifact_ids else []
-        rules_by_artifact = {}
-        for rule in rules:
-            rules_by_artifact.setdefault(rule.artifact_id, []).append(rule)
-
-        sha_complete = sum(1 for a in artifacts if bool(a.sha256))
-        policy_complete = 0
-        externally_eligible = 0
-        approval_required = 0
-        internal_only = 0
-
-        for artifact in artifacts:
-            artifact_rules = rules_by_artifact.get(artifact.id, [])
-            if artifact.distribution_level == "INTERNAL_ONLY":
-                internal_only += 1
-                policy_complete += 1
-                continue
-
-            if artifact_rules:
-                policy_complete += 1
-                if any(r.decision == "ALLOW" for r in artifact_rules):
-                    externally_eligible += 1
-                if any(r.decision == "APPROVAL_REQUIRED" for r in artifact_rules):
-                    approval_required += 1
-
-        return ArtifactPolicySummary(
-            artifact_total=len(artifacts),
-            sha_complete=sha_complete,
-            policy_complete=policy_complete,
-            externally_eligible=externally_eligible,
-            approval_required=approval_required,
-            internal_only=internal_only,
-        )
+        # EXISTS counts artifacts once even when recipient rules are duplicated.
+        # These are recording/completeness indicators, not permission evaluations.
+        artifact = Artifact
+        def rules(decision=None):
+            stmt = select(ArtifactDistributionRule.id).where(ArtifactDistributionRule.artifact_id == artifact.id)
+            if decision is not None:
+                stmt = stmt.where(ArtifactDistributionRule.decision == decision)
+            return stmt.exists()
+        internal = artifact.distribution_level == "INTERNAL_ONLY"
+        def total(expression):
+            return func.coalesce(func.sum(expression), 0)
+        row = self.db.execute(select(func.count(),
+            total(case((artifact.sha256 != '', 1), else_=0)),
+            total(case((internal, 1), (rules(), 1), else_=0)),
+            total(case((internal, 0), (rules('ALLOW'), 1), else_=0)),
+            total(case((internal, 0), (rules('APPROVAL_REQUIRED'), 1), else_=0)),
+            total(case((internal, 1), else_=0)))
+            .select_from(Artifact).join(ReleaseComponent, ReleaseComponent.id == artifact.release_component_id)
+            .where(ReleaseComponent.release_id == release_id)).one()
+        return ArtifactPolicySummary(*row)
 
     def evaluate(self, artifact: Artifact, recipient_type: str, purpose: str, recipient_code: str | None = None) -> str:
         if artifact.distribution_level == "INTERNAL_ONLY":

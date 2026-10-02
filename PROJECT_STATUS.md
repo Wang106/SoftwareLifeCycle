@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -28,7 +28,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
-Separate read-consumer tracking: **14 / 17 (82%)**, up from 13 / 17 (76%) at the
+Separate read-consumer tracking: **15 / 17 (88%)**, up from 14 / 17 (82%) at the
 reviewed development baseline. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
 This finer counter does not change ROADMAP acceptance-item accounting or certify production readiness.
 
@@ -954,3 +954,40 @@ Next readiness/compatibility policy, release catalogs/resolver and other rich re
 Feature, translation and verification records pushed to main; unrelated duplicate file
 untouched. Public staging remains read-only. Conditional estimate 6–10 internal-use
 packages, 14–22 total toward production review.
+
+## Bounded readiness development package — 2026-10-03
+
+Mode: Codex. Developed from GitHub main 2a4dd835659effeefcabdd1845efdbc5e18c4eac,
+with current repository documents/code/migrations/tests/recent commits as source.
+API 0.18.13 adds fixed current-readiness summary and bounded approved-exception pages.
+Shared policy summary now uses SQL CASE/EXISTS instead of all artifacts/rules and
+ID arrays. Eight raw/effective gates, evidence strings, percentages/rounding and
+eligibility match legacy; only the existing verification exception code affects that
+effective gate. Hard SHA/policy/frozen/match failures remain. Live declarations remain
+live (not replaced by frozen file policy); stored SHA/rules are recording indicators.
+INTERNAL_ONLY override, nullable SHA/level, empty/whitespace SHA and duplicate nullable
+rules preserve previous semantics. Summary has complete exception count and no array;
+exact owned Snapshot exception pages allow 1..100 rows. Current summary pin is rejected
+with 409 after a newer Snapshot; foreign/missing pin gets 404. Explicit none does not
+reselect. Default Chinese/English preserve full UUID/hash, reason/control, gates and
+totals. Failed pages do not replace complete count with zero; latest refresh is explicit.
+Legacy readiness/artifact array APIs and evaluate remain, not claimed retired; current
+frontend does not use these bulk reads. Reads are observations, not grants or receipts.
+
+Validation: full Python 3.12 backend 932 passed, 6024 deprecation/existing warnings,
+no skips; includes 119 real PostgreSQL 16.15 tests and 68 backend test modules.
+Twenty-eight new parity/scope/count/exception/hard-gate/growth/strict HTTP/PostgreSQL
+cases; second-session newer Snapshot invalidates summary pin but keeps exact old page.
+Frontend 369 passed; final Next/OpenNext build and 10 actual Next SSR groups passed.
+Single Alembic head 0018_asr_evidence_index and PostgreSQL upgrade SQL passed; no
+migration. Existing exact authorization, trusted actor, keyed retries/conflicts,
+Snapshot/Batch locking and business/audit atomicity remain unchanged and tested.
+Unrelated frontend/app/activity/page 2.tsx not recreated, adopted or removed.
+
+Fine consumer ledger 14/17 (82%) → 15/17 (88%), under unchanged 17-group scope;
+compatibility arrays/evaluate remain with their original contracts. ROADMAP remains
+34/44 (77%), Phase 4 8/9, Phase 6 3/5; release catalogs/resolver and rich profiles/domain
+catalogs remain. Next release catalogs/exact legacy resolver, then other rich reads;
+approved identity/session, authenticated submission/recovery/corrections and operations
+follow. Conditional estimate 5–9 internal-use packages, 13–21 total production review.
+Public staging remains read-only; online verification will be recorded after push.

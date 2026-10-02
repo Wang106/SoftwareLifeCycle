@@ -1484,5 +1484,11 @@
   "The selected decision is historical. Read the latest passport to see the latest recorded decision.": "选定决策属于历史记录。请读取最新护照以查看最新记录的决策。",
   "FORMALLY RELEASED": "已正式发布",
   "HISTORICAL RELEASE": "历史发布",
-  "NOT RELEASED": "尚未发布"
+  "NOT RELEASED": "尚未发布",
+  "The current readiness selection changed or the API is unavailable.": "当前就绪选择已变化，或接口暂不可用。",
+  "Read latest readiness": "读取最新就绪结果",
+  "Total approved exceptions": "批准例外总数",
+  "Readiness exception page unavailable.": "就绪例外分页暂不可用。",
+  "No approved exceptions on this page.": "此分页没有批准例外。",
+  "Artifact checks use current release declarations; evidence and exceptions use the selected current snapshot. This observation does not grant approval or write permission.": "制品检查使用当前发布声明；证据和例外使用选定的当前快照。这些读取结果不授予审批或写入权限。"
 }

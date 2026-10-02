@@ -392,3 +392,18 @@ and decision pins select exact rows and do not create a repeatable-read snapshot
 mutable records. Alembic head stays 0018_asr_evidence_index. PostgreSQL tests prove
 paging/scoping and a second-session commit does not retarget selected Snapshot UUID;
 existing PostgreSQL write-concurrency suite remains required and unchanged.
+
+## Bounded readiness and policy aggregation — 2026-10-03
+
+No migration. Artifact summary now returns one SQL aggregate row with correlated
+rule EXISTS predicates, without full artifact/rule ORM collections or growing ID arrays.
+Duplicate nullable rules count an artifact once; nullable levels/SHA/empty strings and
+INTERNAL_ONLY match prior Python semantics. Percent rounding and empty-count rates are
+unchanged. New readiness summary uses existing SQL coverage plus approved-exception
+count/verification-rule presence; exception projection pages are limited to 100 rows.
+Existing exception Snapshot FK and rule artifact FK indexes support exact predicates;
+no unmeasured performance index is added. Fixed query/response shape is not constant
+DB work. Compatibility array APIs and evaluate remain unchanged. A real PostgreSQL
+second-session newer Snapshot commit invalidates stale current-readiness summary pin
+with 409 while old exception UUID scope remains exact. Reads append no audit. Schema
+head remains 0018_asr_evidence_index; full PostgreSQL upgrade SQL remains valid.
