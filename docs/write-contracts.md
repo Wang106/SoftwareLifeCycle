@@ -343,3 +343,13 @@ DVPs, retaining any-PASS and execution-presence semantics; it is not a command r
 or reserved quota. One aggregate statement does not make other profile metadata a
 transactionally consistent receipt. No migration or public submission; authenticated
 submission/recovery/results and broader append-only corrections remain pending.
+
+## SSR summary/collection migration — API 0.18.7 / schema 0018
+
+No write route/request-ID/payload/scope/actor/lock/atomic-audit contract changed. SSR
+Snapshot preparation retains the exact Release UUID. Paginated declaration/baseline
+observations are not frozen evidence, approvals, permission, reserved quota or write
+receipts. Summary and pages are separate reads and may change during concurrent writes.
+All existing concurrency/replay/quota/rollback/authorization tests pass in the complete
+real PostgreSQL run. No migration or public submission; remaining authenticated
+submission/recovery/results and broader append-only correction flows stay pending.

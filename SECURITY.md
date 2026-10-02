@@ -266,3 +266,13 @@ authority. This does not add read authentication or retire all legacy rich profi
 All 14 write-route role/actor bindings, request-ID locks and atomic audits remain
 unchanged and covered by complete PostgreSQL regressions. No migration, login/session
 or grant administration is added; public staging remains READ_ONLY_MODE=true.
+
+## SSR bounded-read consumer — API 0.18.7
+
+New reads require an exact STANDARD parent UUID, preserve stored component/base-release
+association scopes and reject unknown filters. They do not add authenticated reads,
+approval or write permission. Parent summary retains release notes/source metadata as
+the legacy public demo profile does; no safe-company-data access claim is added.
+All 14 role/actor bindings, keyed retry/serialization and atomic audits remain covered
+by complete PostgreSQL regressions. UI preparation target remains the exact parent UUID.
+No submission/login/provider/grant feature or public write enablement; staging read-only.

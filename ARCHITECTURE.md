@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.5
+FastAPI 0.18.7
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -278,3 +278,16 @@ passport and readiness consumers retain their response contracts and Python roun
 The aggregate statement is coherent within its database statement, but parent selection
 and other profile reads remain separate READ COMMITTED observations. This does not bound
 other component/policy/history reads or certify readiness. No migration or frontend change.
+
+## SSR summary and collection consumer — API 0.18.7
+
+standard_release_views.py keeps legacy profile compatibility while projecting exact SSR
+components with a left definition join and applications through stored baseline UUIDs.
+A parent summary returns metadata and SQL full counts; collection queries use LIMIT/
+OFFSET, deterministic UUID tie breakers and fixed projections. Missing definitions stay
+visible; missing referenced releases remain excluded. StandardReleaseCollections reads
+both pages independently, preserves the other offset and rejects wrong-parent replies.
+Missing/foreign summaries stop child reads; no compatibility fallback. Default Chinese/
+English covers new states. Parent release notes remain potentially large; no global byte
+bound is claimed. READ COMMITTED/count sorting and offsets do not produce consistent
+receipts. No command or schema change; other compatibility consumers still remain.

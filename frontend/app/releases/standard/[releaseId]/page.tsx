@@ -1,6 +1,7 @@
 
-import { Localized, LocalizedAttributes } from "../../../../components/localized";
+import { Localized } from "../../../../components/localized";
 import Link from 'next/link';
+import { StandardReleaseCollections } from '../../../../components/standard-release-collections';
 import { apiGet } from '../../../../lib/api';
 
 type Profile = {
@@ -9,14 +10,13 @@ type Profile = {
   supplier: { code: string; name: string } | null;
   previous_release: { id: string; version: string } | null;
   source: { branch: string | null; commit: string | null } | null;
-  components: { id: string; code: string | null; name: string | null; version: string | null }[];
-  applications: { id: string; version: string; status: string }[];
+  component_count: number; application_count: number;
 };
 
-export default async function Page({ params }: { params: Promise<{ releaseId: string }> }) {
-  const { releaseId } = await params;
-  const profile = await apiGet<Profile>(`/api/v1/releases/standard/id/${encodeURIComponent(releaseId)}`);
-  if (!profile) return <section className="panel"><h1><Localized>{"Standard release unavailable"}</Localized></h1><p className="muted"><Localized>{"The release was not found or the API could not be reached."}</Localized></p><Link href="/releases/standard"><Localized>{"Back to standard releases →"}</Localized></Link></section>;
+export default async function Page({ params, searchParams }: { params: Promise<{ releaseId: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const [{ releaseId }, search] = await Promise.all([params, searchParams]);
+  const profile = await apiGet<Profile>(`/api/v1/releases/standard/id/${encodeURIComponent(releaseId)}/summary`);
+  if (!profile || profile.id !== releaseId) return <section className="panel"><h1><Localized>{"Standard release unavailable"}</Localized></h1><p className="muted"><Localized>{"The release was not found or the API could not be reached."}</Localized></p><Link href="/releases/standard"><Localized>{"Back to standard releases →"}</Localized></Link></section>;
   return <>
     <p><Link href={`/commands?${new URLSearchParams({operation: "snapshot", target: profile.id})}`}><Localized>{"Prepare Snapshot request →"}</Localized></Link></p>
     <p><Link href={`/approvals?release_id=${profile.id}`}><Localized>{"Approval history →"}</Localized></Link><Localized>{" · "}</Localized><Link href={`/release-decisions?release_id=${profile.id}`}><Localized>{"Release decision history →"}</Localized></Link></p>
@@ -31,8 +31,7 @@ export default async function Page({ params }: { params: Promise<{ releaseId: st
       <span><Localized>{"Source commit"}</Localized></span><code>{profile.source?.commit || '—'}</code>
     </div></section><section className="panel"><h2><Localized>{"Release notes"}</Localized></h2><p><Localized>{profile.release_notes || 'No release notes recorded.'}</Localized></p></section></div>
     <p><Link href={`/releases/${encodeURIComponent(profile.id)}/snapshots`}><Localized>{"View snapshot history →"}</Localized></Link></p>
-    <section className="panel tablewrap"><h2><Localized>{"Recorded components"}</Localized></h2><table><thead><tr><th><Localized>{"Component"}</Localized></th><th><Localized>{"Version"}</Localized></th></tr></thead><tbody><Localized>{profile.components.map(row => <tr key={row.id}><td><b><Localized>{row.name || row.code || 'Unknown component'}</Localized></b><div className="muted"><Localized>{row.code || 'No code'}</Localized></div></td><td><Localized>{row.version || '—'}</Localized></td></tr>)}</Localized></tbody></table><Localized>{profile.components.length === 0 && <p className="muted"><Localized>{"No components recorded."}</Localized></p>}</Localized></section>
-    <section className="panel tablewrap"><h2><Localized>{"Application releases using this baseline"}</Localized></h2><table><thead><tr><th><Localized>{"Release"}</Localized></th><th><Localized>{"Status"}</Localized></th></tr></thead><tbody><Localized>{profile.applications.map(row => <tr key={row.id}><td><Link href={`/releases/application/${encodeURIComponent(row.id)}`}><Localized>{"ASR "}</Localized><Localized>{row.version}</Localized></Link></td><td><Localized>{row.status}</Localized></td></tr>)}</Localized></tbody></table><Localized>{profile.applications.length === 0 && <p className="muted"><Localized>{"No application releases linked to this SSR."}</Localized></p>}</Localized></section>
+    <StandardReleaseCollections releaseId={profile.id} search={search} componentCount={profile.component_count} applicationCount={profile.application_count} />
     <p className="datasource"><Link href="/releases/standard"><Localized>{"← All standard releases"}</Localized></Link></p>
   </>;
 }

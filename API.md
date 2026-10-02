@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.6`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.7`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -399,3 +399,24 @@ retains the legacy software-wide fallback. API boundary missing-release validati
 unchanged. These are read observations, not permission, write receipts or reserved quota.
 No new parameters/endpoints/migration; schema remains 0018. Other profile reads remain
 partially unbounded.
+
+## SSR parent summary and bounded collections — API 0.18.7
+
+All paths begin `/api/v1/releases/standard/id/{release_id}`; exact STANDARD UUID parents
+are required (404 for missing/wrong type, 422 for malformed UUID).
+
+| GET suffix | Response | Parameters |
+| --- | --- | --- |
+| `/summary` | Legacy parent metadata without child arrays, plus component_count/application_count | No query fields |
+| `/components` | id/code/name/version projections; missing definitions retained as null | limit 1–100 (default 50), offset 0–100000 (default 0) |
+| `/applications` | id/version/status of stored baseline-linked releases, all statuses | Same pagination |
+
+Pages return release_id/total/limit/offset/next_offset/items. Unknown query fields return
+422; beyond-end pages retain total and return empty items/null next_offset. Components
+order UUID ascending, matching the old profile. Applications order created_at descending
+(null last), then UUID descending. Exact baseline bindings determine membership even
+when software/status differ; missing referenced Release rows are excluded as before.
+The old bare profile endpoint is unchanged. No new snapshot/approval/permission claim:
+these are declaration/baseline observations; separate totals/pages may differ during
+concurrent writes. Frontend keeps release_limit and independent component/application
+offsets, forwarding invalid values rather than silently resetting them. No migration.

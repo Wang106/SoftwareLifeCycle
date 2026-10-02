@@ -305,3 +305,14 @@ enforce normal writes. SQL count/distinct/union can scan/sort many rows, and som
 scope foreign keys lack dedicated indexes; fixed transfer is not a performance guarantee.
 Additional indexing should follow measured plans/data, not a claimed constant-time result.
 No business or audit data is rewritten. Head stays `0018_asr_evidence_index`.
+
+## SSR summary/projection reads — API 0.18.7
+
+No migration, backfill or ORM schema change; sole head stays 0018_asr_evidence_index.
+Component reads select only id/definition code/name/version under exact release_id.
+The left join preserves missing metadata in legacy data. Application counts/pages join
+stored release_id with Release and filter standard_base_release_id; no Python ID arrays
+or child ORM are loaded. UUID ordering resolves duplicate labels/timestamps. Existing
+keys enforce normal PostgreSQL FK writes. Some legacy scope FKs lack dedicated indexes;
+fixed transfer does not bound database count/sort work. Measured data/plans should guide
+additional indexing. Parent metadata/notes remain; no total-byte bound is promised.

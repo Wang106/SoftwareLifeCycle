@@ -129,3 +129,12 @@ ID arrays are transferred. This advances the unchecked compatibility-consumer it
 remaining SSR/components/policy/snapshot/history reads still prevent its completion.
 No checked items or denominator change: 34/44 overall, Phase 4 8/9, Phase 6 3/5.
 Next package: continue those remaining consumers; planning ranges above remain conditional.
+
+## SSR consumer migration — 2026-10-02
+
+SSR overview now reads a fixed parent summary and two bounded projections for components
+and stored baseline users. This advances the remaining compatibility-consumer item but
+does not complete it: ASR component declarations, policy/snapshot/history/passport reads
+remain. No checked item/denominator changes; overall 34/44, Phase 4 8/9, Phase 6 3/5.
+Next package should address those ASR component/baseline declarations; planning ranges
+above remain conditional rather than deployment commitments.

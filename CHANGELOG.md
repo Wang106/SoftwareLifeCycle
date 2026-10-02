@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 — Bounded SSR summary and independent collections
+
+- Added exact SSR summary with full counts and bounded component/baseline-user pages; legacy profile remains compatible. Missing component definitions are retained and membership uses stored UUIDs.
+- Migrated SSR page to independent pagination with preserved offsets, strict failure states, no unbounded fallback and bilingual default Chinese.
+- API 0.18.7, no migration; head 0018. All command/actor/audit/lock contracts unchanged, public staging read-only; roadmap stays 34/44.
+- Verification: 16 new backend cases passed within the full Python 3.12 suite: **800 passed, 5180 warnings, no skips**, including **107 real PostgreSQL 16.15 tests**. Coverage includes legacy metadata/count parity, exact/sibling/same-version scopes, stable duplicate ordering and beyond-end totals, missing component metadata retention/missing referenced release exclusion, empty/optional metadata, strict HTTP limits/unknown filters/read-only denial and 120-row growth with fixed SQL shape/count, bounded projections and no child ORM. Real PostgreSQL checks totals against the pre-existing legacy fixture plus 120 new bindings, distinct one-row pages and no audit write; existing lock/replay/quota/rollback/actor/authorization tests pass. Frontend **300 passed**; final Next/OpenNext Cloudflare production build passed. Seven local production SSR groups passed: Chinese/English full totals, independent first/next links and exact preparation UUID, unavailable/foreign summaries stopping child reads, invalid array offset preserving the other table, beyond-end pages and foreign child scope rejection. Single Alembic head and PostgreSQL full upgrade SQL generation passed; no new migration.
+
 ## 2026-10-02 — Shared release coverage SQL aggregates
 
 - Replaced full child/history loading and Python ID arrays with relational CTE scopes and one aggregate result; latest Snapshot selection uses LIMIT 1.

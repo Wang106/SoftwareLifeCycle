@@ -5,9 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `81e4e59b284b5ac6e75527d816278937089c35ad`
-- Developed from: `a06b54ef6edaccc84ee585fd252369a85f6def45`
-- Baseline subject: `perf: aggregate exact snapshot release coverage in SQL`
+- Verified baseline: `44dceb069fcd651c8f1343d41d3b50379cecd4fe`
+- Developed from: `44dceb069fcd651c8f1343d41d3b50379cecd4fe`
+- Baseline subject: `docs: record release coverage rollout and compatibility checks`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 61 backend test modules; the latest full run passed all 784 tests under Python 3.12, including 106 real PostgreSQL tests without skips.
+- 62 backend test modules; the latest full run passed all 800 tests under Python 3.12, including 107 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -603,3 +603,46 @@ preparation UUID, pinned snapshot and both table offsets, then Chinese was resto
 No frontend source changed or separate frontend rollout was needed. Cloudflare provider
 commit/deployment metadata was not inspected; this is live availability/compatibility
 evidence. No public business write was submitted; staging remains read-only.
+
+## Bounded SSR detail collections — 2026-10-02
+
+Developed from GitHub main `44dceb069fcd651c8f1343d41d3b50379cecd4fe`. API 0.18.7 adds
+`/api/v1/releases/standard/id/{release_id}/summary`, `/components` and `/applications`.
+The SSR page replaces its legacy all-child profile request with parent metadata/full
+counts and two independently paginated projections. Exact STANDARD UUID parents are
+required; missing/wrong-type parents return 404. Pagination defaults to limit 50,
+accepts 1–100 and offset 0–100000, rejects unknown filters/malformed UUIDs with 422.
+The summary accepts no query fields. Existing legacy profile shape remains unchanged.
+
+Components retain stored release UUID membership and UUID ascending order; missing
+component definitions remain visible with null code/name. Applications follow only
+ApplicationReleaseDetail.standard_base_release_id, join their stored Release UUIDs,
+retain all statuses/software associations and order timestamp descending/null-last,
+then UUID descending. No version/name inference or new project/customer/status filters.
+Missing referenced releases remain excluded as in the old profile. Declaration/baseline
+membership is not frozen Snapshot evidence, approval or authorization.
+
+Frontend `release_limit`, `component_offset`, `application_offset` keep the other
+collection's offset through first/next links. Invalid/array parameters are forwarded
+as invalid, not reset. Failed/wrong-UUID summaries stop child reads; failed/wrong-parent
+pages show unavailable while the other table remains readable, with no legacy fallback.
+All new labels are bilingual, default Chinese; raw IDs, commits and preparation target
+remain exact. Empty/beyond-end pages retain full counts. Counts/pages are separate
+READ COMMITTED observations; concurrent additions can shift offset pages. Parent notes
+remain a single potentially large field; fixed child rows are not a total-byte or
+constant-time query guarantee.
+
+No migration; existing tables/keys suffice for these projections, required revision
+and sole Alembic head stay `0018_asr_evidence_index`. Legacy foreign-key indexing is
+unchanged; database scans/counts/sorts may grow and measured plans should guide indexes.
+All 14 write scopes, trusted actors, request-ID retry locks and atomic audits stay.
+Public staging stays read-only. Unrelated activity/page 2.tsx is absent and untouched.
+
+Verification: 16 new backend cases passed within the full Python 3.12 suite: **800 passed, 5180 warnings, no skips**, including **107 real PostgreSQL 16.15 tests**. Coverage includes legacy metadata/count parity, exact/sibling/same-version scopes, stable duplicate ordering and beyond-end totals, missing component metadata retention/missing referenced release exclusion, empty/optional metadata, strict HTTP limits/unknown filters/read-only denial and 120-row growth with fixed SQL shape/count, bounded projections and no child ORM. Real PostgreSQL checks totals against the pre-existing legacy fixture plus 120 new bindings, distinct one-row pages and no audit write; existing lock/replay/quota/rollback/actor/authorization tests pass. Frontend **300 passed**; final Next/OpenNext Cloudflare production build passed. Seven local production SSR groups passed: Chinese/English full totals, independent first/next links and exact preparation UUID, unavailable/foreign summaries stopping child reads, invalid array offset preserving the other table, beyond-end pages and foreign child scope rejection. Single Alembic head and PostgreSQL full upgrade SQL generation passed; no new migration.
+
+Partial Phase 4 migration only; roadmap stays 34/44 (77%), Phase 4 8/9 and Phase 6 3/5.
+Next: ASR component/baseline declarations and remaining policy/snapshot/history/passport
+consumers, then approved OIDC/session/controlled target, authenticated submission/
+recovery/results, append-only corrections/revocations and production operations.
+Estimate remains 8–12 focused packages to controlled internal use, 16–24 total to
+production-ready review, dependent on approvals and scope.

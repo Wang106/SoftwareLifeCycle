@@ -1435,5 +1435,10 @@
   "No executions on this page.": "此页没有执行记录。",
   "Execution page unavailable. The API is unavailable or pagination is invalid.": "执行记录分页不可用。API 不可用或分页参数无效。",
   "Evidence snapshot ·": "证据快照 ·",
-  "Execution records on other snapshots:": "其他快照的执行记录："
+  "Execution records on other snapshots:": "其他快照的执行记录：",
+  "Recorded declarations and baseline links are read observations, not frozen evidence or approval. Counts and pages may change between reads.": "组件声明与基线关联是读取观察，不代表冻结证据或审批通过。计数与分页可能在不同读取间变化。",
+  "No components on this page.": "此页没有组件。",
+  "Component page unavailable. The API is unavailable or pagination is invalid.": "组件分页不可用：API 无法访问或分页参数无效。",
+  "No application releases on this page.": "此页没有应用发布。",
+  "Application release page unavailable. The API is unavailable or pagination is invalid.": "应用发布分页不可用：API 无法访问或分页参数无效。"
 }

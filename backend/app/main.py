@@ -1,3 +1,4 @@
+from app.api.standard_release_views import router as standard_views_router
 from app.api.asr_evidence import router as asr_evidence_router
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,7 +30,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.6"
+APP_VERSION = "0.18.7"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -50,6 +51,7 @@ async def authorization_error_handler(_request: Request, exc: AuthorizationError
 app.include_router(releases_router, prefix="/api/v1")
 app.include_router(dashboard_router)
 app.include_router(asr_evidence_router)
+app.include_router(standard_views_router)
 app.include_router(approvals_router)
 app.include_router(distribution_router)
 app.include_router(production_router)

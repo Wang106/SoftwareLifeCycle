@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage now uses SQL aggregates; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details use independently paginated collections; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -47,11 +47,11 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 60 backend test modules are present. The complete 2026-10-02 (Asia/Shanghai) Python 3.12 run passed **770 tests**, including **105 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (4281 in this run).
+- 62 backend test modules are present. The complete 2026-10-02 (Asia/Shanghai) Python 3.12 run passed **800 tests**, including **107 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (5180 in this run).
 - Alembic has the single head `0018_asr_evidence_index`; it adds only a DVP execution scope index. Full PostgreSQL upgrade and 0018-to-0017 downgrade SQL generation passed; real PostgreSQL index upgrade/downgrade/upgrade preserved records.
 
 
-- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 293 cases; authenticated submission remains pending.
+- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 300 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -61,7 +61,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 
 ## Next stage
 
-1. Bound remaining SSR/component/policy/snapshot/history consumers, then configure approved identity/session and a controlled write target.
+1. Bound remaining ASR component/policy/snapshot/history/passport consumers, then configure approved identity/session and a controlled write target.
 2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
 3. Extend correction/revocation beyond actual reports, preserving formal history.
 4. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
@@ -562,3 +562,46 @@ preparation UUID, pinned snapshot and both table offsets, then Chinese was resto
 No frontend source changed or separate frontend rollout was needed. Cloudflare provider
 commit/deployment metadata was not inspected; this is live availability/compatibility
 evidence. No public business write was submitted; staging remains read-only.
+
+## Bounded SSR detail collections — 2026-10-02
+
+Developed from GitHub main `44dceb069fcd651c8f1343d41d3b50379cecd4fe`. API 0.18.7 adds
+`/api/v1/releases/standard/id/{release_id}/summary`, `/components` and `/applications`.
+The SSR page replaces its legacy all-child profile request with parent metadata/full
+counts and two independently paginated projections. Exact STANDARD UUID parents are
+required; missing/wrong-type parents return 404. Pagination defaults to limit 50,
+accepts 1–100 and offset 0–100000, rejects unknown filters/malformed UUIDs with 422.
+The summary accepts no query fields. Existing legacy profile shape remains unchanged.
+
+Components retain stored release UUID membership and UUID ascending order; missing
+component definitions remain visible with null code/name. Applications follow only
+ApplicationReleaseDetail.standard_base_release_id, join their stored Release UUIDs,
+retain all statuses/software associations and order timestamp descending/null-last,
+then UUID descending. No version/name inference or new project/customer/status filters.
+Missing referenced releases remain excluded as in the old profile. Declaration/baseline
+membership is not frozen Snapshot evidence, approval or authorization.
+
+Frontend `release_limit`, `component_offset`, `application_offset` keep the other
+collection's offset through first/next links. Invalid/array parameters are forwarded
+as invalid, not reset. Failed/wrong-UUID summaries stop child reads; failed/wrong-parent
+pages show unavailable while the other table remains readable, with no legacy fallback.
+All new labels are bilingual, default Chinese; raw IDs, commits and preparation target
+remain exact. Empty/beyond-end pages retain full counts. Counts/pages are separate
+READ COMMITTED observations; concurrent additions can shift offset pages. Parent notes
+remain a single potentially large field; fixed child rows are not a total-byte or
+constant-time query guarantee.
+
+No migration; existing tables/keys suffice for these projections, required revision
+and sole Alembic head stay `0018_asr_evidence_index`. Legacy foreign-key indexing is
+unchanged; database scans/counts/sorts may grow and measured plans should guide indexes.
+All 14 write scopes, trusted actors, request-ID retry locks and atomic audits stay.
+Public staging stays read-only. Unrelated activity/page 2.tsx is absent and untouched.
+
+Verification: 16 new backend cases passed within the full Python 3.12 suite: **800 passed, 5180 warnings, no skips**, including **107 real PostgreSQL 16.15 tests**. Coverage includes legacy metadata/count parity, exact/sibling/same-version scopes, stable duplicate ordering and beyond-end totals, missing component metadata retention/missing referenced release exclusion, empty/optional metadata, strict HTTP limits/unknown filters/read-only denial and 120-row growth with fixed SQL shape/count, bounded projections and no child ORM. Real PostgreSQL checks totals against the pre-existing legacy fixture plus 120 new bindings, distinct one-row pages and no audit write; existing lock/replay/quota/rollback/actor/authorization tests pass. Frontend **300 passed**; final Next/OpenNext Cloudflare production build passed. Seven local production SSR groups passed: Chinese/English full totals, independent first/next links and exact preparation UUID, unavailable/foreign summaries stopping child reads, invalid array offset preserving the other table, beyond-end pages and foreign child scope rejection. Single Alembic head and PostgreSQL full upgrade SQL generation passed; no new migration.
+
+Partial Phase 4 migration only; roadmap stays 34/44 (77%), Phase 4 8/9 and Phase 6 3/5.
+Next: ASR component/baseline declarations and remaining policy/snapshot/history/passport
+consumers, then approved OIDC/session/controlled target, authenticated submission/
+recovery/results, append-only corrections/revocations and production operations.
+Estimate remains 8–12 focused packages to controlled internal use, 16–24 total to
+production-ready review, dependent on approvals and scope.
