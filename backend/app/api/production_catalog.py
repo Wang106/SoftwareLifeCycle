@@ -19,6 +19,7 @@ class ProductionFilters(BaseModel):
     status: str | None=Field(None,max_length=30)
     q: str | None=Field(None,max_length=200)
     release_id: uuid.UUID | None=None
+    authorization_release_id: uuid.UUID | None=None
     snapshot_id: uuid.UUID | None=None
     authorization_id: uuid.UUID | None=None
     deployment_id: uuid.UUID | None=None
@@ -60,6 +61,7 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
     snapshot_column=model.snapshot_id if kind=='batches' else d.expected_snapshot_id
     stmt=stmt.outerjoin(Release,Release.id==release_column).outerjoin(ReleaseSnapshot,ReleaseSnapshot.id==snapshot_column)
     columns={'status':model.status,'authorization_id':model.authorization_id,'deployment_id':d.id,'release_id':release_column,
+        'authorization_release_id':a.release_id,
         'snapshot_id':snapshot_column,'customer_id':s.customer_id,'project_id':s.project_id,'site_code':s.site_code,'line_code':l.line_code}
     for name,column in columns.items():
         value=getattr(filters,name)

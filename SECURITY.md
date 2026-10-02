@@ -235,3 +235,13 @@ checks); final Next/OpenNext production build passed. Full backend: 733 passed,
 3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
 tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
 input/option values for 14 forms. Live bilingual/persistence/immutable-request checks passed; rollout evidence is recorded in HANDOFF.md.
+
+## ASR summary read boundary — API 0.18.4
+
+The new summary and authorization_release_id catalog filter are sample read paths,
+not role grants or authenticated write authority. All 14 write guards, exact scope,
+trusted actor binding, serialization/replay and atomic audit remain unchanged.
+Release-count observations do not grant permission, reserve finite capacity or prove
+snapshot/physical flashing/approval. No child notes are loaded by the summary.
+Public staging remains sample-only/read-only; company evidence still requires approved
+identity, network/data access and environment review. No write was enabled for this package.

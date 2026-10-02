@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -314,6 +314,49 @@ def application_snapshot_policy(release_id: uuid.UUID, db: Session = Depends(get
                                                 key=lambda row: (row.recipient_type, row.purpose,
                                                                  row.recipient_code or "", row.decision))],
         } for artifact in artifacts],
+    }
+
+
+@router.get("/releases/application/id/{release_id}/downstream-summary")
+def application_release_downstream_summary(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Count the legacy direct-parent chain without loading its records or ID lists."""
+    release = db.get(Release, release_id)
+    if release is None or release.release_type != "APPLICATION":
+        raise HTTPException(status_code=404, detail="application release not found")
+
+    package_ids = select(DeliveryPackage.id).where(DeliveryPackage.release_id == release_id)
+    authorization_ids = select(SoftwareAuthorization.id).where(SoftwareAuthorization.release_id == release_id)
+    deployment_ids = select(Deployment.id).where(Deployment.authorization_id.in_(authorization_ids))
+
+    def count(model, predicate):
+        return db.scalar(select(func.count()).select_from(model).where(predicate))
+
+    def observed_count(predicate):
+        return func.coalesce(func.sum(case((predicate, 1), else_=0)), 0)
+
+    deployments = db.execute(select(
+        func.count(), observed_count(Deployment.actual_release_id == release_id),
+        observed_count(Deployment.actual_release_id != release_id),
+        observed_count(Deployment.actual_release_id.is_(None)),
+    ).select_from(Deployment).where(Deployment.authorization_id.in_(authorization_ids))).one()
+    batches = db.execute(select(
+        func.count(), observed_count(ProductionBatch.release_id == release_id),
+        observed_count(ProductionBatch.release_id != release_id),
+    ).select_from(ProductionBatch).where(ProductionBatch.deployment_id.in_(deployment_ids))).one()
+    return {
+        "release_id": str(release_id),
+        "history_counts": {
+            "deliveries": count(DeliveryPackage, DeliveryPackage.release_id == release_id),
+            "distributions": count(Distribution, Distribution.delivery_package_id.in_(package_ids)),
+            "authorizations": count(SoftwareAuthorization, SoftwareAuthorization.release_id == release_id),
+            "deployments": deployments[0],
+            "changeovers": count(SoftwareChangeover, SoftwareChangeover.deployment_id.in_(deployment_ids)),
+            "batches": batches[0],
+        },
+        "actual_release_observations": {
+            "same_release": deployments[1], "different_release": deployments[2], "not_reported": deployments[3],
+        },
+        "batch_release_observations": {"same_release": batches[1], "different_release": batches[2]},
     }
 
 

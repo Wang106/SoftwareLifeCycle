@@ -268,3 +268,16 @@ checks); final Next/OpenNext production build passed. Full backend: 733 passed,
 3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
 tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
 input/option values for 14 forms. Live bilingual/persistence/immutable-request checks passed; rollout evidence is recorded in HANDOFF.md.
+
+## ASR downstream aggregates — API 0.18.4
+
+No migration. The summary and authorization-release production filter reuse indexed
+`delivery_packages.release_id`, `distributions.delivery_package_id`,
+`software_authorizations.release_id`, `deployments.authorization_id` and both child
+`deployment_id` columns (existing schema, including migrations 0007/0009). Seven cold
+SQL queries use count/sum with relational subqueries; no growing Python ID lists or
+child ORM payloads. Fixed response/query count does not imply constant scan/sort work.
+Multi-query READ COMMITTED totals can observe concurrent commits at different times;
+they are informational, not a write receipt or transaction quota enforcement.
+Migrated PostgreSQL aggregates/scope regression passed; existing serialization tests
+remain intact. Single head 0017 and generated PostgreSQL upgrade SQL passed.

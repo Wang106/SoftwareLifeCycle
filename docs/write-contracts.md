@@ -312,3 +312,15 @@ remain unchanged. Language switching neither remounts forms nor sends commands.
 All executable API contracts/locks and atomic audits remain unchanged; no migration.
 Language preference is the only new browser cookie; no request or credential persistence.
 See [interface contract](i18n.md).
+
+## ASR read-consumer migration — API 0.18.4 (2026-10-02)
+
+No command route or request-ID contract changed. The new downstream summary and
+production authorization_release_id filter expose stored-parent read observations;
+they are not authorization checks, reserved batch quota or a consistent write receipt.
+The ASR page keeps its exact release Snapshot preparation UUID and immutable export
+semantics. Snapshot numbering and Batch finite-limit row locks, authenticated actor
+binding, exact scope and business/audit atomicity remain covered by the full backend
+suite (750 passed including 104 real PostgreSQL tests). No migration, no submission
+flow and no public write enablement; remaining correction/revocation and result flows
+are still pending.

@@ -1408,5 +1408,17 @@
   "SUSPENDED": "已暂停",
   "USER": "用户",
   "MAIN_APPLICATION": "主应用",
-  "CALIBRATION": "标定"
+  "CALIBRATION": "标定",
+  "Full counts include all statuses. Production history follows this release's authorizations, including inconsistent actual software and batch records.": "完整计数包含所有状态。生产历史沿此发布的授权关联，实际软件或批次不一致的记录也保留。",
+  "Recorded count": "已记录数量",
+  "History": "历史",
+  "Browse scoped history →": "浏览精确范围历史 →",
+  "Actual release observations": "实际发布观察",
+  "Batch release observations": "批次发布观察",
+  "Same release:": "相同发布：",
+  "· Different release:": "· 不同发布：",
+  "· No actual release reported:": "· 未报告实际发布：",
+  "These compare release UUIDs only. They do not establish snapshot matches, physical flashing, approval or permission. Counts are read observations, not a consistent write receipt or reserved capacity.": "仅比较发布 UUID，不代表快照匹配、物理刷写、审批通过或操作权限。计数是读取观察，不是统一写入回执或已预留配额。",
+  "Downstream summary unavailable. Counts are unknown; no unbounded fallback is used.": "下游汇总不可用，计数未知；不会回退到无界读取。",
+  "authorization_release_id": "授权所属发布 UUID"
 }

@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.3`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.4`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -318,3 +318,37 @@ checks); final Next/OpenNext production build passed. Full backend: 733 passed,
 3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
 tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
 input/option values for 14 forms. Live bilingual/persistence/immutable-request checks passed; rollout evidence is recorded in HANDOFF.md.
+
+## ASR downstream summary and production scope — API 0.18.4
+
+`GET /api/v1/releases/application/id/{release_id}/downstream-summary` validates an
+exact APPLICATION release UUID (404 absent/wrong release type, 422 malformed UUID).
+It returns a fixed object, including zeros for an empty chain:
+
+```json
+{
+  "release_id": "<exact UUID>",
+  "history_counts": {"deliveries": 0, "distributions": 0, "authorizations": 0, "deployments": 0, "changeovers": 0, "batches": 0},
+  "actual_release_observations": {"same_release": 0, "different_release": 0, "not_reported": 0},
+  "batch_release_observations": {"same_release": 0, "different_release": 0}
+}
+```
+
+All statuses count. Deliveries and authorizations use their own release UUID;
+distributions use the delivery parent; deployments use authorization parent;
+changeovers/batches use deployment parent. Release mismatches do not remove linked
+records. Observations compare UUIDs only; no snapshot match or physical flashing is
+inferred. Unknown summary in the UI is not zero. Legacy `/downstream` is unchanged.
+
+`GET /api/v1/production/catalog/{kind}?authorization_release_id=<UUID>` accepts a
+validated optional UUID for deployments/changeovers/batches. It filters the release
+of each deployment's stored authorization (also for batches whose own authorization
+is inconsistent). Existing `release_id` still filters expected deployment release,
+changeover destination release or batch release respectively; both filters intersect.
+Existing limit 1–100, offset 0–100000, ordering and validation remain. Pagination,
+filter submit and kind navigation retain the new scope in the frontend.
+
+Summary response/query count is fixed (seven cold queries), not database work.
+READ COMMITTED observations across queries are not a consistent write receipt or
+quota reservation. Existing indexes suffice; no migration or write contract change.
+ASR profile/evidence and remaining compatibility consumers are still unbounded.

@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.3
+FastAPI 0.18.4
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -243,3 +243,14 @@ checks); final Next/OpenNext production build passed. Full backend: 733 passed,
 3568 existing warnings, no skips, including 103 real PostgreSQL integration/concurrency
 tests. Local SSR: 126 page/language checks, invalid preference fallback and stable raw
 input/option values for 14 forms. Live bilingual/persistence/immutable-request checks passed; rollout evidence is recorded in HANDOFF.md.
+
+## ASR downstream consumer — API 0.18.4
+
+The ASR page replaces its legacy downstream-list request with a fixed count summary
+and six exact-release history links. Production links use authorization_release_id
+to retain the stored parent chain when planned/actual/batch releases differ; other
+three links use the existing release_id scope. Catalog paging/filter/kind navigation
+retain the new UUID scope. Separate release observations compare UUIDs only.
+Missing/wrong-ID summaries remain unknown without legacy fallback. Shared localization
+covers the new view in both languages, default Chinese; identifiers and request exports
+stay unchanged. ASR profile/evidence and other legacy consumers still need migration.

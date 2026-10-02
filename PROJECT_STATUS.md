@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `9e30aaf374bc8b7f6a920902bd988e3794c4510f` — `fix: localize demo audit summaries and policy labels` (developed from `38d66578d6f8ddae9c8d344b16ac878eae6c20d3`)
+- Reviewed repository baseline: `7b2ae568e4b571eb59fe1d77e8d57899ea86103b` — latest bilingual rollout handoff before the ASR downstream package
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details are migrated to bounded profile/catalog reads. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. Remaining ASR profile/evidence and other compatibility consumers are still unbounded. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -47,11 +47,11 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 58 backend test modules are present. The complete 2026-10-02 (Asia/Shanghai) Python 3.12 run passed **733 tests**, including **103 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (3568 in this run).
-- Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). This schema verification belongs to the prior backend package; current frontend verification is recorded below.
+- 59 backend test modules are present. The complete 2026-10-02 (Asia/Shanghai) Python 3.12 run passed **750 tests**, including **104 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (3915 in this run).
+- Alembic has the single head `0017_deployment_actual_version`; its migration initializes version zero without altering existing state. PostgreSQL SQL generation passed (858 lines). Single-head and PostgreSQL SQL generation were rechecked for API 0.18.4; no migration was needed.
 
 
-- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 214 cases; authenticated submission remains pending.
+- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 292 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -96,7 +96,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository and verified online API version: `0.18.3`. Current rollout evidence is recorded below.
+- Repository API version: `0.18.4`; last verified online version before this rollout: `0.18.3`. Current rollout evidence is recorded below.
 - Required and verified online schema revision: `0017_deployment_actual_version`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -435,3 +435,38 @@ and production operations. Planning estimate remains 8–12 more focused package
 controlled internal use, 16–24 total to a production-ready review, subject to approvals.
 Suggested next code package: migrate remaining release detail/trace consumers to bounded
 profiles/catalogs while approved identity/session and controlled target are specified.
+
+## ASR downstream bounded-read package — 2026-10-02
+
+Developed from GitHub main `7b2ae568e4b571eb59fe1d77e8d57899ea86103b`. API 0.18.4 adds
+`GET /api/v1/releases/application/id/{release_id}/downstream-summary` with six
+all-status history counts and separate actual-release/batch-release observations.
+It retains the old exact stored-parent chain: deliveries belong to release;
+distributions belong to those packages; authorizations belong directly to release;
+deployments belong to those authorizations; changeovers and batches belong to those
+deployments. Expected/actual/batch release mismatches remain visible.
+
+`authorization_release_id` on all three production catalogs filters the release of
+the deployment's stored authorization. Existing `release_id` semantics remain;
+combined filters intersect. The ASR page uses exact UUID links into bounded catalogs,
+retains the exact Snapshot preparation target, defaults to Chinese and supports
+English. Missing/wrong-ID summaries show unknown counts without an unbounded fallback.
+The page no longer calls legacy `/downstream`; its profile/evidence calls and other
+legacy consumers are still unbounded. This is a partial Phase 4 migration, not its exit.
+
+Seven cold SQL queries use count/sum/subqueries without loading child rows or growing
+ID arrays. Existing foreign-key indexes suffice; no schema change, head remains
+`0017_deployment_actual_version`. Counts can scan many rows and separate READ COMMITTED
+queries are not a transactionally consistent receipt or reserved quota. Release UUID
+observations do not establish snapshot matches, physical flashing, approval or permission.
+All 14 command contracts, exact role/actor binding, retry locks and atomic audits remain
+unchanged; public staging stays read-only. Roadmap remains 34/44 (77%), Phase 6 3/5.
+
+Verification: 17 new summary/scope tests passed within the complete Python 3.12 backend suite: **750 passed, 3915 warnings, no skips**, including **104 real PostgreSQL 16.15 tests**. The new migrated-PostgreSQL test verifies aggregates, mismatch-preserving catalog scope and no audit writes; the existing real lock/retry/quota/rollback tests also passed. Frontend: **292 passed, no skips**; final Next/OpenNext Cloudflare production build passed. Eight local SSR verification groups passed for Chinese/English full totals and exact links, empty/unavailable/wrong-ID summaries, three catalogs preserving the scope through API/filter/first-next/kind links and no legacy downstream fallback. Single Alembic head 0017 and PostgreSQL SQL generation passed. No migration.
+
+Next package: bound ASR frozen-manifest / current-snapshot DVP evidence consumers,
+then remaining SSR/profile consumers. Approved OIDC/session, controlled target,
+authenticated submission/recovery/results, broader corrections and production operations
+remain. Planning range stays 8–12 focused packages to controlled internal use and
+16–24 total to production-ready review, conditional on provider/environment/policy approvals.
+Rollout verification is pending until the committed API and frontend are live.

@@ -5,9 +5,8 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `9e30aaf374bc8b7f6a920902bd988e3794c4510f`
-- Baseline subject: `fix: localize demo audit summaries and policy labels`
-- Developed from: `38d66578d6f8ddae9c8d344b16ac878eae6c20d3`
+- Verified baseline / developed from: `7b2ae568e4b571eb59fe1d77e8d57899ea86103b`
+- Baseline subject: bilingual rollout handoff; current package adds bounded ASR downstream reads
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -476,3 +475,38 @@ and production operations. Planning estimate remains 8–12 more focused package
 controlled internal use, 16–24 total to a production-ready review, subject to approvals.
 Suggested next code package: migrate remaining release detail/trace consumers to bounded
 profiles/catalogs while approved identity/session and controlled target are specified.
+
+## ASR downstream bounded-read package — 2026-10-02
+
+Developed from GitHub main `7b2ae568e4b571eb59fe1d77e8d57899ea86103b`. API 0.18.4 adds
+`GET /api/v1/releases/application/id/{release_id}/downstream-summary` with six
+all-status history counts and separate actual-release/batch-release observations.
+It retains the old exact stored-parent chain: deliveries belong to release;
+distributions belong to those packages; authorizations belong directly to release;
+deployments belong to those authorizations; changeovers and batches belong to those
+deployments. Expected/actual/batch release mismatches remain visible.
+
+`authorization_release_id` on all three production catalogs filters the release of
+the deployment's stored authorization. Existing `release_id` semantics remain;
+combined filters intersect. The ASR page uses exact UUID links into bounded catalogs,
+retains the exact Snapshot preparation target, defaults to Chinese and supports
+English. Missing/wrong-ID summaries show unknown counts without an unbounded fallback.
+The page no longer calls legacy `/downstream`; its profile/evidence calls and other
+legacy consumers are still unbounded. This is a partial Phase 4 migration, not its exit.
+
+Seven cold SQL queries use count/sum/subqueries without loading child rows or growing
+ID arrays. Existing foreign-key indexes suffice; no schema change, head remains
+`0017_deployment_actual_version`. Counts can scan many rows and separate READ COMMITTED
+queries are not a transactionally consistent receipt or reserved quota. Release UUID
+observations do not establish snapshot matches, physical flashing, approval or permission.
+All 14 command contracts, exact role/actor binding, retry locks and atomic audits remain
+unchanged; public staging stays read-only. Roadmap remains 34/44 (77%), Phase 6 3/5.
+
+Verification: 17 new summary/scope tests passed within the complete Python 3.12 backend suite: **750 passed, 3915 warnings, no skips**, including **104 real PostgreSQL 16.15 tests**. The new migrated-PostgreSQL test verifies aggregates, mismatch-preserving catalog scope and no audit writes; the existing real lock/retry/quota/rollback tests also passed. Frontend: **292 passed, no skips**; final Next/OpenNext Cloudflare production build passed. Eight local SSR verification groups passed for Chinese/English full totals and exact links, empty/unavailable/wrong-ID summaries, three catalogs preserving the scope through API/filter/first-next/kind links and no legacy downstream fallback. Single Alembic head 0017 and PostgreSQL SQL generation passed. No migration.
+
+Next package: bound ASR frozen-manifest / current-snapshot DVP evidence consumers,
+then remaining SSR/profile consumers. Approved OIDC/session, controlled target,
+authenticated submission/recovery/results, broader corrections and production operations
+remain. Planning range stays 8–12 focused packages to controlled internal use and
+16–24 total to production-ready review, conditional on provider/environment/policy approvals.
+Rollout verification is pending until the committed API and frontend are live.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-02 — ASR downstream fixed summary and scoped history
+
+- Added six all-status counts and separate actual/batch release observations, preserving the exact legacy stored-parent chain and mismatched records.
+- Added validated production authorization_release_id filter; existing release_id semantics remain. Migrated ASR downstream to summary + six paginated catalog links, retaining scope across paging/filter/kind navigation and bilingual default Chinese.
+- Missing/wrong-ID summaries stay unknown without unbounded fallback; other ASR evidence/profile and compatibility consumers remain unbounded.
+- API 0.18.4/head 0017, no migration or command/security contract change; staging stays read-only. Roadmap remains 34/44.
+- Verification: 17 new summary/scope tests passed within the complete Python 3.12 backend suite: **750 passed, 3915 warnings, no skips**, including **104 real PostgreSQL 16.15 tests**. The new migrated-PostgreSQL test verifies aggregates, mismatch-preserving catalog scope and no audit writes; the existing real lock/retry/quota/rollback tests also passed. Frontend: **292 passed, no skips**; final Next/OpenNext Cloudflare production build passed. Eight local SSR verification groups passed for Chinese/English full totals and exact links, empty/unavailable/wrong-ID summaries, three catalogs preserving the scope through API/filter/first-next/kind links and no legacy downstream fallback. Single Alembic head 0017 and PostgreSQL SQL generation passed. No migration.
+
 ## 2026-10-02 — Default Chinese / English across the interface
 
 - Added shared locale provider, dictionary/templates and persisted language-only cookie; Chinese is the default on initial SSR and invalid preferences. Switch updates title/lang without remounting forms.
