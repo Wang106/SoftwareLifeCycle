@@ -5,9 +5,9 @@
 - Date: 2026-10-03 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `6a48e36141530efc2787087f964abfcb893e816e`
-- Developed from: `ec4f0ec308a6a982b91fd03842425f86a2caa99f`
-- Baseline subject: `feat: paginate ASR declarations and unlinked baseline components`
+- Verified baseline: `a6c09a2cab8e7c178e52eb897f24150b3cbbf479`
+- Developed from: `e9a2b911d38ebce07af0a1aad2870c69eeb3e90c`
+- Baseline subject: `feat: pin and paginate ASR frozen artifact policy`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.8; health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.9; health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -797,3 +797,29 @@ legacy catalogs and passport consumers keep compatibility migration incomplete. 
 bound exact frozen manifests/rules, then passport consumers; approved OIDC/session,
 controlled submission/recovery/corrections and operations remain. Estimates remain
 conditional: 8–12 focused internal-use packages, 16–24 total production-review packages.
+
+Online verification after feature commit `a6c09a2cab8e7c178e52eb897f24150b3cbbf479`:
+Render deployment `dep-db005snf3r2c73ailutg` is live for that commit (finished
+2026-10-02T19:16:52.024429Z UTC / 2026-10-03 Asia/Shanghai). Health returned HTTP 200 /
+API 0.18.9 / 0018_asr_evidence_index; independent read-only PostgreSQL SQL confirmed
+that revision. Exact ASR 271334c3-9a99-4dc0-a7dc-75ba5754377b selected SNAP-008 UUID
+c6f38c25-c42e-4bdb-8327-e16f7e85dd7b. Counts 4 artifacts/4 SHA recorded/4 policy
+recorded/3 rules matched the saved legacy response; four distinct one-row artifact
+pages and three distinct one-row rule pages matched every legacy metadata/rule field.
+Selected artifact rule totals and empty no-rule artifact passed; foreign artifact 404,
+missing pin 422, invalid/unknown filters 422, wrong parent 404 and beyond-end total
+retention passed. Explicit pinned summary matched default summary. Snapshot and exact
+Deployment Batch empty POST probes both returned HTTP 403 read_only_mode. No business
+write was submitted. Recent Render error logs after rollout were empty.
+
+Cloudflare live new Chinese UI showed counts 4/4/4/3 and pinned Snapshot UUID/hash.
+Artifact next changed CustomerA_BMS.a2l to BMS.elf while retaining rule_offset=1;
+BMS.elf retained external distribution denial. Rule next changed HEX to DBC while
+retaining artifact_offset=1 and the same Snapshot. English switching preserved all
+counts, raw identifiers/hashes/files and both offsets. Exact ELF UUID selection reset
+only rule_offset to 0, preserved artifact_offset=1 and displayed 0 matching rules.
+Clearing the filter restored total 3 on the same snapshot/artifact page; Chinese restored
+for the final screenshot. Cloudflare provider deploy ID/commit metadata unavailable;
+visible new behavior is frontend rollout evidence. A newer snapshot/pinned historical
+read is demonstrated locally and in tests, not by creating staging records.
+Main push succeeded, working tree clean, unrelated duplicate activity file untouched.

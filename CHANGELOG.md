@@ -7,6 +7,32 @@
 - Full backend: 839 passed, 5320 warnings, no skips, including 109 real PostgreSQL tests; 20 new scope/count/pin/order/growth/HTTP cases. Frontend 316 passed; final Next/OpenNext build and 10 local production SSR groups passed. Single Alembic head and PostgreSQL SQL validated.
 - Roadmap remains 34/44 (77%), public staging read-only. Exact manifest/comparison, other legacy consumers and passport work remain.
 
+Online verification after feature commit `a6c09a2cab8e7c178e52eb897f24150b3cbbf479`:
+Render deployment `dep-db005snf3r2c73ailutg` is live for that commit (finished
+2026-10-02T19:16:52.024429Z UTC / 2026-10-03 Asia/Shanghai). Health returned HTTP 200 /
+API 0.18.9 / 0018_asr_evidence_index; independent read-only PostgreSQL SQL confirmed
+that revision. Exact ASR 271334c3-9a99-4dc0-a7dc-75ba5754377b selected SNAP-008 UUID
+c6f38c25-c42e-4bdb-8327-e16f7e85dd7b. Counts 4 artifacts/4 SHA recorded/4 policy
+recorded/3 rules matched the saved legacy response; four distinct one-row artifact
+pages and three distinct one-row rule pages matched every legacy metadata/rule field.
+Selected artifact rule totals and empty no-rule artifact passed; foreign artifact 404,
+missing pin 422, invalid/unknown filters 422, wrong parent 404 and beyond-end total
+retention passed. Explicit pinned summary matched default summary. Snapshot and exact
+Deployment Batch empty POST probes both returned HTTP 403 read_only_mode. No business
+write was submitted. Recent Render error logs after rollout were empty.
+
+Cloudflare live new Chinese UI showed counts 4/4/4/3 and pinned Snapshot UUID/hash.
+Artifact next changed CustomerA_BMS.a2l to BMS.elf while retaining rule_offset=1;
+BMS.elf retained external distribution denial. Rule next changed HEX to DBC while
+retaining artifact_offset=1 and the same Snapshot. English switching preserved all
+counts, raw identifiers/hashes/files and both offsets. Exact ELF UUID selection reset
+only rule_offset to 0, preserved artifact_offset=1 and displayed 0 matching rules.
+Clearing the filter restored total 3 on the same snapshot/artifact page; Chinese restored
+for the final screenshot. Cloudflare provider deploy ID/commit metadata unavailable;
+visible new behavior is frontend rollout evidence. A newer snapshot/pinned historical
+read is demonstrated locally and in tests, not by creating staging records.
+Main push succeeded, working tree clean, unrelated duplicate activity file untouched.
+
 ## 2026-10-02 — Bounded ASR component and unlinked baseline pages
 
 - API 0.18.8 adds exact ASR summary/full counts and independent declaration/unlinked-base pages, preserving UUID/definition link validity with global NOT EXISTS membership and legacy compatibility.
