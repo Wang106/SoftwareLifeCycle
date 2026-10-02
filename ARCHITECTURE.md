@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.8
+FastAPI 0.18.9
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -301,3 +301,14 @@ collection is materialized. SQL totals and stable UUID pages bound response size
 DB scan cost. Client release/baseline context checks detect mismatches across reads;
 no transactional read receipt or snapshot pinning is added. Legacy read API remains
 compatible; business write services, locks and audit transactions are unchanged.
+
+## ASR frozen policy consumer — API 0.18.9
+
+Summary resolves exact ASR/latest-or-selected Snapshot and computes recording indicators
+with SQL CASE/EXISTS aggregates. Bounded artifact projections include scalar rule_count;
+separate bounded rules join exact snapshot/artifact scope and carry public filename/
+distribution context. No nested rule arrays, growing Python ID lists or child ORM loads.
+The page pins all navigation to the summary snapshot and independently pages artifacts/
+rules; exact artifact drilldown resets only rule offset. Mismatched summary/child/filter
+contexts fail closed for presentation. Fixed query shape bounds transfer, not SQL scans.
+Legacy bulk routes remain compatible; no command, lock, identity or audit change.

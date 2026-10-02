@@ -363,3 +363,13 @@ or constitute a snapshot/approval receipt. No changes to any of the 14 request-I
 conflict/replay, exact grant, trusted actor, lock, correction or atomic audit contracts.
 No migration, submission route/UI or public write enablement is introduced. Existing
 PostgreSQL concurrency and rollback tests remain required regressions.
+
+## ASR frozen policy read migration — API 0.18.9 / schema 0018
+
+Exact snapshot-pinned summary/artifact/rule GETs replace the ASR policy bulk consumer.
+Recording indicators and stored recipient decisions are not command grants, approval
+or validated hashes; internal-only external denial is preserved. Selected artifact must
+belong to the pinned Snapshot. No changes to any of the 14 request-ID replay/conflict,
+role/actor, transaction lock, correction or atomic audit contracts. No migration or
+submission capability/public write target is introduced; concurrency and rollback
+regressions continue running against real PostgreSQL.

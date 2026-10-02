@@ -329,3 +329,17 @@ observations are not a frozen read receipt. Existing foreign keys without dedica
 read indexes can require scans; constant statement shape does not imply constant
 runtime. Use measured PostgreSQL plans to justify a later index migration. No command
 transaction, quota/number lock or append-only constraint changes.
+
+## ASR frozen policy projections — API 0.18.9
+
+No migration; head 0018_asr_evidence_index. Existing snapshot_artifacts.snapshot_id and
+snapshot_artifact_distribution_rules.snapshot_artifact_id indexes support the exact
+foreign-key read scopes. Summary uses CASE plus correlated EXISTS for recording counts;
+artifact projections use scalar per-row rule counts, and rule pages join exact snapshot
+and optional validated artifact UUID. No rule/ID collection is built in Python. Null
+recipient_code duplicates remain stored rows and are counted; sorting coalesces null/
+empty codes only for ordering, then uses decision/UUID ties. Stable artifact ordering
+adds UUID to component/filename. Totals/sorts may grow with data; measured PostgreSQL
+plans must justify additional read indexes. READ COMMITTED counts/pages are observations,
+not a transaction receipt or status/approval proof. All command locks and audit rules
+remain unchanged; migrated PostgreSQL tests verify null ordering and scope/no writes.

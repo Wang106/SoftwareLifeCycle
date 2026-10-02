@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-03 — Pinned ASR frozen policy summary and independent pages
+
+- API 0.18.9 adds SQL recording counts, bounded artifact metadata/per-row rule counts and separate exact Snapshot/artifact recipient-rule pages. Legacy bulk API unchanged; no migration, schema 0018.
+- Chinese-default/English page pins snapshot navigation, independently pages both tables, supports exact artifact drilldown and preserves internal-only denial. No storage-reference exposure or command/actor/grant/audit/lock changes.
+- Full backend: 839 passed, 5320 warnings, no skips, including 109 real PostgreSQL tests; 20 new scope/count/pin/order/growth/HTTP cases. Frontend 316 passed; final Next/OpenNext build and 10 local production SSR groups passed. Single Alembic head and PostgreSQL SQL validated.
+- Roadmap remains 34/44 (77%), public staging read-only. Exact manifest/comparison, other legacy consumers and passport work remain.
+
 ## 2026-10-02 — Bounded ASR component and unlinked baseline pages
 
 - API 0.18.8 adds exact ASR summary/full counts and independent declaration/unlinked-base pages, preserving UUID/definition link validity with global NOT EXISTS membership and legacy compatibility.

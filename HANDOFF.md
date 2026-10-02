@@ -2,7 +2,7 @@
 
 ## Handoff identity
 
-- Date: 2026-10-02 (Asia/Shanghai)
+- Date: 2026-10-03 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
 - Verified baseline: `6a48e36141530efc2787087f964abfcb893e816e`
@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 63 backend test modules; the latest full run passed all 819 tests under Python 3.12, including 108 real PostgreSQL tests without skips.
+- 64 backend test modules; the latest full run passed all 839 tests under Python 3.12, including 109 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -139,7 +139,7 @@ POST https://softwarelifecycle-api-test.onrender.com/api/v1/deployments
 GET  https://softwarelifecycle.whf969.com
 ```
 
-Expected public state after this package deploys: API `0.18.3`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
+Expected public state after this package deploys: API `0.18.9`, exact required database revision, POST rejected with `403 read_only_mode`, frontend HTTP 200.
 
 ## Working-tree caution
 
@@ -739,3 +739,61 @@ unlinked-baseline multi-page/link exclusion behavior is supported by local and r
 PostgreSQL tests, not a live multi-row baseline claim. Cloudflare provider deployment
 ID/commit metadata was unavailable; visible live feature behavior is frontend evidence.
 Working tree is clean, main push succeeded, unrelated duplicate activity file untouched.
+
+## Bounded ASR frozen policy consumer — 2026-10-03
+
+Developed from GitHub main `e9a2b911d38ebce07af0a1aad2870c69eeb3e90c`, in Codex mode.
+API 0.18.9 adds exact APPLICATION policy summary, artifact projections and separate
+recipient-rule pages. Legacy bare snapshot-policy remains unchanged. Summary defaults
+to the highest snapshot_number (all stored statuses, preserving legacy selection), or
+an explicitly selected snapshot UUID belonging to that exact Release. Child reads
+require the snapshot UUID; optional rule artifact UUID must belong to that snapshot.
+No version/name lookup, storage-reference exposure or write service changes.
+
+Full recording counts are SQL aggregates: non-empty SHA strings (including whitespace
+as before); policy recorded for INTERNAL_ONLY or any stored rule, regardless of rule
+decision. These are recording indicators, not hash validation, complete policy review,
+permission or approval. Rule totals count stored rows, including duplicate null-recipient
+rules; internal-only files stay externally denied even with a recorded ALLOW rule.
+Artifact pages return per-artifact rule_count without embedded growing rule arrays.
+Rules use exact snapshot/artifact joins; orphan and foreign-snapshot rows cannot leak.
+Stable ordering uses component/filename/artifact UUID then recipient/purpose/coalesced
+recipient code/decision/rule UUID. Strict limits, unknown-query rejection and empty
+beyond-end pages retain totals. Counts and projections remain READ COMMITTED observations.
+
+The Chinese-default/English page pins every artifact/rule/navigation request to the
+summary Snapshot UUID. Artifact and rule offsets are independent; selecting/clearing
+an artifact resets only the rule offset, preserving the artifact offset. All-snapshot
+rule counts and filtered matching counts are distinct. Requested summary pin, child
+release/snapshot and rule-filter context mismatches are rejected; failures never fall
+back to legacy bulk reads or become fabricated zero counts. A newer snapshot does not
+move pinned pages; Read latest policy clears selection. No consistent write receipt,
+authenticated submission or distribution authorization is added.
+
+No migration: snapshot artifact and rule foreign-key indexes already exist, required
+head 0018_asr_evidence_index stays unchanged. Full SQL totals/sorts can still scan growing
+data; fixed statement count and bounded transfer do not establish constant DB cost.
+All 14 write contracts, replay/conflicts, PostgreSQL locks, exact role checks, trusted
+actor and atomic domain/audit writes are unchanged. Public staging remains read-only.
+
+Verification: **839 backend tests passed**, **5320 existing warnings**, no skips, under
+Python 3.12, including **109 real PostgreSQL 16.15 tests**. Twenty new backend cases
+cover recording parity, null/empty/whitespace values, INTERNAL_ONLY/ALLOW observations,
+duplicate null-recipient rules, exact release/snapshot/artifact rejection, pinned pages
+across a newer snapshot, stable ordering, empty/no-snapshot/invalid selections, HTTP
+bounds, orphan exclusion and 120-artifact/360-rule growth with identical SQL statements,
+bounded projections and no child ORM loads. Real migrated PostgreSQL verifies recording
+counts, null rule ordering, exact filtered totals, cross-snapshot artifact denial and
+no audit writes; existing lock/replay/quota/rollback/actor/grant regressions pass.
+Frontend **316 tests passed**; final Next/OpenNext Cloudflare production build passed.
+Ten local actual production SSR groups passed for both languages/full counts/external
+internal-only denial, independent pinned links, summary failure/scope/pin, no snapshot,
+invalid rules pagination/filter, empty pages, foreign child context and historical pin.
+Single Alembic head and complete PostgreSQL upgrade SQL generation passed, no migration.
+
+Roadmap remains 34/44 (77%), Phase 4 8/9, Phase 6 3/5. Snapshot history already has
+bounded cursor pagination; remaining exact manifest/comparison, other policy/rich-profile,
+legacy catalogs and passport consumers keep compatibility migration incomplete. Next
+bound exact frozen manifests/rules, then passport consumers; approved OIDC/session,
+controlled submission/recovery/corrections and operations remain. Estimates remain
+conditional: 8–12 focused internal-use packages, 16–24 total production-review packages.

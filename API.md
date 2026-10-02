@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.8`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.9`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -443,3 +443,29 @@ Legacy bare `/components` remains unchanged. No inheritance/approval inference; 
 reads can change. Frontend rejects a different release/baseline context instead of
 showing mismatched data. UI parameters component_limit/declaration_offset/unlinked_offset
 preserve independent offsets. No migration; schema 0018 unchanged.
+
+## ASR frozen policy summary and pages — API 0.18.9
+
+All suffixes start `/api/v1/releases/application/id/{release_id}/snapshot-policy`.
+Exact APPLICATION UUID required; missing/wrong type 404, malformed UUID 422.
+
+| GET suffix | Query | Response |
+| --- | --- | --- |
+| `/summary` | optional snapshot_id UUID, otherwise highest snapshot_number | release_id, snapshot{id,snapshot_no,status,content_hash,is_current_snapshot} or null; artifact_count/sha_recorded_count/policy_recorded_count/rule_count |
+| `/artifacts` | required snapshot_id; limit 1–100 default 50; offset 0–100000 default 0 | frozen public metadata plus rule_count, no embedded rules/storage_reference |
+| `/rules` | same bounds; optional snapshot_artifact_id UUID | id/snapshot_artifact_id/filename/component_code/distribution_level/recipient_type/purpose/recipient_code/decision |
+
+Pages return release_id/snapshot_id/total/limit/offset/next_offset/items; rule envelope
+also echoes snapshot_artifact_id or null. Missing/foreign snapshot or selected artifact
+returns 404; unknown/malformed queries return 422. Beyond-end retains total, empty items
+and null next_offset. Artifact order component_code/filename/id. Rule order same artifact
+keys then recipient_type/purpose/coalesce(recipient_code,'')/decision/id, preserving
+stored null/empty codes and duplicate null-recipient rows with stable UUID tie breakers.
+Counts match legacy page recording semantics: non-empty SHA, INTERNAL_ONLY or any rule.
+Rule count includes every stored rule, not distinct recipient grants. These are not
+hash verification, permission or approval. INTERNAL_ONLY remains denied externally.
+Default summary selection includes all statuses as before; selecting a snapshot does
+not upgrade its status. Separate reads are not a transaction receipt. Legacy bare
+endpoint unchanged. UI policy_snapshot_id/policy_limit/policy_artifact_offset/
+policy_rule_offset/policy_artifact_id preserve exact pin and independent pages; artifact
+selection resets only rule offset. No migration, head 0018.

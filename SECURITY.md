@@ -287,3 +287,14 @@ read observations, not permission checks, inheritance, approval or frozen eviden
 No new actor/role/session/write capability: request-ID, exact scoped authorization,
 trusted actor binding, locks, atomic audit and READ_ONLY_MODE are unchanged. No staging
 business write or identity-provider configuration is part of this package.
+
+## Frozen policy bounded consumer — API 0.18.9
+
+Exact APPLICATION parent, snapshot ownership and optional artifact ownership are checked
+before public sample policy pages. Unknown queries and invalid bounds are rejected.
+Projection excludes private storage_reference. Recording counts/ALLOW declarations do
+not authorize distribution; INTERNAL_ONLY remains externally denied. All child requests
+and links pin the exact snapshot, with release/snapshot/artifact mismatch rejection and
+no bulk fallback. No authenticated read/company-data claim, new command/provider/session,
+permission change or public write enablement. All 14 exact write grants, trusted actor,
+keyed retries, locks and atomic audit contracts remain covered by full PostgreSQL tests.

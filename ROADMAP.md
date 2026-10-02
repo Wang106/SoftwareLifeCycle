@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; ASR profile coverage, SSR and other consumers remain
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact manifest/comparison, other rich profiles/legacy catalogs and passport consumers remain
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -149,3 +149,15 @@ Phase 4 8/9, Phase 6 3/5. Next continue these reads, then approved identity/sess
 controlled target and authenticated submission/recovery/corrections/operations.
 Conditional estimates remain 8–12 internal-use packages, 16–24 total production-review
 packages; no write enablement on public staging.
+
+## ASR frozen policy consumer — 2026-10-03
+
+ASR policy summary/full recording counts, independent artifact and recipient-rule pages
+now pin exact Snapshot and artifact UUIDs, preserving declarations and internal-only
+denial. Snapshot history already has bounded cursor pages; exact manifests/comparisons,
+other policy/rich profiles, legacy catalogs and passport consumers still prevent checking
+the remaining compatibility item. No checked item/denominator change: 34/44, Phase 4
+8/9, Phase 6 3/5. Next address those exact frozen manifests, then passports, followed by
+approved identity/session/controlled submission, result recovery/corrections and ops.
+Conditional ranges remain 8–12 internal-use packages, 16–24 total production-review
+packages; public staging stays read-only.
