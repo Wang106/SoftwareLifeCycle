@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-03 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `608f3f3905d6fda88ff9137a01f2617afc0a88b8` — `feat: bound exact Snapshot manifest and rule pages` (developed from `27ce7b773f759fb8c6fd69f35395ab488fb7a8c1`)
+- Reviewed repository baseline: `78eeceb6ec874829472da40bb6d38e6deb79d9b8` — `feat: bound frozen Snapshot comparisons with SQL policy multisets` (developed from `2f34a9aae5ac8685464555a73f48026d8e441c65`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -27,6 +27,10 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | Phase 6 — Controlled write experience | 3 / 5 | 60% | Safety slices and UI priorities implemented; submission/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
+
+Separate read-consumer tracking: **13 / 17 (76%)**, up from 12 / 17 (71%) at the
+reviewed development baseline. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
+This finer counter does not change ROADMAP acceptance-item accounting or certify production readiness.
 
 ## Completed and evidenced in `main`
 
@@ -861,5 +865,30 @@ remains because passport, readiness/compatibility policy, release catalogs/resol
 other rich profiles/domain catalogs still need migration. Next passport, then remaining
 reads; approved identity/session/submission/recovery/corrections/operations follow.
 Remaining conditional planning estimate 7–11 internal-use packages, 15–23 total toward
-production review. Public staging stays read-only. Publication/deployment evidence
-will be recorded after push; local checks alone do not establish live rollout.
+production review. Public staging stays read-only.
+
+Online verification after feature commit `78eeceb6ec874829472da40bb6d38e6deb79d9b8`:
+Render `dep-db00s3g473hc73fn5hi0` is live for that commit, finished
+2026-10-02T20:04:20.460688Z UTC / 2026-10-03 Asia/Shanghai. Health HTTP 200 /
+API 0.18.11 / 0018_asr_evidence_index; independent read-only SQL confirmed the schema.
+SNAP-007 UUID ce782633-9f46-49aa-8853-322672d4df98 → SNAP-008 UUID
+c6f38c25-c42e-4bdb-8327-e16f7e85dd7b matched saved legacy identity, metadata/hash-match
+and full counts (4 added, 0 removed/modified/unchanged). Four distinct one-row file
+pages matched every public field and per-file rule count; no nested policy rules or
+private reference. Reverse produced 4 removed; SNAP-008 self-comparison 4 unchanged
+and an empty changes page. Strict/missing/wrong-pin/unknown/filter/beyond-end checks
+passed. Exact ELF side lookup returned one frozen file and zero rules. Snapshot and
+Deployment Batch empty POST probes returned HTTP 403 read_only_mode. No business write.
+
+Cloudflare new Chinese comparison showed complete counts/identities/full hashes with
+one file on compare_limit=1. Next A2L→ELF retained both names/UUID pins, show=all and
+limit=1; ELF showed zero stored rules and external denial. English switching preserved
+all raw identities/hashes, counts and offset=1. The exact side link opened only the
+SNAP-008 ELF UUID and zero-rule page. Submitting changed-files filter reset cursors and
+returned the first page of that same pair. Original pinned one-row view and Chinese
+restored for the final screenshot. Cloudflare provider deployment/commit metadata was
+not exposed; observed new behavior establishes frontend rollout, not a provider ID.
+Whole-manifest duplicate and nullable duplicate-rule/newer-commit behaviors are proven
+locally in real PostgreSQL, without modifying staging. Fine ledger 13/17, ROADMAP 34/44.
+Feature/verification docs pushed to main, working tree clean, unrelated duplicate file
+untouched. Next ASR passport and the other three pending read groups.

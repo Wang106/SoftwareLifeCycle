@@ -6,7 +6,32 @@
 - Chinese-default/English comparison pins both Snapshot identities, preserves full hashes/metadata/counts and links bounded per-side rule inspection. No migration, schema 0018; command safety and public read-only mode unchanged.
 - Full backend 875 passed (111 real PostgreSQL), 5456 warnings, no skips; frontend 339 passed, final production build and 11 production SSR groups passed.
 - Read scope groups advance 12/17 to 13/17 (76%); ROADMAP remains 34/44. Four broad read groups, approved identity/submission/corrections/ops remain.
-- Publication/live deployment verification pending after feature push.
+Online verification after feature commit `78eeceb6ec874829472da40bb6d38e6deb79d9b8`:
+Render `dep-db00s3g473hc73fn5hi0` is live for that commit, finished
+2026-10-02T20:04:20.460688Z UTC / 2026-10-03 Asia/Shanghai. Health HTTP 200 /
+API 0.18.11 / 0018_asr_evidence_index; independent read-only SQL confirmed the schema.
+SNAP-007 UUID ce782633-9f46-49aa-8853-322672d4df98 → SNAP-008 UUID
+c6f38c25-c42e-4bdb-8327-e16f7e85dd7b matched saved legacy identity, metadata/hash-match
+and full counts (4 added, 0 removed/modified/unchanged). Four distinct one-row file
+pages matched every public field and per-file rule count; no nested policy rules or
+private reference. Reverse produced 4 removed; SNAP-008 self-comparison 4 unchanged
+and an empty changes page. Strict/missing/wrong-pin/unknown/filter/beyond-end checks
+passed. Exact ELF side lookup returned one frozen file and zero rules. Snapshot and
+Deployment Batch empty POST probes returned HTTP 403 read_only_mode. No business write.
+
+Cloudflare new Chinese comparison showed complete counts/identities/full hashes with
+one file on compare_limit=1. Next A2L→ELF retained both names/UUID pins, show=all and
+limit=1; ELF showed zero stored rules and external denial. English switching preserved
+all raw identities/hashes, counts and offset=1. The exact side link opened only the
+SNAP-008 ELF UUID and zero-rule page. Submitting changed-files filter reset cursors and
+returned the first page of that same pair. Original pinned one-row view and Chinese
+restored for the final screenshot. Cloudflare provider deployment/commit metadata was
+not exposed; observed new behavior establishes frontend rollout, not a provider ID.
+Whole-manifest duplicate and nullable duplicate-rule/newer-commit behaviors are proven
+locally in real PostgreSQL, without modifying staging. Fine ledger 13/17, ROADMAP 34/44.
+Feature/verification docs pushed to main, working tree clean, unrelated duplicate file
+untouched. Next ASR passport and the other three pending read groups.
+
 
 ## 2026-10-03 — Exact Snapshot summary and independently bounded manifest/rules
 
