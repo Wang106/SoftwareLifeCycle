@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-03 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `a6c09a2cab8e7c178e52eb897f24150b3cbbf479` — `feat: pin and paginate ASR frozen artifact policy` (developed from `e9a2b911d38ebce07af0a1aad2870c69eeb3e90c`)
+- Reviewed repository baseline: `608f3f3905d6fda88ff9137a01f2617afc0a88b8` — `feat: bound exact Snapshot manifest and rule pages` (developed from `27ce7b773f759fb8c6fd69f35395ab488fb7a8c1`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -812,5 +812,25 @@ Next comparison, then passport and remaining reads; identity/session/submission/
 recovery/corrections/ops follow. Conditional ranges 8–12 focused internal-use packages,
 16–24 total production-review packages; no commitment or staging write enablement.
 
-Commit/push and live rollout evidence will be recorded after publication; local tests
-alone do not establish deployment success.
+Online verification after feature commit `608f3f3905d6fda88ff9137a01f2617afc0a88b8`:
+Render `dep-db00hi5g1s2s7388gj7g` is live for that commit, finished
+2026-10-02T19:41:50.556123Z UTC / 2026-10-03 Asia/Shanghai. Health HTTP 200,
+API 0.18.10 and schema 0018_asr_evidence_index; independent read-only database query
+confirmed the same head. SNAP-008 UUID c6f38c25-c42e-4bdb-8327-e16f7e85dd7b retained
+all saved legacy identity fields, four files and three rules. Four distinct one-row
+file pages and three one-row rule pages matched every legacy public metadata/rule
+field. All four exact file selections, no-rule ELF, missing/foreign pins/artifacts,
+unknown/invalid queries and beyond-end totals passed. Snapshot and Deployment Batch
+empty POST probes returned HTTP 403 read_only_mode; no business write submitted.
+
+Cloudflare live new default Chinese exact page showed full Snapshot/file hashes,
+four-file/three-rule totals and bounded tables. File next A2L→ELF retained rule offset
+0, exact Snapshot UUID and internal-only external denial; rule next A2L→HEX retained
+file offset 1 and the same Snapshot. English switching retained all raw identities/
+full hashes and both offsets. Exact ELF selection reset both offsets, showed one file
+and zero matching rules. Clearing restored all files/rules on the same Snapshot;
+Chinese restored for final screenshot. Provider frontend deployment ID/commit metadata
+was unavailable; observed new UI behavior is frontend rollout evidence. A new Snapshot
+committed between reads is tested in local PostgreSQL, not created in staging.
+Feature and verification documentation pushed to main; working tree clean. Unrelated
+duplicate activity file untouched. Comparison and other ledger gaps remain pending.

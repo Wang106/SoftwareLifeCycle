@@ -6,7 +6,28 @@
 - Chinese-default/English exact detail preserves preparation/history/resource/compare targets. Search can reach a file beyond page one; child contexts fail independently. Legacy APIs stay compatible.
 - Backend 850 passed (110 real PostgreSQL), 5367 warnings, no skips; frontend 327 passed; production build and 10 production SSR groups passed.
 - New 17-group read-consumer ledger advances 11/17 to 12/17 (71%); ROADMAP remains 34/44 (77%). Comparison and four other broad groups remain. Staging stays read-only.
-- Publication and deployment evidence to follow; no live success claimed from local results.
+Online verification after feature commit `608f3f3905d6fda88ff9137a01f2617afc0a88b8`:
+Render `dep-db00hi5g1s2s7388gj7g` is live for that commit, finished
+2026-10-02T19:41:50.556123Z UTC / 2026-10-03 Asia/Shanghai. Health HTTP 200,
+API 0.18.10 and schema 0018_asr_evidence_index; independent read-only database query
+confirmed the same head. SNAP-008 UUID c6f38c25-c42e-4bdb-8327-e16f7e85dd7b retained
+all saved legacy identity fields, four files and three rules. Four distinct one-row
+file pages and three one-row rule pages matched every legacy public metadata/rule
+field. All four exact file selections, no-rule ELF, missing/foreign pins/artifacts,
+unknown/invalid queries and beyond-end totals passed. Snapshot and Deployment Batch
+empty POST probes returned HTTP 403 read_only_mode; no business write submitted.
+
+Cloudflare live new default Chinese exact page showed full Snapshot/file hashes,
+four-file/three-rule totals and bounded tables. File next A2L→ELF retained rule offset
+0, exact Snapshot UUID and internal-only external denial; rule next A2L→HEX retained
+file offset 1 and the same Snapshot. English switching retained all raw identities/
+full hashes and both offsets. Exact ELF selection reset both offsets, showed one file
+and zero matching rules. Clearing restored all files/rules on the same Snapshot;
+Chinese restored for final screenshot. Provider frontend deployment ID/commit metadata
+was unavailable; observed new UI behavior is frontend rollout evidence. A new Snapshot
+committed between reads is tested in local PostgreSQL, not created in staging.
+Feature and verification documentation pushed to main; working tree clean. Unrelated
+duplicate activity file untouched. Comparison and other ledger gaps remain pending.
 
 ## 2026-10-03 — Pinned ASR frozen policy summary and independent pages
 
