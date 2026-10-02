@@ -5,8 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline / developed from: `1e82bd83bf16145393fec2b228f19b3db6d3f4ee`
-- Baseline subject: ASR downstream rollout handoff; current package adds pinned evidence pagination
+- Verified baseline: `26a170653e3892654ea23391cb95a0a41525585c`
+- Developed from: `1e82bd83bf16145393fec2b228f19b3db6d3f4ee`
+- Baseline subject: `feat: paginate ASR evidence with pinned snapshot scope`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -35,8 +36,8 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Repository API 0.18.5; last verified live API 0.18.4 before rollout |
-| Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required 0018_asr_evidence_index; last verified online 0017 before rollout |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.5; health verified ready |
+| Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
 | Engineering source | GitHub `main` | Baseline above was pushed successfully |
@@ -550,4 +551,4 @@ Next: bound ASR profile coverage and remaining SSR/component/policy/snapshot con
 then approved OIDC/session/controlled target, submission/recovery/results, append-only
 correction/revocation and production operations. Estimate remains 8–12 focused packages
 to controlled internal use, 16–24 total to production-ready review, conditional on approvals.
-Rollout verification is pending until API/schema/frontend are live.
+Online verification after feature commit `26a170653e3892654ea23391cb95a0a41525585c`: Render deployment `dep-davjra8473hc73f79r90` is live for that commit (finished 2026-10-02T05:15:15Z). Health returned 200 / API 0.18.5 / 0018_asr_evidence_index. Independent read-only Render SQL confirmed both Alembic revision 0018 and the exact non-unique B-tree index columns. Exact ASR 2.3.4 summary returned SNAP-008 UUID c6f38c25-c42e-4bdb-8327-e16f7e85dd7b, 4 artifacts, 3 latest item executions and 1 other-snapshot execution. Two one-item pages for each collection returned distinct UUIDs with unchanged full totals and no private storage/result fields. Malformed snapshot/oversized limit returned 422; another release with this snapshot returned 404. Harmless empty Snapshot and exact Deployment Batch POSTs returned 403 read_only_mode. Cloudflare live Chinese evidence summary and one-item pages were verified: artifact second page retained DVP first page, then DVP second page retained artifact second page and exact snapshot; English switching retained both offsets, UUID, totals and raw hashes; Chinese restored for the final proof. Exact Snapshot preparation target remained the release UUID. No business write was submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live new feature behavior is frontend evidence. Public staging remains read-only. The initial combined read-only SQL probe was rejected because the connector accepts one prepared statement; two separate read-only queries succeeded without database mutation.

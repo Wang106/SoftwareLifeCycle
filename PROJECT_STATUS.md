@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `1e82bd83bf16145393fec2b228f19b3db6d3f4ee` — ASR downstream rollout handoff, baseline for the evidence pagination package
+- Reviewed repository baseline: `26a170653e3892654ea23391cb95a0a41525585c` — `feat: paginate ASR evidence with pinned snapshot scope` (developed from `1e82bd83bf16145393fec2b228f19b3db6d3f4ee`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -72,14 +72,14 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 ## Deployment status
 
-| Layer | Configured target | Verified 2026-10-01 | Qualification |
+| Layer | Configured target | Verified 2026-10-02 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Browser User-Agent HTTP 200 / Dashboard HTML; Python User-Agent 403 / Cloudflare 1010 | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.0`; harmless deployment write rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
-| Database | PostgreSQL behind the Render API | Ready at Alembic revision `0017_deployment_actual_version` through API health response | Sample/test data only; database endpoint itself was not exposed or inspected directly |
+| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live bilingual pinned evidence UI and independent pagination verified | Demo/test frontend, not evidence of production readiness |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.5`; Snapshot/Batch probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| Database | PostgreSQL behind the Render API | Ready at `0018_asr_evidence_index`; read-only SQL confirms revision and index | Sample/test data only; read-only schema/index inspection |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
-Render deployment `dep-dav0vf0473hc73a8vl10` is **live** for feature commit
+Historical actual-report rollout (2026-10-01): Render deployment `dep-dav0vf0473hc73a8vl10` was **live** for feature commit
 `bbd8a42b567c4f5b2c83017c570e47039442f3af` (finished 2026-10-01T07:48:56.742624Z UTC). Health returned HTTP 200 /
 API `0.18.0` / database `0017_deployment_actual_version`. Release/application,
 issue-impact and activity reads returned 200; actual-report OpenAPI fields and the
@@ -96,8 +96,8 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository API version: `0.18.5`; last verified online version before rollout: `0.18.4`. Current rollout evidence is recorded below.
-- Required schema revision: `0018_asr_evidence_index`; last verified online revision before rollout: `0017_deployment_actual_version`.
+- Repository and verified online API version: `0.18.5`. Current rollout evidence is recorded below.
+- Required and verified online schema revision: `0018_asr_evidence_index`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
@@ -510,4 +510,4 @@ Next: bound ASR profile coverage and remaining SSR/component/policy/snapshot con
 then approved OIDC/session/controlled target, submission/recovery/results, append-only
 correction/revocation and production operations. Estimate remains 8–12 focused packages
 to controlled internal use, 16–24 total to production-ready review, conditional on approvals.
-Rollout verification is pending until API/schema/frontend are live.
+Online verification after feature commit `26a170653e3892654ea23391cb95a0a41525585c`: Render deployment `dep-davjra8473hc73f79r90` is live for that commit (finished 2026-10-02T05:15:15Z). Health returned 200 / API 0.18.5 / 0018_asr_evidence_index. Independent read-only Render SQL confirmed both Alembic revision 0018 and the exact non-unique B-tree index columns. Exact ASR 2.3.4 summary returned SNAP-008 UUID c6f38c25-c42e-4bdb-8327-e16f7e85dd7b, 4 artifacts, 3 latest item executions and 1 other-snapshot execution. Two one-item pages for each collection returned distinct UUIDs with unchanged full totals and no private storage/result fields. Malformed snapshot/oversized limit returned 422; another release with this snapshot returned 404. Harmless empty Snapshot and exact Deployment Batch POSTs returned 403 read_only_mode. Cloudflare live Chinese evidence summary and one-item pages were verified: artifact second page retained DVP first page, then DVP second page retained artifact second page and exact snapshot; English switching retained both offsets, UUID, totals and raw hashes; Chinese restored for the final proof. Exact Snapshot preparation target remained the release UUID. No business write was submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live new feature behavior is frontend evidence. Public staging remains read-only. The initial combined read-only SQL probe was rejected because the connector accepts one prepared statement; two separate read-only queries succeeded without database mutation.
