@@ -22,6 +22,25 @@ reads, array offset rejection preserving the other table, empty pages, and chang
 baseline response rejection. Single Alembic head and full PostgreSQL upgrade SQL
 succeeded, without a new migration. Existing warnings are deprecations/collection notices.
 
+Online verification after feature commit `6a48e36141530efc2787087f964abfcb893e816e`:
+Render deployment `dep-davrl92vcj2c738jvnk0` is live for that commit (finished
+2026-10-02T14:08:35.737105Z). Health returned HTTP 200 / API 0.18.8 /
+0018_asr_evidence_index; independent read-only Render SQL confirmed that revision.
+ASR 2.3.4 UUID 271334c3-9a99-4dc0-a7dc-75ba5754377b summary matched saved legacy
+metadata/counts (2 declarations, 0 unlinked baseline components). Two one-row declaration
+pages were distinct, in legacy UUID order, with identical fields/statuses. Empty and
+beyond-end pages retained full totals; unknown summary filter/limit 101 returned 422,
+STANDARD parent returned 404. Harmless empty Snapshot and exact Deployment Batch POSTs
+both returned HTTP 403 read_only_mode. No business record was submitted.
+Cloudflare live component UI was verified in Chinese with full counts 2/0; next page
+changed Main Application to Calibration/CAL-32 and retained component_limit=1 plus
+unlinked_offset=1. English switching retained both offsets, counts, raw versions and
+link state; Chinese was restored. Baseline has zero components in this sample, so
+unlinked-baseline multi-page/link exclusion behavior is supported by local and real
+PostgreSQL tests, not a live multi-row baseline claim. Cloudflare provider deployment
+ID/commit metadata was unavailable; visible live feature behavior is frontend evidence.
+Working tree is clean, main push succeeded, unrelated duplicate activity file untouched.
+
 ## 2026-10-02 — Bounded SSR summary and independent collections
 
 - Added exact SSR summary with full counts and bounded component/baseline-user pages; legacy profile remains compatible. Missing component definitions are retained and membership uses stored UUIDs.

@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `419d1481b9a03d56ec5d273ebaef48176688e07b` — `feat: bound SSR detail collections with independent pagination` (developed from `44dceb069fcd651c8f1343d41d3b50379cecd4fe`)
+- Reviewed repository baseline: `6a48e36141530efc2787087f964abfcb893e816e` — `feat: paginate ASR declarations and unlinked baseline components` (developed from `ec4f0ec308a6a982b91fd03842425f86a2caa99f`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -61,7 +61,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 
 ## Next stage
 
-1. Bound remaining ASR component/policy/snapshot/history/passport consumers, then configure approved identity/session and a controlled write target.
+1. Bound remaining policy/snapshot/history/passport consumers, then configure approved identity/session and a controlled write target.
 2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
 3. Extend correction/revocation beyond actual reports, preserving formal history.
 4. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
@@ -74,8 +74,8 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 | Layer | Configured target | Verified 2026-10-02 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live bilingual SSR full counts and independent pagination verified | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.7`; Snapshot/Batch probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live bilingual SSR and ASR component full counts/independent pagination verified | Demo/test frontend, not evidence of production readiness |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.8`; Snapshot/Batch probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at `0018_asr_evidence_index`; read-only SQL confirms revision and index | Sample/test data only; read-only schema/index inspection |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
@@ -96,7 +96,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository and verified online API version: `0.18.7`. Current rollout evidence is recorded below.
+- Repository and verified online API version: `0.18.8`. Current rollout evidence is recorded below.
 - Required and verified online schema revision: `0018_asr_evidence_index`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -679,3 +679,22 @@ Chinese/English counts and independent links, unavailable/foreign summary stoppi
 reads, array offset rejection preserving the other table, empty pages, and changed
 baseline response rejection. Single Alembic head and full PostgreSQL upgrade SQL
 succeeded, without a new migration. Existing warnings are deprecations/collection notices.
+
+Online verification after feature commit `6a48e36141530efc2787087f964abfcb893e816e`:
+Render deployment `dep-davrl92vcj2c738jvnk0` is live for that commit (finished
+2026-10-02T14:08:35.737105Z). Health returned HTTP 200 / API 0.18.8 /
+0018_asr_evidence_index; independent read-only Render SQL confirmed that revision.
+ASR 2.3.4 UUID 271334c3-9a99-4dc0-a7dc-75ba5754377b summary matched saved legacy
+metadata/counts (2 declarations, 0 unlinked baseline components). Two one-row declaration
+pages were distinct, in legacy UUID order, with identical fields/statuses. Empty and
+beyond-end pages retained full totals; unknown summary filter/limit 101 returned 422,
+STANDARD parent returned 404. Harmless empty Snapshot and exact Deployment Batch POSTs
+both returned HTTP 403 read_only_mode. No business record was submitted.
+Cloudflare live component UI was verified in Chinese with full counts 2/0; next page
+changed Main Application to Calibration/CAL-32 and retained component_limit=1 plus
+unlinked_offset=1. English switching retained both offsets, counts, raw versions and
+link state; Chinese was restored. Baseline has zero components in this sample, so
+unlinked-baseline multi-page/link exclusion behavior is supported by local and real
+PostgreSQL tests, not a live multi-row baseline claim. Cloudflare provider deployment
+ID/commit metadata was unavailable; visible live feature behavior is frontend evidence.
+Working tree is clean, main push succeeded, unrelated duplicate activity file untouched.
