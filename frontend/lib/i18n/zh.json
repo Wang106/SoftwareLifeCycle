@@ -1481,5 +1481,8 @@
   "No outbound records on these pages.": "这些分页没有下游记录。",
   "Next page": "下一页",
   "Selection UUIDs": "选定 UUID",
-  "The selected decision is historical. Read the latest passport to see the latest recorded decision.": "选定决策属于历史记录。请读取最新护照以查看最新记录的决策。"
+  "The selected decision is historical. Read the latest passport to see the latest recorded decision.": "选定决策属于历史记录。请读取最新护照以查看最新记录的决策。",
+  "FORMALLY RELEASED": "已正式发布",
+  "HISTORICAL RELEASE": "历史发布",
+  "NOT RELEASED": "尚未发布"
 }
