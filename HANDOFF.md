@@ -5,9 +5,8 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `338a3231315a7a7623086f0ca347ddbccd265282`
-- Developed from: `7b2ae568e4b571eb59fe1d77e8d57899ea86103b`
-- Baseline subject: `feat: bound ASR downstream trace with exact authorization scope`
+- Verified baseline / developed from: `1e82bd83bf16145393fec2b228f19b3db6d3f4ee`
+- Baseline subject: ASR downstream rollout handoff; current package adds pinned evidence pagination
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,8 +35,8 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API version `0.18.3`, health verified ready |
-| Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0017_deployment_actual_version` |
+| API | FastAPI + SQLAlchemy services | Repository API 0.18.5; last verified live API 0.18.4 before rollout |
+| Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required 0018_asr_evidence_index; last verified online 0017 before rollout |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
 | Engineering source | GitHub `main` | Baseline above was pushed successfully |
@@ -511,3 +510,44 @@ authenticated submission/recovery/results, broader corrections and production op
 remain. Planning range stays 8–12 focused packages to controlled internal use and
 16–24 total to production-ready review, conditional on provider/environment/policy approvals.
 Online verification after feature commit `338a3231315a7a7623086f0ca347ddbccd265282`: Render deployment `dep-davjddgjo6nc738ln230` is live for that commit (finished 2026-10-02T04:45:42Z). Health returned 200, API 0.18.4, database revision 0017_deployment_actual_version; independent read-only Render SQL confirmed that revision. Exact ASR 2.3.4 summary returned six counts of 1, actual same/different/unreported 1/0/0 and batch same/different 1/0. Three authorization_release_id catalogs returned total 1 and exact linked record UUIDs. Missing summary returned 404; malformed authorization_release_id returned 422. Empty Snapshot and exact Deployment Batch POST probes returned 403 read_only_mode. Cloudflare live Chinese summary, English switching, six scoped links, exact Snapshot preparation UUID, English persistence through catalog navigation, Batch filter submit and cross-kind Changeover navigation preserving scope were verified in the browser. The sample has only one row per scope, so next-page behavior is local SSR/test evidence, not live multi-page evidence. No business write was submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live new feature behavior is frontend evidence. Initial browser navigation/frame-tree probes timed out; the same browser's documented tab/DOM API recovered without changing site or network settings. Public staging remains read-only.
+
+## ASR pinned evidence pagination — 2026-10-02
+
+Developed from GitHub main `1e82bd83bf16145393fec2b228f19b3db6d3f4ee`. API 0.18.5 adds fixed
+`evidence-summary` and bounded `evidence/artifacts` / `evidence/executions` reads.
+The summary selects the latest Snapshot or an explicit snapshot_id. Pages require
+that exact UUID and reject snapshots of other releases. The ASR page no longer calls
+legacy `/evidence`; it selects one snapshot then paginates both tables independently.
+First/next links retain evidence_snapshot_id, evidence_limit and the other table's
+offset. Invalid/array parameters show unavailable/unknown rather than resetting scope
+or falling back. No-snapshot is explicitly separate from unavailable summary.
+
+DVP executions rank by execution_no descending (then timestamp/UUID) within each
+item UUID on the exact release/snapshot. Higher numbers on other snapshots/releases
+do not replace selected evidence. Different plans with the same item_no remain
+separate; missing DVP metadata retains execution/item UUIDs with an explicit marker.
+Artifact order is component/filename/UUID; execution order is item number (null last),
+item UUID/execution UUID. No storage_reference or actual_result body is selected.
+Latest execution evidence is not required-DVP coverage, readiness or approval.
+
+Migration `0018_asr_evidence_index` adds one non-unique B-tree index on
+`dvp_executions(release_id, snapshot_id, dvp_item_id, execution_no)`, with matching ORM
+metadata. No business data/constraints/history are changed. The required health schema
+and staging checker advance to 0018. Existing Snapshot artifact index already suffices.
+Bounded payload/query count does not mean constant database work: totals/window sorting
+may scan many rows; offset pages and multi-query counts are READ COMMITTED observations,
+not a consistent write receipt. Pinning prevents snapshot drift, not concurrent DVP
+history shifts within that snapshot. The release overview may refer to a newer Snapshot.
+
+All new UI strings support default Chinese/selectable English. Exact preparation UUID,
+request-ID semantics, all 14 command scopes/actors/locks and atomic audits remain;
+public staging stays read-only. Legacy evidence and ASR profile coverage/SSR/other
+compatibility consumers are still unbounded. Roadmap remains 34/44 (77%), Phase 6 3/5.
+
+Verification: 20 new evidence tests passed within the complete Python 3.12 backend suite: **770 passed, 4281 warnings, no skips**, including **105 real PostgreSQL 16.15 tests**. Coverage includes exact/sibling/wrong-type scope, missing/empty snapshots, stable duplicate ordering, newest execution per item UUID on only the selected release/snapshot, duplicate item numbers across plans, missing metadata retention, pinned pagination after a newer Snapshot and 105-row growth with unchanged SQL query count, bounded row projections and no private payload columns. Real PostgreSQL verifies the window query, no audit write, index columns and downgrade/upgrade without lost execution rows; existing concurrency/replay/quota/rollback tests also passed. Frontend **293 passed, no skips**, final Next/OpenNext production build passed. Seven local SSR groups passed across Chinese/English for full counts, missing metadata, independent first/next offsets with pinned snapshot and exact command UUID, historical pin, beyond-end/invalid-array pages, unavailable/no-snapshot summary stopping page reads and no legacy evidence request. Single Alembic head, PostgreSQL full upgrade SQL and 0018-to-0017 downgrade SQL passed.
+
+Next: bound ASR profile coverage and remaining SSR/component/policy/snapshot consumers;
+then approved OIDC/session/controlled target, submission/recovery/results, append-only
+correction/revocation and production operations. Estimate remains 8–12 focused packages
+to controlled internal use, 16–24 total to production-ready review, conditional on approvals.
+Rollout verification is pending until API/schema/frontend are live.

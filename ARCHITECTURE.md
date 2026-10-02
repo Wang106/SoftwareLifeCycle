@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.4
+FastAPI 0.18.5
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -254,3 +254,15 @@ retain the new UUID scope. Separate release observations compare UUIDs only.
 Missing/wrong-ID summaries remain unknown without legacy fallback. Shared localization
 covers the new view in both languages, default Chinese; identifiers and request exports
 stay unchanged. ASR profile/evidence and other legacy consumers still need migration.
+
+## Pinned ASR evidence consumer — API 0.18.5
+
+The ASR overview reads a fixed summary, then two bounded projections using the selected
+Snapshot UUID. Independent pagination preserves the selected UUID, common limit and
+other table offset; a newer Snapshot cannot move the selection. Shared localization
+covers new content in both languages; IDs/hashes/original evidence remain unchanged.
+A historical pin and possible newer overview are explicitly shown. Window ranking
+selects latest DVP evidence per item UUID, with missing metadata retained. No private
+storage/body fields or unbounded policy arrays are loaded. Legacy evidence stays compatible;
+ASR coverage service and other legacy consumers still need migration. READ COMMITTED
+and offset semantics do not promise consistent results across concurrent DVP additions.

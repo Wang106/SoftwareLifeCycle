@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.4`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.5`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -352,3 +352,33 @@ Summary response/query count is fixed (seven cold queries), not database work.
 READ COMMITTED observations across queries are not a consistent write receipt or
 quota reservation. Existing indexes suffice; no migration or write contract change.
 ASR profile/evidence and remaining compatibility consumers are still unbounded.
+
+## ASR pinned evidence reads — API 0.18.5
+
+All paths start `/api/v1/releases/application/id/{release_id}`. Exact APPLICATION
+release required; missing/wrong type or snapshot belonging to another release: 404.
+Malformed UUID, unknown query keys or invalid pagination: 422.
+
+- `GET /evidence-summary?snapshot_id=<optional UUID>` returns release_id,
+  snapshot `{id, snapshot_no, is_current_snapshot}` or null, artifact_count,
+  latest_execution_count and other_snapshot_executions. Default selects highest
+  snapshot_number; absent snapshot returns explicit null and zero counts.
+- `GET /evidence/artifacts?snapshot_id=<required UUID>&limit=50&offset=0` returns
+  release_id, snapshot_id, total, limit, offset, next_offset and items with frozen
+  UUID/component/version/filename/type/SHA/classification/distribution/AI metadata.
+  It omits storage_reference and policy rule arrays.
+- `GET /evidence/executions?snapshot_id=<required UUID>&limit=50&offset=0` returns
+  the same envelope with latest execution per item UUID on only that release/snapshot:
+  id, dvp_item_id, item_no/title (nullable), execution_no, result, executed_at
+  (nullable) and item_metadata_available. Missing metadata does not drop evidence.
+  It omits actual_result and never infers coverage/readiness/permission.
+
+Limits 1–100, offsets 0–100000. Artifact sorting component/filename/UUID;
+execution sorting item_no null-last/item UUID/execution UUID. Latest selection ranks
+execution_no descending, then executed_at/UUID. Other-snapshot count is every execution
+on that release outside the selected snapshot, not just other latest rows.
+Legacy evidence response remains unchanged. The frontend retains a pinned UUID in
+both table pagination links and explicitly distinguishes missing snapshot, unknown
+summary, invalid/unavailable page and beyond-end empty page. These are read observations;
+new executions can shift offset pages even on a pinned snapshot. ASR profile coverage
+and other legacy consumers remain unbounded. Schema head 0018, no write contract changes.

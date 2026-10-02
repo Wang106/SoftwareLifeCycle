@@ -245,3 +245,14 @@ Release-count observations do not grant permission, reserve finite capacity or p
 snapshot/physical flashing/approval. No child notes are loaded by the summary.
 Public staging remains sample-only/read-only; company evidence still requires approved
 identity, network/data access and environment review. No write was enabled for this package.
+
+## Pinned evidence read boundary — API 0.18.5
+
+The new read routes verify exact APPLICATION release and selected Snapshot ownership;
+query scope is not authorization. Projections omit artifact storage references and DVP
+actual-result bodies, retain known evidence UUIDs and do not infer readiness, approval
+or current permission. All 14 write guards, trusted actors, serialization/replay and
+atomic audits are unchanged. The index-only 0018 migration grants no new access.
+Default Chinese/English presentation leaves identifiers and request exports untouched.
+Public staging stays sample-only/read-only; protected company reads still need approved
+identity/network/data/environment review.

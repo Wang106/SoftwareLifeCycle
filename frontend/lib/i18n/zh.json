@@ -1420,5 +1420,20 @@
   "· No actual release reported:": "· 未报告实际发布：",
   "These compare release UUIDs only. They do not establish snapshot matches, physical flashing, approval or permission. Counts are read observations, not a consistent write receipt or reserved capacity.": "仅比较发布 UUID，不代表快照匹配、物理刷写、审批通过或操作权限。计数是读取观察，不是统一写入回执或已预留配额。",
   "Downstream summary unavailable. Counts are unknown; no unbounded fallback is used.": "下游汇总不可用，计数未知；不会回退到无界读取。",
-  "authorization_release_id": "授权所属发布 UUID"
+  "authorization_release_id": "授权所属发布 UUID",
+  "Evidence summary unavailable. Counts are unknown.": "证据汇总不可用，数量未知。",
+  "Frozen evidence": "冻结证据",
+  "No snapshot is available for evidence.": "没有可用于证据的快照。",
+  "Evidence snapshot · ": "证据快照 · ",
+  "Latest snapshot at summary read time.": "汇总读取时的最新快照。",
+  "Viewing a pinned historical snapshot.": "正在查看固定的历史快照。",
+  "Evidence pages stay on this exact snapshot. Release overview may refer to a newer snapshot. Counts are read observations, not approval or a consistent write receipt.": "证据分页保持在此精确快照上。发布概览可能指向更新的快照。计数是读取观察，不代表审批通过或统一写入回执。",
+  "Execution records on other snapshots: ": "其他快照的执行记录：",
+  "Read latest evidence →": "读取最新证据 →",
+  "Latest DVP execution on selected snapshot": "所选快照的最新 DVP 执行",
+  "DVP metadata unavailable": "DVP 元数据不可用",
+  "No executions on this page.": "此页没有执行记录。",
+  "Execution page unavailable. The API is unavailable or pagination is invalid.": "执行记录分页不可用。API 不可用或分页参数无效。",
+  "Evidence snapshot ·": "证据快照 ·",
+  "Execution records on other snapshots:": "其他快照的执行记录："
 }

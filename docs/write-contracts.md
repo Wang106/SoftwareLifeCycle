@@ -324,3 +324,12 @@ binding, exact scope and business/audit atomicity remain covered by the full bac
 suite (750 passed including 104 real PostgreSQL tests). No migration, no submission
 flow and no public write enablement; remaining correction/revocation and result flows
 are still pending.
+
+## Pinned evidence consumer — API 0.18.5 / schema 0018
+
+No write route/request-ID/scope/actor/audit/serialization contract changes. ASR Snapshot
+preparation still uses the exact release UUID. Pinned evidence and latest DVP results
+are read observations, not approval or write receipts. Migration 0018 adds only an index,
+without rewriting records. Full backend 770 tests including 105 real PostgreSQL tests
+passed; existing Snapshot/Batch/replay/quota/rollback/security regressions remain passing.
+No submission or public write enablement; correction/revocation/result flows remain pending.

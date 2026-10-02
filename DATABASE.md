@@ -5,7 +5,7 @@
 - Engine: PostgreSQL 16 in the local Compose environment; current Render inventory reports PostgreSQL 18. The local real-concurrency regression uses 16.15.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0017_deployment_actual_version`.
+- Required schema revision: `0018_asr_evidence_index`.
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
@@ -281,3 +281,15 @@ Multi-query READ COMMITTED totals can observe concurrent commits at different ti
 they are informational, not a write receipt or transaction quota enforcement.
 Migrated PostgreSQL aggregates/scope regression passed; existing serialization tests
 remain intact. Single head 0017 and generated PostgreSQL upgrade SQL passed.
+
+## Evidence index migration — 0018
+
+`0018_asr_evidence_index` follows 0017 and adds only
+`ix_dvp_executions_release_snapshot_item` on release_id, snapshot_id, dvp_item_id,
+execution_no. The previous schema has no release/snapshot execution index; this index
+supports exact scope and per-item latest-row selection. Snapshot artifacts reuse their
+existing snapshot_id index. Upgrade uses ordinary CREATE INDEX; downgrade drops only
+this index. Matching ORM Index is declared; no backfill, row update, new uniqueness,
+write lock or permission change. Real PostgreSQL downgrade/upgrade preserved execution
+rows, index column inspection passed, and generated upgrade/downgrade SQL passed.
+Window/count queries can still scan/sort history; payload/query bounds do not bound CPU.

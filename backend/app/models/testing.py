@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db import Base
@@ -58,4 +58,5 @@ class DvpExecution(Base):
     result: Mapped[str]=mapped_column(String(30),nullable=False)
     actual_result: Mapped[str|None]=mapped_column(Text)
     executed_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),default=now)
-    __table_args__=(UniqueConstraint("dvp_item_id","execution_no"),)
+    __table_args__=(UniqueConstraint("dvp_item_id","execution_no"),
+        Index("ix_dvp_executions_release_snapshot_item", "release_id", "snapshot_id", "dvp_item_id", "execution_no"))

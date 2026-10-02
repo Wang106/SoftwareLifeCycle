@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-02 — ASR pinned evidence pagination
+
+- Added exact snapshot summary, paginated frozen artifacts and latest DVP execution per item UUID; mismatched scope is rejected and missing metadata remains visible.
+- Migrated ASR evidence consumer to independently paginated tables with stable snapshot scope, bilingual labels and no unbounded fallback. Legacy API shape stays; profile coverage and other consumers remain unbounded.
+- API 0.18.5; new index-only migration 0018_asr_evidence_index, no domain-history or command/security change. Staging remains read-only; roadmap stays 34/44.
+- Verification: 20 new evidence tests passed within the complete Python 3.12 backend suite: **770 passed, 4281 warnings, no skips**, including **105 real PostgreSQL 16.15 tests**. Coverage includes exact/sibling/wrong-type scope, missing/empty snapshots, stable duplicate ordering, newest execution per item UUID on only the selected release/snapshot, duplicate item numbers across plans, missing metadata retention, pinned pagination after a newer Snapshot and 105-row growth with unchanged SQL query count, bounded row projections and no private payload columns. Real PostgreSQL verifies the window query, no audit write, index columns and downgrade/upgrade without lost execution rows; existing concurrency/replay/quota/rollback tests also passed. Frontend **293 passed, no skips**, final Next/OpenNext production build passed. Seven local SSR groups passed across Chinese/English for full counts, missing metadata, independent first/next offsets with pinned snapshot and exact command UUID, historical pin, beyond-end/invalid-array pages, unavailable/no-snapshot summary stopping page reads and no legacy evidence request. Single Alembic head, PostgreSQL full upgrade SQL and 0018-to-0017 downgrade SQL passed.
+
 ## 2026-10-02 — ASR downstream fixed summary and scoped history
 
 - Added six all-status counts and separate actual/batch release observations, preserving the exact legacy stored-parent chain and mismatched records.
