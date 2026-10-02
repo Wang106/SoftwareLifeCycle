@@ -353,3 +353,13 @@ receipts. Summary and pages are separate reads and may change during concurrent 
 All existing concurrency/replay/quota/rollback/authorization tests pass in the complete
 real PostgreSQL run. No migration or public submission; remaining authenticated
 submission/recovery/results and broader append-only correction flows stay pending.
+
+## ASR component consumer migration — API 0.18.8 / schema 0018
+
+Summary/declaration/unlinked-base GET projections replace the frontend legacy bulk
+read. Exact stored links and global anti-association scope are preserved; a different
+baseline context is rejected by the page. These observations do not authorize a command
+or constitute a snapshot/approval receipt. No changes to any of the 14 request-ID,
+conflict/replay, exact grant, trusted actor, lock, correction or atomic audit contracts.
+No migration, submission route/UI or public write enablement is introduced. Existing
+PostgreSQL concurrency and rollback tests remain required regressions.

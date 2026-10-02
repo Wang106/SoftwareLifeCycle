@@ -276,3 +276,14 @@ the legacy public demo profile does; no safe-company-data access claim is added.
 All 14 role/actor bindings, keyed retry/serialization and atomic audits remain covered
 by complete PostgreSQL regressions. UI preparation target remains the exact parent UUID.
 No submission/login/provider/grant feature or public write enablement; staging read-only.
+
+## ASR component read migration — API 0.18.8
+
+New GET routes require an exact APPLICATION UUID and enforce strict bounded query
+parameters. Both baseline link validation and exclusion scope use stored UUIDs and
+component definitions, never names/versions or delta labels. Frontend rejects child
+release/baseline mismatches and has no unbounded fallback. These are public sample
+read observations, not permission checks, inheritance, approval or frozen evidence.
+No new actor/role/session/write capability: request-ID, exact scoped authorization,
+trusted actor binding, locks, atomic audit and READ_ONLY_MODE are unchanged. No staging
+business write or identity-provider configuration is part of this package.

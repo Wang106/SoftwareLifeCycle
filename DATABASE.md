@@ -316,3 +316,16 @@ or child ORM are loaded. UUID ordering resolves duplicate labels/timestamps. Exi
 keys enforce normal PostgreSQL FK writes. Some legacy scope FKs lack dedicated indexes;
 fixed transfer does not bound database count/sort work. Measured data/plans should guide
 additional indexing. Parent metadata/notes remain; no total-byte bound is promised.
+
+## ASR component/baseline projections — API 0.18.8
+
+No schema change; single head stays 0018_asr_evidence_index. Declaration rows left-join
+only a baseline component on the stored base Release and identical definition UUID;
+missing definition metadata is preserved with a separate left join. Unlinked rows use
+NOT EXISTS scoped to exact ASR/definition/base component across all declarations, so
+pagination never changes membership. Aggregate counts, UUID ordering and LIMIT/OFFSET
+are evaluated in SQL. Missing baseline/detail yields no baseline rows. READ COMMITTED
+observations are not a frozen read receipt. Existing foreign keys without dedicated
+read indexes can require scans; constant statement shape does not imply constant
+runtime. Use measured PostgreSQL plans to justify a later index migration. No command
+transaction, quota/number lock or append-only constraint changes.

@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 62 backend test modules; the latest full run passed all 800 tests under Python 3.12, including 107 real PostgreSQL tests without skips.
+- 63 backend test modules; the latest full run passed all 819 tests under Python 3.12, including 108 real PostgreSQL tests without skips.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -666,3 +666,57 @@ No public business write was submitted. Cloudflare provider commit/deployment me
 was unavailable; live new behavior is frontend rollout evidence. Public staging remains
 read-only. One PostgreSQL test expectation initially missed a pre-existing fixture
 component; it was corrected against the legacy baseline and the full rerun passed.
+
+## ASR component/baseline consumer migration — 2026-10-02
+
+Developed from GitHub main `ec4f0ec308a6a982b91fd03842425f86a2caa99f`. API 0.18.8 adds
+an exact APPLICATION parent summary and independent bounded declaration/unlinked-base
+pages. The old bare components endpoint remains unchanged for compatibility. Full
+counts use SQL aggregates; projections use LIMIT/OFFSET and stable component UUID
+ascending order, with no child ORM loading or growing Python ID collections.
+
+A valid baseline link requires the recorded base component UUID to belong to the
+resolved stored baseline Release and have the same component definition UUID. Null
+base versions remain valid links. Foreign/mismatched/orphan pointers remain INVALID;
+missing pointers remain NOT_RECORDED. Inactive/missing definition metadata is retained.
+Unlinked baseline membership uses a scoped NOT EXISTS across every ASR declaration:
+links on later pages count, duplicate valid links hide a baseline row once, invalid
+links and other ASR declarations cannot hide it. No name/version/delta inference and
+no new inheritance, snapshot, approval or authorization capability is introduced.
+Missing detail/base preserves legacy null-base semantics; stored base associations
+are not newly filtered by type, software or status.
+
+The bilingual component page now reads only summary and two paginated APIs, preserves
+component_limit/declaration_offset/unlinked_offset independently, forwards invalid
+parameters, shows full counts and per-table unavailable/empty states, and never falls
+back to the unbounded endpoint. Summary failure/wrong release stops child reads;
+release_id and base_release_id must match the summary context on each child response.
+This detects a changed baseline but does not pin a transaction or consistent read
+receipt: READ COMMITTED counts/pages can change between requests. Counts/sorts and the
+anti-join can still scan growing data; constant SQL shape/bounded transfer do not prove
+constant database cost. Future indexing requires measured PostgreSQL query plans.
+
+No migration; required head stays 0018_asr_evidence_index. All 14 command contracts,
+request-ID replay/conflict, locks, exact authorization, authenticated actor binding and
+atomic business/audit writes are unchanged. Public staging remains read-only. Roadmap
+stays 34/44 (77%), Phase 4 8/9 and Phase 6 3/5; remaining policy/snapshot/history/passport
+consumers prevent declaring the compatibility migration complete. Next address those
+remaining consumers, then approved identity/session and controlled submission/recovery.
+Estimates remain conditional: 8–12 focused packages for controlled internal use;
+16–24 total for production acceptance, including operations and policy/provider inputs.
+
+Verification: 19 new backend cases passed in the complete Python 3.12 suite:
+**819 passed, 5263 warnings, no skips**, including **108 real PostgreSQL 16.15 tests**.
+Tests cover legacy parity, null-version/inactive-definition links, duplicate valid links,
+foreign/wrong-definition/orphan pointers, same-version sibling scope, missing detail/base,
+legacy wrong-base-type semantics, exact parent rejection, stable independent pages,
+beyond-end totals, strict HTTP bounds/unknown fields/read-only rejection, and 120-row
+SQL growth with identical statements and bounded projections/no component ORM loads.
+Real migrated PostgreSQL proves global anti-association membership across pages, exact
+stored links, fixture-aware totals and no audit writes; existing concurrency/retry/
+quota/rollback/actor/grant regressions all pass. Frontend **307 passed**; final Next/
+OpenNext production build passed. Seven actual local production SSR groups passed:
+Chinese/English counts and independent links, unavailable/foreign summary stopping child
+reads, array offset rejection preserving the other table, empty pages, and changed
+baseline response rejection. Single Alembic head and full PostgreSQL upgrade SQL
+succeeded, without a new migration. Existing warnings are deprecations/collection notices.

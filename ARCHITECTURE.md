@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.7
+FastAPI 0.18.8
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -291,3 +291,13 @@ Missing/foreign summaries stop child reads; no compatibility fallback. Default C
 English covers new states. Parent release notes remain potentially large; no global byte
 bound is claimed. READ COMMITTED/count sorting and offsets do not produce consistent
 receipts. No command or schema change; other compatibility consumers still remain.
+
+## ASR component consumer — API 0.18.8
+
+The component page requests an exact parent summary then two bounded SQL projection
+pages. Baseline validity is a UUID/definition join; unlinked membership is an exact-ASR
+correlated NOT EXISTS over all declarations. No growing in-memory ID set or child ORM
+collection is materialized. SQL totals and stable UUID pages bound response size, not
+DB scan cost. Client release/baseline context checks detect mismatches across reads;
+no transactional read receipt or snapshot pinning is added. Legacy read API remains
+compatible; business write services, locks and audit transactions are unchanged.

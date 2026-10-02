@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-02 — Bounded ASR component and unlinked baseline pages
+
+- API 0.18.8 adds exact ASR summary/full counts and independent declaration/unlinked-base pages, preserving UUID/definition link validity with global NOT EXISTS membership and legacy compatibility.
+- Migrated bilingual component page with independent offsets, strict empty/unavailable states, full counts and release/baseline mismatch rejection; no bulk fallback.
+- No migration; schema 0018, all write/actor/authorization/audit/lock contracts and read-only staging remain unchanged. Roadmap 34/44 stays unchanged.
+
+Verification: 19 new backend cases passed in the complete Python 3.12 suite:
+**819 passed, 5263 warnings, no skips**, including **108 real PostgreSQL 16.15 tests**.
+Tests cover legacy parity, null-version/inactive-definition links, duplicate valid links,
+foreign/wrong-definition/orphan pointers, same-version sibling scope, missing detail/base,
+legacy wrong-base-type semantics, exact parent rejection, stable independent pages,
+beyond-end totals, strict HTTP bounds/unknown fields/read-only rejection, and 120-row
+SQL growth with identical statements and bounded projections/no component ORM loads.
+Real migrated PostgreSQL proves global anti-association membership across pages, exact
+stored links, fixture-aware totals and no audit writes; existing concurrency/retry/
+quota/rollback/actor/grant regressions all pass. Frontend **307 passed**; final Next/
+OpenNext production build passed. Seven actual local production SSR groups passed:
+Chinese/English counts and independent links, unavailable/foreign summary stopping child
+reads, array offset rejection preserving the other table, empty pages, and changed
+baseline response rejection. Single Alembic head and full PostgreSQL upgrade SQL
+succeeded, without a new migration. Existing warnings are deprecations/collection notices.
+
 ## 2026-10-02 — Bounded SSR summary and independent collections
 
 - Added exact SSR summary with full counts and bounded component/baseline-user pages; legacy profile remains compatible. Missing component definitions are retained and membership uses stored UUIDs.

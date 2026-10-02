@@ -138,3 +138,14 @@ does not complete it: ASR component declarations, policy/snapshot/history/passpo
 remain. No checked item/denominator changes; overall 34/44, Phase 4 8/9, Phase 6 3/5.
 Next package should address those ASR component/baseline declarations; planning ranges
 above remain conditional rather than deployment commitments.
+
+## ASR component consumer migration — 2026-10-02
+
+ASR component declarations and unlinked baseline components now use exact summary and
+independent bounded pages with preserved stored-link semantics and default Chinese/
+English controls. Remaining policy/snapshot/history/passport consumers keep Phase 4's
+compatibility migration unchecked. No checked item or denominator changes: 34/44,
+Phase 4 8/9, Phase 6 3/5. Next continue these reads, then approved identity/session,
+controlled target and authenticated submission/recovery/corrections/operations.
+Conditional estimates remain 8–12 internal-use packages, 16–24 total production-review
+packages; no write enablement on public staging.

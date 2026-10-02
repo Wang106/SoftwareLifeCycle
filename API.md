@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.7`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.8`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -420,3 +420,26 @@ The old bare profile endpoint is unchanged. No new snapshot/approval/permission 
 these are declaration/baseline observations; separate totals/pages may differ during
 concurrent writes. Frontend keeps release_limit and independent component/application
 offsets, forwarding invalid values rather than silently resetting them. No migration.
+
+## ASR component summary and independent pages — API 0.18.8
+
+All paths begin `/api/v1/releases/application/id/{release_id}/components`.
+Exact APPLICATION UUID required: missing/wrong type 404, malformed UUID 422.
+
+| GET suffix | Response | Query parameters |
+| --- | --- | --- |
+| `/summary` | release_id/version/base_release{id,version} or null, component_count/unlinked_base_count | None |
+| `/declarations` | id/code/name/asr_version/declared_delta_type/base_component_version/base_link_status | limit 1–100 default 50; offset 0–100000 default 0 |
+| `/unlinked-base` | id/code/name/version for baseline components without a valid ASR link | Same bounds |
+
+Pages return release_id/base_release_id/total/limit/offset/next_offset/items. Unknown
+query fields return 422; beyond-end retains total with empty items and null next_offset.
+Both pages order UUID ascending. VALID means exact stored baseline component and same
+definition UUID, even if version is null; wrong/foreign pointer INVALID, no pointer
+NOT_RECORDED. Unlinked rows use every declaration in the exact ASR, independent of
+pagination; duplicate links are not duplicate exclusions. Missing/inactive definition
+metadata remains visible. Missing detail/base returns null baseline/empty baseline page.
+Legacy bare `/components` remains unchanged. No inheritance/approval inference; separate
+reads can change. Frontend rejects a different release/baseline context instead of
+showing mismatched data. UI parameters component_limit/declaration_offset/unlinked_offset
+preserve independent offsets. No migration; schema 0018 unchanged.

@@ -1440,5 +1440,9 @@
   "No components on this page.": "此页没有组件。",
   "Component page unavailable. The API is unavailable or pagination is invalid.": "组件分页不可用：API 无法访问或分页参数无效。",
   "No application releases on this page.": "此页没有应用发布。",
-  "Application release page unavailable. The API is unavailable or pagination is invalid.": "应用发布分页不可用：API 无法访问或分页参数无效。"
+  "Application release page unavailable. The API is unavailable or pagination is invalid.": "应用发布分页不可用：API 无法访问或分页参数无效。",
+  "No ASR declarations on this page.": "本页没有 ASR 组件声明。",
+  "No unlinked baseline components on this page.": "本页没有未关联的基线组件。",
+  "ASR declaration page unavailable. The API is unavailable, pagination is invalid or the baseline changed.": "ASR 声明页不可用：接口不可用、分页参数无效或基线已变更。",
+  "Unlinked baseline page unavailable. The API is unavailable, pagination is invalid or the baseline changed.": "未关联基线页不可用：接口不可用、分页参数无效或基线已变更。"
 }
