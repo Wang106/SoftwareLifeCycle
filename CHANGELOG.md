@@ -7,6 +7,26 @@
 - API 0.18.7, no migration; head 0018. All command/actor/audit/lock contracts unchanged, public staging read-only; roadmap stays 34/44.
 - Verification: 16 new backend cases passed within the full Python 3.12 suite: **800 passed, 5180 warnings, no skips**, including **107 real PostgreSQL 16.15 tests**. Coverage includes legacy metadata/count parity, exact/sibling/same-version scopes, stable duplicate ordering and beyond-end totals, missing component metadata retention/missing referenced release exclusion, empty/optional metadata, strict HTTP limits/unknown filters/read-only denial and 120-row growth with fixed SQL shape/count, bounded projections and no child ORM. Real PostgreSQL checks totals against the pre-existing legacy fixture plus 120 new bindings, distinct one-row pages and no audit write; existing lock/replay/quota/rollback/actor/authorization tests pass. Frontend **300 passed**; final Next/OpenNext Cloudflare production build passed. Seven local production SSR groups passed: Chinese/English full totals, independent first/next links and exact preparation UUID, unavailable/foreign summaries stopping child reads, invalid array offset preserving the other table, beyond-end pages and foreign child scope rejection. Single Alembic head and PostgreSQL full upgrade SQL generation passed; no new migration.
 
+Online verification after feature commit `419d1481b9a03d56ec5d273ebaef48176688e07b`: Render deployment
+`dep-davqgvbm8hqs73cbqj90` is live for this commit (finished
+2026-10-02T12:51:00.344602Z). Health returned 200 / API 0.18.7 /
+0018_asr_evidence_index; read-only Render SQL independently confirmed revision 0018.
+SSR 5.1.12 UUID 66f12b8f-9efd-4482-977b-549bb0cf7f50 summary metadata matched the saved
+legacy profile field by field, with full counts 0 components and 2 applications.
+Two one-row ASR pages returned distinct stored UUIDs/statuses with total 2; the set and
+fields matched legacy records. Component empty page retained total 0. Unknown summary
+filter and limit 101 returned 422; an APPLICATION parent summary returned 404.
+Harmless empty SSR Snapshot and exact Deployment Batch POSTs returned 403 read_only_mode.
+Cloudflare live new SSR UI was verified in Chinese: full counts 0/2 and first ASR page;
+next ASR page changed 2.3.3 to 2.3.4 while preserving release_limit=1 and component_offset=1.
+English switching preserved count, both offsets, exact preparation UUID and raw source
+commit demo512; Chinese restored for the final proof. The sample has no SSR components,
+so component multi-page behavior is local/real PostgreSQL test evidence, not a live claim.
+No public business write was submitted. Cloudflare provider commit/deployment metadata
+was unavailable; live new behavior is frontend rollout evidence. Public staging remains
+read-only. One PostgreSQL test expectation initially missed a pre-existing fixture
+component; it was corrected against the legacy baseline and the full rerun passed.
+
 ## 2026-10-02 — Shared release coverage SQL aggregates
 
 - Replaced full child/history loading and Python ID arrays with relational CTE scopes and one aggregate result; latest Snapshot selection uses LIMIT 1.

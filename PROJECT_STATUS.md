@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `81e4e59b284b5ac6e75527d816278937089c35ad` — `perf: aggregate exact snapshot release coverage in SQL` (developed from `a06b54ef6edaccc84ee585fd252369a85f6def45`)
+- Reviewed repository baseline: `419d1481b9a03d56ec5d273ebaef48176688e07b` — `feat: bound SSR detail collections with independent pagination` (developed from `44dceb069fcd651c8f1343d41d3b50379cecd4fe`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -74,8 +74,8 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 | Layer | Configured target | Verified 2026-10-02 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live bilingual pinned evidence UI and independent pagination verified | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.6`; Snapshot/Batch probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live bilingual SSR full counts and independent pagination verified | Demo/test frontend, not evidence of production readiness |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.7`; Snapshot/Batch probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at `0018_asr_evidence_index`; read-only SQL confirms revision and index | Sample/test data only; read-only schema/index inspection |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
@@ -96,7 +96,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository and verified online API version: `0.18.6`. Current rollout evidence is recorded below.
+- Repository and verified online API version: `0.18.7`. Current rollout evidence is recorded below.
 - Required and verified online schema revision: `0018_asr_evidence_index`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -605,3 +605,23 @@ consumers, then approved OIDC/session/controlled target, authenticated submissio
 recovery/results, append-only corrections/revocations and production operations.
 Estimate remains 8–12 focused packages to controlled internal use, 16–24 total to
 production-ready review, dependent on approvals and scope.
+
+Online verification after feature commit `419d1481b9a03d56ec5d273ebaef48176688e07b`: Render deployment
+`dep-davqgvbm8hqs73cbqj90` is live for this commit (finished
+2026-10-02T12:51:00.344602Z). Health returned 200 / API 0.18.7 /
+0018_asr_evidence_index; read-only Render SQL independently confirmed revision 0018.
+SSR 5.1.12 UUID 66f12b8f-9efd-4482-977b-549bb0cf7f50 summary metadata matched the saved
+legacy profile field by field, with full counts 0 components and 2 applications.
+Two one-row ASR pages returned distinct stored UUIDs/statuses with total 2; the set and
+fields matched legacy records. Component empty page retained total 0. Unknown summary
+filter and limit 101 returned 422; an APPLICATION parent summary returned 404.
+Harmless empty SSR Snapshot and exact Deployment Batch POSTs returned 403 read_only_mode.
+Cloudflare live new SSR UI was verified in Chinese: full counts 0/2 and first ASR page;
+next ASR page changed 2.3.3 to 2.3.4 while preserving release_limit=1 and component_offset=1.
+English switching preserved count, both offsets, exact preparation UUID and raw source
+commit demo512; Chinese restored for the final proof. The sample has no SSR components,
+so component multi-page behavior is local/real PostgreSQL test evidence, not a live claim.
+No public business write was submitted. Cloudflare provider commit/deployment metadata
+was unavailable; live new behavior is frontend rollout evidence. Public staging remains
+read-only. One PostgreSQL test expectation initially missed a pre-existing fixture
+component; it was corrected against the legacy baseline and the full rerun passed.

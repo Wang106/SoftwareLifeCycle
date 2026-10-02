@@ -5,9 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline: `44dceb069fcd651c8f1343d41d3b50379cecd4fe`
+- Verified baseline: `419d1481b9a03d56ec5d273ebaef48176688e07b`
 - Developed from: `44dceb069fcd651c8f1343d41d3b50379cecd4fe`
-- Baseline subject: `docs: record release coverage rollout and compatibility checks`
+- Baseline subject: `feat: bound SSR detail collections with independent pagination`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.6; health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.7; health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -646,3 +646,23 @@ consumers, then approved OIDC/session/controlled target, authenticated submissio
 recovery/results, append-only corrections/revocations and production operations.
 Estimate remains 8–12 focused packages to controlled internal use, 16–24 total to
 production-ready review, dependent on approvals and scope.
+
+Online verification after feature commit `419d1481b9a03d56ec5d273ebaef48176688e07b`: Render deployment
+`dep-davqgvbm8hqs73cbqj90` is live for this commit (finished
+2026-10-02T12:51:00.344602Z). Health returned 200 / API 0.18.7 /
+0018_asr_evidence_index; read-only Render SQL independently confirmed revision 0018.
+SSR 5.1.12 UUID 66f12b8f-9efd-4482-977b-549bb0cf7f50 summary metadata matched the saved
+legacy profile field by field, with full counts 0 components and 2 applications.
+Two one-row ASR pages returned distinct stored UUIDs/statuses with total 2; the set and
+fields matched legacy records. Component empty page retained total 0. Unknown summary
+filter and limit 101 returned 422; an APPLICATION parent summary returned 404.
+Harmless empty SSR Snapshot and exact Deployment Batch POSTs returned 403 read_only_mode.
+Cloudflare live new SSR UI was verified in Chinese: full counts 0/2 and first ASR page;
+next ASR page changed 2.3.3 to 2.3.4 while preserving release_limit=1 and component_offset=1.
+English switching preserved count, both offsets, exact preparation UUID and raw source
+commit demo512; Chinese restored for the final proof. The sample has no SSR components,
+so component multi-page behavior is local/real PostgreSQL test evidence, not a live claim.
+No public business write was submitted. Cloudflare provider commit/deployment metadata
+was unavailable; live new behavior is frontend rollout evidence. Public staging remains
+read-only. One PostgreSQL test expectation initially missed a pre-existing fixture
+component; it was corrected against the legacy baseline and the full rerun passed.
