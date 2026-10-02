@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `7b2ae568e4b571eb59fe1d77e8d57899ea86103b` — latest bilingual rollout handoff before the ASR downstream package
+- Reviewed repository baseline: `338a3231315a7a7623086f0ca347ddbccd265282` — `feat: bound ASR downstream trace with exact authorization scope` (developed from `7b2ae568e4b571eb59fe1d77e8d57899ea86103b`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -96,7 +96,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository API version: `0.18.4`; last verified online version before this rollout: `0.18.3`. Current rollout evidence is recorded below.
+- Repository and verified online API version: `0.18.4`. Current rollout evidence is recorded below.
 - Required and verified online schema revision: `0017_deployment_actual_version`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
@@ -469,4 +469,4 @@ then remaining SSR/profile consumers. Approved OIDC/session, controlled target,
 authenticated submission/recovery/results, broader corrections and production operations
 remain. Planning range stays 8–12 focused packages to controlled internal use and
 16–24 total to production-ready review, conditional on provider/environment/policy approvals.
-Rollout verification is pending until the committed API and frontend are live.
+Online verification after feature commit `338a3231315a7a7623086f0ca347ddbccd265282`: Render deployment `dep-davjddgjo6nc738ln230` is live for that commit (finished 2026-10-02T04:45:42Z). Health returned 200, API 0.18.4, database revision 0017_deployment_actual_version; independent read-only Render SQL confirmed that revision. Exact ASR 2.3.4 summary returned six counts of 1, actual same/different/unreported 1/0/0 and batch same/different 1/0. Three authorization_release_id catalogs returned total 1 and exact linked record UUIDs. Missing summary returned 404; malformed authorization_release_id returned 422. Empty Snapshot and exact Deployment Batch POST probes returned 403 read_only_mode. Cloudflare live Chinese summary, English switching, six scoped links, exact Snapshot preparation UUID, English persistence through catalog navigation, Batch filter submit and cross-kind Changeover navigation preserving scope were verified in the browser. The sample has only one row per scope, so next-page behavior is local SSR/test evidence, not live multi-page evidence. No business write was submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live new feature behavior is frontend evidence. Initial browser navigation/frame-tree probes timed out; the same browser's documented tab/DOM API recovered without changing site or network settings. Public staging remains read-only.

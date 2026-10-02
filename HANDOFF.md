@@ -5,8 +5,9 @@
 - Date: 2026-10-02 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified baseline / developed from: `7b2ae568e4b571eb59fe1d77e8d57899ea86103b`
-- Baseline subject: bilingual rollout handoff; current package adds bounded ASR downstream reads
+- Verified baseline: `338a3231315a7a7623086f0ca347ddbccd265282`
+- Developed from: `7b2ae568e4b571eb59fe1d77e8d57899ea86103b`
+- Baseline subject: `feat: bound ASR downstream trace with exact authorization scope`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -509,4 +510,4 @@ then remaining SSR/profile consumers. Approved OIDC/session, controlled target,
 authenticated submission/recovery/results, broader corrections and production operations
 remain. Planning range stays 8–12 focused packages to controlled internal use and
 16–24 total to production-ready review, conditional on provider/environment/policy approvals.
-Rollout verification is pending until the committed API and frontend are live.
+Online verification after feature commit `338a3231315a7a7623086f0ca347ddbccd265282`: Render deployment `dep-davjddgjo6nc738ln230` is live for that commit (finished 2026-10-02T04:45:42Z). Health returned 200, API 0.18.4, database revision 0017_deployment_actual_version; independent read-only Render SQL confirmed that revision. Exact ASR 2.3.4 summary returned six counts of 1, actual same/different/unreported 1/0/0 and batch same/different 1/0. Three authorization_release_id catalogs returned total 1 and exact linked record UUIDs. Missing summary returned 404; malformed authorization_release_id returned 422. Empty Snapshot and exact Deployment Batch POST probes returned 403 read_only_mode. Cloudflare live Chinese summary, English switching, six scoped links, exact Snapshot preparation UUID, English persistence through catalog navigation, Batch filter submit and cross-kind Changeover navigation preserving scope were verified in the browser. The sample has only one row per scope, so next-page behavior is local SSR/test evidence, not live multi-page evidence. No business write was submitted. Cloudflare provider deployment ID/commit metadata was unavailable; live new feature behavior is frontend evidence. Initial browser navigation/frame-tree probes timed out; the same browser's documented tab/DOM API recovered without changing site or network settings. Public staging remains read-only.
