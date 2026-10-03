@@ -18,8 +18,8 @@ entries below are historical and must not be treated as fresh deployment evidenc
 This package adds GitHub Actions CI for complete backend tests with disposable
 PostgreSQL 16, migration head/SQL/round-trip checks, strict JUnit evidence validation,
 and frontend tests plus Next.js/OpenNext production build. See `docs/ci.md`.
-Remote CI acceptance is pending the initial push; the CI roadmap checkbox and
-34/44 overall count remain unchanged until execution succeeds. Identity/session,
+Remote CI acceptance passed on PR #1 at feature commit `1f3c672aec080f6590a0b878a44b361b20bcfc15`. The CI roadmap checkbox and
+34/44 main count remain unchanged until the PR is merged. Identity/session,
 public read-only settings and existing business/API contracts are unchanged.
 
 Next business package remains release catalogs/exact legacy resolver, then other
@@ -135,7 +135,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 - All current OIDC writes use the authenticated principal for their atomic audit event and retain request declarations separately; historical/disabled-mode events remain unverified by design.
 - All 14 current command routes are authenticated/scoped and atomically audited. Snapshot/Batch now support optional request-ID replay and PostgreSQL locking; actual-software keyed reporting now adds retry/version protection and correction evidence; legacy paths remain weaker. See `docs/write-contracts.md`.
 - Some legacy list/history APIs remain unbounded; migration to bounded catalog endpoints is incomplete.
-- CI workflow is implemented for main pushes and pull requests; first remote execution is pending. Branch protection and CI-gated deployment are not configured.
+- CI workflow is implemented and remotely verified on PR #1; main integration awaits merge. Branch protection and CI-gated deployment are not configured.
 - Backend tests require Python 3.12 (matching `backend/Dockerfile`); this review used the repository's pinned `pytest==9.1.1` environment.
 - The passing backend run reports deprecation/collection warnings, dominated by `datetime.utcnow()` usage and one SQLAlchemy `TestRelease` model name collected as a possible test class.
 - Frontend build emits an existing Autoprefixer warning for `end`; use `flex-end` when that CSS is next touched.
@@ -1021,3 +1021,32 @@ fixtures. Workflow YAML structure, SHA pins, permission checks, script compilati
 single Alembic head, full upgrade/head downgrade SQL and remote-URL rejection passed.
 The isolated PostgreSQL round trip and complete no-skip suite await remote CI.
 Existing CSS/dependency deprecation warnings remain. No migration added.
+
+## CI remote acceptance and handback — 2026-10-03
+
+Mode: Codex. PR #1: https://github.com/Wang106/SoftwareLifeCycle/pull/1
+Feature commit: `1f3c672aec080f6590a0b878a44b361b20bcfc15`.
+GitHub Actions run 37104734307 concluded **success**, with both jobs successful:
+https://github.com/Wang106/SoftwareLifeCycle/actions/runs/37104734307
+
+Python 3.12 backend **932 passed, 6024 existing warnings, no skips**, including
+all 119 tests skipped in the PostgreSQL-free local run. The JUnit gate independently
+reports 103 cases in specifically named PostgreSQL modules; the other 16 database
+cases live in ordinary profile/pagination test modules. Single configured head,
+upgrade/head downgrade SQL and fresh PostgreSQL 16 schema upgrade/downgrade/upgrade
+passed. JUnit and SQL evidence uploaded. Node 22 frontend **370 passed, zero skips**;
+Next.js/OpenNext Worker production build passed. No application/schema change.
+
+Direct main push was rejected by automatic approval review because the present
+request did not explicitly authorize default-branch mutation. Remote main remains
+12660a16. The safer feature-branch/PR route succeeded through the connected GitHub
+account; shell git push itself had no credential. PR merge requires user approval.
+No merge, deploy, public setting, staging business write or company-data access
+was performed. A fresh live health GET timed out, so no new live health claim is made.
+
+The main-based roadmap remains **34/44 (77%)**, operations **0/6** until merge.
+On accepting this CI item into main it becomes **35/44 (80%)**, operations **1/6
+(17%)**. The read-consumer ledger stays 15/17; business/auth/write phases do not
+advance. Next: approve/merge the concrete PR, resume release catalogs/exact resolver
+and remaining rich reads, then approved identity/session/submission/recovery,
+append-only corrections, backups/monitoring/environment/network/data governance.
