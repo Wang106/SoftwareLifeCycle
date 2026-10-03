@@ -1518,5 +1518,18 @@
   "Records on this page": "当前页记录数",
   "No matching records on this page.": "当前页没有匹配记录。",
   "Change catalog unavailable": "变更目录暂不可用",
-  "Issue catalog unavailable": "问题目录暂不可用"
+  "Issue catalog unavailable": "问题目录暂不可用",
+  "Selected point DVP items": "所选变更点的 DVP 测试项",
+  "Selected plan DVP items": "所选计划的 DVP 测试项",
+  "Complete SCR counts": "变更请求完整计数",
+  "All point DVP assignments": "全部变更点的 DVP 分配数",
+  "All plan DVP items": "全部计划的 DVP 测试项数",
+  "Complete count": "完整计数",
+  "Selected change point": "所选变更点",
+  "Selected DVP plan": "所选 DVP 计划",
+  "View DVP items →": "查看 DVP 测试项 →",
+  "No records on this page.": "当前页没有记录。",
+  "SCR collection page unavailable.": "变更请求关联数据分页暂不可用。",
+  "Select a change point to inspect its exact DVP assignments.": "选择一个变更点，查看其精确关联的 DVP 测试项。",
+  "Select a DVP plan to inspect its exact test items.": "选择一个 DVP 计划，查看其精确关联的测试项。"
 }

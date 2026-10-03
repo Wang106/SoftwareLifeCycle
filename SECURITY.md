@@ -357,3 +357,11 @@ Catalog and legacy resolver are read-only sample projections, not authorization 
 ## SCR/Issue directory migration — API 0.18.15
 
 The new directory reads expose sample projections only, not authorization or readiness. Unknown filters/invalid UUIDs fail with 422, literal SQL substring search escapes wildcard characters. All write authentication/scope/actor/retry/atomic-audit guards remain unchanged; public staging stays read-only.
+
+## SCR detail read boundary — API 0.18.16
+
+Required SCR UUID pins and owned point/plan UUID checks prevent accidental mixed
+identity reads; they are not authorization grants or frozen-evidence guarantees.
+Public reads remain sample-only and read-only. DVP assignments and counts do not
+prove execution, passing results, release approval or permission to submit. No
+identity provider, write route, grant or public-write configuration changes here.

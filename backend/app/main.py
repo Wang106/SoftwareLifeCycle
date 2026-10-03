@@ -1,3 +1,4 @@
+from app.api.change_views import router as change_views_router
 from app.api.change_catalog import router as change_catalog_router
 from app.api.release_catalog import router as release_catalog_router
 from app.api.asr_readiness import router as asr_readiness_router
@@ -38,7 +39,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.15"
+APP_VERSION = "0.18.16"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -60,6 +61,7 @@ app.include_router(releases_router, prefix="/api/v1")
 app.include_router(dashboard_router)
 app.include_router(release_catalog_router)
 app.include_router(change_catalog_router)
+app.include_router(change_views_router)
 app.include_router(asr_evidence_router)
 app.include_router(standard_views_router)
 app.include_router(asr_components_router)

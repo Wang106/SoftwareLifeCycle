@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Bounded SCR detail
+
+- API 0.18.16 adds scalar SCR summary/full counts, four independently bounded collections and two exact owned point/plan item pages. The bilingual detail page preserves parent metadata, independent cursors, cross-plan assignments and exact item links.
+- Counts remain complete on empty/failed child pages; assignments are not execution evidence. Required SCR/child UUID selection checks prevent mixing parents. Legacy APIs and coverage remain.
+- No migration or write change; head 0018, public staging read-only. Read ledger 16/17 (94%) and ROADMAP 34/44 (77%) unchanged; group 17 remains partial. Verification/rollout results recorded below.
+
 ## 2026-10-04 — Bounded SCR and Issue directories
 
 - API 0.18.15 adds strict bounded catalogs and complete filtered SCR statistics. Verification/ready status markers preserve prior case-sensitive display semantics. Exact SCR UUID scope filters select stored fields; Issue projection omits descriptions/rich child histories.
@@ -508,3 +514,15 @@ sample-only/read-only. Render provider deployment ID/commit metadata was not
 exposed; HTTPS independently verifies API version and behavior. CI PR #1 remains
 open. Overall 34/44 (77%), read groups 16/17 (94%); only the two directory
 consumers inside group 17 completed in this package.
+
+Verification: full Python 3.12 backend **983 passed**, **7774 warnings**, no skips,
+including **122 real PostgreSQL 16.15 tests** on migrated disposable schemas. New
+cases cover scalar full counts, duplicate display numbers, multiple Issue relation
+types, cross-plan/orphan semantics, ownership pins, beyond-end pages, strict HTTP
+validation/read-only denial, fixed SQL shapes after 120-child growth and no audit
+writes. Existing command concurrency/replay/rollback regressions passed. Frontend
+**394 passed**, no skips; final Next/OpenNext Cloudflare production build passed.
+Six actual production Next SSR groups passed (default Chinese/English, metadata,
+beyond-end, selected UUID items, independently invalid page, foreign parent summary).
+Single Alembic head and PostgreSQL full upgrade SQL generation passed; no migration.
+Cloud rollout is pending at this feature commit and must be verified independently.

@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.9
+FastAPI 0.18.16
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -367,3 +367,12 @@ Release catalogs now use joined scalar projections, SQL counts and bounded windo
 ## SCR/Issue directory migration — API 0.18.15
 
 SCR/Issue directories now use two scalar SQL queries: full filtered aggregates plus a bounded page. They exclude rich child histories and long Issue descriptions. SCR TEST/READY indicators retain case-sensitive prior display semantics; exact scope filters use stored SCR fields. No inferred Issue ownership or release judgments.
+
+## SCR detail consumer — API 0.18.16
+
+`change_views.py` separates exact scalar parent metadata/full counts from four parent
+collections and two selected-child item collections. `change-collections.tsx` requests
+only selected point/plan items and verifies response SCR/child identities. Each
+collection fails independently while parent totals remain. First/next/select links
+preserve unrelated offsets. The parent page no longer requests the legacy rich
+SCR profile; coverage and other group-17 reads remain pending. No command changes.

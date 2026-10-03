@@ -29,7 +29,7 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
 Separate read-consumer tracking: **16 / 17 (94%)**, unchanged from the starting
-baseline; SCR/Issue directory consumers now migrate inside still-open group 17. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
+baseline; SCR/Issue directories and SCR detail consumers now migrate inside still-open group 17. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
 This finer counter does not change ROADMAP acceptance-item accounting or certify production readiness.
 
 ## Completed and evidenced in `main`
@@ -1103,3 +1103,41 @@ sample-only/read-only. Render provider deployment ID/commit metadata was not
 exposed; HTTPS independently verifies API version and behavior. CI PR #1 remains
 open. Overall 34/44 (77%), read groups 16/17 (94%); only the two directory
 consumers inside group 17 completed in this package.
+
+## Bounded SCR detail — API 0.18.16, 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from GitHub main `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281`.
+SCR detail now reads a scalar parent summary plus independently bounded acceptance
+criteria, Issue relations, change points and DVP plans. Selecting a point or plan
+loads its items by exact owned UUID, rather than loading every nested test item.
+Complete counts remain visible on beyond-end or failed child pages; each cursor and
+selection preserves the others. Default Chinese and selectable English remain.
+Parent metadata, raw business text, materials UUID and coverage links are preserved.
+
+The required change_id binds each child request to the resolved SCR UUID. Point/plan
+UUIDs must belong to that SCR. These pins select live identity, not a frozen Snapshot
+or cross-request transaction. Scalar SQL counts and bounded rows avoid growing ORM
+graphs/ID lists. Duplicate display numbers and multiple Issue relation types are
+preserved. Missing referenced Issues/DVP items are excluded as in the legacy profile;
+real cross-plan DVP assignments remain visible. Point assignment counts count bindings,
+not distinct tests, executions or passing results. Legacy rich APIs remain compatible.
+
+No migration or write-contract change; head `0018_asr_evidence_index`, 14 command
+contracts and public read-only mode remain. ROADMAP stays 34/44 (77%), read ledger
+16/17 (94%): group 17 is still partial. Next inspect SCR coverage, Issue detail/impact,
+organization and manufacturing reads; then approved identity/session, controlled
+submission/recovery/corrections and operations. CI PR #1 remains unmerged. Conditional
+estimates (4–8 packages toward internal use, 12–20 toward production review) remain
+unchanged until the remaining rich-read scope is decomposed.
+
+Verification: full Python 3.12 backend **983 passed**, **7774 warnings**, no skips,
+including **122 real PostgreSQL 16.15 tests** on migrated disposable schemas. New
+cases cover scalar full counts, duplicate display numbers, multiple Issue relation
+types, cross-plan/orphan semantics, ownership pins, beyond-end pages, strict HTTP
+validation/read-only denial, fixed SQL shapes after 120-child growth and no audit
+writes. Existing command concurrency/replay/rollback regressions passed. Frontend
+**394 passed**, no skips; final Next/OpenNext Cloudflare production build passed.
+Six actual production Next SSR groups passed (default Chinese/English, metadata,
+beyond-end, selected UUID items, independently invalid page, foreign parent summary).
+Single Alembic head and PostgreSQL full upgrade SQL generation passed; no migration.
+Cloud rollout is pending at this feature commit and must be verified independently.

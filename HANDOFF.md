@@ -5,9 +5,9 @@
 - Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `665c0335d278125b748a4aa05e16ea0a5e60d9e2`
-- Developed from: `665c0335d278125b748a4aa05e16ea0a5e60d9e2`
-- Baseline subject: `docs: record verified release catalog cloud rollout`
+- Verified starting baseline: `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281`
+- Developed from: `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281`
+- Baseline subject: `docs: record verified change and issue directory rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.15; health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.15 at starting baseline; 0.18.16 rollout pending |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- 64 backend test modules; the latest full run passed all 839 tests under Python 3.12, including 109 real PostgreSQL tests without skips.
+- Starting baseline full regression: 965 backend tests under Python 3.12, including 121 real PostgreSQL tests without skips. Current verification is recorded below.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -1140,3 +1140,41 @@ sample-only/read-only. Render provider deployment ID/commit metadata was not
 exposed; HTTPS independently verifies API version and behavior. CI PR #1 remains
 open. Overall 34/44 (77%), read groups 16/17 (94%); only the two directory
 consumers inside group 17 completed in this package.
+
+## Bounded SCR detail — API 0.18.16, 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from GitHub main `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281`.
+SCR detail now reads a scalar parent summary plus independently bounded acceptance
+criteria, Issue relations, change points and DVP plans. Selecting a point or plan
+loads its items by exact owned UUID, rather than loading every nested test item.
+Complete counts remain visible on beyond-end or failed child pages; each cursor and
+selection preserves the others. Default Chinese and selectable English remain.
+Parent metadata, raw business text, materials UUID and coverage links are preserved.
+
+The required change_id binds each child request to the resolved SCR UUID. Point/plan
+UUIDs must belong to that SCR. These pins select live identity, not a frozen Snapshot
+or cross-request transaction. Scalar SQL counts and bounded rows avoid growing ORM
+graphs/ID lists. Duplicate display numbers and multiple Issue relation types are
+preserved. Missing referenced Issues/DVP items are excluded as in the legacy profile;
+real cross-plan DVP assignments remain visible. Point assignment counts count bindings,
+not distinct tests, executions or passing results. Legacy rich APIs remain compatible.
+
+No migration or write-contract change; head `0018_asr_evidence_index`, 14 command
+contracts and public read-only mode remain. ROADMAP stays 34/44 (77%), read ledger
+16/17 (94%): group 17 is still partial. Next inspect SCR coverage, Issue detail/impact,
+organization and manufacturing reads; then approved identity/session, controlled
+submission/recovery/corrections and operations. CI PR #1 remains unmerged. Conditional
+estimates (4–8 packages toward internal use, 12–20 toward production review) remain
+unchanged until the remaining rich-read scope is decomposed.
+
+Verification: full Python 3.12 backend **983 passed**, **7774 warnings**, no skips,
+including **122 real PostgreSQL 16.15 tests** on migrated disposable schemas. New
+cases cover scalar full counts, duplicate display numbers, multiple Issue relation
+types, cross-plan/orphan semantics, ownership pins, beyond-end pages, strict HTTP
+validation/read-only denial, fixed SQL shapes after 120-child growth and no audit
+writes. Existing command concurrency/replay/rollback regressions passed. Frontend
+**394 passed**, no skips; final Next/OpenNext Cloudflare production build passed.
+Six actual production Next SSR groups passed (default Chinese/English, metadata,
+beyond-end, selected UUID items, independently invalid page, foreign parent summary).
+Single Alembic head and PostgreSQL full upgrade SQL generation passed; no migration.
+Cloud rollout is pending at this feature commit and must be verified independently.

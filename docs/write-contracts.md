@@ -422,3 +422,9 @@ API 0.18.14 adds read routes only. All 14 command contracts, scope/actor binding
 ## SCR/Issue directory migration — API 0.18.15
 
 API 0.18.15 adds only SCR/Issue directory reads. All 14 existing command contracts are unchanged. Catalog status markers and counts confer no approval, scope grant or submission outcome.
+
+## SCR detail read migration — API 0.18.16
+
+Only read endpoints/consumers change. All 14 command contracts, scoped actor binding,
+keyed replay, row serialization and atomic business/audit behavior remain. SCR/child
+identity pins are not write preconditions or grants. Public writes remain denied.

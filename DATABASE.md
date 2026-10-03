@@ -415,3 +415,13 @@ No schema migration: head stays 0018_asr_evidence_index. Catalogs use outer join
 ## SCR/Issue directory migration — API 0.18.15
 
 No migration; single head 0018_asr_evidence_index. Scalar SCR status counts use case-sensitive SQL replace/length on PostgreSQL and SQLite; issue_no/UUID and SCR created_at/UUID ordering are deterministic. Filtering never expands child ID sets. Large-offset performance still needs representative load measurement.
+
+## SCR detail scalar projections — API 0.18.16
+
+No migration; head 0018_asr_evidence_index. Correlated scalar counts summarize
+criteria, valid Issue relations, points, plans, owned-plan items and valid point-item
+bindings. Child projections use count subqueries and stable bounded ORDER/LIMIT/OFFSET
+without ORM graph hydration or growing ID lists. Exact point/plan ownership checks
+prevent selecting another SCR's child. Existing cross-plan point assignments remain
+visible; missing references match legacy inner-join visibility. SQL statement shapes
+remain fixed after 120-row child/assignment growth. Counts/pages are live reads.

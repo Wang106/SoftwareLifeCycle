@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.15`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.16`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -647,3 +647,35 @@ Reads/counts/pages are live observations, not cross-request transaction receipts
 - Beyond-end pages preserve full counts. Legacy bulk `/changes`, `/issues` and
   rich profiles remain; only these two frontend directories migrated. Counts and
   offset pages are independent live observations, not frozen cross-request data.
+
+## Bounded SCR detail — API 0.18.16
+
+All GET paths start `/api/v1/change-views/{request_no}`. Exact business number
+lookup returns 404 when absent. Unknown query fields and invalid UUID/pagination
+values return 422. No legacy bulk fallback is used by the SCR detail page.
+
+| Suffix | Projection | Stable ascending ordering |
+| --- | --- | --- |
+| `/summary` | Parent metadata and six full scalar counts, no child arrays | Single exact parent |
+| `/criteria` | Criterion UUID/number/description | criterion_no, UUID |
+| `/issues` | Relation UUID, Issue UUID/number/title/type/status | issue_no, relation_type, relation UUID |
+| `/points` | Point UUID/number/title/description/status/item_count | change_no, UUID |
+| `/plans` | Plan UUID/number/title/status/item_count | plan_no, UUID |
+| `/points/{point_id}/items` | Exact point assignment with DVP UUID/number/title/status/plan_id/relation_type | item_no, DVP UUID |
+| `/plans/{plan_id}/items` | Exact owned-plan DVP UUID/number/title/status/plan_id | item_no, DVP UUID |
+
+Summary accepts no query fields. Counts: criterion_count, issue_count (relations to
+existing Issues), point_count, plan_count, point_item_count (bindings to existing
+DVP items, including other plans), plan_item_count (items in this SCR's plans).
+Optional software/customer/project metadata may be null without discarding parent.
+All six pages require `change_id` UUID matching the resolved business number;
+limit 1..100 (default 50), offset 0..100000 (default 0). Wrong parent pin or child
+not owned by the SCR returns 404. Envelope: change_id, request_no, total, limit,
+offset, next_offset, items; selected child pages also return point_id or plan_id.
+Full totals remain on beyond-end pages. Offset/count reads are independent mutable
+observations; identity pins do not promise Snapshot consistency.
+
+Frontend query keys: scr_limit, criteria_offset, issues_offset, points_offset,
+plans_offset, point_items_offset, plan_items_offset, point_id, plan_id. Repeated
+parameters remain invalid rather than silently selecting/resetting one. Selected
+DVP links use exact item UUIDs. Coverage remains a separate rich consumer.

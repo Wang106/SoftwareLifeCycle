@@ -265,3 +265,29 @@ directories/profiles; then approved identity/session, controlled submission/reco
 broader corrections/revocations and operations. CI PR #1 remains open. The prior
 conditional package estimate is not reduced merely for finishing this partial group;
 remaining rich reads need decomposition before a reliable new estimate.
+
+## Bounded SCR detail — API 0.18.16, 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from GitHub main `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281`.
+SCR detail now reads a scalar parent summary plus independently bounded acceptance
+criteria, Issue relations, change points and DVP plans. Selecting a point or plan
+loads its items by exact owned UUID, rather than loading every nested test item.
+Complete counts remain visible on beyond-end or failed child pages; each cursor and
+selection preserves the others. Default Chinese and selectable English remain.
+Parent metadata, raw business text, materials UUID and coverage links are preserved.
+
+The required change_id binds each child request to the resolved SCR UUID. Point/plan
+UUIDs must belong to that SCR. These pins select live identity, not a frozen Snapshot
+or cross-request transaction. Scalar SQL counts and bounded rows avoid growing ORM
+graphs/ID lists. Duplicate display numbers and multiple Issue relation types are
+preserved. Missing referenced Issues/DVP items are excluded as in the legacy profile;
+real cross-plan DVP assignments remain visible. Point assignment counts count bindings,
+not distinct tests, executions or passing results. Legacy rich APIs remain compatible.
+
+No migration or write-contract change; head `0018_asr_evidence_index`, 14 command
+contracts and public read-only mode remain. ROADMAP stays 34/44 (77%), read ledger
+16/17 (94%): group 17 is still partial. Next inspect SCR coverage, Issue detail/impact,
+organization and manufacturing reads; then approved identity/session, controlled
+submission/recovery/corrections and operations. CI PR #1 remains unmerged. Conditional
+estimates (4–8 packages toward internal use, 12–20 toward production review) remain
+unchanged until the remaining rich-read scope is decomposed.
