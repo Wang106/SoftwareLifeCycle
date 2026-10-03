@@ -2,7 +2,7 @@
 
 ## Handoff identity
 
-- Date: 2026-10-03 (Asia/Shanghai)
+- Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
 - Verified starting baseline: `665c0335d278125b748a4aa05e16ea0a5e60d9e2`
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.14; health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.15; health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -1122,5 +1122,21 @@ Frontend **385 passed**, no skips, including six new directory/render tests plus
 localization coverage for the new component. Actual Chinese/English SSR retains
 original titles, numbers and links. Next.js/OpenNext Cloudflare production build,
 single Alembic head and generated PostgreSQL upgrade SQL passed. Head stays 0018.
-Existing write/authentication/atomic-audit suites pass unchanged. Rollout is pending
-feature push and will be independently verified.
+Existing write/authentication/atomic-audit suites pass unchanged. Rollout passed independent HTTPS checks; see the dated verification below.
+
+## SCR/Issue directory rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature commit `e7e86211cf89cae09ccdb824993f5ba6b72fb409` is on GitHub main;
+uploaded Git tree matches the tested local commit. Cloudflare Workers Builds
+completed successfully for this exact feature commit. Live API health returned
+HTTP 200 / version 0.18.15 / schema 0018_asr_evidence_index. Both catalogs passed
+one-row/full-total/beyond-end/no-match and strict invalid-filter checks. Public
+sample legacy rows matched complete counts, and SCR status statistics matched
+case-sensitive TEST/READY markers across the full legacy sample. Issue directory
+omits descriptions as documented. Chinese and English directory pages, beyond-end
+and invalid-filter states passed. Snapshot and Deployment POST probes returned
+403 read_only_mode; no domain records were written. Public staging remains
+sample-only/read-only. Render provider deployment ID/commit metadata was not
+exposed; HTTPS independently verifies API version and behavior. CI PR #1 remains
+open. Overall 34/44 (77%), read groups 16/17 (94%); only the two directory
+consumers inside group 17 completed in this package.

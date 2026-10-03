@@ -1,6 +1,6 @@
 # Project Status
 
-- Last reviewed: 2026-10-03 (Asia/Shanghai)
+- Last reviewed: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
 - Reviewed starting repository baseline: `665c0335d278125b748a4aa05e16ea0a5e60d9e2` — inherited main; current package adds bounded SCR/Issue directories (API 0.18.15)
@@ -78,8 +78,8 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 | Layer | Configured target | Verified 2026-10-03 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live release directories verified: Chinese/English, counts, pagination and invalid filters | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.14`; Snapshot/Deployment probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live SCR/Issue directories verified: Chinese/English, full statistics, pagination and invalid filters | Demo/test frontend, not evidence of production readiness |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.15`; Snapshot/Deployment probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at `0018_asr_evidence_index`; read-only SQL confirms revision and index | Sample/test data only; read-only schema/index inspection |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
@@ -1085,5 +1085,21 @@ Frontend **385 passed**, no skips, including six new directory/render tests plus
 localization coverage for the new component. Actual Chinese/English SSR retains
 original titles, numbers and links. Next.js/OpenNext Cloudflare production build,
 single Alembic head and generated PostgreSQL upgrade SQL passed. Head stays 0018.
-Existing write/authentication/atomic-audit suites pass unchanged. Rollout is pending
-feature push and will be independently verified.
+Existing write/authentication/atomic-audit suites pass unchanged. Rollout passed independent HTTPS checks; see the dated verification below.
+
+## SCR/Issue directory rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature commit `e7e86211cf89cae09ccdb824993f5ba6b72fb409` is on GitHub main;
+uploaded Git tree matches the tested local commit. Cloudflare Workers Builds
+completed successfully for this exact feature commit. Live API health returned
+HTTP 200 / version 0.18.15 / schema 0018_asr_evidence_index. Both catalogs passed
+one-row/full-total/beyond-end/no-match and strict invalid-filter checks. Public
+sample legacy rows matched complete counts, and SCR status statistics matched
+case-sensitive TEST/READY markers across the full legacy sample. Issue directory
+omits descriptions as documented. Chinese and English directory pages, beyond-end
+and invalid-filter states passed. Snapshot and Deployment POST probes returned
+403 read_only_mode; no domain records were written. Public staging remains
+sample-only/read-only. Render provider deployment ID/commit metadata was not
+exposed; HTTPS independently verifies API version and behavior. CI PR #1 remains
+open. Overall 34/44 (77%), read groups 16/17 (94%); only the two directory
+consumers inside group 17 completed in this package.
