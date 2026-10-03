@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `665c0335d278125b748a4aa05e16ea0a5e60d9e2` — inherited main; current package adds bounded SCR/Issue directories (API 0.18.15)
+- Reviewed starting repository baseline: `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281` — inherited main; current package adds bounded SCR detail (API 0.18.16)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; rich profiles and other domain catalogs remain. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; coverage, Issue and other rich domain reads remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -1141,3 +1141,25 @@ Six actual production Next SSR groups passed (default Chinese/English, metadata,
 beyond-end, selected UUID items, independently invalid page, foreign parent summary).
 Single Alembic head and PostgreSQL full upgrade SQL generation passed; no migration.
 Cloud rollout is pending at this feature commit and must be verified independently.
+
+## SCR detail cloud rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature commit `53bb1f9188fd0a9b2647a2525e6fd0b39dfdbfd2` is pushed to main.
+GitHub's `Workers Builds: softwarelifecycle` check completed successfully for that
+exact commit at 2026-10-03T16:38:05Z. Render HTTPS health/live and health/ready return
+200, API 0.18.16 and schema 0018_asr_evidence_index. Provider-side Render deployment
+ID/commit metadata was not inspected; API version and behavior are live evidence.
+
+SCR-142 UUID `8c923022-b24c-4358-b808-74d484285881` retains parent metadata and
+complete counts: 1 criterion, 1 Issue relation, 2 points, 1 plan, 3 point assignments
+and 4 owned-plan DVP items. Six collection/selected-child routes were checked with
+limit 1, beyond-end/full totals, invalid/missing pins/limits and foreign child UUIDs.
+Cloudflare Chinese/English SCR detail, exact selected point/plan item links, beyond-end
+criteria and an independently invalid repeated criterion cursor passed. Empty
+Deployment and Snapshot POST probes return 403 read_only_mode without business
+writes. No migration, provider/grant configuration or public-write enablement.
+
+Next package: bound SCR coverage while preserving release/frozen-Snapshot selection,
+then Issue detail/impact (linked SCR relations, candidate releases and full judgment
+history). Inspect organization/manufacturing consumers after those. Progress remains
+34/44 (77%), read ledger 16/17 (94%); CI PR #1 remains unmerged.

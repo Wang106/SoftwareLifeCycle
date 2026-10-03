@@ -526,3 +526,25 @@ Six actual production Next SSR groups passed (default Chinese/English, metadata,
 beyond-end, selected UUID items, independently invalid page, foreign parent summary).
 Single Alembic head and PostgreSQL full upgrade SQL generation passed; no migration.
 Cloud rollout is pending at this feature commit and must be verified independently.
+
+## SCR detail cloud rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature commit `53bb1f9188fd0a9b2647a2525e6fd0b39dfdbfd2` is pushed to main.
+GitHub's `Workers Builds: softwarelifecycle` check completed successfully for that
+exact commit at 2026-10-03T16:38:05Z. Render HTTPS health/live and health/ready return
+200, API 0.18.16 and schema 0018_asr_evidence_index. Provider-side Render deployment
+ID/commit metadata was not inspected; API version and behavior are live evidence.
+
+SCR-142 UUID `8c923022-b24c-4358-b808-74d484285881` retains parent metadata and
+complete counts: 1 criterion, 1 Issue relation, 2 points, 1 plan, 3 point assignments
+and 4 owned-plan DVP items. Six collection/selected-child routes were checked with
+limit 1, beyond-end/full totals, invalid/missing pins/limits and foreign child UUIDs.
+Cloudflare Chinese/English SCR detail, exact selected point/plan item links, beyond-end
+criteria and an independently invalid repeated criterion cursor passed. Empty
+Deployment and Snapshot POST probes return 403 read_only_mode without business
+writes. No migration, provider/grant configuration or public-write enablement.
+
+Next package: bound SCR coverage while preserving release/frozen-Snapshot selection,
+then Issue detail/impact (linked SCR relations, candidate releases and full judgment
+history). Inspect organization/manufacturing consumers after those. Progress remains
+34/44 (77%), read ledger 16/17 (94%); CI PR #1 remains unmerged.
