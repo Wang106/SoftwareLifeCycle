@@ -1,5 +1,23 @@
 # SoftwareLifeCycle Development Handoff
 
+## Current continuation — 2026-10-03
+
+Mode: Codex. Started from current GitHub main
+`12660a160750218e0997ecd322d652d6c36f1ea2`, following “继续开发_3” retrieval,
+the governance v1.1/API guide and repository documents/source. API is 0.18.13;
+head remains 0018_asr_evidence_index. Older baseline/deployment/test entries below
+are historical rather than the current source identity.
+
+This ready operations slice adds `.github/workflows/ci.yml`, isolated migration
+verification and a backend report gate rejecting skips/failures/missing PostgreSQL
+cases. CI runs frontend tests and Next.js/OpenNext builds with no API credentials.
+See `docs/ci.md`. First remote CI run is pending; progress remains 34/44 until it
+passes. This does not deploy application code or configure branch protection.
+
+Next development resumes release catalogs/exact legacy resolver, then other rich
+read consumers. Identity/session/submission/recovery/corrections and remaining
+operations are open; public staging remains sample-only/read-only.
+
 ## Handoff identity
 
 - Date: 2026-10-03 (Asia/Shanghai)
@@ -91,7 +109,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment/Changeover now have retry and locks; actual reports now have keyed retry/version checks and audited corrections.
 5. Actual software has keyed retry/version/correction protection; legacy no-key reports may still overwrite without a precondition.
 6. Some legacy list/history endpoints remain unbounded.
-7. CI, backup/restore, monitoring, alerting and incident runbooks are not present.
+7. CI is implemented pending first remote acceptance; backup/restore, monitoring, alerting and incident runbooks remain absent.
 8. Public reads are suitable only for non-sensitive sample data; CORS is not access control.
 
 ## Recommended next development package
@@ -1028,3 +1046,13 @@ catalogs remain. Next release catalogs/exact legacy resolver, then other rich re
 approved identity/session, authenticated submission/recovery/corrections and operations
 follow. Conditional estimate 5–9 internal-use packages, 13–21 total production review.
 Public staging remains read-only; online verification will be recorded after push.
+
+Local verification before initial push: frontend **370 passed, zero skips**;
+Next.js/OpenNext Cloudflare production build passed. Python 3.12 backend **813
+passed, 119 skipped, 4854 warnings** because this workspace has no PostgreSQL;
+this is explicitly not a full-suite acceptance. The new report gate correctly
+rejects that actual skipped report, plus empty/missing-PostgreSQL/failure/error/skip
+fixtures. Workflow YAML structure, SHA pins, permission checks, script compilation,
+single Alembic head, full upgrade/head downgrade SQL and remote-URL rejection passed.
+The isolated PostgreSQL round trip and complete no-skip suite await remote CI.
+Existing CSS/dependency deprecation warnings remain. No migration added.

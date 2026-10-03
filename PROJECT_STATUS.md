@@ -3,9 +3,29 @@
 - Last reviewed: 2026-10-03 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `8ab38722f62b7221fe8cdf90e9c3c70cb07d935d` — `feat: bound ASR passport histories with exact decision and Snapshot pins` (developed from `f63862a45b0b2e4c945f2252cc8f74d0ac25d769`; translation follow-up `03892f7637e92a2f402118c0d4dcfb351baaf838`)
+- Previous reviewed repository baseline: `8ab38722f62b7221fe8cdf90e9c3c70cb07d935d` — `feat: bound ASR passport histories with exact decision and Snapshot pins` (developed from `f63862a45b0b2e4c945f2252cc8f74d0ac25d769`; translation follow-up `03892f7637e92a2f402118c0d4dcfb351baaf838`)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
+
+## Current Codex continuation — 2026-10-03
+
+Developed from GitHub main `12660a160750218e0997ecd322d652d6c36f1ea2`,
+after retrieving the “继续开发_3” context, governance v1.1 baseline and the
+API/database guide, and rereading current repository documents and source.
+Current source is API 0.18.13 / Alembic 0018_asr_evidence_index. Older verification
+entries below are historical and must not be treated as fresh deployment evidence.
+
+This package adds GitHub Actions CI for complete backend tests with disposable
+PostgreSQL 16, migration head/SQL/round-trip checks, strict JUnit evidence validation,
+and frontend tests plus Next.js/OpenNext production build. See `docs/ci.md`.
+Remote CI acceptance is pending the initial push; the CI roadmap checkbox and
+34/44 overall count remain unchanged until execution succeeds. Identity/session,
+public read-only settings and existing business/API contracts are unchanged.
+
+Next business package remains release catalogs/exact legacy resolver, then other
+rich profiles/domain catalogs (read migration ledger 15/17). Approved identity,
+controlled submission/recovery/corrections, backups, monitoring, environment and
+company network/data governance remain open.
 
 ## Current phase
 
@@ -115,7 +135,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 - All current OIDC writes use the authenticated principal for their atomic audit event and retain request declarations separately; historical/disabled-mode events remain unverified by design.
 - All 14 current command routes are authenticated/scoped and atomically audited. Snapshot/Batch now support optional request-ID replay and PostgreSQL locking; actual-software keyed reporting now adds retry/version protection and correction evidence; legacy paths remain weaker. See `docs/write-contracts.md`.
 - Some legacy list/history APIs remain unbounded; migration to bounded catalog endpoints is incomplete.
-- There is no CI workflow in the reviewed tree, so tests/builds are not enforced automatically on every push.
+- CI workflow is implemented for main pushes and pull requests; first remote execution is pending. Branch protection and CI-gated deployment are not configured.
 - Backend tests require Python 3.12 (matching `backend/Dockerfile`); this review used the repository's pinned `pytest==9.1.1` environment.
 - The passing backend run reports deprecation/collection warnings, dominated by `datetime.utcnow()` usage and one SQLAlchemy `TestRelease` model name collected as a possible test class.
 - Frontend build emits an existing Autoprefixer warning for `end`; use `flex-end` when that CSS is next touched.
@@ -991,3 +1011,13 @@ catalogs remain. Next release catalogs/exact legacy resolver, then other rich re
 approved identity/session, authenticated submission/recovery/corrections and operations
 follow. Conditional estimate 5–9 internal-use packages, 13–21 total production review.
 Public staging remains read-only; online verification will be recorded after push.
+
+Local verification before initial push: frontend **370 passed, zero skips**;
+Next.js/OpenNext Cloudflare production build passed. Python 3.12 backend **813
+passed, 119 skipped, 4854 warnings** because this workspace has no PostgreSQL;
+this is explicitly not a full-suite acceptance. The new report gate correctly
+rejects that actual skipped report, plus empty/missing-PostgreSQL/failure/error/skip
+fixtures. Workflow YAML structure, SHA pins, permission checks, script compilation,
+single Alembic head, full upgrade/head downgrade SQL and remote-URL rejection passed.
+The isolated PostgreSQL round trip and complete no-skip suite await remote CI.
+Existing CSS/dependency deprecation warnings remain. No migration added.

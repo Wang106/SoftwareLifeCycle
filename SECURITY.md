@@ -2,6 +2,8 @@
 
 ## Current status
 
+CI uses read-only repository permissions, SHA-pinned actions, non-persisted checkout credentials and disposable PostgreSQL service data. It uses no deployment/identity/company secrets and cannot grant public writes or deploy. The workflow runs ordinary `pull_request` events, not privileged `pull_request_target`. See `docs/ci.md`.
+
 The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. Every current write records an atomic audit event bound to that principal. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and legacy no-key writes retain weaker semantics; controlled UI, provider-backed acceptance and operations remain unfinished.
 
 ## Authentication boundary
