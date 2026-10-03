@@ -5,7 +5,7 @@
 - API 0.18.14: SSR/ASR catalogs add strict filters, full counts and bounded pages; latest ASR Snapshot uses a scalar SQL projection. Releases remain visible when optional metadata is missing.
 - Both bilingual directory pages preserve filters/counts/exact links and distinguish unavailable from beyond-end. Legacy ASR links use exact UUID-or-version LIMIT 2 resolution, including ambiguity and old releases beyond 200 rows. Compatibility APIs retained.
 - No migration; schema head 0018. Full Python 3.12 backend 948 passed (120 real PostgreSQL), 7665 warnings, no skips; frontend 378 passed, no skips; Next/OpenNext production build passed.
-- Read ledger 16/17 (94%); ROADMAP 34/44 (77%) unchanged. Rich profiles/domain catalogs, approved identity/session, submission/recovery/corrections and operations remain. CI PR #1 remains open, not counted in main. Public staging remains read-only; deployment verification follows push.
+- Read ledger 16/17 (94%); ROADMAP 34/44 (77%) unchanged. Rich profiles/domain catalogs, approved identity/session, submission/recovery/corrections and operations remain. CI PR #1 remains open, not counted in main. Public staging remains read-only; live verification passed (record below).
 
 ## 2026-10-03 — Bounded readiness and policy aggregation
 
@@ -467,3 +467,20 @@ Next readiness/compatibility policy, release catalogs/resolver and other rich re
 Feature, translation and verification records pushed to main; unrelated duplicate file
 untouched. Public staging remains read-only. Conditional estimate 6–10 internal-use
 packages, 14–22 total toward production review.
+
+## Release catalog rollout verified — 2026-10-03
+
+Feature commit `347cd541e05e70967b8c15b14e4a3cd51b86d4cb` is on GitHub main.
+The uploaded 19 file blob hashes and full Git tree match the local tested commit.
+Cloudflare check `Workers Builds: softwarelifecycle` completed successfully for
+that exact commit. Live API health returned HTTP 200, version 0.18.14 and revision
+0018_asr_evidence_index. Both catalogs passed one-row/full-count/beyond-end checks
+and rejected invalid limit/offset/unknown-field filters with 422. Exact UUID
+resolution and missing resolution passed; legacy version passport redirected to
+the exact ASR UUID. Snapshot and Deployment POST probes returned 403
+read_only_mode; no business data was written. Live Chinese pages passed normal,
+beyond-end and invalid-filter states; slc_language=en served English directories
+with HTTP 200. Public environment remains sample-only/read-only. No Render
+provider deployment ID or exact provider commit metadata was exposed in this
+verification; the API version/behavior is independently verified over HTTPS.
+CI PR #1 remains open. Verification-only documentation follows the feature commit.

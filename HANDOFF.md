@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.9; health verified ready |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.14; health verified ready |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -1067,4 +1067,21 @@ scalar query shape/no ORM child graph, plus no audit writes. Frontend **378
 passed**, no skips, including eight new catalog/resolver/actual Chinese-English
 SSR rendering cases. Next.js and OpenNext Cloudflare production build passed.
 Single Alembic head 0018 and generated PostgreSQL upgrade SQL passed. Existing
-write safety suites pass unchanged. Public rollout verification is pending push.
+write safety suites pass unchanged. Public rollout verification passed; see the dated rollout record below.
+
+## Release catalog rollout verified — 2026-10-03
+
+Feature commit `347cd541e05e70967b8c15b14e4a3cd51b86d4cb` is on GitHub main.
+The uploaded 19 file blob hashes and full Git tree match the local tested commit.
+Cloudflare check `Workers Builds: softwarelifecycle` completed successfully for
+that exact commit. Live API health returned HTTP 200, version 0.18.14 and revision
+0018_asr_evidence_index. Both catalogs passed one-row/full-count/beyond-end checks
+and rejected invalid limit/offset/unknown-field filters with 422. Exact UUID
+resolution and missing resolution passed; legacy version passport redirected to
+the exact ASR UUID. Snapshot and Deployment POST probes returned 403
+read_only_mode; no business data was written. Live Chinese pages passed normal,
+beyond-end and invalid-filter states; slc_language=en served English directories
+with HTTP 200. Public environment remains sample-only/read-only. No Render
+provider deployment ID or exact provider commit metadata was exposed in this
+verification; the API version/behavior is independently verified over HTTPS.
+CI PR #1 remains open. Verification-only documentation follows the feature commit.

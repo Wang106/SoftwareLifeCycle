@@ -78,8 +78,8 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 | Layer | Configured target | Verified 2026-10-03 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live bilingual ASR policy pinned artifact/rule pagination/filtering and counts verified | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.9`; Snapshot/Batch probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live release directories verified: Chinese/English, counts, pagination and invalid filters | Demo/test frontend, not evidence of production readiness |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.14`; Snapshot/Deployment probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at `0018_asr_evidence_index`; read-only SQL confirms revision and index | Sample/test data only; read-only schema/index inspection |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
@@ -1030,4 +1030,21 @@ scalar query shape/no ORM child graph, plus no audit writes. Frontend **378
 passed**, no skips, including eight new catalog/resolver/actual Chinese-English
 SSR rendering cases. Next.js and OpenNext Cloudflare production build passed.
 Single Alembic head 0018 and generated PostgreSQL upgrade SQL passed. Existing
-write safety suites pass unchanged. Public rollout verification is pending push.
+write safety suites pass unchanged. Public rollout verification passed; see the dated rollout record below.
+
+## Release catalog rollout verified — 2026-10-03
+
+Feature commit `347cd541e05e70967b8c15b14e4a3cd51b86d4cb` is on GitHub main.
+The uploaded 19 file blob hashes and full Git tree match the local tested commit.
+Cloudflare check `Workers Builds: softwarelifecycle` completed successfully for
+that exact commit. Live API health returned HTTP 200, version 0.18.14 and revision
+0018_asr_evidence_index. Both catalogs passed one-row/full-count/beyond-end checks
+and rejected invalid limit/offset/unknown-field filters with 422. Exact UUID
+resolution and missing resolution passed; legacy version passport redirected to
+the exact ASR UUID. Snapshot and Deployment POST probes returned 403
+read_only_mode; no business data was written. Live Chinese pages passed normal,
+beyond-end and invalid-filter states; slc_language=en served English directories
+with HTTP 200. Public environment remains sample-only/read-only. No Render
+provider deployment ID or exact provider commit metadata was exposed in this
+verification; the API version/behavior is independently verified over HTTPS.
+CI PR #1 remains open. Verification-only documentation follows the feature commit.
