@@ -84,6 +84,7 @@ Frontend data pages prefer explicit unavailable/empty states over fabricated fal
 
 ## Runtime configurations
 
+- CI: GitHub Actions uses disposable hosted runners, Python 3.12/PostgreSQL 16 and Node 22. Backend tests and isolated migration round trips run alongside frontend tests/Next.js/OpenNext builds; no deployment credentials or public data are used. See `docs/ci.md`.
 - Local: Docker Compose runs PostgreSQL, FastAPI and Next.js; API startup migrates and optionally seeds.
 - Public demo: Cloudflare Worker serves the frontend and calls the Render FastAPI service; Render uses managed PostgreSQL and should set `READ_ONLY_MODE=true`.
 - Future company environment: requires a fresh database, `SEED_ON_STARTUP=false`, authentication/authorization and an approved frontend-to-API network path.

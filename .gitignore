@@ -9,3 +9,4 @@ node_modules/
 .DS_Store
 postgres_data/
 storage_data/
+ci-results/

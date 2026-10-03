@@ -1,5 +1,10 @@
 # SoftwareLifeCycle
 
+Continuous integration: [checks and local reproduction](docs/ci.md). Pushes to
+`main` and pull requests run backend/real PostgreSQL/migration checks and frontend
+tests/Cloudflare production builds on disposable runners; live deployment remains
+a separate verification step.
+
 Automotive software lifecycle governance platform for BMS / ECU software.
 
 The implemented traceability chain is:

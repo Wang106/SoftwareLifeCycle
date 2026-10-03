@@ -11,6 +11,12 @@
 
 SQLite is used by isolated tests where supported, but it does not validate PostgreSQL JSONB, database triggers or row-lock concurrency. PostgreSQL is required for schema and append-only-rule verification.
 
+GitHub Actions now provisions a disposable PostgreSQL 16 database for every CI
+backend job. Migration verification checks the single configured head, full upgrade
+and head downgrade SQL, and a fresh-schema upgrade/downgrade/re-upgrade. Existing
+real PostgreSQL tests use isolated schemas; the JUnit gate rejects skips or missing
+PostgreSQL-module evidence. No schema revision is added. See `docs/ci.md`.
+
 ## Table groups
 
 | Domain | Main tables |

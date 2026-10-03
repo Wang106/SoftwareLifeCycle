@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-03 — Codex continuation and CI foundation
+
+- Resumed from main `12660a16` after retrieving “继续开发_3” and reading its documents; current application remains API 0.18.13 / schema 0018.
+- Added main/PR/manual CI: Python 3.12 + disposable PostgreSQL 16, full backend suite, strict no-skip JUnit gate, single Alembic head/SQL/isolated migration round trip; Node 22 lockfile install, frontend tests and Next/OpenNext Worker build.
+- Read-only workflow permissions, SHA-pinned actions, no persisted checkout credentials or deployment/company secrets. Added bilingual CI operations guide and synchronized architecture/security/database/status/handoff.
+- PR #1 / feature commit 1f3c672: Actions run 37104734307 succeeded. Backend 932 passed, 6024 existing warnings, no skips; PostgreSQL migration round trip and strict report gate passed. Frontend 370 passed and Next/OpenNext production build passed. No application/API/schema/public-setting change or migration. Main integration awaits approval; 34/44 main progress retained until merge.
+
 ## 2026-10-03 — Bounded readiness and policy aggregation
 
 - API 0.18.13: fixed current summary and Snapshot-pinned approved-exception pages. Shared policy uses SQL CASE/EXISTS, preserving eight gates, nullable/empty/duplicate policy semantics and live declarations. Stale current pins return 409; legacy arrays/evaluate retained.

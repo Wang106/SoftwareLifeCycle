@@ -210,3 +210,14 @@ retired. Fine ledger 14/17 (82%) → 15/17 (88%). ROADMAP remains 34/44 (77%), P
 Next release catalogs/exact legacy resolver, then remaining rich reads; approved identity/
 session, authenticated submission/recovery/corrections and operations follow. Conditional
 estimate: 5–9 packages toward internal use, 13–21 total toward production review.
+
+## CI foundation proposed and verified — 2026-10-03
+
+PR #1 implements the Phase 7 CI item and passes remote run 37104734307: full
+Python 3.12 backend 932 passed/no skips on disposable PostgreSQL 16, migration
+head/SQL/round trip, strict JUnit gate, frontend 370 passed and Next/OpenNext build.
+Feature commit 1f3c672. The checkbox is deliberately unchecked until accepted into
+main. Automatic approval review blocked direct main mutation; user approval for
+PR merge is outstanding. After merge, check only the CI item and update current
+counts to 35/44 (80%), Phase 7 1/6 (17%). Other phases and the 15/17 read ledger
+are unchanged. No deployment gating or branch protection is configured by CI.
