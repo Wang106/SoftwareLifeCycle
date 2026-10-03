@@ -1,7 +1,7 @@
 # Read-consumer migration tracking
 
-Reviewed main baseline: 12660a160750218e0997ecd322d652d6c36f1ea2.
-Updated 2026-10-03 (Asia/Shanghai), API 0.18.14.
+Reviewed main baseline: 665c0335d278125b748a4aa05e16ea0a5e60d9e2.
+Updated 2026-10-03 (Asia/Shanghai), API 0.18.15.
 
 The top-level ROADMAP counts completed acceptance items: 34/44 (77%). The remaining
 Phase 4 item covers several consumers, so finishing one consumer does not complete
@@ -31,7 +31,7 @@ compatibility APIs can still exist; removing them requires caller review.
 | 14 | ASR passport | Migrated | backend/app/api/asr_passport.py; fixed summary and four independently bounded histories, paired UUID pins and safe historical release display |
 | 15 | ASR readiness and compatibility policy reads | Migrated this package | backend/app/api/asr_readiness.py; SQL coverage/policy/exception aggregates and bounded approved exceptions; eight gates unchanged. Legacy array APIs/evaluate retained, not retired |
 | 16 | Release catalogs and legacy resolver | Migrated | backend/app/api/release_catalog.py; both release directories use bounded pages/full counts; legacy-release.ts uses exact bounded UUID/version resolution, including ambiguity beyond 200 rows |
-| 17 | Other rich profiles and legacy domain catalogs | Pending | frontend changes/issues/organizations/manufacturing catalogs and details; change coverage/issue impact child sets need individual review and bounded contracts |
+| 17 | Other rich profiles and legacy domain catalogs | Partial | SCR/Issue directory pages now use backend/app/api/change_catalog.py and complete SQL counts. SCR detail, Issue detail/impact, organization catalogs/profiles and manufacturing catalogs/profiles remain. This broad group is not complete |
 
 Groups 16–17 are broad and can require several packages. Splitting a group later must
 record a denominator change rather than implying earned progress. New consumers must
@@ -45,3 +45,11 @@ approved identity/session, controlled submission and recovery/corrections, opera
 Planning ranges remain conditional: 4–8 focused packages toward internal use and
 12–20 total toward production review, subject to remaining group sizes and provider
 configuration. Public staging remains read-only throughout.
+
+### Group 17 directory slice — API 0.18.15
+
+Completed this package: frontend `/changes` and `/issues` stop loading bulk lists.
+Two directories are migrated; rich profiles/domain catalogs remain. No denominator
+change, no earned group completion: 16/17 (94%), ROADMAP 34/44 (77%).
+Next bounded SCR detail collections, then Issue detail/impact and organization/
+manufacturing reads. Existing estimates remain conditional, not automatically reduced.

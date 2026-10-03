@@ -418,3 +418,7 @@ No authenticated UI submission, provider configuration or staging writes are ena
 ## Release catalog consumer migration — API 0.18.14
 
 API 0.18.14 adds read routes only. All 14 command contracts, scope/actor binding, keyed retry, row serialization and atomic audit behavior remain unchanged. Catalog or resolver outcomes do not authorize submission; public staging retains read_only_mode.
+
+## SCR/Issue directory migration — API 0.18.15
+
+API 0.18.15 adds only SCR/Issue directory reads. All 14 existing command contracts are unchanged. Catalog status markers and counts confer no approval, scope grant or submission outcome.

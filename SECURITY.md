@@ -353,3 +353,7 @@ remain unchanged. Public staging stays read-only; verification creates no busine
 ## Release catalog consumer migration — API 0.18.14
 
 Catalog and legacy resolver are read-only sample projections, not authorization or evidence of release. Exact ambiguous UUID/version matches fail closed in navigation. Strict filters reject malformed UUIDs/unknown fields; literal search escapes SQL wildcard characters. Public read-only guard and all 14 write contracts are unchanged.
+
+## SCR/Issue directory migration — API 0.18.15
+
+The new directory reads expose sample projections only, not authorization or readiness. Unknown filters/invalid UUIDs fail with 422, literal SQL substring search escapes wildcard characters. All write authentication/scope/actor/retry/atomic-audit guards remain unchanged; public staging stays read-only.

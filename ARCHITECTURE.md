@@ -363,3 +363,7 @@ Snapshot. New reads do not create permissions, stored readiness receipts or writ
 ## Release catalog consumer migration — API 0.18.14
 
 Release catalogs now use joined scalar projections, SQL counts and bounded windows; latest ASR Snapshot is a correlated LIMIT 1 scalar. Legacy ASR URL resolution uses a separate LIMIT 2 exact UUID-or-version query. The frontend shares a bilingual catalog component; bulk compatibility APIs remain.
+
+## SCR/Issue directory migration — API 0.18.15
+
+SCR/Issue directories now use two scalar SQL queries: full filtered aggregates plus a bounded page. They exclude rich child histories and long Issue descriptions. SCR TEST/READY indicators retain case-sensitive prior display semantics; exact scope filters use stored SCR fields. No inferred Issue ownership or release judgments.

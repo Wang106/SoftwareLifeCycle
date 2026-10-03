@@ -5,9 +5,9 @@
 - Date: 2026-10-03 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `12660a160750218e0997ecd322d652d6c36f1ea2`
-- Developed from: `12660a160750218e0997ecd322d652d6c36f1ea2`
-- Baseline subject: `fix: translate dynamic readiness gates and exception counts`
+- Verified starting baseline: `665c0335d278125b748a4aa05e16ea0a5e60d9e2`
+- Developed from: `665c0335d278125b748a4aa05e16ea0a5e60d9e2`
+- Baseline subject: `docs: record verified release catalog cloud rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -1085,3 +1085,42 @@ with HTTP 200. Public environment remains sample-only/read-only. No Render
 provider deployment ID or exact provider commit metadata was exposed in this
 verification; the API version/behavior is independently verified over HTTPS.
 CI PR #1 remains open. Verification-only documentation follows the feature commit.
+
+## Bounded SCR and Issue directories — 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from GitHub main `665c0335d278125b748a4aa05e16ea0a5e60d9e2`.
+API 0.18.15 adds strict bounded change-request and Issue catalogs. Both frontend
+directories now retain filter context, complete totals, first/next links and explicit
+beyond-end/unavailable states, with default Chinese/selectable English. SCR
+verification/ready cards are SQL aggregates over the entire filtered set, preserving
+previous case-sensitive status substring display semantics rather than redefining
+release readiness. Exact UUID software/customer/project filters select stored SCR
+fields only; Issue filters do not infer ownership/impact from version text. Literal
+search escapes wildcard characters. Directory rows do not transfer Issue descriptions
+or rich child histories; descriptions remain on exact profiles. Two scalar SQL
+queries supply totals and a bounded window without growing ORM graphs/ID arrays.
+
+No migration or write change; schema head stays `0018_asr_evidence_index`.
+Legacy bulk `/changes` and `/issues` APIs and rich profiles remain compatible.
+Offset pages/counts are mutable observations, not frozen evidence or write grants.
+Public staging stays read-only. ROADMAP remains 34/44 (77%), read ledger 16/17
+(94%): this package advances two directory consumers inside still-open group 17,
+not that whole group's completion. Remaining: SCR details, Issue details/impact
+evidence, supplier/customer/project directories and rich profiles, manufacturing
+directories/profiles; then approved identity/session, controlled submission/recovery,
+broader corrections/revocations and operations. CI PR #1 remains open. The prior
+conditional package estimate is not reduced merely for finishing this partial group;
+remaining rich reads need decomposition before a reliable new estimate.
+
+Validation: full Python 3.12 backend **965 passed**, **7717 warnings**, no skips,
+including **121 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+Seventeen focused new backend cases cover row projection parity, complete filtered
+counts, case-sensitive TEST/READY statistics, exact stored scopes, escaped search,
+tied ordering, >200 row growth with two fixed scalar queries/no ORM graph, strict
+HTTP fields and unchanged read-only rejection; PostgreSQL reads add no audit event.
+Frontend **385 passed**, no skips, including six new directory/render tests plus
+localization coverage for the new component. Actual Chinese/English SSR retains
+original titles, numbers and links. Next.js/OpenNext Cloudflare production build,
+single Alembic head and generated PostgreSQL upgrade SQL passed. Head stays 0018.
+Existing write/authentication/atomic-audit suites pass unchanged. Rollout is pending
+feature push and will be independently verified.

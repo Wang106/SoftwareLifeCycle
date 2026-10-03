@@ -1512,5 +1512,11 @@
   "No releases on this page.": "当前页没有发布记录。",
   "Release catalog unavailable": "发布目录暂不可用",
   "Page size": "每页数量",
-  "Counts cover all filtered records.": "计数覆盖全部筛选结果。"
+  "Counts cover all filtered records.": "计数覆盖全部筛选结果。",
+  "Matching SCR": "匹配的变更请求",
+  "Matching issues": "匹配的问题",
+  "Records on this page": "当前页记录数",
+  "No matching records on this page.": "当前页没有匹配记录。",
+  "Change catalog unavailable": "变更目录暂不可用",
+  "Issue catalog unavailable": "问题目录暂不可用"
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-04 — Bounded SCR and Issue directories
+
+- API 0.18.15 adds strict bounded catalogs and complete filtered SCR statistics. Verification/ready status markers preserve prior case-sensitive display semantics. Exact SCR UUID scope filters select stored fields; Issue projection omits descriptions/rich child histories.
+- Both default-Chinese/English directories preserve filters, exact links and full counts on beyond-end pages; failed/invalid reads show unavailable and unknown counts. Legacy bulk/profile APIs remain.
+- Full Python 3.12 backend 965 passed (121 real PostgreSQL), 7717 warnings, no skips; frontend 385 passed, no skips; Next/OpenNext production build and schema SQL checks passed. No migration, head 0018; write guards unchanged.
+- Group 17 is partial: two directory consumers migrated, rich profiles and organization/manufacturing reads remain. Read ledger stays 16/17 (94%), ROADMAP 34/44 (77%). Public staging remains read-only; CI PR #1 stays open. Rollout verification follows push.
+
 ## 2026-10-03 — Bounded release directories and exact legacy resolver
 
 - API 0.18.14: SSR/ASR catalogs add strict filters, full counts and bounded pages; latest ASR Snapshot uses a scalar SQL projection. Releases remain visible when optional metadata is missing.

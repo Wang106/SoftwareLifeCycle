@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.14`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.15`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -627,3 +627,23 @@ Reads/counts/pages are live observations, not cross-request transaction receipts
 - Legacy `/releases/application`, `/releases/standard` array contracts remain.
   New frontend consumers do not call them. Counts/pages observe mutable records
   and may change between requests; no frozen pagination session is implied.
+
+## Bounded change and Issue directories — API 0.18.15
+
+- GET `/api/v1/change-catalog/requests`: q (literal request_no/title substring, max
+  200), status (exact, max 40), scope (exact, max 30), source (max 30), change_type
+  (max 40), software_id/customer_id/project_id (exact stored UUID fields), limit
+  (1..100, default 50), offset (0..100000, default 0). Unknown/invalid fields get
+  422. Order created_at DESC NULLS LAST, UUID DESC; request rows preserve old list
+  fields. Returns kind=changes, total, in_verification, ready_for_release, limit,
+  offset, next_offset, items. All three counts cover the full filtered set; status
+  statistics preserve case-sensitive TEST/READY substring markers from the former
+  UI and are not authoritative readiness judgments. Empty counts are zero.
+- GET `/api/v1/change-catalog/issues`: shared q/status/scope/limit/offset plus
+  severity (exact, max 20), ordered issue_no then UUID ASC. q searches literal
+  issue_no/title. Returns kind=issues and the same pagination envelope without
+  SCR status statistics. Rows include id/issue_no/title/scope/severity/status;
+  description remains on exact Issue profiles. SCR-only filters are rejected.
+- Beyond-end pages preserve full counts. Legacy bulk `/changes`, `/issues` and
+  rich profiles remain; only these two frontend directories migrated. Counts and
+  offset pages are independent live observations, not frozen cross-request data.

@@ -411,3 +411,7 @@ head remains 0018_asr_evidence_index; full PostgreSQL upgrade SQL remains valid.
 ## Release catalog consumer migration — API 0.18.14
 
 No schema migration: head stays 0018_asr_evidence_index. Catalogs use outer joins to preserve parent release rows and SQL counts; latest Snapshot lookup uses the existing (release_id, snapshot_number) uniqueness/index. Resolver selects at most two scalar rows. Offset pages/counts are live observations; large-offset performance requires future workload measurements.
+
+## SCR/Issue directory migration — API 0.18.15
+
+No migration; single head 0018_asr_evidence_index. Scalar SCR status counts use case-sensitive SQL replace/length on PostgreSQL and SQLite; issue_no/UUID and SCR created_at/UUID ordering are deterministic. Filtering never expands child ID sets. Large-offset performance still needs representative load measurement.
