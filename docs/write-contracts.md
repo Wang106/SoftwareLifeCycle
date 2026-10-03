@@ -414,3 +414,7 @@ by the full real PostgreSQL regression suite. SQL policy summary records complet
 not authorization; recipient evaluate and frozen delivery validators are unchanged.
 Readiness eligibility is neither a write grant nor a cross-request concurrency token.
 No authenticated UI submission, provider configuration or staging writes are enabled.
+
+## Release catalog consumer migration — API 0.18.14
+
+API 0.18.14 adds read routes only. All 14 command contracts, scope/actor binding, keyed retry, row serialization and atomic audit behavior remain unchanged. Catalog or resolver outcomes do not authorize submission; public staging retains read_only_mode.

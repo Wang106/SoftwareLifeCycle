@@ -407,3 +407,7 @@ DB work. Compatibility array APIs and evaluate remain unchanged. A real PostgreS
 second-session newer Snapshot commit invalidates stale current-readiness summary pin
 with 409 while old exception UUID scope remains exact. Reads append no audit. Schema
 head remains 0018_asr_evidence_index; full PostgreSQL upgrade SQL remains valid.
+
+## Release catalog consumer migration — API 0.18.14
+
+No schema migration: head stays 0018_asr_evidence_index. Catalogs use outer joins to preserve parent release rows and SQL counts; latest Snapshot lookup uses the existing (release_id, snapshot_number) uniqueness/index. Resolver selects at most two scalar rows. Offset pages/counts are live observations; large-offset performance requires future workload measurements.

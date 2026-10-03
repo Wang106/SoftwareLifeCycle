@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-03 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed repository baseline: `8ab38722f62b7221fe8cdf90e9c3c70cb07d935d` — `feat: bound ASR passport histories with exact decision and Snapshot pins` (developed from `f63862a45b0b2e4c945f2252cc8f74d0ac25d769`; translation follow-up `03892f7637e92a2f402118c0d4dcfb351baaf838`)
+- Reviewed starting repository baseline: `12660a160750218e0997ecd322d652d6c36f1ea2` — latest inherited main; current package adds release catalogs/resolver (API 0.18.14)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; rich profiles/domain catalogs remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -28,8 +28,8 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
-Separate read-consumer tracking: **15 / 17 (88%)**, up from 14 / 17 (82%) at the
-reviewed development baseline. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
+Separate read-consumer tracking: **16 / 17 (94%)**, up from 15 / 17 (88%) at the
+reviewed starting baseline. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
 This finer counter does not change ROADMAP acceptance-item accounting or certify production readiness.
 
 ## Completed and evidenced in `main`
@@ -991,3 +991,43 @@ catalogs remain. Next release catalogs/exact legacy resolver, then other rich re
 approved identity/session, authenticated submission/recovery/corrections and operations
 follow. Conditional estimate 5–9 internal-use packages, 13–21 total production review.
 Public staging remains read-only; online verification will be recorded after push.
+
+## Release catalogs and exact legacy resolution — 2026-10-03
+
+Mode: Codex cloud. Developed from GitHub main `12660a160750218e0997ecd322d652d6c36f1ea2`.
+API 0.18.14 adds `/api/v1/release-catalog/application` and `/standard`, with
+strict q/status/software_id/limit/offset filters, complete filtered counts and
+stable created_at/UUID ordering. Page size is 1..100 (default 50), offset
+0..100000. ASR latest Snapshot is a single SQL scalar projection; no growing
+Snapshot/child arrays or ORM graph are fetched. Stored optional references are
+outer joined and release rows survive missing metadata. The two frontend release
+directories use these pages, keep filters in navigation, distinguish beyond-end
+from unavailable, and retain default Chinese/selectable English and exact links.
+
+`/api/v1/release-catalog/application/resolve?identifier=...` queries at most two
+exact APPLICATION UUID-or-version matches. It returns unique/ambiguous/missing;
+only unique supplies a release. UUID/version collisions stay ambiguous, without
+UUID precedence or arbitrary selection. This fixes old links beyond the former
+200-row directory cutoff; demo and unavailable/ambiguous fallbacks remain the
+application directory. Legacy list APIs remain for compatibility, not retired.
+
+No migration or write change; head remains `0018_asr_evidence_index`. Offset/count
+reads are live observations, not a frozen cross-request dataset, authorization,
+readiness or proof of release. Public staging remains read-only. Read consumer
+ledger advances 15/17 (88%) to 16/17 (94%); ROADMAP remains 34/44 (77%) because
+rich profiles/domain catalogs remain in group 17. Next review those consumers,
+then approved OIDC/session, controlled submission/outcome recovery, broader
+correction/revocation and operations. CI PR #1 (`438a663`) remains open and is
+not counted as merged CI. Conditional planning: 4–8 focused packages toward
+internal use, 12–20 total toward production review; group 17 may span packages.
+
+Validation for this package: complete Python 3.12 backend **948 passed**,
+**7665 warnings**, no skips; includes **120 real PostgreSQL 16.15 tests** in
+disposable migrated schemas. Sixteen new backend cases cover legacy row parity,
+complete pagination, beyond-end, missing metadata, literal filters, ambiguity,
+strict HTTP input, >200 release growth and >120 Snapshot growth with fixed
+scalar query shape/no ORM child graph, plus no audit writes. Frontend **378
+passed**, no skips, including eight new catalog/resolver/actual Chinese-English
+SSR rendering cases. Next.js and OpenNext Cloudflare production build passed.
+Single Alembic head 0018 and generated PostgreSQL upgrade SQL passed. Existing
+write safety suites pass unchanged. Public rollout verification is pending push.

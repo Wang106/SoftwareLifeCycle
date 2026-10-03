@@ -359,3 +359,7 @@ The frontend reads current summary first, checks exact release/Snapshot identity
 exception navigation and rejects stale current selections. Artifact checks remain based
 on live release declarations; DVP/exception checks remain tied to the observed current
 Snapshot. New reads do not create permissions, stored readiness receipts or write flows.
+
+## Release catalog consumer migration — API 0.18.14
+
+Release catalogs now use joined scalar projections, SQL counts and bounded windows; latest ASR Snapshot is a correlated LIMIT 1 scalar. Legacy ASR URL resolution uses a separate LIMIT 2 exact UUID-or-version query. The frontend shares a bilingual catalog component; bulk compatibility APIs remain.

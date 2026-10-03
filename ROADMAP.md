@@ -210,3 +210,32 @@ retired. Fine ledger 14/17 (82%) → 15/17 (88%). ROADMAP remains 34/44 (77%), P
 Next release catalogs/exact legacy resolver, then remaining rich reads; approved identity/
 session, authenticated submission/recovery/corrections and operations follow. Conditional
 estimate: 5–9 packages toward internal use, 13–21 total toward production review.
+
+## Release catalogs and exact legacy resolution — 2026-10-03
+
+Mode: Codex cloud. Developed from GitHub main `12660a160750218e0997ecd322d652d6c36f1ea2`.
+API 0.18.14 adds `/api/v1/release-catalog/application` and `/standard`, with
+strict q/status/software_id/limit/offset filters, complete filtered counts and
+stable created_at/UUID ordering. Page size is 1..100 (default 50), offset
+0..100000. ASR latest Snapshot is a single SQL scalar projection; no growing
+Snapshot/child arrays or ORM graph are fetched. Stored optional references are
+outer joined and release rows survive missing metadata. The two frontend release
+directories use these pages, keep filters in navigation, distinguish beyond-end
+from unavailable, and retain default Chinese/selectable English and exact links.
+
+`/api/v1/release-catalog/application/resolve?identifier=...` queries at most two
+exact APPLICATION UUID-or-version matches. It returns unique/ambiguous/missing;
+only unique supplies a release. UUID/version collisions stay ambiguous, without
+UUID precedence or arbitrary selection. This fixes old links beyond the former
+200-row directory cutoff; demo and unavailable/ambiguous fallbacks remain the
+application directory. Legacy list APIs remain for compatibility, not retired.
+
+No migration or write change; head remains `0018_asr_evidence_index`. Offset/count
+reads are live observations, not a frozen cross-request dataset, authorization,
+readiness or proof of release. Public staging remains read-only. Read consumer
+ledger advances 15/17 (88%) to 16/17 (94%); ROADMAP remains 34/44 (77%) because
+rich profiles/domain catalogs remain in group 17. Next review those consumers,
+then approved OIDC/session, controlled submission/outcome recovery, broader
+correction/revocation and operations. CI PR #1 (`438a663`) remains open and is
+not counted as merged CI. Conditional planning: 4–8 focused packages toward
+internal use, 12–20 total toward production review; group 17 may span packages.

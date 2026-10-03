@@ -1,14 +1,14 @@
 # Read-consumer migration tracking
 
-Reviewed main baseline: 2a4dd835659effeefcabdd1845efdbc5e18c4eac.
-Updated 2026-10-03 (Asia/Shanghai), API 0.18.13.
+Reviewed main baseline: 12660a160750218e0997ecd322d652d6c36f1ea2.
+Updated 2026-10-03 (Asia/Shanghai), API 0.18.14.
 
 The top-level ROADMAP counts completed acceptance items: 34/44 (77%). The remaining
 Phase 4 item covers several consumers, so finishing one consumer does not complete
 that entire item. This new ledger tracks **17 named scope groups**, equally counted
 for visibility, not weighted effort or production readiness. At the original 27ce7b7 baseline,
-11/17 groups were migrated; exact detail made 12/17 (71%) at 2f34a9a. Comparison made 13/17 (76%); passport made 14/17 (82%); this package
-closes current readiness, making 15/17 (88%) under the same scope grouping. This is a finer
+11/17 groups were migrated; exact detail made 12/17 (71%) at 2f34a9a. Comparison made 13/17 (76%); passport made 14/17 (82%); readiness
+made 15/17 (88%); release catalogs/resolver now make 16/17 (94%) under the same scope grouping. This is a finer
 breakdown, not a replacement for ROADMAP's denominator. A group closes only
 when its identified frontend consumer no longer relies on the bulk read. Legacy
 compatibility APIs can still exist; removing them requires caller review.
@@ -30,7 +30,7 @@ compatibility APIs can still exist; removing them requires caller review.
 | 13 | Snapshot comparison | Migrated | backend/app/api/snapshot_comparison_views.py; SQL summary and pinned bounded differences, exact rule-inspection links; legacy API remains |
 | 14 | ASR passport | Migrated | backend/app/api/asr_passport.py; fixed summary and four independently bounded histories, paired UUID pins and safe historical release display |
 | 15 | ASR readiness and compatibility policy reads | Migrated this package | backend/app/api/asr_readiness.py; SQL coverage/policy/exception aggregates and bounded approved exceptions; eight gates unchanged. Legacy array APIs/evaluate retained, not retired |
-| 16 | Release catalogs and legacy resolver | Pending | frontend release/application and release/standard catalog pages; frontend/lib/legacy-release.ts still loads application catalog for UUID/version resolution |
+| 16 | Release catalogs and legacy resolver | Migrated | backend/app/api/release_catalog.py; both release directories use bounded pages/full counts; legacy-release.ts uses exact bounded UUID/version resolution, including ambiguity beyond 200 rows |
 | 17 | Other rich profiles and legacy domain catalogs | Pending | frontend changes/issues/organizations/manufacturing catalogs and details; change coverage/issue impact child sets need individual review and bounded contracts |
 
 Groups 16–17 are broad and can require several packages. Splitting a group later must
@@ -40,8 +40,8 @@ to ASR via the legacy resolver; no independent SSR passport migration is claimed
 No approved OIDC environment, authenticated UI submission, broad correction/revocation
 or operational release acceptance is inferred from this read work.
 
-Next: release catalogs/resolver and remaining rich reads; then
+Next: remaining rich profiles/domain catalogs (group 17); then
 approved identity/session, controlled submission and recovery/corrections, operations.
-Planning ranges remain conditional: 5–9 focused packages toward internal use and
-13–21 total toward production review, subject to remaining group sizes and provider
+Planning ranges remain conditional: 4–8 focused packages toward internal use and
+12–20 total toward production review, subject to remaining group sizes and provider
 configuration. Public staging remains read-only throughout.

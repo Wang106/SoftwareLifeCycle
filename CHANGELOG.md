@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-03 — Bounded release directories and exact legacy resolver
+
+- API 0.18.14: SSR/ASR catalogs add strict filters, full counts and bounded pages; latest ASR Snapshot uses a scalar SQL projection. Releases remain visible when optional metadata is missing.
+- Both bilingual directory pages preserve filters/counts/exact links and distinguish unavailable from beyond-end. Legacy ASR links use exact UUID-or-version LIMIT 2 resolution, including ambiguity and old releases beyond 200 rows. Compatibility APIs retained.
+- No migration; schema head 0018. Full Python 3.12 backend 948 passed (120 real PostgreSQL), 7665 warnings, no skips; frontend 378 passed, no skips; Next/OpenNext production build passed.
+- Read ledger 16/17 (94%); ROADMAP 34/44 (77%) unchanged. Rich profiles/domain catalogs, approved identity/session, submission/recovery/corrections and operations remain. CI PR #1 remains open, not counted in main. Public staging remains read-only; deployment verification follows push.
+
 ## 2026-10-03 — Bounded readiness and policy aggregation
 
 - API 0.18.13: fixed current summary and Snapshot-pinned approved-exception pages. Shared policy uses SQL CASE/EXISTS, preserving eight gates, nullable/empty/duplicate policy semantics and live declarations. Stale current pins return 409; legacy arrays/evaluate retained.

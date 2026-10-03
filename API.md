@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.13`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.14`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -607,3 +607,23 @@ SQL EXISTS avoids multiplying artifact counts for duplicated nullable recipient 
 Legacy readiness/artifact endpoints and ArtifactPolicyService.evaluate remain compatible;
 legacy array routes/evaluator may still be unbounded. Current UI does not call them.
 Reads/counts/pages are live observations, not cross-request transaction receipts or grants.
+
+## Bounded release catalogs — API 0.18.14
+
+- GET `/api/v1/release-catalog/{application|standard}` accepts q (literal escaped
+  substring, max 200), status (exact, max 30), software_id (exact UUID),
+  limit (1..100, default 50), offset (0..100000, default 0). Unknown fields and
+  malformed filters return 422. Returns kind, total, limit, offset, next_offset,
+  items. Counts cover all matching rows, including beyond-end pages. Ordering
+  is created_at DESC NULLS LAST then id DESC. Original catalog row fields are
+  preserved; missing optional metadata is null rather than discarding a release.
+  ASR snapshot_no is the latest stored snapshot_number, not a release judgment.
+- GET `/api/v1/release-catalog/application/resolve?identifier=...` requires a
+  nonempty literal identifier of at most 100 characters. Exact canonical UUID
+  OR exact version matches only APPLICATION releases, with LIMIT 2. Returns
+  state unique/ambiguous/missing; release {id, version} only for unique. A UUID
+  equal to another ASR version is ambiguous. No trimming, case folding or
+  arbitrary first-match fallback. Resolution is not limited by catalog pages.
+- Legacy `/releases/application`, `/releases/standard` array contracts remain.
+  New frontend consumers do not call them. Counts/pages observe mutable records
+  and may change between requests; no frozen pagination session is implied.

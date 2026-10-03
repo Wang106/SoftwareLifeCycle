@@ -1506,5 +1506,11 @@
   "SHA-256 complete for formal artifacts": "正式制品的 SHA-256 已完整记录",
   "Artifact distribution policy complete": "制品分发策略已完整记录",
   "Approved exceptions are bound to current snapshot": "批准例外已绑定当前快照",
-  "EXCEPTION_GRANTED": "例外已获准"
+  "EXCEPTION_GRANTED": "例外已获准",
+  "Total releases": "发布总数",
+  "Releases on this page": "当前页发布数",
+  "No releases on this page.": "当前页没有发布记录。",
+  "Release catalog unavailable": "发布目录暂不可用",
+  "Page size": "每页数量",
+  "Counts cover all filtered records.": "计数覆盖全部筛选结果。"
 }

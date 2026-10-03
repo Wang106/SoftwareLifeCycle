@@ -349,3 +349,7 @@ Existing evaluate/recipient precedence and frozen delivery write validators are 
 Summary eligibility is an observation, not permission or a persisted approval receipt.
 All scoped authorization/trusted actor/request-ID/number/quota/atomic audit contracts
 remain unchanged. Public staging stays read-only; verification creates no business data.
+
+## Release catalog consumer migration — API 0.18.14
+
+Catalog and legacy resolver are read-only sample projections, not authorization or evidence of release. Exact ambiguous UUID/version matches fail closed in navigation. Strict filters reject malformed UUIDs/unknown fields; literal search escapes SQL wildcard characters. Public read-only guard and all 14 write contracts are unchanged.
