@@ -378,7 +378,9 @@ software/project/site name and release array. Open a profile to browse related
 records. Profiles retain exact metadata/materials UUID, supplier introduction,
 customer region/release-history link and project customer/platform/latest release.
 Software portfolio, customer projects/current software and project sites each have
-owned bounded pages. Supplier product links select its exact software UUID; latest
+owned bounded pages. Project site links use the stored unique site code accepted by the existing
+manufacturing profile route; the API retains each exact site UUID. Supplier
+product links select its exact software UUID; latest
 SSR and ASR links target the stored release UUID, not a version string.
 
 Search treats wildcard characters literally; status/country/customer UUID filters

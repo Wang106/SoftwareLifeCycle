@@ -44,7 +44,7 @@ for(const kind of ['suppliers','customers','projects']) {
   const html=renderToStaticMarkup(await Page({kind,identifier:'CODE / A',search:{limit:'1'}}));
   assert.equal(calls.length,2);assert.match(calls[1],/organization_id=org-uuid/);assert.ok(html.includes('121')&&html.includes('Original child')&&html.includes('entity_id=org-uuid'));
   assert.ok(html.includes('offset=1')&&html.includes('limit=1'));
-  assert.ok(html.includes(kind==='suppliers'?'/releases/standard/release-uuid':kind==='customers'?'/projects/child-uuid':'/manufacturing/sites/child-uuid'));
+  assert.ok(html.includes(kind==='suppliers'?'/releases/standard/release-uuid':kind==='customers'?'/projects/child-uuid':'/manufacturing/sites/'+encodeURIComponent(child.code)));
   if(kind==='suppliers')assert.ok(html.includes('Business introduction'));
  });
  test(kind+' failed foreign and beyond-end child page preserves parent',async()=>{

@@ -665,3 +665,8 @@ manufacturing catalogs/profiles remain in partial group 17. CI PR #1 remains
 open/unmerged and is not counted as operational acceptance. Next continue those
 bounded consumers, then approved identity/session and controlled submission,
 recovery/correction/revocation, followed by operational acceptance.
+
+
+### Organization site-link compatibility correction
+
+Project owned-site rows retain UUID metadata, while links use the stored unique site code required by the existing manufacturing profile route. Regression tests and production SSR verify the encoded code link. No API/schema/write change.

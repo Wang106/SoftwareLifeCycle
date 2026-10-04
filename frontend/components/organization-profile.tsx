@@ -34,7 +34,7 @@ export default async function OrganizationProfile({kind, identifier, search}: {k
       <table><thead><tr><th><Localized>{supplier ? 'Software' : customer ? 'Project' : 'Manufacturing Site'}</Localized></th><th><Localized>{'Code'}</Localized></th><th><Localized>{'Status'}</Localized></th>
         {supplier && <th><Localized>{'Type'}</Localized></th>}{(supplier || customer) && <th><Localized>{supplier ? 'Standard Release' : 'Latest Application Release'}</Localized></th>}</tr></thead>
         <tbody>{data.items.map(item => <tr key={item.id}><td>{supplier ? <Link href={`/releases/standard?software_id=${item.id}`}><Localized>{item.name}</Localized></Link> :
-          <Link href={`${customer ? '/projects/' : '/manufacturing/sites/'}${item.id}`}><Localized>{item.name}</Localized></Link>}</td><td>{item.code}</td><td><Localized>{item.status}</Localized></td>
+          <Link href={customer ? `/projects/${item.id}` : `/manufacturing/sites/${encodeURIComponent(item.code)}`}><Localized>{item.name}</Localized></Link>}</td><td>{item.code}</td><td><Localized>{item.status}</Localized></td>
           {supplier && <td><Localized>{item.type ?? 'Software'}</Localized></td>}{(supplier || customer) && <td><OrganizationRelease row={item} standard={supplier}/></td>}</tr>)}</tbody></table>
       {!data.items.length && <p className="muted"><Localized>{'No records on this page.'}</Localized></p>}
       <p><Link href={`${path}?${first}`}><Localized>{'First page'}</Localized></Link> {data.next_offset !== null && <Link href={`${path}?${next}`}><Localized>{'Next page →'}</Localized></Link>}</p>
