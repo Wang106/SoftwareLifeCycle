@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `79e5f767d74c818d2642aee8408d47c5ec733717` — inherited main; current package adds bounded SCR coverage (API 0.18.17)
+- Reviewed starting repository baseline: `a248b1ab79578a960260f2e14f0d1abb80b06c4b` — inherited main; current package adds bounded Issue detail/impact (API 0.18.18)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue and other rich domain reads remain. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization and manufacturing reads remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -1246,3 +1246,57 @@ actual first/next pages retain that same frozen UUID and group selection.
 No migration, provider/grant configuration or public-write enablement. CI PR #1
 was independently checked open/unmerged. Next Issue detail/impact, then remaining
 organization/manufacturing reads. ROADMAP 34/44 (77%), read ledger 16/17 (94%).
+
+## Bounded Issue detail and impact evidence — API 0.18.18, 2026-10-04
+
+Mode: Codex cloud. Developed from main `a248b1ab79578a960260f2e14f0d1abb80b06c4b`.
+Issue detail now has a scalar parent summary/full counts plus independent linked
+SCR relation, candidate release and complete judgment-history pages. Exact impact
+review has a scalar context/latest judgment summary and independent distinct frozen
+component and linked DVP verification pages. Both default-Chinese/English pages
+retain complete counts on beyond-end/failed child reads and preserve unrelated
+cursors. Materials, release/customer/project/Snapshot/item UUID links and exact
+impact-preparation targets remain. Historical judgment links select their recorded
+Snapshot UUID instead of silently showing the newest freeze.
+
+Candidate scope preserves the prior software-product relationship via linked SCRs;
+it does not infer impact or require the SCR's customer/project scope. Directory rows
+retain the legacy real-product metadata visibility rule, full actual-release deployment
+and batch counts, newest FROZEN Snapshot and newest judgment for that exact Snapshot.
+Multiple relation types remain separate records; candidate releases are not duplicated.
+History retains exact formal records when optional release/Snapshot display metadata
+is missing. Distinct component code/version pairs normalize null versions to empty
+strings. Verification includes real Issue-linked items across plans, selects latest
+execution_no only for the exact release/Snapshot, and excludes missing DVP references.
+A PASS is execution evidence, not an impact decision. Current Issue links and newest
+judgments remain live; historical pins freeze execution selection, not definitions.
+
+Required page issue_id binds the business number to the exact Issue UUID. Impact
+pages additionally pin release path and Snapshot UUID/none. A historical FROZEN
+UUID remains valid after newer freezes; stale none that now has a freeze returns
+409. No migration, command contract/provider/grant changes; head
+0018_asr_evidence_index and 14 commands remain. Public staging stays sample-only
+read-only. Legacy rich APIs remain for compatibility.
+
+ROADMAP remains 34/44 (77%) and read groups 16/17 (94%). Group 17 is still partial:
+SCR/Issue detail/coverage/impact consumers are migrated, organization and manufacturing
+catalogs/profiles remain. Next bound those reads, then approved identity/session,
+controlled submission/recovery/correction/revocation and operational acceptance.
+CI PR #1 remains unmerged. Conditional estimates remain 4–8 focused packages toward
+internal use, 12–20 toward production review pending remaining scope/provider decisions.
+
+Verification: full Python 3.12 backend **1025 passed**, **8617 warnings**, no skips,
+including **124 real PostgreSQL 16.15 tests** on newly initialized disposable
+instances/migrated schemas. New cases cover legacy parent/candidate/history/evidence
+parity, multiple SCR relation types, full candidate counts beyond 200, normalized
+distinct component pairs, latest exact execution scope/failure, historical/stale-none
+Snapshot selection, orphan history metadata retention, strict pins/pagination/read-only
+denial and 120-child growth with fixed SQL shapes/no ORM graph. Real PostgreSQL
+verifies candidate windows, frozen components, newer FAIL precedence and no audit
+writes. Existing command concurrency/replay/rollback/actor/scope suites pass.
+Frontend **416 passed**, no skips; final Next/OpenNext Cloudflare production build
+passed. Eight actual production Next SSR groups passed: Issue Chinese/English,
+impact Chinese/English with exact preparation UUID, complete beyond-end history,
+independently invalid component cursor, no-freeze without preparation, foreign Issue
+summary stopping child reads. Single Alembic head and full PostgreSQL upgrade SQL
+generation pass; no migration. Cloud rollout pending at this feature commit.

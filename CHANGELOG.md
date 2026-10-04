@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Bounded Issue detail and impact evidence
+
+- API 0.18.18 adds full Issue counts and independently bounded linked SCR/candidate/complete judgment-history pages. Exact impact review splits scalar context/judgment from distinct frozen components and latest exact execution pages.
+- Both bilingual pages retain full counts, independent cursors and exact UUID links/preparation. Historical judgments select recorded Snapshot; stale missing freeze rejects new evidence. Software membership remains review scope, not inferred impact.
+- No migration or write change; head 0018. Group 17 remains partial (organization/manufacturing reads); ROADMAP 34/44 and read ledger 16/17 unchanged. Verification/rollout below.
+
 ## 2026-10-04 — Bounded SCR coverage
 
 - API 0.18.17 separates full SQL coverage summary from bounded candidates/gaps/definitions/items and exact selected-group test/criterion-history pages. Full counts, independent cursors, bilingual UI and exact preparation links remain.
@@ -600,3 +606,19 @@ actual first/next pages retain that same frozen UUID and group selection.
 No migration, provider/grant configuration or public-write enablement. CI PR #1
 was independently checked open/unmerged. Next Issue detail/impact, then remaining
 organization/manufacturing reads. ROADMAP 34/44 (77%), read ledger 16/17 (94%).
+
+Verification: full Python 3.12 backend **1025 passed**, **8617 warnings**, no skips,
+including **124 real PostgreSQL 16.15 tests** on newly initialized disposable
+instances/migrated schemas. New cases cover legacy parent/candidate/history/evidence
+parity, multiple SCR relation types, full candidate counts beyond 200, normalized
+distinct component pairs, latest exact execution scope/failure, historical/stale-none
+Snapshot selection, orphan history metadata retention, strict pins/pagination/read-only
+denial and 120-child growth with fixed SQL shapes/no ORM graph. Real PostgreSQL
+verifies candidate windows, frozen components, newer FAIL precedence and no audit
+writes. Existing command concurrency/replay/rollback/actor/scope suites pass.
+Frontend **416 passed**, no skips; final Next/OpenNext Cloudflare production build
+passed. Eight actual production Next SSR groups passed: Issue Chinese/English,
+impact Chinese/English with exact preparation UUID, complete beyond-end history,
+independently invalid component cursor, no-freeze without preparation, foreign Issue
+summary stopping child reads. Single Alembic head and full PostgreSQL upgrade SQL
+generation pass; no migration. Cloud rollout pending at this feature commit.

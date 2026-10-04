@@ -1550,5 +1550,19 @@
   "Status / Evidence": "状态 / 证据",
   "Review this release →": "检查此版本 →",
   "Inspect coverage row →": "查看覆盖记录 →",
-  "Coverage collection page unavailable.": "覆盖数据分页暂不可用。"
+  "Coverage collection page unavailable.": "覆盖数据分页暂不可用。",
+  "Frozen component evidence": "冻结组件证据",
+  "Issue collection page unavailable.": "问题关联数据分页暂不可用。",
+  "Review recorded snapshot →": "检查记录中的快照 →",
+  "Candidate release count": "候选版本完整计数",
+  "Manual judgment count": "人工判断完整计数",
+  "Candidates and deployment counts are review leads, not confirmed issue impact.": "候选版本与部署数量只是复核线索，不表示已确认的问题影响。",
+  "Reset impact review →": "重置影响检查 →",
+  "IMPACT REVIEW": "影响复核",
+  "Selected frozen snapshot": "所选冻结快照",
+  "Component evidence count": "组件证据完整计数",
+  "Linked DVP count": "关联 DVP 完整计数",
+  "Review latest frozen snapshot →": "检查最新冻结快照 →",
+  "Public test access is read-only. A PASS result does not determine issue impact.": "公开测试环境仅允许读取。测试通过不决定问题影响。",
+  "Execution evidence is pinned to the selected frozen snapshot; current Issue links and latest judgments remain live.": "执行证据固定为所选冻结快照；问题关联和最新判断仍为当前记录。"
 }

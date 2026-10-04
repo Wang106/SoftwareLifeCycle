@@ -5,9 +5,9 @@
 - Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `79e5f767d74c818d2642aee8408d47c5ec733717`
-- Developed from: `79e5f767d74c818d2642aee8408d47c5ec733717`
-- Baseline subject: `docs: record verified SCR detail cloud rollout`
+- Verified starting baseline: `a248b1ab79578a960260f2e14f0d1abb80b06c4b`
+- Developed from: `a248b1ab79578a960260f2e14f0d1abb80b06c4b`
+- Baseline subject: `docs: record verified SCR coverage cloud rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.17; readiness and SCR coverage rollout verified |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.17 starting baseline; 0.18.18 rollout pending |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- Starting baseline full regression: 983 backend tests under Python 3.12, including 122 real PostgreSQL tests without skips. Current verification is recorded below.
+- Starting baseline full regression: 1007 backend tests under Python 3.12, including 123 real PostgreSQL tests without skips. Current verification is recorded below.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -1283,3 +1283,57 @@ actual first/next pages retain that same frozen UUID and group selection.
 No migration, provider/grant configuration or public-write enablement. CI PR #1
 was independently checked open/unmerged. Next Issue detail/impact, then remaining
 organization/manufacturing reads. ROADMAP 34/44 (77%), read ledger 16/17 (94%).
+
+## Bounded Issue detail and impact evidence — API 0.18.18, 2026-10-04
+
+Mode: Codex cloud. Developed from main `a248b1ab79578a960260f2e14f0d1abb80b06c4b`.
+Issue detail now has a scalar parent summary/full counts plus independent linked
+SCR relation, candidate release and complete judgment-history pages. Exact impact
+review has a scalar context/latest judgment summary and independent distinct frozen
+component and linked DVP verification pages. Both default-Chinese/English pages
+retain complete counts on beyond-end/failed child reads and preserve unrelated
+cursors. Materials, release/customer/project/Snapshot/item UUID links and exact
+impact-preparation targets remain. Historical judgment links select their recorded
+Snapshot UUID instead of silently showing the newest freeze.
+
+Candidate scope preserves the prior software-product relationship via linked SCRs;
+it does not infer impact or require the SCR's customer/project scope. Directory rows
+retain the legacy real-product metadata visibility rule, full actual-release deployment
+and batch counts, newest FROZEN Snapshot and newest judgment for that exact Snapshot.
+Multiple relation types remain separate records; candidate releases are not duplicated.
+History retains exact formal records when optional release/Snapshot display metadata
+is missing. Distinct component code/version pairs normalize null versions to empty
+strings. Verification includes real Issue-linked items across plans, selects latest
+execution_no only for the exact release/Snapshot, and excludes missing DVP references.
+A PASS is execution evidence, not an impact decision. Current Issue links and newest
+judgments remain live; historical pins freeze execution selection, not definitions.
+
+Required page issue_id binds the business number to the exact Issue UUID. Impact
+pages additionally pin release path and Snapshot UUID/none. A historical FROZEN
+UUID remains valid after newer freezes; stale none that now has a freeze returns
+409. No migration, command contract/provider/grant changes; head
+0018_asr_evidence_index and 14 commands remain. Public staging stays sample-only
+read-only. Legacy rich APIs remain for compatibility.
+
+ROADMAP remains 34/44 (77%) and read groups 16/17 (94%). Group 17 is still partial:
+SCR/Issue detail/coverage/impact consumers are migrated, organization and manufacturing
+catalogs/profiles remain. Next bound those reads, then approved identity/session,
+controlled submission/recovery/correction/revocation and operational acceptance.
+CI PR #1 remains unmerged. Conditional estimates remain 4–8 focused packages toward
+internal use, 12–20 toward production review pending remaining scope/provider decisions.
+
+Verification: full Python 3.12 backend **1025 passed**, **8617 warnings**, no skips,
+including **124 real PostgreSQL 16.15 tests** on newly initialized disposable
+instances/migrated schemas. New cases cover legacy parent/candidate/history/evidence
+parity, multiple SCR relation types, full candidate counts beyond 200, normalized
+distinct component pairs, latest exact execution scope/failure, historical/stale-none
+Snapshot selection, orphan history metadata retention, strict pins/pagination/read-only
+denial and 120-child growth with fixed SQL shapes/no ORM graph. Real PostgreSQL
+verifies candidate windows, frozen components, newer FAIL precedence and no audit
+writes. Existing command concurrency/replay/rollback/actor/scope suites pass.
+Frontend **416 passed**, no skips; final Next/OpenNext Cloudflare production build
+passed. Eight actual production Next SSR groups passed: Issue Chinese/English,
+impact Chinese/English with exact preparation UUID, complete beyond-end history,
+independently invalid component cursor, no-freeze without preparation, foreign Issue
+summary stopping child reads. Single Alembic head and full PostgreSQL upgrade SQL
+generation pass; no migration. Cloud rollout pending at this feature commit.

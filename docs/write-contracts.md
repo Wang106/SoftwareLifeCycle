@@ -436,3 +436,10 @@ and business/audit atomicity are unchanged. Criterion preparation links still ta
 exact SCR/criterion UUID; new read context pins are neither submission preconditions
 nor permission grants. Coverage retains exclusion and latest-execution semantics;
 public writes remain denied.
+
+## Issue detail/impact read migration — API 0.18.18
+
+All 14 commands retain actor/scope binding, keyed replay, row serialization and
+atomic business/audit behavior. Exact impact-preparation links remain pinned to Issue,
+release and frozen Snapshot; new read pins grant no submission permission. Current
+judgments and verification results are separate evidence. Public writes remain denied.

@@ -374,3 +374,11 @@ pins do not grant authorization or freeze current definitions/assignments. Cover
 excludes foreign/missing DVP references, distinguishes assignments from execution,
 and does not assert incorporation or authorize release. No grants/provider settings,
 write routes or public-write flags change. Public sample data remains read-only.
+
+## Issue read boundary — API 0.18.18
+
+Exact Issue UUID and linked-SCR software membership select candidate review context;
+FROZEN Snapshot ownership is checked on every impact page. These are read identity
+and evidence checks, not impact decisions, authorization grants or frozen definition
+guarantees. PASS/deployment counts do not confirm impact. No write/provider/grant
+configuration changes; public sample staging remains read-only.

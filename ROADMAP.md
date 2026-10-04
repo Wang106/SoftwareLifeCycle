@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact detail/comparison and ASR passport now use bounded SQL pages; current readiness now uses SQL summaries and paginated approved exceptions; release catalogs/exact resolver, SCR/Issue directories, SCR detail and SCR coverage now use bounded reads; Issue detail/impact and organization/manufacturing catalogs/profiles remain
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — deployment/authorization/distribution and exact delivery revision details now use bounded profiles/counts, paginated artifacts and catalog history; ASR downstream now uses fixed counts and exact authorization-release-scoped catalogs; ASR evidence now uses pinned Snapshot pagination; shared coverage, SSR and ASR component/policy reads now use SQL aggregates/bounded pages; exact detail/comparison and ASR passport now use bounded SQL pages; current readiness now uses SQL summaries and paginated approved exceptions; release catalogs/exact resolver, SCR/Issue directories, SCR detail and SCR coverage now use bounded reads; Issue detail/impact now use bounded full-count reads; organization/manufacturing catalogs/profiles remain
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -328,3 +328,41 @@ then organization/manufacturing reads; approved identity/session, controlled
 submission/recovery/corrections and operations follow. CI PR #1 is unmerged.
 Conditional estimates remain 4–8 focused packages toward internal use and 12–20
 total toward production review, pending decomposition/provider decisions.
+
+## Bounded Issue detail and impact evidence — API 0.18.18, 2026-10-04
+
+Mode: Codex cloud. Developed from main `a248b1ab79578a960260f2e14f0d1abb80b06c4b`.
+Issue detail now has a scalar parent summary/full counts plus independent linked
+SCR relation, candidate release and complete judgment-history pages. Exact impact
+review has a scalar context/latest judgment summary and independent distinct frozen
+component and linked DVP verification pages. Both default-Chinese/English pages
+retain complete counts on beyond-end/failed child reads and preserve unrelated
+cursors. Materials, release/customer/project/Snapshot/item UUID links and exact
+impact-preparation targets remain. Historical judgment links select their recorded
+Snapshot UUID instead of silently showing the newest freeze.
+
+Candidate scope preserves the prior software-product relationship via linked SCRs;
+it does not infer impact or require the SCR's customer/project scope. Directory rows
+retain the legacy real-product metadata visibility rule, full actual-release deployment
+and batch counts, newest FROZEN Snapshot and newest judgment for that exact Snapshot.
+Multiple relation types remain separate records; candidate releases are not duplicated.
+History retains exact formal records when optional release/Snapshot display metadata
+is missing. Distinct component code/version pairs normalize null versions to empty
+strings. Verification includes real Issue-linked items across plans, selects latest
+execution_no only for the exact release/Snapshot, and excludes missing DVP references.
+A PASS is execution evidence, not an impact decision. Current Issue links and newest
+judgments remain live; historical pins freeze execution selection, not definitions.
+
+Required page issue_id binds the business number to the exact Issue UUID. Impact
+pages additionally pin release path and Snapshot UUID/none. A historical FROZEN
+UUID remains valid after newer freezes; stale none that now has a freeze returns
+409. No migration, command contract/provider/grant changes; head
+0018_asr_evidence_index and 14 commands remain. Public staging stays sample-only
+read-only. Legacy rich APIs remain for compatibility.
+
+ROADMAP remains 34/44 (77%) and read groups 16/17 (94%). Group 17 is still partial:
+SCR/Issue detail/coverage/impact consumers are migrated, organization and manufacturing
+catalogs/profiles remain. Next bound those reads, then approved identity/session,
+controlled submission/recovery/correction/revocation and operational acceptance.
+CI PR #1 remains unmerged. Conditional estimates remain 4–8 focused packages toward
+internal use, 12–20 toward production review pending remaining scope/provider decisions.

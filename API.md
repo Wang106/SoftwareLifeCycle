@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.17`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.18`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -724,3 +724,42 @@ group_kind, group_id. Links retain exact execution pins and other cursors; selec
 new group resets only its two child offsets. A new release review resets the context.
 Empty release/Snapshot form fields select assignments-only/default freeze; repeated
 parameters are forwarded as invalid rather than silently resetting.
+
+## Bounded Issue detail/impact — API 0.18.18
+
+All GET paths start `/api/v1/issue-views/{issue_no}`. Unknown fields/invalid UUIDs
+or pagination return 422. Missing business number or mismatched issue_id returns
+404. Summary accepts no query fields and returns existing Issue metadata plus
+linked_count (relations to real SCRs), candidate_count (visible releases with real
+software product metadata), assessment_count (all formal records), basis.
+
+| Suffix | Projection | Stable ordering |
+| --- | --- | --- |
+| `/changes` | Relation UUID, SCR UUID/number/title/status/relation_type | request_no, relation_type, relation UUID ASC |
+| `/candidates` | Scalar release/software/customer/project metadata, full actual-release deployment/batch counts, newest frozen Snapshot/current judgment UUID/decision | created_at DESC NULLS LAST, release UUID DESC |
+| `/assessments` | Complete formal judgment UUID/release/Snapshot/decision/reason/evidence/reviewer/time and optional display metadata | created_at, judgment UUID DESC |
+| `/impact/{release_id}/summary` | Exact candidate release, selected frozen Snapshot metadata/hash, newest judgment, distinct component_count and verification_count | One exact context |
+| `/impact/{release_id}/components` | Distinct frozen component code/normalized version | code, version ASC |
+| `/impact/{release_id}/verification` | Issue-linked item UUID/number/title and latest exact execution_no/result/actual_result/executed_at | item_no, item UUID ASC |
+
+All pages require issue_id UUID; limit 1..100 default 50, offset 0..100000 default 0.
+Envelope issue_id, issue_no, total, limit, offset, next_offset, items. Impact pages
+also require snapshot_id UUID or none and return release_id/snapshot_id pins. Impact
+summary accepts optional snapshot_id UUID/none; omitted selects newest FROZEN number.
+Wrong/non-frozen/sibling Snapshot or stale none returns 409. Historical frozen pins
+survive newer freezes. Missing release 404; release outside linked SCR software 409.
+Exact impact scope preserves software membership even when product display metadata
+is absent; the candidate directory retains the legacy product visibility rule.
+
+No customer/project ownership or shared version string infers impact. Multiple SCR
+relation types remain; Issue-linked verification items may be in different plans,
+matching the prior evidence API. Missing DVP references are excluded. History keeps
+formal records with null display metadata instead of discarding/crashing. Component
+projection includes no storage references. Latest judgments are current observations
+for the selected Snapshot and can change independently of page requests. Legacy APIs
+and write contracts remain; no write grant is implied.
+
+Frontend query: issue_limit, changes_offset, candidates_offset, assessments_offset,
+components_offset, verification_offset; impact context additionally snapshot_id.
+First/next preserve unrelated cursors and exact selected Snapshot; invalid repeated
+values remain invalid. Recorded judgment links use their stored release/Snapshot UUIDs.

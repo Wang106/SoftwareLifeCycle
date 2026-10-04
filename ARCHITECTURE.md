@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.17
+FastAPI 0.18.18
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -385,3 +385,12 @@ retains other cursors, verifies all SCR/release/Snapshot/group response pins, an
 keeps parent totals when a page fails. Candidate pagination replaces a truncated
 dropdown; exact UUID release input and historical Snapshot review remain. First/next
 links retain execution context. Legacy report and assignment service remain unchanged.
+
+## Issue detail/impact consumer — API 0.18.18
+
+issue_views.py supplies scalar Issue/impact summaries and five bounded collections.
+issue-collections.tsx checks Issue/release/Snapshot response pins and preserves
+independent first/next cursors with parent full counts on failures. Historical record
+links choose recorded Snapshot UUID; impact preparation carries exact target pins.
+No bulk fallback; legacy rich APIs remain. Organization/manufacturing reads are the
+remaining group-17 consumers.

@@ -436,3 +436,13 @@ membership uses EXISTS to avoid duplicate relation inflation. Bounded pages proj
 only selected rows; formal criterion histories have their own pages. Counts preserve
 null/rounding/current-definition semantics. Historical execution pins do not freeze
 assignments; stale missing-freeze context rejects a newer freeze.
+
+## Issue scalar projections — API 0.18.18
+
+No migration, head 0018. Candidate software membership uses EXISTS via real SCR
+relations without growing ID lists; newest frozen Snapshot/current judgment and
+actual-release deployment/batch counts use correlated scalar selections. Judgment
+history outer joins optional display metadata and preserves formal UUIDs. Components
+use distinct code/coalesced version; latest Issue-linked execution uses ROW_NUMBER
+on exact release/Snapshot/item. Bounded projections/full counts avoid ORM graphs
+and rich artifact/deployment/batch arrays. Existing indexes remain in use.
