@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.22`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.23`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -20,7 +20,7 @@ This document is a maintained map, not a replacement for the generated OpenAPI s
 | Organizations | `/api/v1/organization-views/{suppliers,customers,projects}`, summary/items; `/api/v1/organizations/release-matrix` | Bounded catalogs and UUID-pinned child pages; legacy organization reads return 410 |
 | Releases | `/api/v1/releases`, `/releases/standard`, `/releases/application`, `/releases/application/id/{release_id}` | Exact-ID application profiles are preferred over version-only compatibility routes |
 | Snapshot evidence | `/api/v1/releases/{release_id}/snapshots`, `/api/v1/snapshots/{snapshot_no}`, `/compare/{target_no}` | Frozen manifest/history and metadata comparison |
-| Change/Issue | `/api/v1/changes`, `/changes/{request_no}`, `/changes/{request_no}/coverage`, `/issues/{issue_no}/impact` | Coverage and impact remain release/snapshot scoped |
+| Change/Issue | `/api/v1/change-catalog/{requests,issues}`, `/change-views/{request_no}/summary`, `/change-coverage-views/{request_no}/summary`, `/issue-views/{issue_no}/summary` and exact impact | Bounded summary/children preserve exact release/Snapshot scope; legacy GETs return 410 |
 | Testing | `/api/v1/testing/dvp/catalog`, `/testing/dvp/id/{item_id}/profile`, `/testing/releases` | Bounded DVP directory plus test-release records |
 | Governance | `/api/v1/governance/approvals`, `/decisions`, exact profiles/actions | Preferred bounded governance history |
 | Distribution | `/api/v1/distribution/catalog/deliveries`, `/distributions`, `/authorizations` | Preferred bounded catalogs; exact delivery revision is significant |
@@ -851,3 +851,18 @@ delivery does not infer decision scope. Invalid old queries/revisions or nonexis
 parents return retirement 410 without DB work. Successor endpoint validation is
 unchanged. Exact Batch remains. All 14 POST commands sharing these paths remain.
 No schema, provider, identity/grant or public-write change.
+
+## SCR/Issue compatibility retirement — API 0.18.23
+
+Eight legacy SCR/Issue GETs return 410 `legacy_read_retired`, bringing the reviewed
+total to 27. Exact paths and caller review are in compatibility-read-retirement.md.
+Response successor paths and instructions require summary-first change_id/issue_id
+pins, independent pages and complete counts. Historical coverage selection carries
+release_id plus snapshot_no/snapshot_id; exact impact selection carries snapshot_id
+and preserves recorded judgment/frozen execution scope. None sentinels remain.
+No query forwarding, redirects, latest substitutes or silent evidence truncation.
+
+Retirement performs no DB read or old UUID/query validation. The old truncated
+assessment head is replaced by the navigable bounded history. Internal helpers,
+all bounded successors and all 14 commands are retained. No migration or public
+write change; sample staging remains read-only.

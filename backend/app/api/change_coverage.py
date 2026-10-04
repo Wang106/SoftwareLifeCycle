@@ -10,7 +10,6 @@ from app.actor import resolve_actor
 router = APIRouter(prefix='/api/v1/changes', tags=['change coverage'])
 
 
-@router.get('/{request_no}/coverage')
 def change_coverage(request_no: str, release_id: uuid.UUID | None = None,
                     snapshot_no: str | None = Query(None, min_length=1, max_length=80), db: Session = Depends(get_db)):
     try:

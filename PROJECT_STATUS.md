@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `7048c797a5181d89ef72e7a9d0c978458ca54342` — inherited main; current package retires 11 additional production/distribution GET routes (API 0.18.22)
+- Reviewed starting repository baseline: `51978c5b0ff70bda78aedc98ea95ff7636d3a3e0` — inherited main; current package retires 8 SCR/Issue GET routes and establishes seven-plan progress reporting (API 0.18.23)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -1672,3 +1672,41 @@ one head and full upgrade SQL passes. Existing 9112 datetime deprecation warning
 remain. CI PR #1 remains open/unmerged at this turn's check. Progress stays
 **34/44 (77%)**, read consumers **17/17**; first work group is still incomplete.
 See development-plan.md for remaining order, dependencies and completion gates.
+
+## 2026-10-04 — SCR/Issue retirement and seven-plan reporting / API 0.18.23
+
+Eight reviewed SCR/Issue GET routes retire with explicit 410 and exact summary/
+child/historical-Snapshot migration instructions; cumulative tombstones: 27.
+Internal comparison helpers, all bounded successors and all 14 commands remain.
+The old bounded-but-truncated assessment head is retired in favor of navigable
+complete history; not every route in the slice was unbounded. No DB/graph work or
+old query/UUID validation occurs before retirement. Unknown external callers must
+migrate; no redirect, historical-query forwarding or latest Snapshot substitution.
+No schema, identity/provider/grant or public-write change.
+
+Full backend **1132 passed**, **9112 existing deprecation warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests**. Eighteen added retirement cases
+verify eight paths with normal/invalid queries and historical-selection instructions.
+Three reporting checks enforce fixed scope/evidence, all 27 tombstones in the
+53-candidate ledger, no unresolved completed family and no stale plan table.
+Frontend **448 passed**, no skips; final production Next/OpenNext build passes.
+**21 actual production Next SSR groups** pass (6 SCR, 7 coverage, 8 Issue/impact),
+including bilingual views, independent invalid/empty pages, frozen UUID preparation
+and foreign-parent rejection. Single migration head and full offline upgrade SQL
+pass; schema remains 0018. Cloud evidence is recorded after verification below.
+
+Seven independent work-group milestone progress rows are now mandatory in every
+completion report and reproducible from docs/development-plan-progress.json using
+scripts/report_development_plan_progress.py. Plans 1–7: **50%, 0%, 20%, 33%,
+40%, 20%, 0%**. Plan 1 advances **40% → 50%** after SCR/Issue family completion;
+other values include existing verified preparation/backend safety foundations,
+not new provider-backed submission. Nine compatibility families plus one closure
+gate fix that plan's denominator at 10; remaining release/ASR, Snapshot, DVP,
+governance/audit and inventory acceptance prevent completion. Denominator changes
+require explicit scope explanation. These are equal milestone counts, not effort
+or production-readiness estimates; do not average them into ROADMAP progress.
+
+ROADMAP remains **34/44 (77%)**, Phase 4 **8/9**, read consumers **17/17**.
+CI PR #1 was checked open/unmerged. Next remaining compatibility families and
+closure, CI, approved identity/session, submission/recovery, corrections and
+operations. Public staging stays sample-only/read-only.

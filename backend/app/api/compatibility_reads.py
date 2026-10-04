@@ -54,7 +54,60 @@ RETIRED_READS += (
       "/api/v1/production/catalog/deployments", "/api/v1/production/catalog/batches"), None),
 )
 
+
+# Third reviewed slice: SCR/Issue graphs, coverage and impact evidence/history.
+RETIRED_READS += (
+    ("/api/v1/changes", ("/api/v1/change-catalog/requests",), None),
+    ("/api/v1/changes/{request_no}",
+     ("/api/v1/change-views/{request_no}/summary", "/api/v1/change-views/{request_no}/criteria",
+      "/api/v1/change-views/{request_no}/issues", "/api/v1/change-views/{request_no}/points",
+      "/api/v1/change-views/{request_no}/plans"), "change_id"),
+    ("/api/v1/changes/{request_no}/coverage",
+     ("/api/v1/change-coverage-views/{request_no}/summary",
+      "/api/v1/change-coverage-views/{request_no}/candidates",
+      "/api/v1/change-coverage-views/{request_no}/gaps",
+      "/api/v1/change-coverage-views/{request_no}/items"), "change_id"),
+    ("/api/v1/issues", ("/api/v1/change-catalog/issues",), None),
+    ("/api/v1/issues/{issue_no}",
+     ("/api/v1/issue-views/{issue_no}/summary", "/api/v1/issue-views/{issue_no}/changes",
+      "/api/v1/issue-views/{issue_no}/candidates", "/api/v1/issue-views/{issue_no}/assessments"), "issue_id"),
+    ("/api/v1/issues/{issue_no}/impact",
+     ("/api/v1/issue-views/{issue_no}/summary", "/api/v1/issue-views/{issue_no}/candidates",
+      "/api/v1/issue-views/{issue_no}/assessments"), "issue_id"),
+    ("/api/v1/issues/{issue_no}/impact/{release_id}",
+     ("/api/v1/issue-views/{issue_no}/impact/{release_id}/summary",
+      "/api/v1/issue-views/{issue_no}/impact/{release_id}/components",
+      "/api/v1/issue-views/{issue_no}/impact/{release_id}/verification"), "issue_id"),
+    ("/api/v1/issues/{issue_no}/impact-assessments",
+     ("/api/v1/issue-views/{issue_no}/summary", "/api/v1/issue-views/{issue_no}/assessments"), "issue_id"),
+)
+
 MIGRATION_INSTRUCTIONS = {
+    "/api/v1/changes/{request_no}": (
+        "Read the exact SCR summary, then pass its id as change_id to each bounded "
+        "criteria/issues/points/plans page. Use independent limit/offset and full counts."),
+    "/api/v1/changes/{request_no}/coverage": (
+        "Read the coverage summary with the explicit release_id and optional historical "
+        "snapshot_no or snapshot_id selection. Use its change_id, release_id and "
+        "snapshot_id pins for bounded children; preserve none sentinels. Do not "
+        "replace a selected historical snapshot with the latest. Retirement does "
+        "not forward or validate legacy query fields; carry the selection explicitly."),
+    "/api/v1/issues/{issue_no}": (
+        "Read the exact Issue summary, then pass its id as issue_id to independent "
+        "bounded changes/candidates/assessments pages. Use full counts and limit/offset."),
+    "/api/v1/issues/{issue_no}/impact": (
+        "Read the Issue summary; use its id as issue_id for bounded candidates and "
+        "complete assessment history. Candidate software membership is review scope, "
+        "not inferred impact or permission. Select an exact release and frozen snapshot."),
+    "/api/v1/issues/{issue_no}/impact/{release_id}": (
+        "Read the exact impact summary with optional snapshot_id selection. Pass "
+        "its issue_id and snapshot_id to bounded components/verification pages. "
+        "For a historical judgment, select its recorded snapshot_id, not the latest. "
+        "Preserve none sentinels and exact frozen execution scope; no bulk fallback."),
+    "/api/v1/issues/{issue_no}/impact-assessments": (
+        "Read the exact Issue summary, then use its id as issue_id for the assessment "
+        "page with limit/offset and full totals. This replaces the old truncated head "
+        "with navigable complete history. Review each judgment's recorded snapshot_id."),
     "/api/v1/deployments/{deployment_no}": (
         "Read the exact deployment profile; filter changeover and batch catalogs by "
         "deployment_id=profile.id. Use limit/offset and full history_counts. "

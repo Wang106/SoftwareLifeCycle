@@ -6,7 +6,7 @@ import re
 import pytest
 from fastapi.testclient import TestClient
 from app.api.compatibility_reads import RETIRED_READS, MIGRATION_INSTRUCTIONS
-from app.api import organizations, production, distribution
+from app.api import organizations, production, distribution, dashboard, change_coverage, impact
 from app.core.db import get_db
 from app.main import app
 
@@ -24,7 +24,10 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
     helpers = []
     for module, names in ((organizations, ('_suppliers', '_customers', '_projects')),
                           (production, ('_deployment_detail', '_deployment_provenance')),
-                          (distribution, ('_delivery_detail', '_distribution_detail', '_authorization_detail'))):
+                          (distribution, ('_delivery_detail', '_distribution_detail', '_authorization_detail')),
+                          (dashboard, ('change_detail', 'get_issue')),
+                          (change_coverage, ('report_coverage',)),
+                          (impact, ('_contexts', '_assessment'))):
         for name in names:
             helper = Mock(side_effect=AssertionError('retirement must not serialize a graph'))
             monkeypatch.setattr(module, name, helper); helpers.append(helper)
@@ -53,7 +56,7 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
 
 def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacements():
     retired = {path for path, _, _ in RETIRED_READS}
-    assert len(retired) == 19
+    assert len(retired) == 27
     for path in retired:
         routes = [r for r in app.routes if r.path == path and 'GET' in (getattr(r, 'methods', None) or set())]
         assert len(routes) == 1
@@ -62,7 +65,13 @@ def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacemen
     paths = {(r.path, method) for r in app.routes for method in (getattr(r, 'methods', None) or set())}
     assert ('/api/v1/organizations/release-matrix', 'GET') in paths
     assert ('/api/v1/manufacturing-views/sites', 'GET') in paths
-    for path in ['/api/v1/deployments/{deployment_no}/profile',
+    for path in ['/api/v1/change-views/{request_no}/summary',
+                 '/api/v1/change-coverage-views/{request_no}/summary',
+                 '/api/v1/issue-views/{issue_no}/summary',
+                 '/api/v1/issue-views/{issue_no}/impact/{release_id}/summary',
+                 '/api/v1/change-catalog/requests',
+                 '/api/v1/change-catalog/issues',
+                 '/api/v1/deployments/{deployment_no}/profile',
                  '/api/v1/batches/{batch_no}',
                  '/api/v1/deliveries/{package_no}/revisions/{revision}/profile',
                  '/api/v1/deliveries/{package_no}/revisions/{revision}/artifacts',
@@ -99,3 +108,15 @@ def test_provenance_instructions_pin_delivered_snapshot_and_do_not_infer_actual_
     assert 'both its release_id and snapshot_id' in instructions
     assert 'otherwise no decision scope is inferred' in instructions
     assert "current actual software" in instructions
+
+
+@pytest.mark.parametrize('path,selection', [
+    ('/api/v1/changes/SCR/coverage', 'release_id=invalid&snapshot_no=HIST'),
+    ('/api/v1/issues/ISSUE/impact/not-a-uuid', 'snapshot_id=HIST'),
+])
+def test_retirement_preserves_explicit_historical_selection_instructions(path, selection):
+    response = TestClient(app).get(path+'?'+selection)
+    assert response.status_code == 410
+    instructions = response.json()['instructions']
+    assert 'historical' in instructions and 'latest' in instructions
+    assert 'snapshot_id' in instructions and 'none sentinels' in instructions

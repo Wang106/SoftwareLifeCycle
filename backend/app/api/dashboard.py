@@ -453,7 +453,6 @@ def dashboard_summary(db: Session = Depends(get_db)):
     }
 
 
-@router.get("/changes")
 def list_changes(db: Session = Depends(get_db)):
     rows = db.scalars(select(SoftwareChangeRequest).order_by(SoftwareChangeRequest.created_at.desc())).all()
     return [
@@ -470,7 +469,6 @@ def list_changes(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/changes/{request_no}")
 def change_detail(request_no: str, db: Session = Depends(get_db)):
     change = db.scalars(select(SoftwareChangeRequest).where(
         SoftwareChangeRequest.request_no == request_no
@@ -534,7 +532,6 @@ def change_detail(request_no: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/issues")
 def list_issues(db: Session = Depends(get_db)):
     rows = db.scalars(select(Issue).order_by(Issue.issue_no)).all()
     return [
@@ -551,7 +548,6 @@ def list_issues(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/issues/{issue_no}")
 def get_issue(issue_no: str, db: Session = Depends(get_db)):
     issue = db.scalars(select(Issue).where(Issue.issue_no == issue_no)).first()
     if not issue:

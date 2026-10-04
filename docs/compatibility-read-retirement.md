@@ -126,3 +126,55 @@ release evidence/policy/component/passport/readiness families plus governance an
 audit compatibility routes; not every retained route is unbounded. Internal policy/
 command consumers must be preserved. Phase 4 remains 8/9 and ROADMAP 34/44 until
 that reviewed scope is fully retired/bounded. No schema/provider/grant/write change.
+
+## Third reviewed runtime transition — API 0.18.23
+
+Starting main: `51978c5b0ff70bda78aedc98ea95ff7636d3a3e0`.
+Eight SCR/Issue GET routes retire; cumulative explicit tombstones: 27.
+
+| Retired route | Bounded successor |
+| --- | --- |
+| `/api/v1/changes` | `/api/v1/change-catalog/requests` |
+| `/api/v1/changes/{request_no}` | `/api/v1/change-views/{request_no}/summary` and independent criteria/issues/points/plans |
+| `/api/v1/changes/{request_no}/coverage` | `/api/v1/change-coverage-views/{request_no}/summary` and independent candidates/gaps/groups/items/assignments |
+| `/api/v1/issues` | `/api/v1/change-catalog/issues` |
+| `/api/v1/issues/{issue_no}` | `/api/v1/issue-views/{issue_no}/summary` and changes/candidates/assessments |
+| `/api/v1/issues/{issue_no}/impact` | Issue summary plus bounded candidates and complete assessment history |
+| `/api/v1/issues/{issue_no}/impact/{release_id}` | Exact impact summary and bounded components/verification |
+| `/api/v1/issues/{issue_no}/impact-assessments` | Issue summary and paged assessments with complete counts |
+
+Repository review: change-catalog consumers use bounded directories; SCR detail,
+coverage, Issue detail and exact impact pages use change-views/change-coverage-views/
+issue-views and their independent collections. Command-draft URLs containing
+changes/issues are POST commands, not old GET consumers. Direct calls in change
+_detail/change_coverage/issue_impact/impact_assessments/issue_views tests are retained
+comparison fixtures. No active repository frontend HTTP caller needs these eight
+responses. Shared report_coverage, candidate/evidence/judgment helpers, assignment
+and assessment writes remain; no internal command/policy service is deleted.
+Unknown external HTTP clients must migrate this deliberate response-contract break.
+
+Read scalar summary first and use exact change_id/issue_id for children. SCR
+coverage carries selected release plus historical snapshot_no or snapshot_id,
+then uses summary change_id/release_id/snapshot_id pins and none sentinels.
+Issue impact evidence carries exact release UUID and optional selected Snapshot;
+children carry summary issue_id/snapshot_id, preserving the recorded judgment
+Snapshot and exact frozen execution scope. Candidate membership is review scope,
+not impact or permission. The old bounded-but-truncated assessment head is retired
+in favor of navigable complete history; not every route in this slice was unbounded.
+
+Tombstones return 410 before old number/UUID/query validation and do no database/
+graph work. They do not forward query selections or redirect; instructions require
+clients to carry historical selection explicitly to the successor. No latest
+substitution or silent evidence truncation is performed. All 14 write routes,
+bounded catalogs/summary/children and internal helpers remain. No migration,
+identity/provider/grant change or public-write enablement.
+
+For ongoing plan reporting, development-plan-progress.json fixes nine compatibility
+families and one full-inventory closure milestone. Its 53 candidate paths include
+all 27 tombstones and retained paths needing review; candidates can already be
+scalar/bounded or still actively consumed and must not be blindly retired.
+Five families (organization/manufacturing/production/distribution/SCR-Issue) resolve,
+so plan 1 advances from 4/10=40% to 5/10=50%. Release/ASR, Snapshot, DVP,
+governance/audit and the closure gate remain. This independent milestone percentage
+does not close Phase 4 or change ROADMAP 34/44. Reporting checks enforce completed
+family route evidence and all tombstones appearing in the inventory.

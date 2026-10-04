@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — SCR/Issue retirement and seven-plan percentages
+
+- API 0.18.23 retires 8 reviewed SCR/Issue GETs (27 total); exact historical selection and owned bounded successors remain. Shared helpers and all 14 commands stay.
+- Seven fixed milestone ledgers and reproducible reporting/checks establish plan percentages 50/0/20/33/40/20/0; compatibility governance advances 40% to 50%. ROADMAP stays 34/44.
+- Backend 1132 passed (126 real PostgreSQL), frontend 448 passed, build and 21 production SSR groups pass; migration checks pass. Cloud verification recorded below; public sample stays read-only.
+
 ## 2026-10-04 — Production/distribution compatibility retirement
 
 - API 0.18.22 retires 11 additional reviewed legacy GET routes (19 total), with exact revision/UUID/delivered-Snapshot migration guidance. Bounded successor reads, shared helpers and all 14 commands remain.

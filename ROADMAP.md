@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — all 17 identified read-consumer groups now use bounded reads, including manufacturing site directory/detail. API 0.18.22 has retired 19 reviewed organization/manufacturing/production/distribution GET routes; other bulk/rich families remain pending caller review and retirement/explicit bounds. See docs/compatibility-read-retirement.md. Consumer migration alone does not satisfy this endpoint acceptance item.
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — all 17 identified read-consumer groups now use bounded reads, including manufacturing site directory/detail. API 0.18.23 has retired 27 reviewed organization/manufacturing/production/distribution/SCR-Issue GET routes; other bulk/rich families remain pending caller review and retirement/explicit bounds. See docs/compatibility-read-retirement.md. Consumer migration alone does not satisfy this endpoint acceptance item.
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -510,3 +510,14 @@ the actual target environment, security/permissions and recovery/data/network re
 Additional VIN/features and post-release maintenance are separate future scope.
 Cumulative 19 reviewed compatibility GET tombstones do not close the remaining
 Phase 4 item: overall stays 34/44.
+
+## Seven-plan milestone reporting — API 0.18.23
+
+Every completed development turn reports the seven work-group progress rows from
+`docs/development-plan-progress.json` via `scripts/report_development_plan_progress.py`,
+plus the existing module/roadmap table. Fixed equally weighted acceptance milestones
+include verified preparation/backend foundations; provider-backed submission and
+operations are incomplete. Current plans: 50%, 0%, 20%, 33%, 40%, 20%, 0%.
+Compatibility governance advances 40% → 50% after the SCR/Issue family transition;
+its release/Snapshot/DVP/governance/audit families and closure gate remain.
+Do not average these independent plans into overall roadmap progress: 34/44 stays.
