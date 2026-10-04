@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `b3a621975d174d79444bf360ad978eec353ef30b` — inherited main; current package adds bounded organization directories/profiles (API 0.18.19)
+- Reviewed starting repository baseline: `4fc79aa4e04885465cc15a582cee101f235bc670` — inherited main; current package completes identified manufacturing consumers (API 0.18.20)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing reads remain. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated, old compatibility API retirement/bounds remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -1434,3 +1434,69 @@ is complete for six consumers, manufacturing site/line context remains. All 14
 commands, schema 0018, sample-only public read-only mode and unmerged CI PR #1
 remain unchanged. Next manufacturing reads, then approved identity/session,
 controlled submission/recovery/corrections and operational acceptance.
+
+
+## Bounded manufacturing consumers — API 0.18.20, 2026-10-04
+
+Mode: Codex cloud. Developed from verified main `4fc79aa4e04885465cc15a582cee101f235bc670`.
+Manufacturing site directory now uses a scalar catalog with full filtered totals;
+site detail uses a scalar summary and one owned bounded line page. Neither consumer
+loads all sites, all lines or every latest-deployment changeover/batch history.
+Stored metadata, full line/deployed/MATCH/attention/approved-authorization counts,
+first-line context, recorded batch context and precise line command targets remain.
+Detailed deployment history opens the existing bounded deployment profile/catalog.
+Default Chinese/selectable English, independent failed/empty page states and full
+parent counts remain. Directory now links exact site UUID; existing site-code links
+from projects/production still work through the new resolver.
+
+Latest deployment is per-line created_at DESC NULLS LAST then deployment UUID DESC.
+MATCH/attention counts preserve stored deployment status, not rederived actual UUID
+matches. Approved authorization counts use real current authorization status on
+latest deployments; they count lines, not unique authorizations. No deployment is
+not an attention state. All-MATCH requires at least one line. Summary first context
+uses line name/UUID ordering. Recorded batch remains the earliest started_at/UUID
+batch on the first name/UUID-ordered line with batches on its latest deployment,
+regardless of batch status; it is not a claim of active production. Changeover
+context is earliest changed_at/UUID on the first line's latest deployment. Null
+history times sort last, matching production PostgreSQL ASC behavior. A new latest
+deployment can remove an older batch/changeover context. Foreign-site/older-deployment
+history cannot leak into these selections. Optional metadata remains null while
+stored UUIDs survive. No arbitrary release/version substitute is shown.
+
+New summary accepts exact site code or UUID (LIMIT 2); a UUID/code collision is
+409, missing site 404. Required site_id binds each line request to its resolved
+parent UUID; wrong pin is 404. Catalog supports literal q and exact status/region/
+customer_id/project_id filters; limit 1..100/default 50, offset 0..100000/default 0,
+extra/invalid fields 422. Stable site name/UUID and line name/UUID ordering.
+Encoded site-code separators are supported by suffix path routes. Links preserve
+actual existing route contracts: deployment/authorization/batch use stored unique
+numbers; release uses UUID and type; Snapshot uses number plus manifest_snapshot_id
+UUID; line expectation preparation carries exact line UUID. No bulk fallback.
+
+No migration; head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only. Identified read-consumer ledger now
+**17/17 (100%)**, previously 16/17: group 17's final two consumers are migrated.
+This is consumer completion, not removal of compatibility APIs. ROADMAP remains
+**34/44 (77%)**, Phase 4 **8/9 (89%)**: its literal remaining acceptance item asks
+to retire or bound old compatibility reads after migration. Those endpoints still
+exist with rich arrays; caller review and retirement/bounds are unfinished. The
+criterion and denominator are not rewritten to claim earned completion. See
+`docs/compatibility-read-retirement.md` for the concrete follow-up inventory.
+Next complete that compatibility contract review, then approved identity/session,
+controlled submission/outcome recovery, broader corrections/revocations and operations.
+CI PR #1 remains open/unmerged. Conditional package ranges stay 4–8 internal-use /
+12–20 production-review pending remaining contract/provider scope; no automatic reduction.
+
+Validation: full Python 3.12 backend **1069 passed**, **9112 warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+21 new backend cases cover legacy counts/latest/context parity, complete bounded
+line windows, tied latest UUID selection, exact filters/pins, empty/foreign context,
+missing metadata, encoded site code and ambiguous identifier, read-only denial and
+120-site/line/deployment growth with constant SQL shapes and no ORM identity graph.
+PostgreSQL verifies 209-line totals, latest MISMATCH precedence, missing current batch
+and no audit writes. Frontend **448 passed**, no skips; production Next/OpenNext
+build passed. **9 actual production Next SSR groups** verify catalog/profile zh/en,
+full beyond-end context, failed/repeated pagination, empty-site CHECK, parent identity
+stopping child reads and exact supported links/preparation UUID. Single Alembic head
+and full PostgreSQL upgrade SQL generation pass. Cloud rollout pending at feature
+commit; successful live verification is recorded separately afterward.

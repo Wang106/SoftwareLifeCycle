@@ -399,3 +399,8 @@ remaining group-17 consumers.
 ## Organization read migration — API 0.18.19
 
 organization_views.py projects scalar metadata/counts and bounded windows for three directories and three owned profile collections. Two SQL queries per catalog, three per owned page (including parent resolution); no growing ID arrays/ORM graphs. Shared frontend components verify parent kind/identifier and child organization UUID before rendering. Full counts remain when child pages fail; no legacy rich fallback.
+
+
+## Manufacturing read migration — API 0.18.20
+
+manufacturing_views.py uses a latest-per-line ROW_NUMBER projection, scalar CTE counts/context and bounded site/line windows. Summary/line consumers validate site kind/identity and owned page UUID/code. Full context remains when lines fail. Existing bounded deployment profile/catalog supplies history; no legacy rich fallback. All 17 identified consumer groups now migrated; compatibility API retirement is separate.

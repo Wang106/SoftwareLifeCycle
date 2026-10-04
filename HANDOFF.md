@@ -5,9 +5,9 @@
 - Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `b3a621975d174d79444bf360ad978eec353ef30b`
-- Developed from: `b3a621975d174d79444bf360ad978eec353ef30b`
-- Baseline subject: `docs: record verified Issue detail cloud rollout`
+- Verified starting baseline: `4fc79aa4e04885465cc15a582cee101f235bc670`
+- Developed from: `4fc79aa4e04885465cc15a582cee101f235bc670`
+- Baseline subject: `docs: record verified organization cloud rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.19 verified ready; schema 0018 |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.19 starting baseline; 0.18.20 rollout pending |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -62,7 +62,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 1 — Domain foundation | 5 / 5 | 100% | Complete |
 | Phase 2 — Release governance | 5 / 5 | 100% | Complete for demo scope |
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
-| Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Compatibility-list migration remains |
+| Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Retained compatibility API retirement/bounds remain |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
 | Phase 6 — Controlled write experience | 3 / 5 | 60% | Safety slices and UI priorities implemented; submission/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
@@ -1471,3 +1471,69 @@ is complete for six consumers, manufacturing site/line context remains. All 14
 commands, schema 0018, sample-only public read-only mode and unmerged CI PR #1
 remain unchanged. Next manufacturing reads, then approved identity/session,
 controlled submission/recovery/corrections and operational acceptance.
+
+
+## Bounded manufacturing consumers — API 0.18.20, 2026-10-04
+
+Mode: Codex cloud. Developed from verified main `4fc79aa4e04885465cc15a582cee101f235bc670`.
+Manufacturing site directory now uses a scalar catalog with full filtered totals;
+site detail uses a scalar summary and one owned bounded line page. Neither consumer
+loads all sites, all lines or every latest-deployment changeover/batch history.
+Stored metadata, full line/deployed/MATCH/attention/approved-authorization counts,
+first-line context, recorded batch context and precise line command targets remain.
+Detailed deployment history opens the existing bounded deployment profile/catalog.
+Default Chinese/selectable English, independent failed/empty page states and full
+parent counts remain. Directory now links exact site UUID; existing site-code links
+from projects/production still work through the new resolver.
+
+Latest deployment is per-line created_at DESC NULLS LAST then deployment UUID DESC.
+MATCH/attention counts preserve stored deployment status, not rederived actual UUID
+matches. Approved authorization counts use real current authorization status on
+latest deployments; they count lines, not unique authorizations. No deployment is
+not an attention state. All-MATCH requires at least one line. Summary first context
+uses line name/UUID ordering. Recorded batch remains the earliest started_at/UUID
+batch on the first name/UUID-ordered line with batches on its latest deployment,
+regardless of batch status; it is not a claim of active production. Changeover
+context is earliest changed_at/UUID on the first line's latest deployment. Null
+history times sort last, matching production PostgreSQL ASC behavior. A new latest
+deployment can remove an older batch/changeover context. Foreign-site/older-deployment
+history cannot leak into these selections. Optional metadata remains null while
+stored UUIDs survive. No arbitrary release/version substitute is shown.
+
+New summary accepts exact site code or UUID (LIMIT 2); a UUID/code collision is
+409, missing site 404. Required site_id binds each line request to its resolved
+parent UUID; wrong pin is 404. Catalog supports literal q and exact status/region/
+customer_id/project_id filters; limit 1..100/default 50, offset 0..100000/default 0,
+extra/invalid fields 422. Stable site name/UUID and line name/UUID ordering.
+Encoded site-code separators are supported by suffix path routes. Links preserve
+actual existing route contracts: deployment/authorization/batch use stored unique
+numbers; release uses UUID and type; Snapshot uses number plus manifest_snapshot_id
+UUID; line expectation preparation carries exact line UUID. No bulk fallback.
+
+No migration; head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only. Identified read-consumer ledger now
+**17/17 (100%)**, previously 16/17: group 17's final two consumers are migrated.
+This is consumer completion, not removal of compatibility APIs. ROADMAP remains
+**34/44 (77%)**, Phase 4 **8/9 (89%)**: its literal remaining acceptance item asks
+to retire or bound old compatibility reads after migration. Those endpoints still
+exist with rich arrays; caller review and retirement/bounds are unfinished. The
+criterion and denominator are not rewritten to claim earned completion. See
+`docs/compatibility-read-retirement.md` for the concrete follow-up inventory.
+Next complete that compatibility contract review, then approved identity/session,
+controlled submission/outcome recovery, broader corrections/revocations and operations.
+CI PR #1 remains open/unmerged. Conditional package ranges stay 4–8 internal-use /
+12–20 production-review pending remaining contract/provider scope; no automatic reduction.
+
+Validation: full Python 3.12 backend **1069 passed**, **9112 warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+21 new backend cases cover legacy counts/latest/context parity, complete bounded
+line windows, tied latest UUID selection, exact filters/pins, empty/foreign context,
+missing metadata, encoded site code and ambiguous identifier, read-only denial and
+120-site/line/deployment growth with constant SQL shapes and no ORM identity graph.
+PostgreSQL verifies 209-line totals, latest MISMATCH precedence, missing current batch
+and no audit writes. Frontend **448 passed**, no skips; production Next/OpenNext
+build passed. **9 actual production Next SSR groups** verify catalog/profile zh/en,
+full beyond-end context, failed/repeated pagination, empty-site CHECK, parent identity
+stopping child reads and exact supported links/preparation UUID. Single Alembic head
+and full PostgreSQL upgrade SQL generation pass. Cloud rollout pending at feature
+commit; successful live verification is recorded separately afterward.

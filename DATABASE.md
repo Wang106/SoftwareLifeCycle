@@ -451,3 +451,8 @@ and rich artifact/deployment/batch arrays. Existing indexes remain in use.
 ## Organization read migration — API 0.18.19
 
 No migration; head 0018. Correlated scalar COUNT/EXISTS and latest-release LIMIT 1 avoid transferring child/release arrays. Customer release membership matches stored customer plus project; project release context uses project only. Optional customer metadata outer join preserves project identity. Stable code/UUID pages and created_at/UUID latest selections are verified on PostgreSQL; reads append no audit event.
+
+
+## Manufacturing read migration — API 0.18.20
+
+No migration; head 0018. Latest per-line window uses created_at/id ordering; scalar count/context queries retain stored status and exact current authorization membership. Recorded batch joins only latest deployments and sorts line name/id then started_at/id, null times last. No growing ID lists or ORM graphs; optional metadata outer joins retain identities. PostgreSQL verifies tied latest UUID, 209-line totals and no audit writes.

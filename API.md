@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.19`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.20`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -796,3 +796,26 @@ remain on beyond-end pages; a failed child does not substitute zero parent count
 Frontend uses limit/offset, retains valid filters and sends repeated values as
 invalid. These pins select live identity, not authorization or frozen evidence.
 Legacy `/organizations/*` APIs and bounded release-matrix remain compatible.
+
+
+## Manufacturing scalar views — API 0.18.20
+
+All GET; prefix `/api/v1/manufacturing-views/sites`.
+
+| Path suffix | Result / query |
+| --- | --- |
+| empty | Bounded site rows, full total and scalar line/deployed/stored MATCH/attention counts; q/status/region/customer_id/project_id/limit/offset |
+| `/{identifier}/summary` | Exact scalar site metadata/full counts and legacy first-line/recorded-batch context; no query fields |
+| `/{identifier}/lines` | Flattened owned lines and latest deployment/release/Snapshot/authorization metadata; required site_id UUID, limit/offset |
+
+q max 200 literal code/name contains; status max 30 and region max 100 exact;
+customer_id/project_id exact UUID. Limit 1..100/default 50; offset 0..100000/default 0.
+Unknown/invalid fields 422. Exact UUID or code resolution LIMIT 2; collision 409,
+missing 404; encoded code path separators supported. Required site_id mismatch 404.
+Envelope kind, total, limit, offset, next_offset, items; lines add site_id/site_code.
+Site name/UUID and line name/UUID ascending; repeated numeric frontend values fail.
+Latest per line is created_at DESC NULLS LAST/id DESC. Counts preserve stored states;
+summary ordering and batch non-active semantics are detailed in HANDOFF. Raw stored
+UUIDs survive optional metadata loss. No nested batch/changeover arrays are returned.
+These are mutable reads, not authorization or frozen evidence. Legacy manufacturing
+APIs remain compatible; endpoint retirement/bounds remain a separate acceptance task.

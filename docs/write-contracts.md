@@ -448,3 +448,8 @@ judgments and verification results are separate evidence. Public writes remain d
 ## Organization read migration — API 0.18.19
 
 All 14 command contracts, actor/scope binding, keyed replay, row serialization and atomic business/audit behavior remain unchanged. Organization directories/profiles add only reads; their parent UUID pins and latest release context do not authorize submissions.
+
+
+## Manufacturing read migration — API 0.18.20
+
+All 14 existing commands retain trusted actor/exact scope, keyed replay, row serialization and atomic business/audit behavior. Manufacturing line preparation carries the exact line UUID; read identity pins and stored-state summaries do not authorize submission. No non-read endpoint changed.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Bounded manufacturing directory and site detail
+
+- API 0.18.20 separates full scalar site statistics/context from bounded sites and owned line/latest-deployment pages. Chinese/English pages preserve complete counts on failed/empty windows, stored-state semantics and exact supported detail/preparation links.
+- UUID/code site resolution, ambiguity/pin checks, stable ordering, first-line/recorded-batch context and missing metadata are verified. No migration/write change; public staging remains read-only.
+- Backend 1069 passed (126 real PostgreSQL), frontend 448 passed, production build and 9 production SSR groups passed. Read-consumer ledger completes 17/17; ROADMAP 34/44 remains because old compatibility endpoint retirement/bounds are not complete. Cloud rollout pending, record follows.
+
 ## 2026-10-04 — Bounded organization directories and profiles
 
 - API 0.18.19 replaces six supplier/customer/project frontend bulk consumers with complete SQL counts, scalar context and owned bounded collection pages. Exact software/release/project/site links, customer region and bilingual profiles remain.

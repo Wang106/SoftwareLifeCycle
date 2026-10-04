@@ -387,3 +387,8 @@ configuration changes; public sample staging remains read-only.
 ## Organization read migration — API 0.18.19
 
 Organization UUID pins prevent accidental mixed-parent collection reads; they grant no access or write permission. Software/project/site counts and latest version are mutable observations, not release authorization or frozen evidence. No identity/provider/scoped grant/public-write configuration changes. Public sample staging remains read-only.
+
+
+## Manufacturing read migration — API 0.18.20
+
+Exact site resolution and required site_id select read identity only. Stored MATCH/APPROVED counts are observations, not production grants; recorded batch is not necessarily active. New reads do not alter scoped actor permissions, provider settings or public-write guards. Public staging remains sample-only/read-only.

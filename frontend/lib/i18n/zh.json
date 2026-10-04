@@ -1573,5 +1573,16 @@
   "Organization collection unavailable": "组织关联记录暂不可用",
   "Software products": "软件产品",
   "The API is unavailable or the page selection is invalid.": "API 暂不可用或分页选择无效。",
-  "The organization was not found, is ambiguous or the API could not be reached.": "未找到组织、标识存在歧义或无法连接 API。"
+  "The organization was not found, is ambiguous or the API could not be reached.": "未找到组织、标识存在歧义或无法连接 API。",
+  "Matching manufacturing sites": "匹配的制造站点",
+  "Manufacturing catalog unavailable": "制造站点目录暂不可用",
+  "Manufacturing lines unavailable": "制造产线暂不可用",
+  "Recorded production context": "已记录的生产背景",
+  "Recorded batch context": "已记录的批次背景",
+  "First line authorization": "首条产线授权",
+  "First line changeover": "首条产线换版",
+  "Open exact deployment history →": "打开对应部署历史 →",
+  "Batch context preserves recorded ordering; it does not assert that a batch is active.": "批次背景保留记录排序，不代表批次当前正在生产。",
+  "Stored manufacturing states are observations, not production permission.": "制造状态是已记录的观察结果，不授予生产权限。",
+  "The site was not found, is ambiguous or the API could not be reached.": "未找到站点、标识存在歧义或无法连接 API。"
 }
