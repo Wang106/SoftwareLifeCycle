@@ -82,7 +82,26 @@ RETIRED_READS += (
      ("/api/v1/issue-views/{issue_no}/summary", "/api/v1/issue-views/{issue_no}/assessments"), "issue_id"),
 )
 
+# Exact Snapshot manifests and comparison graphs use bounded successors.
+RETIRED_READS += (
+    ("/api/v1/snapshots/{snapshot_no}",
+     ("/api/v1/snapshots/{snapshot_no}/summary", "/api/v1/snapshots/{snapshot_no}/artifacts",
+      "/api/v1/snapshots/{snapshot_no}/rules"), "snapshot_id"),
+    ("/api/v1/snapshots/{snapshot_no}/compare/{target_no}",
+     ("/api/v1/snapshots/{snapshot_no}/comparison/{target_no}/summary",
+      "/api/v1/snapshots/{snapshot_no}/comparison/{target_no}/files"), None),
+)
+
 MIGRATION_INSTRUCTIONS = {
+    "/api/v1/snapshots/{snapshot_no}": (
+        "Read the exact frozen Snapshot summary; pass its id as snapshot_id to "
+        "independent artifacts/rules pages with limit/offset and full counts. "
+        "Preserve historical Snapshot selection; never substitute the latest."),
+    "/api/v1/snapshots/{snapshot_no}/compare/{target_no}": (
+        "Read the exact comparison summary; pass source.id as source_id and "
+        "target.id as target_id to the bounded files page. Preserve both historical "
+        "Snapshot identities, same-release validation and full difference counts; "
+        "use show, limit/offset without replacing either Snapshot with the latest."),
     "/api/v1/changes/{request_no}": (
         "Read the exact SCR summary, then pass its id as change_id to each bounded "
         "criteria/issues/points/plans page. Use independent limit/offset and full counts."),

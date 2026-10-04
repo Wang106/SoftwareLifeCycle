@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.23`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.24`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -866,3 +866,13 @@ Retirement performs no DB read or old UUID/query validation. The old truncated
 assessment head is replaced by the navigable bounded history. Internal helpers,
 all bounded successors and all 14 commands are retained. No migration or public
 write change; sample staging remains read-only.
+
+## Snapshot compatibility retirement — API 0.18.24
+
+GET /api/v1/snapshots/{snapshot_no} and its /compare/{target_no} return
+410 without database work. Exact summary plus independent artifacts/rules pages
+require snapshot_id. Comparison summary plus files require source_id AND target_id;
+same-release and ambiguous-identity checks remain in the successors. Complete counts,
+historical selection and show/limit/offset replace full graph loads. Reviewed
+retirement count is now 29; all 14 POST commands remain. DVP retirement is pending:
+its replacement profile still loads unbounded linked criteria/change points/issues.

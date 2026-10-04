@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.23",
-  "baseline_commit": "51978c5b0ff70bda78aedc98ea95ff7636d3a3e0",
+  "as_of_api": "0.18.24",
+  "baseline_commit": "43bbe138e2e99942e541dbc48c0394d0ff1067af",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -120,8 +120,13 @@
         {
           "id": "snapshot",
           "label": "Snapshot/比较旧读取",
-          "complete": false,
-          "evidence": [],
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_snapshot_pages.py",
+            "backend/tests/test_snapshot_comparison_pages.py"
+          ],
           "routes": [
             "/api/v1/snapshots/{snapshot_no}",
             "/api/v1/snapshots/{snapshot_no}/compare/{target_no}"

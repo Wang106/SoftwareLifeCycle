@@ -6,7 +6,7 @@ import re
 import pytest
 from fastapi.testclient import TestClient
 from app.api.compatibility_reads import RETIRED_READS, MIGRATION_INSTRUCTIONS
-from app.api import organizations, production, distribution, dashboard, change_coverage, impact
+from app.api import organizations, production, distribution, dashboard, change_coverage, impact, snapshots
 from app.core.db import get_db
 from app.main import app
 
@@ -27,6 +27,7 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
                           (distribution, ('_delivery_detail', '_distribution_detail', '_authorization_detail')),
                           (dashboard, ('change_detail', 'get_issue')),
                           (change_coverage, ('report_coverage',)),
+                          (snapshots, ('_manifest', 'compare_manifests')),
                           (impact, ('_contexts', '_assessment'))):
         for name in names:
             helper = Mock(side_effect=AssertionError('retirement must not serialize a graph'))
@@ -56,7 +57,7 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
 
 def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacements():
     retired = {path for path, _, _ in RETIRED_READS}
-    assert len(retired) == 27
+    assert len(retired) == 29
     for path in retired:
         routes = [r for r in app.routes if r.path == path and 'GET' in (getattr(r, 'methods', None) or set())]
         assert len(routes) == 1
@@ -65,7 +66,12 @@ def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacemen
     paths = {(r.path, method) for r in app.routes for method in (getattr(r, 'methods', None) or set())}
     assert ('/api/v1/organizations/release-matrix', 'GET') in paths
     assert ('/api/v1/manufacturing-views/sites', 'GET') in paths
-    for path in ['/api/v1/change-views/{request_no}/summary',
+    for path in ['/api/v1/snapshots/{snapshot_no}/summary',
+                 '/api/v1/snapshots/{snapshot_no}/artifacts',
+                 '/api/v1/snapshots/{snapshot_no}/rules',
+                 '/api/v1/snapshots/{source_no}/comparison/{target_no}/summary',
+                 '/api/v1/snapshots/{source_no}/comparison/{target_no}/files',
+                 '/api/v1/change-views/{request_no}/summary',
                  '/api/v1/change-coverage-views/{request_no}/summary',
                  '/api/v1/issue-views/{issue_no}/summary',
                  '/api/v1/issue-views/{issue_no}/impact/{release_id}/summary',
@@ -120,3 +126,14 @@ def test_retirement_preserves_explicit_historical_selection_instructions(path, s
     instructions = response.json()['instructions']
     assert 'historical' in instructions and 'latest' in instructions
     assert 'snapshot_id' in instructions and 'none sentinels' in instructions
+
+
+def test_snapshot_comparison_migration_requires_both_exact_identities():
+    response = TestClient(app).get('/api/v1/snapshots/HIST/compare/OTHER')
+    assert response.status_code == 410
+    body = response.json()
+    assert body['required_collection_pin'] is None
+    assert 'source.id as source_id' in body['instructions']
+    assert 'target.id as target_id' in body['instructions']
+    assert 'same-release' in body['instructions']
+    assert 'latest' in body['instructions']

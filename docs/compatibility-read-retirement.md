@@ -178,3 +178,28 @@ so plan 1 advances from 4/10=40% to 5/10=50%. Release/ASR, Snapshot, DVP,
 governance/audit and the closure gate remain. This independent milestone percentage
 does not close Phase 4 or change ROADMAP 34/44. Reporting checks enforce completed
 family route evidence and all tombstones appearing in the inventory.
+
+## Fourth slice — exact Snapshot, API 0.18.24
+
+| Retired GET | Successors |
+| --- | --- |
+| `/api/v1/snapshots/{snapshot_no}` | Exact `/summary`, independent `/artifacts` and `/rules` |
+| `/api/v1/snapshots/{snapshot_no}/compare/{target_no}` | `/comparison/{target_no}/summary` and `/files` |
+
+Frontend snapshot detail/manifest and comparison consumers already use these
+successors. Direct snapshot_detail/compare_snapshots calls in regression tests remain
+legacy comparison fixtures; their functions and _manifest are retained. No repository
+HTTP consumer needs the two retired responses. External callers must migrate.
+Read exact summary, then pass its id as snapshot_id to artifact/rule pages.
+Comparison files require source.id as source_id and target.id as target_id from
+comparison summary, preserving both historical identities. Same-release validation,
+duplicate frozen identity rejection, show filtering, full SQL counts and independent
+pages remain. Tombstones are DB-free, do not validate old queries and encode both
+path parameters separately. All 14 commands remain; no migration or public write change.
+
+The fixed 53-path candidate inventory now contains 29 retired routes. Six of ten
+plan-1 milestones pass: 50% → 60%. Release/ASR, DVP, governance/audit and full closure
+remain. DVP catalog/history are bounded, but dvp_profile still loads linked acceptance
+criteria, change points and issues without pagination. Therefore the DVP family is
+not completed or retired in this slice. Next add bounded owned relation reads and
+migrate the frontend before closing that milestone. ROADMAP stays 34/44 (77%).

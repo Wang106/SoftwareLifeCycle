@@ -889,3 +889,32 @@ not a claim that all are unbounded. Roadmap/module progress stays **34/44 (77%)*
 100/100-demo/100-demo/89/89/60/0 by Phases 1–7. Read consumers stay **17/17**.
 Next release/ASR, Snapshot, DVP, governance/audit families and inventory closure,
 then CI, approved identity/session, submission/recovery, corrections and operations.
+
+## 2026-10-04 — API 0.18.24 exact Snapshot retirement
+
+Codex cloud continued from main 43bbe138e2e99942e541dbc48c0394d0ff1067af.
+Two legacy Snapshot GET routes retire with DB-free HTTP410 and encoded successor
+URLs. Exact manifests require snapshot_id; comparison files require source_id and
+target_id. Internal legacy helpers remain comparison fixtures. Reviewed tombstones
+27 → 29; all 14 commands remain. No migration or public-write enablement.
+
+Validation: full backend 1137 passed, zero skipped, including 126 real PostgreSQL
+regressions (16.15); existing 9112 datetime/deprecation warnings remain. Frontend
+448 passed, zero skipped; OpenNext/Cloudflare build complete. Eight production Next
+SSR groups pass against actual backend fixtures: historical/current manifests,
+paired comparison, Chinese/English, empty windows, exact pins and no retired calls.
+Alembic head remains 0018_asr_evidence_index; offline upgrade SQL passes.
+
+Seven plans: compatibility 6/10=60% (50% → 60%), CI 0/4=0%, identity/session
+1/5=20%, first controlled submit 2/6=33%, all14 commands 2/5=40%, corrections
+1/5=20%, operations/company migration 0/6=0%. Denominators stay fixed; these are
+acceptance milestones, not effort or production readiness. ROADMAP 34/44=77%; phase
+percentages 100/100-demo/100-demo/89/89/60/0; read consumers 17/17.
+
+DVP catalog/history are bounded, but replacement dvp_profile has unbounded linked
+criteria/change-point/Issue arrays. Do not mark the DVP family complete or retire
+its old GETs until these owned relations are paginated and the frontend migrated.
+Next: DVP relation pages, then release/ASR, governance/audit, full inventory closure.
+CI PR1 remains open/unmerged. Approved provider/session, real writes/recovery,
+corrections and operations remain incomplete. Public staging remains read-only.
+Cloud rollout evidence is recorded after publishing and live verification.
