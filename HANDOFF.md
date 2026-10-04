@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.19 starting baseline; 0.18.20 rollout pending |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.20 verified ready; schema 0018 |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -80,7 +80,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 - OIDC validation and exact scoped authorization for all 14 write routes when OIDC mode is enabled.
 - Trusted authenticated-actor binding and atomic audit events for all 14 current write routes.
 - Snapshot and production-command rollback tests proving that an audit failure leaves no domain change.
-- Starting baseline full regression: 1007 backend tests under Python 3.12, including 123 real PostgreSQL tests without skips. Current verification is recorded below.
+- Starting baseline full regression: 1048 backend tests under Python 3.12, including 125 real PostgreSQL tests without skips. Current verification is recorded below.
 - Optional request-ID replay and PostgreSQL serialization for Snapshot numbering, shared Production Batch quotas, Approval Action and Release Decision, without a new migration.
 
 ## Current limitations and risks
@@ -1537,3 +1537,41 @@ full beyond-end context, failed/repeated pagination, empty-site CHECK, parent id
 stopping child reads and exact supported links/preparation UUID. Single Alembic head
 and full PostgreSQL upgrade SQL generation pass. Cloud rollout pending at feature
 commit; successful live verification is recorded separately afterward.
+
+
+## 2026-10-04 — Verified manufacturing cloud rollout
+
+Feature main commit `1d4cfed98fed3ec961f7da89b44b8c06b88d683e` has successful
+Cloudflare Workers Builds, completed **2026-10-04T12:28:32Z**. Live HTTPS
+`/health/ready` returns 200, API **0.18.20**, schema
+`0018_asr_evidence_index`. Render provider deployment metadata was not inspected;
+this is live API version/behavior evidence, not a claimed provider deployment ID.
+
+Public sample FACTORY-A UUID `935fa56f-30e7-4f3a-b809-b6fd0ea3bd27` is one site
+with one line, one latest deployment, one stored MATCH, zero attention lines and
+one current APPROVED-authorization line. Latest deployment UUID is
+`7c8338a6-9070-4090-9f74-999d845be058`; recorded batch UUID is
+`beb73c74-f10e-4ac7-a22a-02090ed1160f`. New scalar counts, latest line/authorization/
+expected Snapshot projection, first-line context, first changeover and recorded
+batch match legacy reads. UUID and legacy site-code summaries resolve identical
+site context. Limit-one/beyond-end pages preserve full totals; invalid/unknown
+fields and foreign site pins reject as specified. The one-line public sample does
+not demonstrate real next-page traversal; local growth, PostgreSQL 209-line windows
+and SSR fixtures cover larger pagination/tie cases.
+
+Cloudflare catalog/profile pass default Chinese and selected English. Directory
+links exact site UUID; old FACTORY-A links still open the same profile. Rendered
+line expectation preparation carries exact line UUID, deployment/authorization
+links use the stored unique numbers accepted by their existing profiles, Snapshot
+link carries manifest_snapshot_id. Invalid/beyond-end line pages preserve parent
+context/counts. Empty deployment POST returns 403 `read_only_mode`; verification
+requests wrote no business data. No migration or command/grant/provider change.
+Backend 1069 passed (126 real PostgreSQL), frontend 448 passed, final production
+build and nine production SSR groups passed; schema head remains 0018.
+
+Read-consumer ledger now **17/17 (100%)** under its original denominator. ROADMAP
+remains **34/44 (77%)**, Phase 4 **8/9 (89%)**, because its separate literal endpoint
+acceptance requires retirement/bounds on retained compatibility APIs. Their caller/
+contract review remains pending, documented in compatibility-read-retirement.md.
+CI PR #1 remains open/unmerged. Next compatibility endpoint review/transition,
+approved identity/session, controlled submission/recovery/corrections and operations.

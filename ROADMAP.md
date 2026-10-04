@@ -94,7 +94,7 @@ not provider configuration or production-readiness certification.
    keep public staging read-only and use a separately approved controlled target.
 3. Extend append-only correction/revocation contracts beyond actual reporting;
    never infer physical flashing reversal or alter existing batch history.
-4. Continue migrating consumers from unbounded compatibility lists/details to bounded catalogs; deployment/authorization/distribution and exact delivery revision and ASR downstream migrations are implemented; ASR evidence is now paginated; ASR profile coverage and SSR consumers remain.
+4. All 17 identified read-consumer groups are migrated. Complete route/caller review and retirement or explicit bounds for retained compatibility endpoints; see docs/compatibility-read-retirement.md.
 5. Configure an approved OIDC provider, provider-backed tests, audited grant
    administration and browser login/session flow before protected multi-user use.
 6. Add CI backend/PostgreSQL/migration/frontend checks; backup/restore, retention,

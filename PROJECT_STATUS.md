@@ -28,8 +28,8 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
 | **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
-Separate read-consumer tracking: **16 / 17 (94%)**, unchanged from the starting
-baseline; SCR/Issue directories and SCR detail consumers now migrate inside still-open group 17. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
+Separate read-consumer tracking: **17 / 17 (100%)**; manufacturing completes the
+last identified group-17 consumers. Retained compatibility endpoint retirement/bounds remain a separate Phase 4 acceptance requirement. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
 This finer counter does not change ROADMAP acceptance-item accounting or certify production readiness.
 
 ## Completed and evidenced in `main`
@@ -1500,3 +1500,41 @@ full beyond-end context, failed/repeated pagination, empty-site CHECK, parent id
 stopping child reads and exact supported links/preparation UUID. Single Alembic head
 and full PostgreSQL upgrade SQL generation pass. Cloud rollout pending at feature
 commit; successful live verification is recorded separately afterward.
+
+
+## 2026-10-04 — Verified manufacturing cloud rollout
+
+Feature main commit `1d4cfed98fed3ec961f7da89b44b8c06b88d683e` has successful
+Cloudflare Workers Builds, completed **2026-10-04T12:28:32Z**. Live HTTPS
+`/health/ready` returns 200, API **0.18.20**, schema
+`0018_asr_evidence_index`. Render provider deployment metadata was not inspected;
+this is live API version/behavior evidence, not a claimed provider deployment ID.
+
+Public sample FACTORY-A UUID `935fa56f-30e7-4f3a-b809-b6fd0ea3bd27` is one site
+with one line, one latest deployment, one stored MATCH, zero attention lines and
+one current APPROVED-authorization line. Latest deployment UUID is
+`7c8338a6-9070-4090-9f74-999d845be058`; recorded batch UUID is
+`beb73c74-f10e-4ac7-a22a-02090ed1160f`. New scalar counts, latest line/authorization/
+expected Snapshot projection, first-line context, first changeover and recorded
+batch match legacy reads. UUID and legacy site-code summaries resolve identical
+site context. Limit-one/beyond-end pages preserve full totals; invalid/unknown
+fields and foreign site pins reject as specified. The one-line public sample does
+not demonstrate real next-page traversal; local growth, PostgreSQL 209-line windows
+and SSR fixtures cover larger pagination/tie cases.
+
+Cloudflare catalog/profile pass default Chinese and selected English. Directory
+links exact site UUID; old FACTORY-A links still open the same profile. Rendered
+line expectation preparation carries exact line UUID, deployment/authorization
+links use the stored unique numbers accepted by their existing profiles, Snapshot
+link carries manifest_snapshot_id. Invalid/beyond-end line pages preserve parent
+context/counts. Empty deployment POST returns 403 `read_only_mode`; verification
+requests wrote no business data. No migration or command/grant/provider change.
+Backend 1069 passed (126 real PostgreSQL), frontend 448 passed, final production
+build and nine production SSR groups passed; schema head remains 0018.
+
+Read-consumer ledger now **17/17 (100%)** under its original denominator. ROADMAP
+remains **34/44 (77%)**, Phase 4 **8/9 (89%)**, because its separate literal endpoint
+acceptance requires retirement/bounds on retained compatibility APIs. Their caller/
+contract review remains pending, documented in compatibility-read-retirement.md.
+CI PR #1 remains open/unmerged. Next compatibility endpoint review/transition,
+approved identity/session, controlled submission/recovery/corrections and operations.
