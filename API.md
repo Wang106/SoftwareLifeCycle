@@ -19,7 +19,7 @@ This document is a maintained map, not a replacement for the generated OpenAPI s
 | Dashboard/search | `/api/v1/dashboard/summary`, `/api/v1/search` | Live counts and cross-domain lookup |
 | Organizations | `/api/v1/organization-views/{suppliers,customers,projects}`, summary/items; `/api/v1/organizations/release-matrix` | Bounded catalogs and UUID-pinned child pages; legacy organization reads return 410 |
 | Releases | `/api/v1/releases`, `/releases/standard`, `/releases/application`, `/releases/application/id/{release_id}` | Exact-ID application profiles are preferred over version-only compatibility routes |
-| Snapshot evidence | `/api/v1/releases/{release_id}/snapshots`, `/api/v1/snapshots/{snapshot_no}`, `/compare/{target_no}` | Frozen manifest/history and metadata comparison |
+| Snapshot evidence | `/api/v1/releases/{release_id}/snapshots`, `/api/v1/snapshots/{snapshot_no}/summary`, `/artifacts`, `/rules`, `/comparison/{target_no}/summary`, `/files` | Exact frozen manifests and paired comparisons use bounded pages; legacy detail/compare GETs return 410 |
 | Change/Issue | `/api/v1/change-catalog/{requests,issues}`, `/change-views/{request_no}/summary`, `/change-coverage-views/{request_no}/summary`, `/issue-views/{issue_no}/summary` and exact impact | Bounded summary/children preserve exact release/Snapshot scope; legacy GETs return 410 |
 | Testing | `/api/v1/testing/dvp/catalog`, `/testing/dvp/id/{item_id}/profile`, `/testing/releases` | Bounded DVP directory plus test-release records |
 | Governance | `/api/v1/governance/approvals`, `/decisions`, exact profiles/actions | Preferred bounded governance history |
@@ -499,8 +499,8 @@ the other offset and exact pin. Search-generated frozen artifact links include t
 exact file query and retained #artifact-UUID anchor, even when the file was beyond the
 first page. Old bare fragment bookmarks alone locate only files on the current page;
 use the exact file query for off-page targets. Identity/full hashes/history/compare/
-resource and preparation links remain; no bulk fallback. Legacy bare detail and compare
-APIs remain compatible and unbounded. No migration; schema 0018.
+resource and preparation links remain; no bulk fallback. API 0.18.24 retires legacy bare
+detail and compare GETs with HTTP 410; internal helpers remain. No migration; schema 0018.
 
 ## Bounded Snapshot comparison — API 0.18.11
 
@@ -536,7 +536,7 @@ compare_source_id/compare_target_id pin pagination to both selected identities, 
 reselecting latest. Changing the comparison form resets paging. Returned summary/page
 name/UUID/release/filter mismatch fails closed; a failed file page retains summary.
 Each side links its exact frozen file to paginated rules on the detail page. Chinese
-default/English supported. Legacy comparison route remains compatible/unbounded.
+default/English supported. API 0.18.24 retires the legacy comparison GET with HTTP 410; internal comparison helpers remain.
 No migration, schema 0018; separate GETs are observations, not a transaction receipt.
 
 ## ASR passport bounded consumer — 2026-10-03

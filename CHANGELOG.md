@@ -918,3 +918,27 @@ Next: DVP relation pages, then release/ASR, governance/audit, full inventory clo
 CI PR1 remains open/unmerged. Approved provider/session, real writes/recovery,
 corrections and operations remain incomplete. Public staging remains read-only.
 Cloud rollout evidence is recorded after publishing and live verification.
+
+### Verified cloud rollout — Snapshot API 0.18.24
+
+Feature commit ce57ab523ed610aa3f8da20fcf8e1e69ae87c089 (tree
+c60515bfff14d9058d5d5c4f5b8c5eddb0a57002) is published to GitHub main.
+Cloudflare Workers Builds: softwarelifecycle reports success for this exact commit,
+completed 2026-10-04T14:31:30Z. HTTPS /health/ready reports API0.18.24 and exact
+schema0018_asr_evidence_index; this is runtime behavior/version evidence, not a
+claim about Render provider deployment identifiers or an exact Render commit.
+
+Live checks: all 29 retired routes return HTTP410 with malformed old query fields;
+SNAP-008 exact summary and artifact/rule pages preserve UUIDs/full counts, one-row
+limits and empty end windows. Missing Snapshot pin returns422; wrong pin404.
+Self-comparison summary/files carry both source_id/target_id; missing pair422 and
+empty end window preserved. Four zh/en manifest/comparison views load successfully;
+DVP bounded catalog remains200. Public empty snapshot POST returns403 read_only_mode.
+The sample's small counts do not prove growth; SQL growth, historical comparison,
+same-release, ambiguous identity and PostgreSQL regressions provide that evidence.
+
+Plan delta: compatibility 50% → 60%; other plans remain 0/20/33/40/20/0%.
+Next prioritize DVP owned relation pagination and consumer migration before retiring
+its directory/detail. Then release/ASR, governance/audit and the 53-path closure.
+ROADMAP remains34/44=77%, phase progress100/100-demo/100-demo/89/89/60/0;
+read consumers17/17. Seven-plan report is reproducible with the reporting script.
