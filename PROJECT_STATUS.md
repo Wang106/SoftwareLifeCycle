@@ -1907,3 +1907,28 @@ phases100/100-demo/100-demo/89/89/60/0; read consumers17/17. Fixed53 candidate p
 remain. Next release/ASR family review and full-inventory closure; then CI, approved
 identity/session, real submissions/recovery, corrections and operational acceptance.
 Public staging read-only. Cloud rollout evidence follows publication/verification.
+
+### Verified cloud rollout — governance/audit API0.18.26
+
+Feature commitf21a81a97dff0336693de703af862b892ddde6a7 (tree
+e96281b446457473b133abee1c40691b42b944b4) is published to GitHub main.
+Cloudflare Workers Builds: softwarelifecycle succeeds for this exact commit,
+completed2026-10-04T21:20:38Z (2026-10-05 Asia/Shanghai). HTTPS health confirms
+API0.18.26 and schema0018_asr_evidence_index. This is runtime behavior/version
+verification, not an exact Render provider deployment/commit claim.
+
+Live: all34 tombstones return410 with malformed old queries; scalar approval summary
+preserves exact original binding/full counts. Steps/actions preserve approval UUID/no,
+one-row limit and empty end windows; wrong pins404, missing required step pin422.
+Bounded decision/audit catalogs remain200; exact event payload and principal-identity
+fields remain accessible. Ten zh/en approval/decision/audit directory/detail/empty-page
+views pass. Empty public approval-action POST remains403 read_only_mode.
+Small sample counts are not growth evidence;205-step SQLite/PostgreSQL regression
+verifies navigation beyond the retained legacy bounded200-step preview.
+
+Seven plans80/0/20/33/40/20/0%: compatibility advances70→80, others unchanged.
+ROADMAP34/44=77%, phase percentages100/100-demo/100-demo/89/89/60/0; consumers17/17.
+CI PR1 remains open/unmerged. Next release/ASR candidate review with per-route bounded
+proof or explicit retirement, then full53-path closure. Approved identity/session,
+real controlled command submissions/recovery, corrections and operations remain.
+Public sample remains read-only. Final followup changes documentation only.
