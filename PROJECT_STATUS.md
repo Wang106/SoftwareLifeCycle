@@ -1710,3 +1710,60 @@ ROADMAP remains **34/44 (77%)**, Phase 4 **8/9**, read consumers **17/17**.
 CI PR #1 was checked open/unmerged. Next remaining compatibility families and
 closure, CI, approved identity/session, submission/recovery, corrections and
 operations. Public staging stays sample-only/read-only.
+
+## Verified cloud rollout and mandatory plan report — API 0.18.23
+
+Feature commit: `0e7366f49f52a4683f934c18eb4960adb05ae451`; tree
+`1f58b554abb338de25f5df5da8f43ca4e01bc489`. Cloudflare Workers Builds for this
+exact commit completed success at `2026-10-04T14:02:48Z`. Live checks completed
+before this record at `2026-10-04T14:12:05+00:00`. Render provider metadata was not inspected;
+HTTPS version/behavior is observed runtime evidence, not a provider deployment ID
+or asserted exact Render commit.
+
+Ready reports **0.18.23**, schema **0018_asr_evidence_index**. All **27** reviewed
+legacy GETs return 410 with successor/Link/no-store, even invalid old identities/
+queries. Two bounded catalogs, SCR/Issue summaries and all owned collections pass.
+**14 initial bilingual page checks** plus **2 explicit historical SCR checks**
+pass. The initial smoke had compared a translated Chinese title to English API
+text; the rule was corrected to use localized/HTML-escaped text and the full smoke
+rerun passed. This required no product change.
+
+SCR-142 retains one criterion, one linked Issue, two change points and one plan.
+Issue 310 retains one linked SCR, three candidate releases and zero judgments.
+Issue impact selects exact ASR `271334c3-9a99-4dc0-a7dc-75ba5754377b` and frozen
+Snapshot `c6f38c25-c42e-4bdb-8327-e16f7e85dd7b` (SNAP-008). Initial SCR selection
+used a candidate without a freeze, preserving none. A separate explicit historical
+SCR check selects that ASR/SNAP-008: snapshot-number selection equals UUID selection;
+owned group/item pages and Chinese/English coverage retain exact pins; beyond-end
+items preserve complete total. Foreign Issue pins reject 404, invalid limits 422.
+Three empty POSTs (SCR assignment, Issue judgment, Deployment) all reject 403
+read_only_mode; no business data is created. Small samples do not establish large
+page traversal; backend growth/PG and SSR fixtures cover those cases.
+
+Final verification: backend **1132 passed** (126 real PostgreSQL), frontend **448
+passed**, no skips; production build, **21 production SSR groups**, single migration
+head and upgrade SQL pass. Three final reporting checks were rerun after allowing
+explicit bounded_evidence for retained active paths and removing hardcoded current
+percentage assertions, so later legitimate progress can advance. Existing 9112
+datetime deprecation warnings remain. CI PR #1 is open/unmerged at this turn's check.
+
+### Seven-plan milestone report (include in every completion)
+
+| 计划 | 已完成 / 验收里程碑 | 完成度 |
+| --- | ---: | ---: |
+| 1. 其余兼容读取治理 | 5/10 | **50%** |
+| 2. 持续集成 | 0/4 | **0%** |
+| 3. 身份、权限管理及会话 | 1/5 | **20%** |
+| 4. 首批受控提交 | 2/6 | **33%** |
+| 5. 覆盖全部 14 项命令 | 2/5 | **40%** |
+| 6. 追加式更正和撤销 | 1/5 | **20%** |
+| 7. 生产运营与公司迁移 | 0/6 | **0%** |
+
+Plan 1 advances 40% → 50%; other rows establish fixed accounting of already
+implemented foundations. Percentages are completed/equal acceptance milestones,
+not effort, real-provider acceptance or production-readiness estimates. Retained
+bounded paths require per-route code/test evidence; candidate inventory is 53 paths,
+not a claim that all are unbounded. Roadmap/module progress stays **34/44 (77%)**:
+100/100-demo/100-demo/89/89/60/0 by Phases 1–7. Read consumers stay **17/17**.
+Next release/ASR, Snapshot, DVP, governance/audit families and inventory closure,
+then CI, approved identity/session, submission/recovery, corrections and operations.
