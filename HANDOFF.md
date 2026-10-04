@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.21 verified ready; schema 0018 |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.22 verified ready; schema 0018 |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -1677,3 +1677,35 @@ roadmap items establish development completion. Actual company target identity,
 permissions, recovery, network/data/operations review and release acceptance are
 required for deployment approval. VIN/additional features and maintenance remain
 separate later scope. Public sample continues read-only. See development-plan.md.
+
+## Verified cloud rollout — API 0.18.22
+
+Feature commit: `b3b90e7c723001f8ffdd31ff7a1094a59b81b42d`; tree
+`3f7498a54a599f442e25964ebccc79145b048b6c`. Cloudflare Workers Builds for this
+exact commit completed success at `2026-10-04T13:37:54Z`. Live smoke completed
+before this record at `2026-10-04T13:41:16+00:00`. Render provider metadata was not inspected;
+HTTPS version and behavior are runtime evidence, not an asserted provider deployment
+ID or exact Render commit.
+
+API ready reports **0.18.22**, schema **0018_asr_evidence_index**. All **19**
+reviewed tombstones return 410 with encoded successor URLs, Link and no-store
+headers, including unknown parents, malformed query and invalid old revision.
+Six bounded production/distribution catalogs and exact delivery revision profile/
+artifacts, distribution/authorization/deployment profiles and exact Batch pass.
+**22 live bilingual views** (11 views, Chinese default/selected English) pass.
+Each of six exact history filters matches its profile full count: delivery
+distributions, distribution authorizations, authorization deployments/batches,
+deployment batches/changeovers each equals one in the current sample. The delivered
+release/Snapshot decision scope passes. Beyond-end history keeps total with empty
+items; invalid limit rejects 422. Release-matrix remains 200. Five empty POSTs
+(deployment, actual report, delivery, distribution, authorization) all reject
+403 `read_only_mode`; no business data is created. Small live samples do not prove
+large pagination; backend growth/PG and production SSR fixtures cover those cases.
+
+Final verified checks: backend **1111 passed** including **126 real PostgreSQL**;
+frontend **448 passed**, no skips. Production Next/OpenNext build completes;
+**24 production Next SSR groups** against real backend fixtures pass. Alembic has
+one head and full upgrade SQL passes. Existing 9112 datetime deprecation warnings
+remain. CI PR #1 remains open/unmerged at this turn's check. Progress stays
+**34/44 (77%)**, read consumers **17/17**; first work group is still incomplete.
+See development-plan.md for remaining order, dependencies and completion gates.

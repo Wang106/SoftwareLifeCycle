@@ -1,11 +1,12 @@
 # Compatibility read retirement follow-up
 
-Reviewed main baseline: 4fc79aa4e04885465cc15a582cee101f235bc670.
-Current package API 0.18.20 completes 17/17 identified frontend read-consumer groups.
+Initial inventory baseline: 4fc79aa4e04885465cc15a582cee101f235bc670.
+Baseline API 0.18.20 completes 17/17 identified frontend read-consumer groups.
+Current API 0.18.22 has 19 reviewed HTTP GET tombstones; see transitions below.
 The denominator is unchanged. This does not remove or bound all legacy endpoints.
 ROADMAP Phase 4 remains 8/9 because its endpoint acceptance wording is retained.
 
-| Retained family | Current replacement / evidence | Remaining review |
+| Family retained at API 0.18.20 | Replacement / evidence | Initial review requirement |
 | --- | --- | --- |
 | `/api/v1/manufacturing/sites` and `/{site_code}` | manufacturing_views.py / manufacturing catalog/profile components | Bulk sites, lines and per-deployment history remain in production.py; review callers, then retire or explicitly bound old response |
 | `/api/v1/organizations/{suppliers,customers,projects}` and rich profiles | organization_views.py / six migrated consumers | Top-level lists cap at 200 but child/release graphs remain; review rich child limits/retirement without silently changing count meaning |
@@ -17,8 +18,9 @@ ROADMAP Phase 4 remains 8/9 because its endpoint acceptance wording is retained.
 This is a family-level follow-up inventory, not a declaration that every legacy
 route is unbounded or that every backend/internal caller has been reviewed. Existing
 bounded catalogs, exact scalar routes, commands, release-matrix and shared policy/
-coverage service consumers remain in scope of their own contracts. There is no
-runtime route retirement or deprecation header in this package.
+coverage service consumers remain in scope of their own contracts. At that API 0.18.20 baseline there was no
+runtime route retirement or deprecation header; API 0.18.21/22 transitions below
+record the subsequently implemented tombstones.
 
 Next complete a route/caller inventory from the FastAPI route registry and repository
 call sites. For each retained rich route, choose an explicit reviewed transition:
