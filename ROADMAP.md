@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — all 17 identified read-consumer groups now use bounded reads, including manufacturing site directory/detail. Legacy bulk/rich APIs remain; caller review and retirement/explicit bounds are pending. See docs/compatibility-read-retirement.md. Consumer migration alone does not satisfy this endpoint acceptance item.
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — all 17 identified read-consumer groups now use bounded reads, including manufacturing site directory/detail. API 0.18.21 retires the eight reviewed organization/manufacturing GET routes; other bulk/rich families remain pending caller review and retirement/explicit bounds. See docs/compatibility-read-retirement.md. Consumer migration alone does not satisfy this endpoint acceptance item.
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -492,3 +492,11 @@ full beyond-end context, failed/repeated pagination, empty-site CHECK, parent id
 stopping child reads and exact supported links/preparation UUID. Single Alembic head
 and full PostgreSQL upgrade SQL generation pass. Cloud rollout pending at feature
 commit; successful live verification is recorded separately afterward.
+
+## Current continuation plan — API 0.18.21
+
+First eight reviewed organization/manufacturing compatibility GET routes return 410
+with bounded successors and no database graph loading. Remaining families still
+prevent the Phase 4 checkbox from completion: progress stays 34/44, read consumers
+17/17. See `docs/development-plan.md` for the current ordered packages, acceptance
+criteria, external identity/environment dependencies and conditional estimates.

@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.20`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.21`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -17,7 +17,7 @@ This document is a maintained map, not a replacement for the generated OpenAPI s
 | Area | Representative paths | Notes |
 | --- | --- | --- |
 | Dashboard/search | `/api/v1/dashboard/summary`, `/api/v1/search` | Live counts and cross-domain lookup |
-| Organizations | `/api/v1/organizations/suppliers`, `/customers`, `/projects`, `/release-matrix` | Project detail uses UUID when codes may be ambiguous |
+| Organizations | `/api/v1/organization-views/{suppliers,customers,projects}`, summary/items; `/api/v1/organizations/release-matrix` | Bounded catalogs and UUID-pinned child pages; legacy organization reads return 410 |
 | Releases | `/api/v1/releases`, `/releases/standard`, `/releases/application`, `/releases/application/id/{release_id}` | Exact-ID application profiles are preferred over version-only compatibility routes |
 | Snapshot evidence | `/api/v1/releases/{release_id}/snapshots`, `/api/v1/snapshots/{snapshot_no}`, `/compare/{target_no}` | Frozen manifest/history and metadata comparison |
 | Change/Issue | `/api/v1/changes`, `/changes/{request_no}`, `/changes/{request_no}/coverage`, `/issues/{issue_no}/impact` | Coverage and impact remain release/snapshot scoped |
@@ -795,7 +795,7 @@ Latest scope/order and count semantics are recorded in HANDOFF. Complete counts
 remain on beyond-end pages; a failed child does not substitute zero parent counts.
 Frontend uses limit/offset, retains valid filters and sends repeated values as
 invalid. These pins select live identity, not authorization or frozen evidence.
-Legacy `/organizations/*` APIs and bounded release-matrix remain compatible.
+At API 0.18.19 the legacy organization APIs remained compatible. API 0.18.21 retires the six supplier/customer/project GET routes (see below); bounded release-matrix remains available.
 
 
 ## Manufacturing scalar views — API 0.18.20
@@ -819,3 +819,18 @@ summary ordering and batch non-active semantics are detailed in HANDOFF. Raw sto
 UUIDs survive optional metadata loss. No nested batch/changeover arrays are returned.
 These are mutable reads, not authorization or frozen evidence. Legacy manufacturing
 APIs remain compatible; endpoint retirement/bounds remain a separate acceptance task.
+
+## Reviewed compatibility retirement — API 0.18.21
+
+The six legacy organization GET catalog/profile routes and two manufacturing site
+GET catalog/profile routes return HTTP 410 `legacy_read_retired`. Response includes
+encoded `replacements`, `required_collection_pin` and migration instructions; Link
+rel=successor-version points to the first successor. Summary-first child reads use
+its UUID as organization_id/site_id. No DB read or rich serializer runs. Unknown
+parents and malformed legacy query fields also return 410, not existence results.
+This is an intentional compatibility break, not a redirect or partial old response.
+
+See docs/compatibility-read-retirement.md for the exact eight paths/caller review.
+Release matrix, bounded views, shared helper functions and all 14 commands remain.
+Other retained compatibility families are not retired by this change. No migration,
+identity/grant or public-write change; public staging remains sample-only/read-only.

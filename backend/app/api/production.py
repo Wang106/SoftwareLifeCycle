@@ -159,7 +159,6 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
     }
 
 
-@router.get("/manufacturing/sites")
 def list_sites(db: Session = Depends(get_db)):
     sites = db.scalars(select(ManufacturingSite).order_by(ManufacturingSite.name)).all()
     if not sites:
@@ -202,7 +201,6 @@ def list_sites(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/manufacturing/sites/{site_code}")
 def get_site(site_code: str, db: Session = Depends(get_db)):
     site = db.scalars(
         select(ManufacturingSite).where(ManufacturingSite.site_code == site_code)

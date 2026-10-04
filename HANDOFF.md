@@ -5,9 +5,9 @@
 - Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `4fc79aa4e04885465cc15a582cee101f235bc670`
-- Developed from: `4fc79aa4e04885465cc15a582cee101f235bc670`
-- Baseline subject: `docs: record verified organization cloud rollout`
+- Verified starting baseline: `827050736a6548bab3e77785b7c0b4701b8051d2`
+- Developed from: `827050736a6548bab3e77785b7c0b4701b8051d2`
+- Baseline subject: `docs: record verified manufacturing cloud rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -1575,3 +1575,32 @@ acceptance requires retirement/bounds on retained compatibility APIs. Their call
 contract review remains pending, documented in compatibility-read-retirement.md.
 CI PR #1 remains open/unmerged. Next compatibility endpoint review/transition,
 approved identity/session, controlled submission/recovery/corrections and operations.
+
+## 2026-10-04 — First compatibility read retirement / API 0.18.21
+
+Eight reviewed legacy supplier/customer/project and manufacturing site GET routes
+now return 410 `legacy_read_retired` with safely encoded successor URLs, required
+child UUID pin and summary-first migration instructions. Tombstones have no DB
+dependency and never invoke old rich serializers; nonexistent parents and invalid
+query fields still return the same retirement contract. OpenAPI marks exactly these
+GET paths deprecated. Internal comparison helpers remain callable. Release-matrix,
+bounded consumers, all 14 commands, identity settings and schema are unchanged.
+This deliberately breaks legacy HTTP response contracts; unknown external callers
+must migrate. Concrete paths and repository caller evidence are documented in
+docs/compatibility-read-retirement.md.
+
+Full backend: **1086 passed**, **9112 warnings**, no skips, including **126 real
+PostgreSQL 16.15 tests**. Seventeen new cases verify eight paths with normal/invalid
+queries, no DB/helper work, encoded identifiers, precise replacement pins, no
+route shadowing and retained commands. Frontend: **448 passed**, no skips; final
+Next/OpenNext production build passed. Alembic single head remains
+`0018_asr_evidence_index`, full offline upgrade SQL passed. Production SSR passed 33 groups (24 organization + 9 manufacturing), covering
+all eight bilingual consumers, invalid/empty windows, parent pins and exact links.
+Cloud rollout evidence is recorded after verification below.
+
+Read consumers remain 17/17, ROADMAP 34/44 (77%), Phase 4 8/9 (89%); other rich
+compatibility families still require retirement/bounds. The new Chinese plan in
+docs/development-plan.md lists ordered packages, acceptance gates and provider/
+environment dependencies. Next remaining compatibility reads and CI review; then
+approved OIDC/session, controlled submission/recovery, broad corrections and
+operations/company migration. Public staging stays sample-only and read-only.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — First reviewed compatibility read retirement
+
+- API 0.18.21 retires eight organization/manufacturing GET routes with explicit 410, successor URLs and required UUID pins; no DB or rich graph loading. Shared comparison helpers, bounded views, release-matrix and all 14 commands remain.
+- Backend 1086 passed (126 real PostgreSQL), frontend 448 passed, production build and schema/upgrade checks pass. 33 production SSR groups pass (24 organization + 9 manufacturing); cloud deployment evidence recorded below after verification.
+- Chinese development plan adds ordered acceptance gates and dependencies. Other compatibility families remain; ROADMAP stays 34/44 and read ledger 17/17. Public sample stays read-only.
+
 ## 2026-10-04 — Bounded manufacturing directory and site detail
 
 - API 0.18.20 separates full scalar site statistics/context from bounded sites and owned line/latest-deployment pages. Chinese/English pages preserve complete counts on failed/empty windows, stored-state semantics and exact supported detail/preparation links.

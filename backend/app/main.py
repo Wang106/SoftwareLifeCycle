@@ -1,3 +1,4 @@
+from app.api.compatibility_reads import router as compatibility_reads_router
 from app.api.manufacturing_views import router as manufacturing_views_router
 from app.api.organization_views import router as organization_views_router
 from app.api.issue_views import router as issue_views_router
@@ -43,7 +44,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.20"
+APP_VERSION = "0.18.21"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -80,6 +81,7 @@ app.include_router(production_router)
 app.include_router(activity_router)
 app.include_router(search_router)
 app.include_router(organizations_router)
+app.include_router(compatibility_reads_router)
 app.include_router(organization_views_router)
 app.include_router(manufacturing_views_router)
 app.include_router(impact_router)

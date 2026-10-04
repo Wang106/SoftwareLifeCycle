@@ -28,3 +28,45 @@ services; do not silently truncate evidence and treat it as complete. Add contra
 and representative growth regression tests. Only then mark the existing Phase 4
 endpoint item complete. Approved identity/session and controlled submission follow;
 public staging remains sample-only read-only.
+
+## First reviewed runtime transition — API 0.18.21
+
+Starting main: `827050736a6548bab3e77785b7c0b4701b8051d2`.
+Eight concrete HTTP GET routes are now tombstones, not rich graph serializers:
+
+| Retired route | Bounded successor |
+| --- | --- |
+| `/api/v1/organizations/suppliers` | `/api/v1/organization-views/suppliers` |
+| `/api/v1/organizations/suppliers/{code}` | `/api/v1/organization-views/suppliers/{code}/summary` and `/items` |
+| `/api/v1/organizations/customers` | `/api/v1/organization-views/customers` |
+| `/api/v1/organizations/customers/{code}` | `/api/v1/organization-views/customers/{code}/summary` and `/items` |
+| `/api/v1/organizations/projects` | `/api/v1/organization-views/projects` |
+| `/api/v1/organizations/projects/{identifier}` | `/api/v1/organization-views/projects/{identifier}/summary` and `/items` |
+| `/api/v1/manufacturing/sites` | `/api/v1/manufacturing-views/sites` |
+| `/api/v1/manufacturing/sites/{site_code}` | `/api/v1/manufacturing-views/sites/{site_code}/summary` and `/lines` |
+
+Repository caller review: the six organization consumers use organization-catalog/
+profile components; manufacturing directory/profile use manufacturing-catalog/profile.
+Their HTTP reads already use the successors. Other manufacturing URLs in frontend
+are page links, not legacy API requests. Legacy helper calls in test_organizations,
+test_manufacturing_catalog, test_organization_views and test_manufacturing_views are
+internal comparison fixtures and remain callable. No known frontend HTTP caller
+requires these eight responses. This review does not discover unknown external clients;
+clients using these old routes must migrate, and the intentional HTTP break is documented.
+
+Each tombstone returns 410 `legacy_read_retired`, the registered old route, safely
+encoded successor URLs, required_collection_pin and instructions. Read the profile
+summary first, then use its UUID `id` as organization_id or site_id for the bounded
+child page. Catalogs use limit/offset and full filtered counts. Tombstones have no
+DB dependency, no graph serialization, no data-presence lookup, no redirects or
+silent truncation. Even a nonexistent parent or malformed query returns this same
+retirement contract. Link rel=successor-version points to catalog/summary; no-store
+prevents caching rollout responses. OpenAPI marks these GET routes deprecated with
+410, not a successful old response. Known non-GET routes are not intercepted.
+
+`organizations/release-matrix`, all bounded views, all 14 commands and reusable
+production helpers are retained. Deployment detail/provenance and the remaining
+families above still require review. This is the first runtime retirement slice,
+not completion of the Phase 4 checkbox; ROADMAP remains 34/44. The baseline table
+above describes API 0.18.20; these two families are now retired at the HTTP boundary.
+See development-plan.md for the subsequent packages and dependencies.
