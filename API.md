@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.18`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.19`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -763,3 +763,36 @@ Frontend query: issue_limit, changes_offset, candidates_offset, assessments_offs
 components_offset, verification_offset; impact context additionally snapshot_id.
 First/next preserve unrelated cursors and exact selected Snapshot; invalid repeated
 values remain invalid. Recorded judgment links use their stored release/Snapshot UUIDs.
+
+
+## Organization scalar views — API 0.18.19
+
+Prefix `/api/v1/organization-views`. All new routes are GET.
+
+| Path | Result / specific filters |
+| --- | --- |
+| `/suppliers` | Scalar supplier rows + complete software_count; country exact |
+| `/customers` | Scalar customer rows + project_count/released_project_count; region enum or UNASSIGNED/null |
+| `/projects` | Scalar project/customer/latest release rows + site_count; customer_id UUID exact |
+| `/{kind}/{identifier}/summary` | Scalar parent metadata/full counts; no query fields accepted |
+| `/{kind}/{identifier}/items` | Supplier software, customer projects/current release or project sites; required organization_id UUID |
+
+Catalog shared fields: q (max 200, literal contains in code/name), status (max 30,
+exact), limit 1..100/default 50, offset 0..100000/default 0. Country max 100.
+Region APAC/EUROPE/AMERICAS/OTHER/UNASSIGNED; blank means no filter. Only region
+UNASSIGNED selects null: supplier country text UNASSIGNED remains literal.
+Unknown/wrong-kind fields or invalid pagination/UUID return 422. Kind must be
+suppliers/customers/projects; unknown parent kind/missing parent returns 404.
+Supplier/customer identifier is exact business code. Project identifier is UUID
+with precedence, or exact code (LIMIT 2); ambiguous code 409. Page organization_id
+must match resolved parent or 404. Envelope kind, total, limit, offset,
+next_offset, items; owned pages also organization_id. Stable code/UUID ascending.
+
+No child arrays or long supplier description in directories. Summary retains
+supplier website/description. Owned software/project rows include exact latest
+release UUID/version (project also status); site rows include exact site UUID.
+Latest scope/order and count semantics are recorded in HANDOFF. Complete counts
+remain on beyond-end pages; a failed child does not substitute zero parent counts.
+Frontend uses limit/offset, retains valid filters and sends repeated values as
+invalid. These pins select live identity, not authorization or frozen evidence.
+Legacy `/organizations/*` APIs and bounded release-matrix remain compatible.

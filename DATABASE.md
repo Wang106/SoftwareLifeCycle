@@ -446,3 +446,8 @@ history outer joins optional display metadata and preserves formal UUIDs. Compon
 use distinct code/coalesced version; latest Issue-linked execution uses ROW_NUMBER
 on exact release/Snapshot/item. Bounded projections/full counts avoid ORM graphs
 and rich artifact/deployment/batch arrays. Existing indexes remain in use.
+
+
+## Organization read migration — API 0.18.19
+
+No migration; head 0018. Correlated scalar COUNT/EXISTS and latest-release LIMIT 1 avoid transferring child/release arrays. Customer release membership matches stored customer plus project; project release context uses project only. Optional customer metadata outer join preserves project identity. Stable code/UUID pages and created_at/UUID latest selections are verified on PostgreSQL; reads append no audit event.

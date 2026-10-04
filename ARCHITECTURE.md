@@ -394,3 +394,8 @@ independent first/next cursors with parent full counts on failures. Historical r
 links choose recorded Snapshot UUID; impact preparation carries exact target pins.
 No bulk fallback; legacy rich APIs remain. Organization/manufacturing reads are the
 remaining group-17 consumers.
+
+
+## Organization read migration — API 0.18.19
+
+organization_views.py projects scalar metadata/counts and bounded windows for three directories and three owned profile collections. Two SQL queries per catalog, three per owned page (including parent resolution); no growing ID arrays/ORM graphs. Shared frontend components verify parent kind/identifier and child organization UUID before rendering. Full counts remain when child pages fail; no legacy rich fallback.

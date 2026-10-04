@@ -443,3 +443,8 @@ All 14 commands retain actor/scope binding, keyed replay, row serialization and
 atomic business/audit behavior. Exact impact-preparation links remain pinned to Issue,
 release and frozen Snapshot; new read pins grant no submission permission. Current
 judgments and verification results are separate evidence. Public writes remain denied.
+
+
+## Organization read migration — API 0.18.19
+
+All 14 command contracts, actor/scope binding, keyed replay, row serialization and atomic business/audit behavior remain unchanged. Organization directories/profiles add only reads; their parent UUID pins and latest release context do not authorize submissions.

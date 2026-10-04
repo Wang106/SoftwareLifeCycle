@@ -5,9 +5,9 @@
 - Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `a248b1ab79578a960260f2e14f0d1abb80b06c4b`
-- Developed from: `a248b1ab79578a960260f2e14f0d1abb80b06c4b`
-- Baseline subject: `docs: record verified SCR coverage cloud rollout`
+- Verified starting baseline: `b3a621975d174d79444bf360ad978eec353ef30b`
+- Developed from: `b3a621975d174d79444bf360ad978eec353ef30b`
+- Baseline subject: `docs: record verified Issue detail cloud rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.18 verified ready; schema 0018 |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.18 starting baseline; 0.18.19 rollout pending |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -1374,3 +1374,61 @@ manufacturing catalogs/profiles remain in partial group 17. CI PR #1 remains
 open/unmerged and is not counted as operational acceptance. Next continue those
 bounded consumers, then approved identity/session and controlled submission,
 recovery/correction/revocation, followed by operational acceptance.
+
+
+## Bounded organization directories and profiles — API 0.18.19, 2026-10-04
+
+Mode: Codex cloud. Developed from verified GitHub main `b3a621975d174d79444bf360ad978eec353ef30b`.
+All six supplier/customer/project directory/profile consumers now use
+`organization_views.py`, `organization-catalog.tsx` and `organization-profile.tsx`.
+Directories fetch bounded scalar rows and full filtered counts instead of every
+software/project/site name and release array. Open a profile to browse related
+records. Profiles retain exact metadata/materials UUID, supplier introduction,
+customer region/release-history link and project customer/platform/latest release.
+Software portfolio, customer projects/current software and project sites each have
+owned bounded pages. Supplier product links select its exact software UUID; latest
+SSR and ASR links target the stored release UUID, not a version string.
+
+Search treats wildcard characters literally; status/country/customer UUID filters
+are exact. Region includes null-only UNASSIGNED; blank region selects all. Limits
+are 1..100 (default 50), offsets 0..100000; unknown/kind-inappropriate fields fail
+422. Stable code/UUID ordering avoids duplicate display-code pagination. Project
+UUID selection retains precedence over code; duplicate codes return 409 and
+canonical/uppercase/compact UUID links select the same project. Required
+organization_id pins each collection to the resolved parent; a foreign pin is 404.
+No parent or child rich-array fallback is used. Failed/beyond-end child pages keep
+full parent counts; missing optional customer display metadata retains project UUID.
+
+Counts preserve existing relationships: supplier products by supplier UUID;
+customer projects by stored customer UUID; projects with current software require
+real Release/detail membership matching both project and customer. Project latest
+release uses detail project UUID alone, preserving legacy scope even when detail
+customer differs. Supplier latest selects STANDARD releases only. Latest is
+created_at DESC NULLS LAST then release UUID DESC. These are live context/count
+observations, not release approval, impact, frozen evidence or access grants.
+
+No migration, head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only, default Chinese/selectable English.
+Legacy organization APIs remain compatible. Release matrix already has bounded
+reads and is unchanged. The remaining group-17 consumers are manufacturing site
+directory/detail and their line/current-deployment context; organization reads
+are migrated. ROADMAP stays **34/44 (77%)**, read groups **16/17 (94%)**;
+Phase 4 remains 8/9 until the entire open read acceptance item is verified.
+Next manufacturing reads, then approved identity/session, controlled submission,
+uncertain-result recovery/correction/revocation and operational acceptance.
+CI PR #1 remains open/unmerged. Conditional estimates remain 4–8 focused packages
+toward internal use and 12–20 toward production review, pending provider decisions.
+
+Validation: full Python 3.12 backend **1048 passed**, **8687 warnings**, no skips,
+including **125 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+23 new backend cases cover legacy parent/child/latest parity, exact cross-customer
+release semantics, 205-parent and 120-child growth with constant scalar SQL/no ORM
+identity graph, literal filters/null region, duplicate project-code identity,
+missing metadata, owned pins and public-write rejection. PostgreSQL verifies
+complete totals beyond 200, deterministic latest release ties and read audit purity.
+Frontend **435 passed**, no skips; final Next/OpenNext production build passed.
+**24 actual production Next SSR groups** verify six Chinese/English views, full
+beyond-end totals, invalid owned pages, repeated catalog filters, exact related/
+materials/release links and missing/foreign parents stopping child reads.
+Single Alembic head/full upgrade SQL generation pass. Cloud rollout pending
+at this feature commit; verified rollout will be recorded separately.

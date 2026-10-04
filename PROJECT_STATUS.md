@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `a248b1ab79578a960260f2e14f0d1abb80b06c4b` — inherited main; current package adds bounded Issue detail/impact (API 0.18.18)
+- Reviewed starting repository baseline: `b3a621975d174d79444bf360ad978eec353ef30b` — inherited main; current package adds bounded organization directories/profiles (API 0.18.19)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization and manufacturing reads remain. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing reads remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -1337,3 +1337,61 @@ manufacturing catalogs/profiles remain in partial group 17. CI PR #1 remains
 open/unmerged and is not counted as operational acceptance. Next continue those
 bounded consumers, then approved identity/session and controlled submission,
 recovery/correction/revocation, followed by operational acceptance.
+
+
+## Bounded organization directories and profiles — API 0.18.19, 2026-10-04
+
+Mode: Codex cloud. Developed from verified GitHub main `b3a621975d174d79444bf360ad978eec353ef30b`.
+All six supplier/customer/project directory/profile consumers now use
+`organization_views.py`, `organization-catalog.tsx` and `organization-profile.tsx`.
+Directories fetch bounded scalar rows and full filtered counts instead of every
+software/project/site name and release array. Open a profile to browse related
+records. Profiles retain exact metadata/materials UUID, supplier introduction,
+customer region/release-history link and project customer/platform/latest release.
+Software portfolio, customer projects/current software and project sites each have
+owned bounded pages. Supplier product links select its exact software UUID; latest
+SSR and ASR links target the stored release UUID, not a version string.
+
+Search treats wildcard characters literally; status/country/customer UUID filters
+are exact. Region includes null-only UNASSIGNED; blank region selects all. Limits
+are 1..100 (default 50), offsets 0..100000; unknown/kind-inappropriate fields fail
+422. Stable code/UUID ordering avoids duplicate display-code pagination. Project
+UUID selection retains precedence over code; duplicate codes return 409 and
+canonical/uppercase/compact UUID links select the same project. Required
+organization_id pins each collection to the resolved parent; a foreign pin is 404.
+No parent or child rich-array fallback is used. Failed/beyond-end child pages keep
+full parent counts; missing optional customer display metadata retains project UUID.
+
+Counts preserve existing relationships: supplier products by supplier UUID;
+customer projects by stored customer UUID; projects with current software require
+real Release/detail membership matching both project and customer. Project latest
+release uses detail project UUID alone, preserving legacy scope even when detail
+customer differs. Supplier latest selects STANDARD releases only. Latest is
+created_at DESC NULLS LAST then release UUID DESC. These are live context/count
+observations, not release approval, impact, frozen evidence or access grants.
+
+No migration, head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only, default Chinese/selectable English.
+Legacy organization APIs remain compatible. Release matrix already has bounded
+reads and is unchanged. The remaining group-17 consumers are manufacturing site
+directory/detail and their line/current-deployment context; organization reads
+are migrated. ROADMAP stays **34/44 (77%)**, read groups **16/17 (94%)**;
+Phase 4 remains 8/9 until the entire open read acceptance item is verified.
+Next manufacturing reads, then approved identity/session, controlled submission,
+uncertain-result recovery/correction/revocation and operational acceptance.
+CI PR #1 remains open/unmerged. Conditional estimates remain 4–8 focused packages
+toward internal use and 12–20 toward production review, pending provider decisions.
+
+Validation: full Python 3.12 backend **1048 passed**, **8687 warnings**, no skips,
+including **125 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+23 new backend cases cover legacy parent/child/latest parity, exact cross-customer
+release semantics, 205-parent and 120-child growth with constant scalar SQL/no ORM
+identity graph, literal filters/null region, duplicate project-code identity,
+missing metadata, owned pins and public-write rejection. PostgreSQL verifies
+complete totals beyond 200, deterministic latest release ties and read audit purity.
+Frontend **435 passed**, no skips; final Next/OpenNext production build passed.
+**24 actual production Next SSR groups** verify six Chinese/English views, full
+beyond-end totals, invalid owned pages, repeated catalog filters, exact related/
+materials/release links and missing/foreign parents stopping child reads.
+Single Alembic head/full upgrade SQL generation pass. Cloud rollout pending
+at this feature commit; verified rollout will be recorded separately.

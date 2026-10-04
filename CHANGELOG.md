@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Bounded organization directories and profiles
+
+- API 0.18.19 replaces six supplier/customer/project frontend bulk consumers with complete SQL counts, scalar context and owned bounded collection pages. Exact software/release/project/site links, customer region and bilingual profiles remain.
+- Strict filters, ambiguous project codes, exact parent UUID pins and failure/empty-page count states are verified. Legacy latest-release scope is retained; no migration or command change.
+- Backend 1048 passed (125 real PostgreSQL), frontend 435 passed, production build and 24 production SSR groups passed. ROADMAP 34/44/read groups 16/17 unchanged; remaining group-17 consumers are manufacturing reads. Cloud rollout pending; record follows after verification.
+
 ## 2026-10-04 — Bounded Issue detail and impact evidence
 
 - API 0.18.18 adds full Issue counts and independently bounded linked SCR/candidate/complete judgment-history pages. Exact impact review splits scalar context/judgment from distinct frozen components and latest exact execution pages.

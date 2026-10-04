@@ -382,3 +382,8 @@ FROZEN Snapshot ownership is checked on every impact page. These are read identi
 and evidence checks, not impact decisions, authorization grants or frozen definition
 guarantees. PASS/deployment counts do not confirm impact. No write/provider/grant
 configuration changes; public sample staging remains read-only.
+
+
+## Organization read migration — API 0.18.19
+
+Organization UUID pins prevent accidental mixed-parent collection reads; they grant no access or write permission. Software/project/site counts and latest version are mutable observations, not release authorization or frozen evidence. No identity/provider/scoped grant/public-write configuration changes. Public sample staging remains read-only.

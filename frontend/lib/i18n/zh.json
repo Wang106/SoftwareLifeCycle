@@ -1564,5 +1564,14 @@
   "Linked DVP count": "关联 DVP 完整计数",
   "Review latest frozen snapshot →": "检查最新冻结快照 →",
   "Public test access is read-only. A PASS result does not determine issue impact.": "公开测试环境仅允许读取。测试通过不决定问题影响。",
-  "Execution evidence is pinned to the selected frozen snapshot; current Issue links and latest judgments remain live.": "执行证据固定为所选冻结快照；问题关联和最新判断仍为当前记录。"
+  "Execution evidence is pinned to the selected frozen snapshot; current Issue links and latest judgments remain live.": "执行证据固定为所选冻结快照；问题关联和最新判断仍为当前记录。",
+  "Back to directory →": "返回目录 →",
+  "Manufacturing Site": "制造站点",
+  "Matching organizations": "匹配的组织记录",
+  "Open a profile to browse its related records.": "打开详情可分页查看关联记录。",
+  "Organization catalog unavailable": "组织目录暂不可用",
+  "Organization collection unavailable": "组织关联记录暂不可用",
+  "Software products": "软件产品",
+  "The API is unavailable or the page selection is invalid.": "API 暂不可用或分页选择无效。",
+  "The organization was not found, is ambiguous or the API could not be reached.": "未找到组织、标识存在歧义或无法连接 API。"
 }
