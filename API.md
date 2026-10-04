@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.16`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.17`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -679,3 +679,48 @@ Frontend query keys: scr_limit, criteria_offset, issues_offset, points_offset,
 plans_offset, point_items_offset, plan_items_offset, point_id, plan_id. Repeated
 parameters remain invalid rather than silently selecting/resetting one. Selected
 DVP links use exact item UUIDs. Coverage remains a separate rich consumer.
+
+## Bounded SCR coverage — API 0.18.17
+
+All GET paths start `/api/v1/change-coverage-views/{request_no}`. Unknown or invalid
+query fields return 422; missing exact SCR or mismatched change_id returns 404.
+Summary accepts optional release_id UUID, snapshot_no (1..80 chars) or snapshot_id
+(UUID or none). Snapshot selection requires release_id; snapshot_no and snapshot_id
+are mutually exclusive. Omitted Snapshot chooses latest FROZEN number. Exact release
+selection checks stored software/customer/project candidate scope (409 on mismatch);
+missing release 404, wrong/non-frozen Snapshot 409. Historical pins remain valid after
+new freezes. Literal none on a release that now has a freeze gets 409; reset report.
+
+Summary returns change_id, request_no, release_id/snapshot_id (UUID or none), selected
+release/Snapshot metadata, basis, candidate_count, gap_count and full coverage summary.
+No child arrays. Every page/selected-group summary requires change_id, release_id and
+snapshot_id pins; assignments-only uses none/none. limit 1..100 (default 50), offset
+0..100000 (default 0); Snapshot without release is rejected. Envelopes preserve pins
+plus total, limit, offset, next_offset, items; selected pages add kind/group_id.
+
+| Suffix | Rows | Stable ordering |
+| --- | --- | --- |
+| `/candidates` | Complete candidate release set, scalar UUID/type/version/status/created_at | created_at DESC NULLS LAST, UUID DESC |
+| `/gaps` | Full definition/assignment gaps, code/ref/message/owner_id/kind | code, ref, kind, owner_id ASC |
+| `/groups/{kind}` | Definitions with full assigned/excluded counts and verification | ref, UUID ASC |
+| `/items` | All items from SCR-owned plans, exact latest execution fields | item_no, UUID ASC |
+| `/groups/{kind}/{group_id}/summary` | Exact owned criterion/point/linked Issue scalar metadata/counts; no arrays | One exact record |
+| `/groups/{kind}/{group_id}/items` | Valid assigned items from SCR-owned plans, exact latest execution fields | item_no, UUID ASC |
+| `/acceptance/{criterion_id}/assignments` | Formal assignment UUID/test UUID/reviewer/reason/time, including excluded references | created_at, UUID ASC |
+
+kind is acceptance/points/issues. A selected UUID must be in this SCR's group or
+returns 404. Group summary includes assignment_count (criteria only); pagination
+fields are validated but do not change its single-record lookup. Test item rows
+include id/item_no/title/scope/declared_status/plan_id/execution_no/result/actual_result/
+executed_at; last four are null without matching execution context. Latest execution
+number is scoped to exact release + frozen Snapshot; prior PASS never replaces later
+FAIL. Full counts survive beyond-end and page failures. Definitions/assignments are
+current observations, not Snapshot-frozen definitions. Legacy coverage/write APIs remain.
+
+Frontend query keys: release_id, snapshot_no or snapshot_id, coverage_limit,
+candidates_offset, gaps_offset, acceptance_offset, coverage_points_offset,
+coverage_issues_offset, coverage_items_offset, group_items_offset, assignments_offset,
+group_kind, group_id. Links retain exact execution pins and other cursors; selecting a
+new group resets only its two child offsets. A new release review resets the context.
+Empty release/Snapshot form fields select assignments-only/default freeze; repeated
+parameters are forwarded as invalid rather than silently resetting.

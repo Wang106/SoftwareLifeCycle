@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281` — inherited main; current package adds bounded SCR detail (API 0.18.16)
+- Reviewed starting repository baseline: `79e5f767d74c818d2642aee8408d47c5ec733717` — inherited main; current package adds bounded SCR coverage (API 0.18.17)
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; coverage, Issue and other rich domain reads remain. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue and other rich domain reads remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -1163,3 +1163,57 @@ Next package: bound SCR coverage while preserving release/frozen-Snapshot select
 then Issue detail/impact (linked SCR relations, candidate releases and full judgment
 history). Inspect organization/manufacturing consumers after those. Progress remains
 34/44 (77%), read ledger 16/17 (94%); CI PR #1 remains unmerged.
+
+## Bounded SCR coverage — API 0.18.17, 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from main `79e5f767d74c818d2642aee8408d47c5ec733717`.
+SCR coverage now separates a fixed SQL summary/full counts from paged candidate
+releases, gaps, criteria, points, distinct Issues and owned-plan test items. Selecting
+a group UUID loads its exact summary and bounded assigned tests; selected criteria
+also expose bounded formal assignment history and the existing preparation link.
+No page downloads all nested test/assignment histories. Full parent counts persist
+on beyond-end or failed pages, and unrelated cursors/selection remain independent.
+Default Chinese and selectable English are retained. Candidate pages replace the
+first-100 dropdown; direct exact UUID selection remains possible beyond any page.
+
+Coverage preserves legacy semantics: Issues are distinct despite multiple relations;
+valid tests belong to this SCR's plans, foreign/missing links are excluded and counted
+as gaps, latest execution_no on the exact release/FROZEN Snapshot wins, any latest
+FAIL/ERROR/CANCELLED yields FAILED, all assigned latest PASS yields PASSED, otherwise
+PENDING. Unassigned/no-context/no-freeze remain distinct. Assignment percent retains
+Python rounding and null for empty groups. Formal criterion records remain visible
+even when their test references are excluded. Unicode whitespace matches Python
+strip for blank acceptance text. SCR detail still shows real cross-plan assignments;
+coverage intentionally excludes them, as it did before this migration.
+
+Page pins require exact change_id plus release_id/snapshot_id UUID or literal none.
+Historical frozen execution pins survive newer freezes. A previously missing freeze
+that now exists rejects stale none context with 409 instead of silently substituting
+evidence. Current SCR definitions/assignments remain live: these pins do not freeze
+definitions, confer incorporation, authorize release, or grant write permission.
+Legacy report/assignment APIs, all 14 command contracts and schema head
+0018_asr_evidence_index remain. Public staging stays sample-only/read-only.
+
+Progress remains ROADMAP 34/44 (77%) and read groups 16/17 (94%); broad group 17 is
+still partial. Next Issue detail/impact (linked SCRs, candidates and judgment history),
+then organization/manufacturing reads; approved identity/session, controlled
+submission/recovery/corrections and operations follow. CI PR #1 is unmerged.
+Conditional estimates remain 4–8 focused packages toward internal use and 12–20
+total toward production review, pending decomposition/provider decisions.
+
+Verification: final Python 3.12 backend **1007 passed**, **8004 warnings**, no skips,
+including **123 real PostgreSQL 16.15 tests**. New coverage cases verify legacy full
+summary/gap/group parity, exact latest PASS/FAIL/ERROR/CANCELLED/pending states,
+software/customer/project scope, distinct Issues, foreign/orphan assignments, Unicode
+blank text, complete candidates beyond 100, historical/stale-none context pins,
+strict HTTP identity/pagination, fixed SQL shapes after 120-child growth, bounded
+selected histories and no audit writes. Existing real lock/replay/rollback suites pass.
+An early local temporary PostgreSQL data-directory read error caused fixture failures;
+a newly initialized isolated instance resolved that infrastructure problem and the
+final full suite passed. Online databases were not changed for regression testing.
+Frontend **405 passed**, no skips; final Next/OpenNext Cloudflare build passed. Seven
+actual production Next SSR groups passed across Chinese/English, selected criterion
+history/preparation UUID, pinned execution context, beyond-end full counts, independent
+invalid cursor, blank-form assignments-only and foreign parent summary stopping reads.
+Single Alembic head and PostgreSQL full upgrade SQL generation pass; no migration.
+Cloud rollout is pending at this feature commit and requires independent verification.

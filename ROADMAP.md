@@ -291,3 +291,40 @@ organization and manufacturing reads; then approved identity/session, controlled
 submission/recovery/corrections and operations. CI PR #1 remains unmerged. Conditional
 estimates (4–8 packages toward internal use, 12–20 toward production review) remain
 unchanged until the remaining rich-read scope is decomposed.
+
+## Bounded SCR coverage — API 0.18.17, 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from main `79e5f767d74c818d2642aee8408d47c5ec733717`.
+SCR coverage now separates a fixed SQL summary/full counts from paged candidate
+releases, gaps, criteria, points, distinct Issues and owned-plan test items. Selecting
+a group UUID loads its exact summary and bounded assigned tests; selected criteria
+also expose bounded formal assignment history and the existing preparation link.
+No page downloads all nested test/assignment histories. Full parent counts persist
+on beyond-end or failed pages, and unrelated cursors/selection remain independent.
+Default Chinese and selectable English are retained. Candidate pages replace the
+first-100 dropdown; direct exact UUID selection remains possible beyond any page.
+
+Coverage preserves legacy semantics: Issues are distinct despite multiple relations;
+valid tests belong to this SCR's plans, foreign/missing links are excluded and counted
+as gaps, latest execution_no on the exact release/FROZEN Snapshot wins, any latest
+FAIL/ERROR/CANCELLED yields FAILED, all assigned latest PASS yields PASSED, otherwise
+PENDING. Unassigned/no-context/no-freeze remain distinct. Assignment percent retains
+Python rounding and null for empty groups. Formal criterion records remain visible
+even when their test references are excluded. Unicode whitespace matches Python
+strip for blank acceptance text. SCR detail still shows real cross-plan assignments;
+coverage intentionally excludes them, as it did before this migration.
+
+Page pins require exact change_id plus release_id/snapshot_id UUID or literal none.
+Historical frozen execution pins survive newer freezes. A previously missing freeze
+that now exists rejects stale none context with 409 instead of silently substituting
+evidence. Current SCR definitions/assignments remain live: these pins do not freeze
+definitions, confer incorporation, authorize release, or grant write permission.
+Legacy report/assignment APIs, all 14 command contracts and schema head
+0018_asr_evidence_index remain. Public staging stays sample-only/read-only.
+
+Progress remains ROADMAP 34/44 (77%) and read groups 16/17 (94%); broad group 17 is
+still partial. Next Issue detail/impact (linked SCRs, candidates and judgment history),
+then organization/manufacturing reads; approved identity/session, controlled
+submission/recovery/corrections and operations follow. CI PR #1 is unmerged.
+Conditional estimates remain 4–8 focused packages toward internal use and 12–20
+total toward production review, pending decomposition/provider decisions.

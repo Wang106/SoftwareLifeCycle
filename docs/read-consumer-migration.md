@@ -31,7 +31,7 @@ compatibility APIs can still exist; removing them requires caller review.
 | 14 | ASR passport | Migrated | backend/app/api/asr_passport.py; fixed summary and four independently bounded histories, paired UUID pins and safe historical release display |
 | 15 | ASR readiness and compatibility policy reads | Migrated this package | backend/app/api/asr_readiness.py; SQL coverage/policy/exception aggregates and bounded approved exceptions; eight gates unchanged. Legacy array APIs/evaluate retained, not retired |
 | 16 | Release catalogs and legacy resolver | Migrated | backend/app/api/release_catalog.py; both release directories use bounded pages/full counts; legacy-release.ts uses exact bounded UUID/version resolution, including ambiguity beyond 200 rows |
-| 17 | Other rich profiles and legacy domain catalogs | Partial | SCR/Issue directory pages now use backend/app/api/change_catalog.py and complete SQL counts. SCR detail now uses backend/app/api/change_views.py and independently bounded collections/selected-child items. SCR coverage, Issue detail/impact, organization catalogs/profiles and manufacturing catalogs/profiles remain. This broad group is not complete |
+| 17 | Other rich profiles and legacy domain catalogs | Partial | SCR/Issue directory pages now use backend/app/api/change_catalog.py and complete SQL counts. SCR detail now uses backend/app/api/change_views.py and independently bounded collections/selected-child items. SCR coverage now uses backend/app/api/change_coverage_views.py with full SQL summary, independently bounded collections and exact selected-group items/assignment history. Issue detail/impact, organization catalogs/profiles and manufacturing catalogs/profiles remain. This broad group is not complete |
 
 Groups 16–17 are broad and can require several packages. Splitting a group later must
 record a denominator change rather than implying earned progress. New consumers must
@@ -61,3 +61,11 @@ group completion: 16/17 (94%), ROADMAP 34/44 (77%). SCR coverage, Issue detail/i
 and organization/manufacturing reads remain to inspect/migrate. Identity/session,
 controlled submission/recovery/corrections and operations remain. Public staging
 is sample-only read-only; package estimates stay conditional and unchanged.
+
+### Group 17 SCR coverage slice — API 0.18.17
+
+Summary, candidates, gaps, definitions, owned-plan items and selected-group
+evidence/criterion history migrated. Group 17 remains partial: 16/17 (94%),
+ROADMAP 34/44 (77%). Next Issue detail/impact, organization/manufacturing reads.
+Current definitions are not frozen by historical execution context pins. Legacy
+report remains compatible; public writes stay denied. Estimates unchanged.

@@ -428,3 +428,11 @@ API 0.18.15 adds only SCR/Issue directory reads. All 14 existing command contrac
 Only read endpoints/consumers change. All 14 command contracts, scoped actor binding,
 keyed replay, row serialization and atomic business/audit behavior remain. SCR/child
 identity pins are not write preconditions or grants. Public writes remain denied.
+
+## SCR coverage read migration — API 0.18.17
+
+All 14 command contracts, exact actor/scope binding, keyed replay, row serialization
+and business/audit atomicity are unchanged. Criterion preparation links still target
+exact SCR/criterion UUID; new read context pins are neither submission preconditions
+nor permission grants. Coverage retains exclusion and latest-execution semantics;
+public writes remain denied.

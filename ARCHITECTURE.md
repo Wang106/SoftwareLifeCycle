@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.16
+FastAPI 0.18.17
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -376,3 +376,12 @@ only selected point/plan items and verifies response SCR/child identities. Each
 collection fails independently while parent totals remain. First/next/select links
 preserve unrelated offsets. The parent page no longer requests the legacy rich
 SCR profile; coverage and other group-17 reads remain pending. No command changes.
+
+## SCR coverage consumer — API 0.18.17
+
+change_coverage_views.py separates full SQL summary/counts from six independent
+collections and exact selected-group item/criterion-history pages. Coverage frontend
+retains other cursors, verifies all SCR/release/Snapshot/group response pins, and
+keeps parent totals when a page fails. Candidate pagination replaces a truncated
+dropdown; exact UUID release input and historical Snapshot review remain. First/next
+links retain execution context. Legacy report and assignment service remain unchanged.

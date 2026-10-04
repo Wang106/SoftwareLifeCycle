@@ -425,3 +425,14 @@ without ORM graph hydration or growing ID lists. Exact point/plan ownership chec
 prevent selecting another SCR's child. Existing cross-plan point assignments remain
 visible; missing references match legacy inner-join visibility. SQL statement shapes
 remain fixed after 120-row child/assignment growth. Counts/pages are live reads.
+
+## SCR coverage SQL projections — API 0.18.17
+
+No migration, head 0018. Owned-plan items form a scalar CTE; newest execution_no is
+selected with ROW_NUMBER on exact release/Snapshot/item UUID. Correlated group counts
+exclude outside-SCR/missing references, aggregate full assignment/result states and
+union all definition/assignment gaps without growing ID lists or ORM graphs. Issue
+membership uses EXISTS to avoid duplicate relation inflation. Bounded pages project
+only selected rows; formal criterion histories have their own pages. Counts preserve
+null/rounding/current-definition semantics. Historical execution pins do not freeze
+assignments; stale missing-freeze context rejects a newer freeze.

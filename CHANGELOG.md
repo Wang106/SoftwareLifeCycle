@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Bounded SCR coverage
+
+- API 0.18.17 separates full SQL coverage summary from bounded candidates/gaps/definitions/items and exact selected-group test/criterion-history pages. Full counts, independent cursors, bilingual UI and exact preparation links remain.
+- Preserves distinct Issues, outside-SCR exclusions, latest exact frozen execution result, null/rounding and live-definition semantics. Paging pins historical execution context; stale missing freeze rejects new evidence.
+- No migration/write change; schema 0018, public read-only, ROADMAP 34/44 and read ledger 16/17 unchanged. Group 17 remains partial; verification and cloud rollout recorded below.
+
 ## 2026-10-04 — Bounded SCR detail
 
 - API 0.18.16 adds scalar SCR summary/full counts, four independently bounded collections and two exact owned point/plan item pages. The bilingual detail page preserves parent metadata, independent cursors, cross-plan assignments and exact item links.
@@ -548,3 +554,20 @@ Next package: bound SCR coverage while preserving release/frozen-Snapshot select
 then Issue detail/impact (linked SCR relations, candidate releases and full judgment
 history). Inspect organization/manufacturing consumers after those. Progress remains
 34/44 (77%), read ledger 16/17 (94%); CI PR #1 remains unmerged.
+
+Verification: final Python 3.12 backend **1007 passed**, **8004 warnings**, no skips,
+including **123 real PostgreSQL 16.15 tests**. New coverage cases verify legacy full
+summary/gap/group parity, exact latest PASS/FAIL/ERROR/CANCELLED/pending states,
+software/customer/project scope, distinct Issues, foreign/orphan assignments, Unicode
+blank text, complete candidates beyond 100, historical/stale-none context pins,
+strict HTTP identity/pagination, fixed SQL shapes after 120-child growth, bounded
+selected histories and no audit writes. Existing real lock/replay/rollback suites pass.
+An early local temporary PostgreSQL data-directory read error caused fixture failures;
+a newly initialized isolated instance resolved that infrastructure problem and the
+final full suite passed. Online databases were not changed for regression testing.
+Frontend **405 passed**, no skips; final Next/OpenNext Cloudflare build passed. Seven
+actual production Next SSR groups passed across Chinese/English, selected criterion
+history/preparation UUID, pinned execution context, beyond-end full counts, independent
+invalid cursor, blank-form assignments-only and foreign parent summary stopping reads.
+Single Alembic head and PostgreSQL full upgrade SQL generation pass; no migration.
+Cloud rollout is pending at this feature commit and requires independent verification.

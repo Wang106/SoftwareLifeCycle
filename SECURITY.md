@@ -365,3 +365,12 @@ identity reads; they are not authorization grants or frozen-evidence guarantees.
 Public reads remain sample-only and read-only. DVP assignments and counts do not
 prove execution, passing results, release approval or permission to submit. No
 identity provider, write route, grant or public-write configuration changes here.
+
+## SCR coverage read pins — API 0.18.17
+
+SCR identity, exact candidate release scope and FROZEN Snapshot ownership are checked
+for every page; selected criterion/point/Issue UUID must belong to the SCR. These read
+pins do not grant authorization or freeze current definitions/assignments. Coverage
+excludes foreign/missing DVP references, distinguishes assignments from execution,
+and does not assert incorporation or authorize release. No grants/provider settings,
+write routes or public-write flags change. Public sample data remains read-only.
