@@ -36,7 +36,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.18 starting baseline; 0.18.19 rollout pending |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.19 verified ready; schema 0018 |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -1434,3 +1434,40 @@ beyond-end totals, invalid owned pages, repeated catalog filters, exact related/
 materials/release links and missing/foreign parents stopping child reads.
 Single Alembic head/full upgrade SQL generation pass. Cloud rollout pending
 at this feature commit; verified rollout will be recorded separately.
+
+
+## 2026-10-04 — Verified organization cloud rollout
+
+Main contains feature `4620a35b06c92736a2076c1e6d856c1afe2f0dfd` and site-link
+compatibility correction `50140be3ea8fef84653fc667d7e35f98c848e2cb`.
+Cloudflare Workers Builds succeeded for the feature at 2026-10-04T09:01:40Z
+and for the correction at **2026-10-04T09:11:26Z**. Live HTTPS readiness is
+200, API **0.18.19**, schema `0018_asr_evidence_index`. Render provider deployment
+metadata was not inspected; the API version/behavior is live rollout evidence.
+
+Public sample has one supplier, one customer and one project. New full counts,
+owned collection totals and latest versions match the legacy reads. Supplier
+SUP-001 UUID `46fbde85-314c-440b-a3b8-df5be03a28a4` has one product; customer
+CUS-001 UUID `a2b8a98d-bb2d-4581-bf7b-451bbc0d731e` has one project; project
+PRJ-X UUID `c6448937-7b6e-4324-91cf-050177a0f0bc` has one site. Limit-one,
+beyond-end counts/empty items, invalid/unknown filters and foreign parent pins
+behave correctly. The larger parent/child windows and next-page transitions
+are covered by local SQLite/PostgreSQL and production SSR fixtures; this single-row
+live sample does not claim multi-page traversal.
+
+All six Cloudflare views pass Chinese/English checks, retain exact materials UUIDs
+and preserve parent context on invalid child cursors. Project site link uses the
+stored unique code `/manufacturing/sites/FACTORY-A`, resolving the exact linked
+site UUID `935fa56f-30e7-4f3a-b809-b6fd0ea3bd27`. Actual project HTML contains
+that link; the site frontend returns HTTP 200 with Factory A and the legacy site
+API returns the same UUID. This corrects an initial UUID URL incompatible with
+the existing code-based site route. Final frontend 435 tests, production build
+and 24 production SSR groups passed again after correction; backend remains
+1048 passed (125 real PostgreSQL), no backend/schema change in the correction.
+Empty deployment POST returns 403 `read_only_mode`. No business writes occurred.
+
+ROADMAP **34/44 (77%)**, read groups **16/17 (94%)** remain; organization migration
+is complete for six consumers, manufacturing site/line context remains. All 14
+commands, schema 0018, sample-only public read-only mode and unmerged CI PR #1
+remain unchanged. Next manufacturing reads, then approved identity/session,
+controlled submission/recovery/corrections and operational acceptance.
