@@ -622,3 +622,40 @@ impact Chinese/English with exact preparation UUID, complete beyond-end history,
 independently invalid component cursor, no-freeze without preparation, foreign Issue
 summary stopping child reads. Single Alembic head and full PostgreSQL upgrade SQL
 generation pass; no migration. Cloud rollout pending at this feature commit.
+
+
+## 2026-10-04 — Verified Issue detail cloud rollout
+
+Feature commit `121e7ac10674ea0868d499ac10143e7def4464ab` is on main.
+Cloudflare Workers Builds for that exact commit succeeded at
+2026-10-04T07:00:22Z. Live HTTPS verification completed on 2026-10-04:
+Render `/health/ready` returned 200, API **0.18.18**, schema
+`0018_asr_evidence_index`. Provider deployment metadata was not inspected;
+API rollout evidence is the live version and behavior, not a claimed Render deploy ID.
+
+Sample Issue #310 (`e9aea1f4-26cf-4a4d-97b1-b63ef3c1cddb`) has one linked
+SCR relation, three candidates and zero manual judgments. New complete counts
+match legacy reads. Limit-one pages, beyond-end empty pages, invalid limits,
+foreign Issue pins and unknown Issue selection behaved as specified.
+Selected ASR 2.3.4 (`271334c3-9a99-4dc0-a7dc-75ba5754377b`) uses FROZEN
+SNAP-008 (`c6f38c25-c42e-4bdb-8327-e16f7e85dd7b`), hash
+`ed7e8188c12661c328110366b0c17cc2299cc6faa37cea2e04130dc3d166cc21`.
+Its two distinct frozen component pairs and one verification item match legacy
+components and latest exact execution result/observation/time. Latest manual
+judgment is absent in this sample; nonempty judgment/history behavior is covered
+by local regression and production SSR fixtures. Invalid Snapshot selection
+returns 409. No storage reference is exposed by component pages.
+
+Cloudflare Chinese/English Issue and impact pages preserve complete counts,
+selected Snapshot UUID and exact preparation target. Beyond-end history stays
+empty with its full count; repeated component cursor fails only that collection.
+An empty impact-assessment POST returns 403 `read_only_mode`. Public staging
+remains sample-only read-only. No migration, grant or command contract change.
+Full verification remains backend 1025 passed (124 real PostgreSQL), frontend
+416 passed, production build and eight production SSR groups passed.
+
+ROADMAP remains **34/44 (77%)**, read groups **16/17 (94%)**. Organization and
+manufacturing catalogs/profiles remain in partial group 17. CI PR #1 remains
+open/unmerged and is not counted as operational acceptance. Next continue those
+bounded consumers, then approved identity/session and controlled submission,
+recovery/correction/revocation, followed by operational acceptance.
