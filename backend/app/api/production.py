@@ -240,13 +240,11 @@ def get_site(site_code: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/deployments")
 def list_deployments(db: Session = Depends(get_db)):
     rows = db.scalars(select(Deployment).order_by(Deployment.created_at.desc())).all()
     return [_deployment_detail(db, row) for row in rows]
 
 
-@router.get("/deployments/{deployment_no}")
 def get_deployment(deployment_no: str, db: Session = Depends(get_db)):
     row = db.scalars(
         select(Deployment).where(Deployment.deployment_no == deployment_no)
@@ -256,7 +254,6 @@ def get_deployment(deployment_no: str, db: Session = Depends(get_db)):
     return _deployment_detail(db, row)
 
 
-@router.get("/deployments/{deployment_no}/provenance")
 def get_deployment_provenance(deployment_no: str, db: Session = Depends(get_db)):
     deployment = db.scalars(select(Deployment).where(Deployment.deployment_no == deployment_no)).first()
     if deployment is None:
@@ -313,7 +310,6 @@ def deployment_profile(deployment_no: str, db: Session = Depends(get_db)):
     return detail
 
 
-@router.get("/batches")
 def list_batches(db: Session = Depends(get_db)):
     rows = db.scalars(select(ProductionBatch).order_by(ProductionBatch.batch_no)).all()
     return [{"id": str(row.id), "batch_no": row.batch_no, "status": row.status,

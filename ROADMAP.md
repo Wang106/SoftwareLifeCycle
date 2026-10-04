@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — all 17 identified read-consumer groups now use bounded reads, including manufacturing site directory/detail. API 0.18.21 retires the eight reviewed organization/manufacturing GET routes; other bulk/rich families remain pending caller review and retirement/explicit bounds. See docs/compatibility-read-retirement.md. Consumer migration alone does not satisfy this endpoint acceptance item.
+- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — all 17 identified read-consumer groups now use bounded reads, including manufacturing site directory/detail. API 0.18.22 has retired 19 reviewed organization/manufacturing/production/distribution GET routes; other bulk/rich families remain pending caller review and retirement/explicit bounds. See docs/compatibility-read-retirement.md. Consumer migration alone does not satisfy this endpoint acceptance item.
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -500,3 +500,13 @@ with bounded successors and no database graph loading. Remaining families still
 prevent the Phase 4 checkbox from completion: progress stays 34/44, read consumers
 17/17. See `docs/development-plan.md` for the current ordered packages, acceptance
 criteria, external identity/environment dependencies and conditional estimates.
+
+## Completion gate clarification — API 0.18.22
+
+The seven groups in docs/development-plan.md are work groups, not seven turns.
+Current version completion means all acceptance criteria and all 44 roadmap items
+are implemented/verified; production release still requires company acceptance of
+the actual target environment, security/permissions and recovery/data/network review.
+Additional VIN/features and post-release maintenance are separate future scope.
+Cumulative 19 reviewed compatibility GET tombstones do not close the remaining
+Phase 4 item: overall stays 34/44.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04 — Production/distribution compatibility retirement
+
+- API 0.18.22 retires 11 additional reviewed legacy GET routes (19 total), with exact revision/UUID/delivered-Snapshot migration guidance. Bounded successor reads, shared helpers and all 14 commands remain.
+- Backend 1111 passed (126 real PostgreSQL), frontend 448 passed, migration head/upgrade checks pass; final production build and 24 actual production SSR groups pass; cloud evidence recorded below after verification.
+- Plan defines seven work groups, current-version 44/44 acceptance and separate company release approval/future scope. Progress stays 34/44 while compatibility families remain; public sample stays read-only.
+
 ## 2026-10-04 — First reviewed compatibility read retirement
 
 - API 0.18.21 retires eight organization/manufacturing GET routes with explicit 410, successor URLs and required UUID pins; no DB or rich graph loading. Shared comparison helpers, bounded views, release-matrix and all 14 commands remain.

@@ -5,9 +5,9 @@
 - Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `827050736a6548bab3e77785b7c0b4701b8051d2`
-- Developed from: `827050736a6548bab3e77785b7c0b4701b8051d2`
-- Baseline subject: `docs: record verified manufacturing cloud rollout`
+- Verified starting baseline: `7048c797a5181d89ef72e7a9d0c978458ca54342`
+- Developed from: `7048c797a5181d89ef72e7a9d0c978458ca54342`
+- Baseline subject: `docs: record verified retirement rollout and continuation plan`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -1635,3 +1635,45 @@ production build, 33 production SSR groups, single migration head and upgrade SQ
 pass. Existing datetime.utcnow deprecation warnings (9112) remain. CI PR #1 was
 checked open/unmerged this turn and is not counted complete. ROADMAP remains
 34/44; next packages and acceptance/dependencies are in docs/development-plan.md.
+
+## 2026-10-04 — Production/distribution retirement / API 0.18.22
+
+Eleven additional legacy production/distribution GET routes now return 410 with
+encoded successor URLs and explicit exact-scope instructions; cumulative retired
+HTTP reads: **19**. Four production routes (deployment list/detail/provenance and
+batch list) and seven distribution routes (delivery list/latest detail/exact rich
+revision, distribution list/detail, authorization list/detail) are reviewed. Exact
+Batch, bounded catalogs/profile/artifacts, shared helpers and all 14 POST commands
+remain. Internal comparison fixtures retain direct legacy helper calls. Unknown
+external HTTP consumers must migrate; this is an intentional contract break.
+
+Delivery selection is explicit by stored number/revision/UUID, not automatic latest
+or q substring identity. Deployment decision-history scope is the delivered pair
+from provenance.delivery, not actual software; missing delivery infers no decision
+scope. Retirement performs no DB read, graph loading or old validation, even for
+unknown parents/invalid old revision values. Named parameters are encoded separately.
+No migration, provider/identity/grant change or public-write enablement.
+
+Full backend **1111 passed**, **9112 existing deprecation warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests**. Twenty-five added cases cover new
+paths with normal/invalid queries, encoded numbers/revisions, no DB/helper work,
+unchanged registered successors/commands and exact provenance instructions.
+Targeted retirement/catalog/profile/command regression: 140 passed. Frontend
+**448 passed**, no skips. Single Alembic head remains `0018_asr_evidence_index`;
+full offline upgrade SQL passes. Final production Next/OpenNext build passes.
+24 actual production Next SSR groups pass: 11 views zh/en, sibling revision and
+exact deployment history/command links against a real backend SQLite fixture;
+no retired API requests occur. Cloud rollout is recorded after verification below.
+
+Progress remains ROADMAP **34/44 (77%)**, Phase 4 **8/9 (89%)**, identified read
+consumers **17/17**. Other compatibility families remain; no approved overall
+retirement denominator exists. CI PR #1 was checked open/unmerged and is not counted.
+Next remaining SCR/Issue/release/governance/audit contract review, then CI, approved
+identity/session, submission/recovery, broader corrections and operations.
+
+The plan now answers the completion question explicitly: seven work groups mean
+current-version scope, not seven turns. All acceptance gates plus 44/44 evidenced
+roadmap items establish development completion. Actual company target identity,
+permissions, recovery, network/data/operations review and release acceptance are
+required for deployment approval. VIN/additional features and maintenance remain
+separate later scope. Public sample continues read-only. See development-plan.md.

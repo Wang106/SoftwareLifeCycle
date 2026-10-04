@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.21`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.22`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -27,7 +27,7 @@ This document is a maintained map, not a replacement for the generated OpenAPI s
 | Production | `/api/v1/production/catalog/{kind}`, `/deployments/{deployment_no}/profile`, `/batches/{batch_no}` | `{kind}` is deployments, changeovers or batches |
 | Audit/resources | `/api/v1/audit/events`, `/activity/{event_no}`, `/resources` | Bounded audit review and append-only external references |
 
-Older unbounded list/detail routes such as `/api/v1/deliveries`, `/distributions`, `/authorizations`, `/deployments`, `/batches`, `/approvals` and `/activity` remain for compatibility. New directory consumers should prefer bounded catalog endpoints.
+API 0.18.22 retires legacy delivery/distribution/authorization/deployment/batch lists and rich production/distribution reads with HTTP 410; use the bounded successors below. Other compatibility families such as governance/audit and release evidence still require review. Not every retained compatibility route is unbounded.
 
 ## Existing command endpoints
 
@@ -834,3 +834,20 @@ See docs/compatibility-read-retirement.md for the exact eight paths/caller revie
 Release matrix, bounded views, shared helper functions and all 14 commands remain.
 Other retained compatibility families are not retired by this change. No migration,
 identity/grant or public-write change; public staging remains sample-only/read-only.
+
+## Production/distribution compatibility retirement — API 0.18.22
+
+Eleven additional reviewed GET routes return 410 `legacy_read_retired`; cumulative
+tombstones total 19. Exact paths and repository caller evidence are in
+docs/compatibility-read-retirement.md. Rich delivery/distribution/authorization
+reads migrate to exact profiles plus bounded children. The unrevisioned delivery
+read points to the bounded catalog for explicit package/revision/UUID selection; q
+is a substring search, and no latest revision is silently substituted.
+
+Deployment rich detail/provenance migrate to the exact profile. History catalogs
+use its deployment UUID; decision history uses BOTH delivered release UUID and
+Snapshot UUID from provenance.delivery, never current actual software. Missing
+delivery does not infer decision scope. Invalid old queries/revisions or nonexistent
+parents return retirement 410 without DB work. Successor endpoint validation is
+unchanged. Exact Batch remains. All 14 POST commands sharing these paths remain.
+No schema, provider, identity/grant or public-write change.

@@ -70,3 +70,57 @@ families above still require review. This is the first runtime retirement slice,
 not completion of the Phase 4 checkbox; ROADMAP remains 34/44. The baseline table
 above describes API 0.18.20; these two families are now retired at the HTTP boundary.
 See development-plan.md for the subsequent packages and dependencies.
+
+## Second reviewed runtime transition — API 0.18.22
+
+Starting main: `7048c797a5181d89ef72e7a9d0c978458ca54342`.
+Eleven additional HTTP GET routes retire; cumulative explicit tombstones: 19.
+
+| Retired route | Successor and exact scope |
+| --- | --- |
+| `/api/v1/deployments` | `/api/v1/production/catalog/deployments` |
+| `/api/v1/deployments/{deployment_no}` | `/api/v1/deployments/{deployment_no}/profile`; changeover/batch catalogs with deployment_id=profile.id |
+| `/api/v1/deployments/{deployment_no}/provenance` | Exact deployment profile; governance decisions using BOTH delivered release_id and snapshot_id from provenance.delivery |
+| `/api/v1/batches` | `/api/v1/production/catalog/batches`; exact `/batches/{batch_no}` stays |
+| `/api/v1/deliveries` | `/api/v1/distribution/catalog/deliveries` |
+| `/api/v1/deliveries/{package_no}` | Delivery catalog with literal substring q; explicitly select exact package_no/revision/UUID, then exact revision profile |
+| `/api/v1/deliveries/{package_no}/revisions/{revision}` | Exact `/profile`, bounded `/artifacts`; distributions scoped by delivery_package_id=profile.id |
+| `/api/v1/distributions` | `/api/v1/distribution/catalog/distributions` |
+| `/api/v1/distributions/{distribution_no}` | Exact `/profile`; authorizations scoped by distribution_id=profile.id |
+| `/api/v1/authorizations` | `/api/v1/distribution/catalog/authorizations` |
+| `/api/v1/authorizations/{authorization_no}` | Exact `/profile`; production deployment/batch catalogs scoped by authorization_id=profile.id |
+
+Caller review: production-catalog renders deployments/changeovers/batches, and the
+Batch page uses the exact bounded batch read. Deployment page appends `/profile`,
+not old detail/provenance. Distribution catalog uses three bounded catalogs;
+delivery detail uses exact revision profile/artifacts; distribution/authorization
+pages append `/profile`. Command-draft URLs sharing old catalog paths are POST
+commands and stay registered. No active repository frontend GET requires these
+11 responses. Direct legacy calls in test_actual_retry, test_deployment_provenance,
+test_deployment_profile, test_distribution_catalog, test_delivery_revision,
+test_delivery_profiles, test_distribution_detail, test_authorization_detail and
+test_distribution_profiles are comparison/compatibility fixtures; their functions
+stay callable. Shared serializers remain available to scalar profiles with history
+loading explicitly disabled. Unknown external HTTP clients must migrate.
+
+Route/caller registry inspection confirms one tombstone per retired path; concrete
+matching does not intercept profile/artifacts child reads, catalogs or POST paths.
+Retirement never opens a DB session or invokes any organization/production/
+distribution graph helper. Return 410 before old identity/query/revision validation;
+nonexistent parents and invalid old revision values do not reveal existence.
+Named path parameters are encoded separately, including revision. Header first
+successor is a concrete URL; descriptive instructions retain parameter templates
+where an exact UUID must first be obtained from an active profile/catalog.
+
+Do not select a latest delivery revision implicitly, treat q as exact identity,
+substitute actual deployment software for delivered decision scope, or infer a
+missing provenance.delivery decision scope. Counts remain observations, not grants
+or remaining batch capacity. Consumers use limit/offset and full counts in each
+successor's existing contract. No evidence is silently truncated by retirement.
+
+The initial family table is an API 0.18.20 baseline: organization/manufacturing and
+legacy deployment HTTP reads are now retired. Remaining review includes SCR/Issue,
+release evidence/policy/component/passport/readiness families plus governance and
+audit compatibility routes; not every retained route is unbounded. Internal policy/
+command consumers must be preserved. Phase 4 remains 8/9 and ROADMAP 34/44 until
+that reviewed scope is fully retired/bounded. No schema/provider/grant/write change.
