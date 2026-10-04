@@ -757,3 +757,34 @@ acceptance requires retirement/bounds on retained compatibility APIs. Their call
 contract review remains pending, documented in compatibility-read-retirement.md.
 CI PR #1 remains open/unmerged. Next compatibility endpoint review/transition,
 approved identity/session, controlled submission/recovery/corrections and operations.
+
+## Verified cloud rollout — API 0.18.21
+
+Feature commit: `f28553c6aad27a6a39b8c140b2af606362d83e6a`; tree
+`9c4a668dfa4d20528c841efd9243e0f5e7bcd5dc`. Cloudflare Workers Builds for this
+exact commit completed success at `2026-10-04T13:04:30Z`. Live smoke completed
+before this record at `2026-10-04T13:06:45+00:00`. Render provider deployment metadata was not
+inspected; HTTPS readiness and runtime behavior establish observed API version,
+not an asserted provider deployment ID or exact Render commit.
+
+HTTPS ready returns API **0.18.21**, schema **0018_asr_evidence_index**. All eight
+retired organization/manufacturing GET paths return 410 with successor instructions,
+Link and no-store headers; invalid legacy query fields also return 410. All four
+bounded catalogs, summaries and owned child pages remain usable; release-matrix
+still returns 200. Live default-Chinese/selected-English checks pass for eight
+consumers (16 rendered views). Strict extra filters reject 422, foreign site pin
+rejects 404, beyond-end owned line window preserves total with empty items.
+
+Supplier/customer/project each retain one owned record. FACTORY-A remains one
+line, one deployed line, one stored MATCH, zero attention, one approved-authorization
+line. Exact first deployment and recorded batch UUIDs match the previous verified
+sample. UUID and old site-code links resolve the same bounded summary. Public
+empty deployment POST rejects 403 `read_only_mode`; smoke creates no business data.
+Small sample checks do not establish large next-page behavior; regression growth/PG
+and 33 production SSR groups provide that evidence.
+
+Final verified tests: backend 1086 (126 real PostgreSQL), frontend 448, no skips;
+production build, 33 production SSR groups, single migration head and upgrade SQL
+pass. Existing datetime.utcnow deprecation warnings (9112) remain. CI PR #1 was
+checked open/unmerged this turn and is not counted complete. ROADMAP remains
+34/44; next packages and acceptance/dependencies are in docs/development-plan.md.
