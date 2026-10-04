@@ -1217,3 +1217,32 @@ history/preparation UUID, pinned execution context, beyond-end full counts, inde
 invalid cursor, blank-form assignments-only and foreign parent summary stopping reads.
 Single Alembic head and PostgreSQL full upgrade SQL generation pass; no migration.
 Cloud rollout is pending at this feature commit and requires independent verification.
+
+## SCR coverage cloud rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature `317780bb23b1b4b79ba1af3db305593c5e1d7d94` is pushed to main. GitHub
+Workers Builds: softwarelifecycle completed successfully for that exact commit
+at 2026-10-04T06:30:40Z. Render HTTPS readiness returns 200, API 0.18.17, schema
+0018_asr_evidence_index. Render provider deployment ID/commit metadata was not
+inspected; HTTPS version/feature behavior is the API rollout evidence.
+
+SCR-142 UUID 8c923022-b24c-4358-b808-74d484285881 has 3 complete candidate releases.
+ASR 2.3.3 (2bac628d-4335-43f6-90a5-efcdd490eaf8) has no frozen Snapshot: coverage
+shows 1 criterion/0 assigned, 2 points/2 assigned, 1 distinct Issue/1 assigned,
+4 owned-plan items and 2 gaps; execution totals remain unknown, matching legacy.
+Six collections passed limit-1/full-count/beyond-end/invalid-limit checks; exact
+selected criterion summary/items/history and foreign SCR/group rejection passed.
+Chinese/English selected criterion pages, beyond-end gaps and independently invalid
+repeated gap cursors passed. Empty Deployment POST returns 403 read_only_mode;
+no business writes were performed.
+
+Frozen context: ASR 2.3.4 UUID 271334c3-9a99-4dc0-a7dc-75ba5754377b, SNAP-008
+UUID c6f38c25-c42e-4bdb-8327-e16f7e85dd7b / freeze 8. Full summary matches legacy:
+4 items, 3 executed, 3 latest PASS; 1 of 2 assigned points passed and 1 Issue passed.
+All four limit-1 item pages preserve exact execution_no/result/observation/time with
+no missing/duplicate item UUID; selected point items also match. Chinese/English
+actual first/next pages retain that same frozen UUID and group selection.
+
+No migration, provider/grant configuration or public-write enablement. CI PR #1
+was independently checked open/unmerged. Next Issue detail/impact, then remaining
+organization/manufacturing reads. ROADMAP 34/44 (77%), read ledger 16/17 (94%).
