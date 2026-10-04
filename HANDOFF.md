@@ -5,9 +5,9 @@
 - Date: 2026-10-04 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `43bbe138e2e99942e541dbc48c0394d0ff1067af`
-- Developed from: `43bbe138e2e99942e541dbc48c0394d0ff1067af`
-- Baseline subject: `test/docs: verify bounded milestone evidence and SCR cloud rollout`
+- Verified starting baseline: `f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1`
+- Developed from: `f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1`
+- Baseline subject: `docs: record verified Snapshot retirement rollout and DVP remaining scope`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -1863,3 +1863,38 @@ Next prioritize DVP owned relation pagination and consumer migration before reti
 its directory/detail. Then release/ASR, governance/audit and the 53-path closure.
 ROADMAP remains34/44=77%, phase progress100/100-demo/100-demo/89/89/60/0;
 read consumers17/17. Seven-plan report is reproducible with the reporting script.
+
+## 2026-10-04 — API 0.18.25 DVP relations and legacy retirement
+
+Codex cloud continued from main f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1.
+DVP profile replaces three full linked arrays with complete SQL relation_counts.
+Independent criteria/points/issues pages require exact dvp_item_id, strict limits,
+complete totals and stable display-number/UUID order. Frontend consumes these pages,
+preserves independent offsets and historical execution filters, fails closed for
+wrong parent and isolates unavailable children. History adds item_id; selected
+Snapshot lookup now uses LIMIT1. Chinese default/English selectable remain.
+
+Legacy DVP directory/detail GETs now return410 without DB work; cumulative reviewed
+retirements29→31. Internal helper functions and all14 commands remain. External
+profile array clients must migrate to counts and relation pages. No migration,
+provider/grant change or public-write enablement.
+
+Validation: backend1146 passed, zero skipped, including127 real PostgreSQL tests;
+9141 existing/model deprecation and collection warnings remain. Frontend457 passed,
+zero skipped; OpenNext/Cloudflare build succeeds. Ten production Next SSR groups
+pass with real backend fixture: zh/en, independent pages, empty end windows,
+historical OLD execution selection, invalid one-page isolation, stale parent fail
+closed and no retired API requests. Growth covers105 records per relation,
+nonunique criterion/change-point numbers, complete navigation, stable read-query
+count and sibling isolation in SQLite/PostgreSQL. Read audit count stays unchanged.
+Schema head0018_asr_evidence_index and full offline upgrade SQL pass.
+
+Seven plans: compatibility7/10=70% (60%→70%); CI0/4=0%; identity/session1/5=20%;
+first controlled submit2/6=33%; all14 commands2/5=40%; corrections1/5=20%;
+operations/company migration0/6=0%. Fixed acceptance milestones are not effort or
+production readiness. ROADMAP34/44=77%; phases100/100-demo/100-demo/89/89/60/0;
+read consumers17/17. Release/ASR, governance/audit and full53-path closure remain.
+Next review governance/audit callers and scoped bounded successors, then release/ASR
+and full closure; CI, approved identity/session, real submissions/recovery,
+corrections and operational/company acceptance remain. Public staging read-only.
+Cloud rollout evidence is recorded after publishing and live verification.

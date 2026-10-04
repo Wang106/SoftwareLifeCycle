@@ -1584,5 +1584,8 @@
   "Open exact deployment history →": "打开对应部署历史 →",
   "Batch context preserves recorded ordering; it does not assert that a batch is active.": "批次背景保留记录排序，不代表批次当前正在生产。",
   "Stored manufacturing states are observations, not production permission.": "制造状态是已记录的观察结果，不授予生产权限。",
-  "The site was not found, is ambiguous or the API could not be reached.": "未找到站点、标识存在歧义或无法连接 API。"
+  "The site was not found, is ambiguous or the API could not be reached.": "未找到站点、标识存在歧义或无法连接 API。",
+  "Full linked total": "关联总数",
+  "No linked records on this page.": "当前页没有关联记录。",
+  "Linked records unavailable. Check pagination or API availability.": "关联记录不可用，请检查分页参数或接口状态。"
 }

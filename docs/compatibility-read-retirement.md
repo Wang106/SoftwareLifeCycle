@@ -203,3 +203,35 @@ remain. DVP catalog/history are bounded, but dvp_profile still loads linked acce
 criteria, change points and issues without pagination. Therefore the DVP family is
 not completed or retired in this slice. Next add bounded owned relation reads and
 migrate the frontend before closing that milestone. ROADMAP stays 34/44 (77%).
+
+## Fifth slice — DVP, API 0.18.25
+
+Retired GET /api/v1/testing/dvp and /id/{item_id} now return DB-free HTTP410.
+Successors: /catalog, exact /id/{item_id}/profile, /relations/{criteria,points,issues}
+and /executions. Legacy list_dvp/dvp_item_detail functions remain internal fixtures.
+Frontend directory already uses /catalog; exact detail now consumes profile counts
+and independent relation pages. No active repository HTTP caller needs old responses.
+
+Profile contract intentionally replaces linked_acceptance/linked_change_points/
+linked_issues arrays with relation_counts. Each relation page requires dvp_item_id
+matching the path's UUID; missing/malformed pin422, wrong owner404. Strict queries
+reject unknown fields; limit1..100/default50 and offset0..100000/default0. Envelope:
+item_id/kind/total/limit/offset/next_offset/items; rows contain id/number/text. Counts
+use SQL EXISTS and complete SQL aggregates. Order is display number then stored UUID,
+including nonunique criterion/change-point numbers. No automatic truncation or bulk
+fallback. Empty end windows retain total and first-page navigation.
+
+Execution history adds item_id to its envelope, preserving limit/before_number,
+full total and release_id/optional historical snapshot_no. Context resolution is
+now explicitly LIMIT1. Profile release selector remains bounded100 with a truncation
+marker; it is not full history. Relation pages preserve all other cursors and history
+filters; history links/filter form preserve relation selection. Invalid one page
+leaves other relations available; foreign/stale parent fails closed. Default Chinese
+and selectable English remain. Public sample remains read-only; all14 POSTs retained.
+
+New SQLite/PostgreSQL growth tests cover105 linked records per relation, tied display
+numbers, stable SQL read count/bounded rows, complete navigation and sibling isolation.
+Frontend tests cover independent cursors, exact pins, mismatch/failure/empty windows.
+53 candidates remain fixed, retired GETs29→31. DVP milestone now complete:
+plan1 6/10=60%→7/10=70%; release/ASR, governance/audit and full closure remain.
+No schema/provider/grant change; ROADMAP remains34/44=77%, read consumers17/17.

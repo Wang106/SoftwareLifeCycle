@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.24",
-  "baseline_commit": "43bbe138e2e99942e541dbc48c0394d0ff1067af",
+  "as_of_api": "0.18.25",
+  "baseline_commit": "f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -135,8 +135,13 @@
         {
           "id": "dvp",
           "label": "DVP 旧目录/详情",
-          "complete": false,
-          "evidence": [],
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_dvp_relations.py",
+            "frontend/tests/dvp-relations.test.cjs"
+          ],
           "routes": [
             "/api/v1/testing/dvp",
             "/api/v1/testing/dvp/id/{item_id}"

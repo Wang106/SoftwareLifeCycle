@@ -579,7 +579,6 @@ def get_issue(issue_no: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/testing/dvp")
 def list_dvp(db: Session = Depends(get_db)):
     items = db.scalars(select(DvpItem)).all()
     executions = db.scalars(select(DvpExecution)).all()
@@ -605,7 +604,6 @@ def list_dvp(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/testing/dvp/id/{item_id}")
 def dvp_item_detail(item_id: uuid.UUID, db: Session = Depends(get_db)):
     item = db.get(DvpItem, item_id)
     if item is None:

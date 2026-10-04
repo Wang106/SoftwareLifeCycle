@@ -25,7 +25,7 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
     for module, names in ((organizations, ('_suppliers', '_customers', '_projects')),
                           (production, ('_deployment_detail', '_deployment_provenance')),
                           (distribution, ('_delivery_detail', '_distribution_detail', '_authorization_detail')),
-                          (dashboard, ('change_detail', 'get_issue')),
+                          (dashboard, ('change_detail', 'get_issue', 'list_dvp', 'dvp_item_detail')),
                           (change_coverage, ('report_coverage',)),
                           (snapshots, ('_manifest', 'compare_manifests')),
                           (impact, ('_contexts', '_assessment'))):
@@ -57,7 +57,7 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
 
 def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacements():
     retired = {path for path, _, _ in RETIRED_READS}
-    assert len(retired) == 29
+    assert len(retired) == 31
     for path in retired:
         routes = [r for r in app.routes if r.path == path and 'GET' in (getattr(r, 'methods', None) or set())]
         assert len(routes) == 1
@@ -66,7 +66,11 @@ def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacemen
     paths = {(r.path, method) for r in app.routes for method in (getattr(r, 'methods', None) or set())}
     assert ('/api/v1/organizations/release-matrix', 'GET') in paths
     assert ('/api/v1/manufacturing-views/sites', 'GET') in paths
-    for path in ['/api/v1/snapshots/{snapshot_no}/summary',
+    for path in ['/api/v1/testing/dvp/catalog',
+                 '/api/v1/testing/dvp/id/{item_id}/profile',
+                 '/api/v1/testing/dvp/id/{item_id}/relations/{kind}',
+                 '/api/v1/testing/dvp/id/{item_id}/executions',
+                 '/api/v1/snapshots/{snapshot_no}/summary',
                  '/api/v1/snapshots/{snapshot_no}/artifacts',
                  '/api/v1/snapshots/{snapshot_no}/rules',
                  '/api/v1/snapshots/{source_no}/comparison/{target_no}/summary',

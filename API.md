@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.24`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.25`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -876,3 +876,22 @@ same-release and ambiguous-identity checks remain in the successors. Complete co
 historical selection and show/limit/offset replace full graph loads. Reviewed
 retirement count is now 29; all 14 POST commands remain. DVP retirement is pending:
 its replacement profile still loads unbounded linked criteria/change points/issues.
+
+## Bounded DVP relations and retirement — API 0.18.25
+
+GET /api/v1/testing/dvp/id/{item_id}/profile replaces its three linked arrays with
+complete scalar relation_counts (criteria/points/issues). Independently read
+/id/{item_id}/relations/{kind}, kind=criteria|points|issues, with required dvp_item_id
+UUID matching the path. Limit1..100/default50, offset0..100000/default0; strict queries
+reject unknown fields. Returns item_id/kind/total/limit/offset/next_offset/items;
+rows contain stored id, display number and text. Deterministic number/UUID ordering,
+full SQL counts and empty-page totals preserve complete navigation. Exact profile
+release options remain bounded100 with an explicit truncation marker.
+
+Execution history adds item_id and retains full context/total/limit/before_number.
+Release/Snapshot lookup uses LIMIT1; historical snapshot_no remains explicit.
+Legacy DVP list/detail GETs now return410 without DB work, bringing retirement count
+to31; successor instructions preserve exact item and historical execution selection.
+The profile array removal is an intentional contract change: external callers must
+migrate to relation_counts and relation pages. All14 writes and internal legacy helpers
+remain. See docs/compatibility-read-retirement.md. No migration/public-write change.

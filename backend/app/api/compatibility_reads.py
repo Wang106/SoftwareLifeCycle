@@ -92,7 +92,23 @@ RETIRED_READS += (
       "/api/v1/snapshots/{snapshot_no}/comparison/{target_no}/files"), None),
 )
 
+RETIRED_READS += (
+    ("/api/v1/testing/dvp", ("/api/v1/testing/dvp/catalog",), None),
+    ("/api/v1/testing/dvp/id/{item_id}",
+     ("/api/v1/testing/dvp/id/{item_id}/profile",
+      "/api/v1/testing/dvp/id/{item_id}/relations/criteria",
+      "/api/v1/testing/dvp/id/{item_id}/relations/points",
+      "/api/v1/testing/dvp/id/{item_id}/relations/issues",
+      "/api/v1/testing/dvp/id/{item_id}/executions"), "dvp_item_id"),
+)
+
 MIGRATION_INSTRUCTIONS = {
+    "/api/v1/testing/dvp/id/{item_id}": (
+        "Read the exact item profile; pass its id as dvp_item_id to independent "
+        "criteria/points/issues pages with limit/offset and complete relation_counts. "
+        "Execution history uses limit/before_number, explicit release_id and optional "
+        "historical snapshot_no. Preserve recorded contexts; an earlier PASS does "
+        "not verify a later Snapshot. Carry legacy selections explicitly."),
     "/api/v1/snapshots/{snapshot_no}": (
         "Read the exact frozen Snapshot summary; pass its id as snapshot_id to "
         "independent artifacts/rules pages with limit/offset and full counts. "
