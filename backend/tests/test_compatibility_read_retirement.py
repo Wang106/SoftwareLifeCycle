@@ -6,7 +6,7 @@ import re
 import pytest
 from fastapi.testclient import TestClient
 from app.api.compatibility_reads import RETIRED_READS, MIGRATION_INSTRUCTIONS
-from app.api import organizations, production, distribution, dashboard, change_coverage, impact, snapshots, activity
+from app.api import organizations, production, distribution, dashboard, change_coverage, impact, snapshots, activity, releases
 from app.core.db import get_db
 from app.main import app
 
@@ -25,16 +25,18 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
     for module, names in ((organizations, ('_suppliers', '_customers', '_projects')),
                           (production, ('_deployment_detail', '_deployment_provenance')),
                           (distribution, ('_delivery_detail', '_distribution_detail', '_authorization_detail')),
-                          (dashboard, ('change_detail', 'get_issue', 'list_dvp', 'dvp_item_detail', 'list_approvals', 'get_approval')),
+                          (dashboard, ('change_detail', 'get_issue', 'list_dvp', 'dvp_item_detail', 'list_approvals', 'get_approval', 'list_standard_releases', 'list_application_releases', 'standard_release_profile', 'application_release_decision', 'application_release_decisions', 'application_release_components', 'application_release_evidence', 'application_snapshot_policy', 'application_release_downstream', 'release_overview', 'release_verification', 'release_artifacts', 'release_readiness', 'application_release_readiness', 'get_release_decision')),
                           (change_coverage, ('report_coverage',)),
                           (snapshots, ('_manifest', 'compare_manifests')),
                           (activity, ('_release_links', '_event_detail')),
+                          (releases, ('list_releases',)),
                           (impact, ('_contexts', '_assessment'))):
         for name in names:
             helper = Mock(side_effect=AssertionError('retirement must not serialize a graph'))
             monkeypatch.setattr(module, name, helper); helpers.append(helper)
     previous = dict(app.dependency_overrides)
     app.dependency_overrides[get_db] = db
+    app.dependency_overrides[releases.get_db] = db
     try:
         response = TestClient(app).get(concrete+query)
     finally:
@@ -58,7 +60,7 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
 
 def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacements():
     retired = {path for path, _, _ in RETIRED_READS}
-    assert len(retired) == 34
+    assert len(retired) == 50
     for path in retired:
         routes = [r for r in app.routes if r.path == path and 'GET' in (getattr(r, 'methods', None) or set())]
         assert len(routes) == 1

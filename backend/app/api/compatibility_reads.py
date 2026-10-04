@@ -111,6 +111,45 @@ RETIRED_READS += (
     ("/api/v1/activity", ("/api/v1/audit/events",), None),
 )
 
+# Release/ASR candidates: retain three audited scalar reads; retire rich/preview reads.
+RETIRED_READS += (
+    ("/api/v1/releases", ("/api/v1/release-catalog/standard", "/api/v1/release-catalog/application"), None),
+    ("/api/v1/releases/standard", ("/api/v1/release-catalog/standard",), None),
+    ("/api/v1/releases/standard/id/{release_id}",
+     ("/api/v1/releases/standard/id/{release_id}/summary",
+      "/api/v1/releases/standard/id/{release_id}/components",
+      "/api/v1/releases/standard/id/{release_id}/applications"), None),
+    ("/api/v1/releases/application", ("/api/v1/release-catalog/application",), None),
+    ("/api/v1/releases/application/id/{release_id}/decision",
+     ("/api/v1/releases/application/id/{release_id}/passport/summary",
+      "/api/v1/governance/decisions?release_id={release_id}"), None),
+    ("/api/v1/releases/application/id/{release_id}/decisions",
+     ("/api/v1/governance/decisions?release_id={release_id}",), None),
+    ("/api/v1/releases/application/id/{release_id}/components",
+     ("/api/v1/releases/application/id/{release_id}/components/summary",
+      "/api/v1/releases/application/id/{release_id}/components/declarations",
+      "/api/v1/releases/application/id/{release_id}/components/unlinked-base"), None),
+    ("/api/v1/releases/application/id/{release_id}/evidence",
+     ("/api/v1/releases/application/id/{release_id}/evidence-summary",
+      "/api/v1/releases/application/id/{release_id}/evidence/artifacts",
+      "/api/v1/releases/application/id/{release_id}/evidence/executions"), "snapshot_id"),
+    ("/api/v1/releases/application/id/{release_id}/snapshot-policy",
+     ("/api/v1/releases/application/id/{release_id}/snapshot-policy/summary",
+      "/api/v1/releases/application/id/{release_id}/snapshot-policy/artifacts",
+      "/api/v1/releases/application/id/{release_id}/snapshot-policy/rules"), "snapshot_id"),
+    ("/api/v1/releases/application/id/{release_id}/downstream",
+     ("/api/v1/releases/application/id/{release_id}/downstream-summary",
+      "/api/v1/distribution/catalog/deliveries?release_id={release_id}",
+      "/api/v1/production/catalog/deployments?authorization_release_id={release_id}"), None),
+    ("/api/v1/releases/application/id/{release_id}/readiness",
+     ("/api/v1/releases/application/id/{release_id}/readiness/summary",
+      "/api/v1/releases/application/id/{release_id}/readiness/exceptions"), "snapshot_id"),
+) + tuple(
+    (f"/api/v1/releases/application/{{version}}/{kind}",
+     ("/api/v1/release-catalog/application/resolve?identifier={version}",), None)
+    for kind in ('overview', 'verification', 'artifacts', 'readiness', 'decision')
+)
+
 MIGRATION_INSTRUCTIONS = {
     "/api/v1/approvals/{approval_no}": (
         "Read the exact approval summary; pass its id as approval_id to independent "
@@ -189,6 +228,28 @@ MIGRATION_INSTRUCTIONS = {
         "by authorization_id=profile.id. Use limit/offset and full history_counts. "
         "Recorded batch counts are not remaining capacity or production permission."),
 }
+
+
+# Old version identifiers never acquire an invented UUID or a silent latest choice.
+for kind in ('overview', 'verification', 'artifacts', 'readiness', 'decision'):
+    MIGRATION_INSTRUCTIONS[f"/api/v1/releases/application/{{version}}/{kind}"] = (
+        "Resolve the exact identifier first; missing/ambiguous results require explicit "
+        "release selection. Use the resolved stored UUID with bounded profile, components, "
+        "evidence, readiness and passport summaries/children. Read selected Snapshot "
+        "identity before collection pages. Current working artifact/policy aggregates "
+        "come from readiness; frozen files/rules come from snapshot-policy. They are "
+        "different evidence scopes. Review exact formal decision history, not an "
+        "inferred current approval or latest substitute.")
+MIGRATION_INSTRUCTIONS.update({
+    "/api/v1/releases/standard/id/{release_id}": "Read exact SSR summary; use its UUID in the components/applications path and verify returned release_id. Use limit/offset and full totals; do not invent an unsupported query pin.",
+    "/api/v1/releases/application/id/{release_id}/components": "Read exact component summary; use the stored release UUID in independent declarations/unlinked-base paths, verify returned release_id/base_release_id (including none), and use limit/offset. These pages do not accept extra query UUID pins. No inheritance or approval is inferred.",
+    "/api/v1/releases/application/id/{release_id}/evidence": "Read evidence summary with an optional historical snapshot_id selection; pin the returned Snapshot UUID for bounded artifacts/executions pages and complete counts. Preserve historical scope and never replace it with latest results.",
+    "/api/v1/releases/application/id/{release_id}/snapshot-policy": "Read frozen-policy summary with optional historical snapshot_id; use its exact Snapshot UUID for independent artifact/rule pages. Frozen rules are distinct from current working policy; no latest substitution.",
+    "/api/v1/releases/application/id/{release_id}/decision": "Read paired passport summary and bounded formal decision history scoped by exact release_id and, when selected, snapshot_id. A recorded head is not release permission or the current Snapshot's approval.",
+    "/api/v1/releases/application/id/{release_id}/decisions": "Use bounded formal decision history with exact release_id and optional snapshot_id; preserve recorded original bindings, limit/offset and full totals.",
+    "/api/v1/releases/application/id/{release_id}/downstream": "Read downstream summary; distribution catalogs use exact release_id and production catalogs use authorization_release_id. Counts follow the recorded parent chain, not current actual release membership or permission. Preserve independent full histories.",
+    "/api/v1/releases/application/id/{release_id}/readiness": "Read current readiness summary, then pin its snapshot_id (or none) for approved-exception pages. A stale current pin fails closed; historical evidence belongs to separately selected frozen evidence, not an inferred historical readiness judgment.",
+})
 
 
 def _endpoint(path: str, replacements: tuple[str, ...], pin: str | None):

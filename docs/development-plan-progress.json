@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.26",
-  "baseline_commit": "74c0b626ffa3a2c6bc8abf7cf36341fd04081086",
+  "as_of_api": "0.18.27",
+  "baseline_commit": "5e35e9314803365bdcc20eb3bf8e90eca9abc1e3",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -93,8 +93,12 @@
         {
           "id": "release",
           "label": "发布/ASR 兼容读取",
-          "complete": false,
-          "evidence": [],
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_release_retirement_closure.py"
+          ],
           "routes": [
             "/api/v1/releases",
             "/api/v1/releases/standard",
@@ -115,7 +119,21 @@
             "/api/v1/releases/application/id/{release_id}/readiness",
             "/api/v1/releases/application/{version}/decision",
             "/api/v1/releases/{release_id}/coverage"
-          ]
+          ],
+          "bounded_evidence": {
+            "/api/v1/releases/application/id/{release_id}": [
+              "backend/tests/test_release_retirement_closure.py",
+              "backend/tests/test_coverage_aggregates.py"
+            ],
+            "/api/v1/releases/application/id/{release_id}/downstream-summary": [
+              "backend/tests/test_release_retirement_closure.py",
+              "backend/tests/test_release_downstream_summary.py"
+            ],
+            "/api/v1/releases/{release_id}/coverage": [
+              "backend/tests/test_release_retirement_closure.py",
+              "backend/tests/test_coverage_aggregates.py"
+            ]
+          }
         },
         {
           "id": "snapshot",
@@ -167,8 +185,12 @@
         {
           "id": "closure",
           "label": "全清单复核及迁移验收",
-          "complete": false,
-          "evidence": []
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_release_retirement_closure.py",
+            "backend/tests/test_development_plan_progress.py"
+          ]
         }
       ]
     },

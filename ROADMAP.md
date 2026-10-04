@@ -36,7 +36,7 @@ This roadmap is evidence-based. Checked items exist in the current repository; u
 - [x] Bounded catalogs for DVP, distribution, production, governance and audit history
 - [x] Atomic audit events for current governance and distribution service writes
 - [x] Inventory every write path and enforce explicit audit/idempotency/concurrency review in tests
-- [ ] Retire or bound remaining unbounded compatibility lists after consumers migrate — all 17 identified read-consumer groups now use bounded reads, including manufacturing site directory/detail. API 0.18.23 has retired 27 reviewed organization/manufacturing/production/distribution/SCR-Issue GET routes; other bulk/rich families remain pending caller review and retirement/explicit bounds. See docs/compatibility-read-retirement.md. Consumer migration alone does not satisfy this endpoint acceptance item.
+- [x] Retire or bound remaining unbounded compatibility lists after consumers migrate — API0.18.27 closes the fixed53-candidate scope:50 GET tombstones and3 retained SQL scalar reads with growth evidence;17/17 consumer groups migrated. See docs/compatibility-read-retirement.md and docs/development-plan-progress.json.
 
 ## Phase 5 — Identity and authorization (current foundation)
 
@@ -79,8 +79,8 @@ Use `规划：<目标>` to agree on scope and acceptance criteria. A roadmap ite
 
 ## Current measurable progress and remaining sequence
 
-Checked roadmap items are now 34/44 (77%): Phase 1 5/5, Phase 2 5/5 (demo),
-Phase 3 5/5 (demo), Phase 4 8/9, Phase 5 8/9, Phase 6 3/5 (60%) and Phase 7 0/6.
+Checked roadmap items are now 35/44 (80%): Phase 1 5/5, Phase 2 5/5 (demo),
+Phase 3 5/5 (demo), Phase 4 9/9, Phase 5 8/9, Phase 6 3/5 (60%) and Phase 7 0/6.
 All 14 write routes declare request-ID, row serialization, exact scope, trusted actor
 and atomic audit. Actual keyed reports require expected_version and replacement
 reason. Legacy no-key paths remain compatible and weaker; broad correction/revocation,
@@ -521,3 +521,40 @@ operations are incomplete. Current plans: 50%, 0%, 20%, 33%, 40%, 20%, 0%.
 Compatibility governance advances 40% → 50% after the SCR/Issue family transition;
 its release/Snapshot/DVP/governance/audit families and closure gate remain.
 Do not average these independent plans into overall roadmap progress: 34/44 stays.
+
+## 2026-10-05 — Release/ASR retirement and fixed-candidate closure, API0.18.27
+
+The 19 release-family candidates are resolved: 16 legacy GETs now return HTTP410
+without database access; three active scalar reads remain: exact ASR profile,
+ASR downstream-summary and release coverage. Retained reads use full SQL counts,
+no growing child arrays or child ORM graph, and preserve stored UUID/Snapshot scope.
+SQLite growth checks compare fixed read-query count before/after120 records;
+PostgreSQL verifies complete aggregates and no audit mutation. Existing downstream
+summary tests cover the fixed seven count queries and exact recorded parent chain.
+
+Retired paths are the combined/standard/application directories, rich exact SSR,
+ASR decision/decisions/components/evidence/snapshot-policy/downstream/readiness,
+and five version-only overview/verification/artifacts/readiness/decision reads.
+Bounded summaries/catalogs/children remain. Version consumers first use exact
+release-catalog/application/resolve and explicitly handle unique/ambiguous/missing;
+no arbitrary release or UUID is inferred. SSR/components pages use the UUID path
+and returned identity, not unsupported query pins. Evidence/frozen policy pages
+pin selected Snapshot; passport children pin Snapshot/decision together. Current
+readiness fails closed on stale selection. Working artifact/policy aggregates
+and frozen Snapshot manifests/rules remain different scopes. Coverage preserves
+any-PASS semantics; this slice does not infer latest-result semantics or approval.
+
+Fixed53 candidates now equal50 retired +3 audited bounded, disjoint and exact.
+All nine families and full closure pass: plan1 10/10=100% (80→100).
+The corresponding ROADMAP endpoint acceptance item completes: Phase4 9/9=100%,
+overall35/44=80%. Consumers remain17/17. Other plans remain0/20/33/40/20/0;
+phase percentages100/100-demo/100-demo/100/89/60/0. This completes the fixed
+compatibility scope, not authenticated submissions, CI or production readiness.
+
+Validation:1191 backend tests pass with no skips, including129 real PostgreSQL
+checks;465 frontend tests; Cloudflare/OpenNext build;18 production Next SSR
+checks across nine views in Chinese/English; single migration head0018 and full
+upgrade SQL. Existing warnings are deprecations/collection notices (9661).
+No schema, provider, credentials or grant change; all14 POSTs and shared command
+helpers remain. Public sample remains read-only. Cloud rollout still requires
+independent feature-commit build and live API/page checks recorded below.

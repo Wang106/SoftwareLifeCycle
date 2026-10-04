@@ -18,7 +18,6 @@ def get_db():
     try: yield db
     finally: db.close()
 
-@router.get("")
 def list_releases(db: Session = Depends(get_db)):
     rows = db.scalars(select(Release).order_by(Release.created_at.desc())).all()
     return [{"id": str(x.id), "type": x.release_type, "version": x.version, "status": x.status} for x in rows]
