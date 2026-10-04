@@ -1587,5 +1587,6 @@
   "The site was not found, is ambiguous or the API could not be reached.": "未找到站点、标识存在歧义或无法连接 API。",
   "Full linked total": "关联总数",
   "No linked records on this page.": "当前页没有关联记录。",
-  "Linked records unavailable. Check pagination or API availability.": "关联记录不可用，请检查分页参数或接口状态。"
+  "Linked records unavailable. Check pagination or API availability.": "关联记录不可用，请检查分页参数或接口状态。",
+  "Approval steps unavailable. Check pagination or API availability.": "审批步骤不可用，请检查分页参数或接口状态。"
 }

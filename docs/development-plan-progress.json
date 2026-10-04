@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.25",
-  "baseline_commit": "f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1",
+  "as_of_api": "0.18.26",
+  "baseline_commit": "74c0b626ffa3a2c6bc8abf7cf36341fd04081086",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -150,8 +150,14 @@
         {
           "id": "governance-audit",
           "label": "治理/审计旧读取",
-          "complete": false,
-          "evidence": [],
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_governance_catalog.py",
+            "backend/tests/test_governance_steps.py",
+            "backend/tests/test_audit_catalog.py"
+          ],
           "routes": [
             "/api/v1/approvals",
             "/api/v1/approvals/{approval_no}",

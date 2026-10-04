@@ -2,12 +2,12 @@
 
 ## Handoff identity
 
-- Date: 2026-10-04 (Asia/Shanghai)
+- Date: 2026-10-05 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1`
-- Developed from: `f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1`
-- Baseline subject: `docs: record verified Snapshot retirement rollout and DVP remaining scope`
+- Verified starting baseline: `74c0b626ffa3a2c6bc8abf7cf36341fd04081086`
+- Developed from: `74c0b626ffa3a2c6bc8abf7cf36341fd04081086`
+- Baseline subject: `docs: record verified DVP pagination and legacy retirement rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -1921,3 +1921,32 @@ ROADMAP34/44=77%, phases100/100-demo/100-demo/89/89/60/0, consumers17/17.
 CI PR1 is still open/unmerged. Governance/audit, release/ASR and53-path closure
 remain; then CI, approved identity/session, controlled command submissions/recovery,
 corrections/revocation and operational/company acceptance. Public staging read-only.
+
+## 2026-10-05 — API0.18.26 complete governance steps and legacy retirement
+
+Codex cloud continued from main74c0b626ffa3a2c6bc8abf7cf36341fd04081086.
+Approval detail now uses scalar original-target summary, owned paged steps and
+independent action history. Complete totals and exact approval UUIDs preserve
+navigation beyond200 steps. Cursors/action filters preserve each other; wrong parent
+fails closed, invalid child is isolated. Visible pending-step preparation retains
+its exact UUID without inferring execution authority. Existing bounded200-step
+profile remains compatible; internal legacy helpers and all14 commands remain.
+Three legacy approval/audit GETs retire with DB-free410; total31→34. Exact event
+payloads/actor identities and bounded audit catalog remain. No migration, provider,
+grant or public-write change. Chinese default/English selectable preserved.
+
+Validation: backend1155 passed, zero skipped (128 real PostgreSQL regressions);
+9168 existing model/deprecation/collection warnings. Frontend465 passed, zero skipped;
+OpenNext/Cloudflare build complete. Sixteen production Next SSR groups pass:
+zh/en catalogs/exact records,205-step navigation, empty window, invalid one-child
+isolation, stale-parent failure and no retired HTTP calls. SQL growth tests verify
+complete traversal and constant read query count; PostgreSQL reads leave audit count
+unchanged. Alembic head0018_asr_evidence_index and offline full upgrade SQL pass.
+
+Seven plans: compatibility8/10=80% (70→80); CI0/4=0%; identity/session1/5=20%;
+first submit2/6=33%; all14 commands2/5=40%; corrections1/5=20%; ops/company0/6=0%.
+Fixed acceptance milestones are not effort/production readiness. ROADMAP34/44=77%,
+phases100/100-demo/100-demo/89/89/60/0; read consumers17/17. Fixed53 candidate paths
+remain. Next release/ASR family review and full-inventory closure; then CI, approved
+identity/session, real submissions/recovery, corrections and operational acceptance.
+Public staging read-only. Cloud rollout evidence follows publication/verification.

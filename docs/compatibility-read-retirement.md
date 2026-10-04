@@ -235,3 +235,40 @@ Frontend tests cover independent cursors, exact pins, mismatch/failure/empty win
 53 candidates remain fixed, retired GETs29→31. DVP milestone now complete:
 plan1 6/10=60%→7/10=70%; release/ASR, governance/audit and full closure remain.
 No schema/provider/grant change; ROADMAP remains34/44=77%, read consumers17/17.
+
+## Sixth slice — governance/audit, API0.18.26
+
+| Retired GET | Successors |
+| --- | --- |
+| `/api/v1/approvals` | `/api/v1/governance/approvals` |
+| `/api/v1/approvals/{approval_no}` | Exact governance `/summary`, independent `/steps` and `/actions` |
+| `/api/v1/activity` | `/api/v1/audit/events`; exact `/activity/{event_no}` remains |
+
+Frontend approval directory/actions already use governance catalogs; audit directory
+uses audit/events and exact event pages use retained activity/{event_no}. Approval
+detail now reads scalar summary and independently paged steps/actions instead of the
+200-row step preview. Old dashboard list_approvals/get_approval and activity list_activity
+are retained direct test fixtures; shared audit payload/release-link helpers and all14
+writes remain. No active repository HTTP caller needs the three retired responses.
+Unknown external clients must migrate the deliberate HTTP410 response break.
+
+Summary resolves original recorded target/Snapshot, not latest. Full step_total and
+action_total use SQL counts; steps require exact approval_id with strict pagination.
+Action-history pin is optional for compatibility; frontend always sends it and checks
+returned approval_id/approval_no. Step pages check both parents plus requested window.
+Independent cursors/filter forms preserve other child selection. >200 steps are now
+fully navigable; visible pending/waiting step links prepare that exact UUID only,
+without current-step inference, approval transitions or authenticated submission.
+The retained bounded governance profile still explicitly labels its200-row preview.
+
+Old activity was already bounded but exposed a truncated head/payload directory; its
+retirement replaces it with complete catalog navigation and separate exact payload.
+UUID actor identity, declared actor names, time bounds and original event context
+remain distinct. Tombstones perform no DB lookup or old query validation. Exact audit
+payload links, all bounded successors and commands remain. No schema/provider/grant
+or public-write change. Default Chinese and selectable English remain.
+
+Fixed53 candidates remain; retired GETs31→34. Governance/audit milestone resolves:
+plan1 7/10=70%→8/10=80%. Release/ASR and full closure remain; ROADMAP34/44=77%
+and17/17 read consumers are unchanged. Growth tests verify205 steps, fixed read-query
+count, bounded rows, complete traversal, exact owner validation and PostgreSQL parity.

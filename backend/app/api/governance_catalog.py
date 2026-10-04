@@ -24,6 +24,7 @@ class Filters(BaseModel):
 
 class HistoryFilters(BaseModel):
     model_config=ConfigDict(extra='forbid')
+    approval_id: uuid.UUID | None=None
     action: str | None=Field(None,max_length=30)
     limit: int=Field(50,ge=1,le=100)
     offset: int=Field(0,ge=0,le=100000)
@@ -104,25 +105,60 @@ def decision_profile(decision_no: str,db: Session=Depends(get_db)):
     return decision_row(*row)
 
 
-@router.get('/approvals/{approval_no}')
-def approval_profile(approval_no: str,db: Session=Depends(get_db)):
+def _approval_profile(approval_no, db, include_steps=True):
     row=db.execute(approval_stmt().where(ApprovalRequest.approval_no==approval_no)).first()
     if not row:raise HTTPException(404,'approval not found')
     a,r,s=row
-    steps=db.scalars(select(ApprovalStep).where(ApprovalStep.approval_request_id==a.id).order_by(ApprovalStep.step_order,ApprovalStep.id).limit(200)).all()
+    steps=db.scalars(select(ApprovalStep).where(ApprovalStep.approval_request_id==a.id).order_by(ApprovalStep.step_order,ApprovalStep.id).limit(200)).all() if include_steps else []
     step_total=db.scalar(select(func.count()).select_from(ApprovalStep).where(ApprovalStep.approval_request_id==a.id))
     action_total=db.scalar(select(func.count()).select_from(ApprovalAction).where(ApprovalAction.approval_request_id==a.id))
-    return {**approval_row(a,r,s),'step_total':step_total,'steps_truncated':step_total>len(steps),'action_total':action_total,
-        'steps':[{'id':str(step.id),'step_order':step.step_order,'role_name':step.role_name,'approver_name':step.approver_name,'status':step.status} for step in steps]}
+    result = {**approval_row(a,r,s), 'step_total':step_total, 'action_total':action_total}
+    if include_steps:
+        result.update(steps_truncated=step_total>len(steps), steps=[step_row(step) for step in steps])
+    return result
+
+
+def step_row(step):
+    return {'id':str(step.id),'step_order':step.step_order,'role_name':step.role_name,
+            'approver_name':step.approver_name,'status':step.status}
+
+
+@router.get('/approvals/{approval_no}')
+def approval_profile(approval_no: str,db: Session=Depends(get_db)):
+    return _approval_profile(approval_no,db)
+
+
+@router.get('/approvals/{approval_no}/summary')
+def approval_summary(approval_no: str,db: Session=Depends(get_db)):
+    return _approval_profile(approval_no,db,False)
+
+
+class StepFilters(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    approval_id: uuid.UUID
+    limit: int=Field(50,ge=1,le=100)
+    offset: int=Field(0,ge=0,le=100000)
+
+
+@router.get('/approvals/{approval_no}/steps')
+def step_history(approval_no: str,filters: Annotated[StepFilters,Query()],db: Session=Depends(get_db)):
+    a=db.scalar(select(ApprovalRequest).where(ApprovalRequest.approval_no==approval_no).limit(1))
+    if not a or a.id!=filters.approval_id:raise HTTPException(404,'approval not found')
+    stmt=select(ApprovalStep).where(ApprovalStep.approval_request_id==a.id)
+    total=db.scalar(select(func.count()).select_from(stmt.subquery()))
+    rows=db.scalars(stmt.order_by(ApprovalStep.step_order,ApprovalStep.id).limit(filters.limit).offset(filters.offset)).all()
+    return {'approval_id':str(a.id),'approval_no':a.approval_no,'total':total,'limit':filters.limit,
+        'offset':filters.offset,'next_offset':filters.offset+filters.limit if filters.offset+filters.limit<total else None,
+        'items':[step_row(step) for step in rows]}
 
 
 @router.get('/approvals/{approval_no}/actions')
 def action_history(approval_no: str,filters: Annotated[HistoryFilters,Query()],db: Session=Depends(get_db)):
     a=db.scalars(select(ApprovalRequest).where(ApprovalRequest.approval_no==approval_no)).first()
-    if not a:raise HTTPException(404,'approval not found')
+    if not a or (filters.approval_id is not None and filters.approval_id!=a.id):raise HTTPException(404,'approval not found')
     stmt=select(ApprovalAction,ApprovalStep).outerjoin(ApprovalStep,ApprovalStep.id==ApprovalAction.step_id).where(ApprovalAction.approval_request_id==a.id)
     if filters.action:stmt=stmt.where(ApprovalAction.action==filters.action)
     rows,result=paged(db,stmt,filters,'action',[ApprovalAction.created_at.desc(),ApprovalAction.id.desc()])
-    return {**result,'items':[{'id':str(action.id),'actor_name':action.actor_name,'action':action.action,'comment':action.comment,'created_at':action.created_at,
+    return {**result,'approval_id':str(a.id),'approval_no':a.approval_no,'items':[{'id':str(action.id),'actor_name':action.actor_name,'action':action.action,'comment':action.comment,'created_at':action.created_at,
         'step':{'id':str(step.id),'role_name':step.role_name,'step_order':step.step_order} if step else None,
         'step_id':str(action.step_id) if action.step_id else None,'context_consistent':not action.step_id or bool(step and step.approval_request_id==a.id)} for action,step in rows]}

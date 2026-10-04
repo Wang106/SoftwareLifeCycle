@@ -102,7 +102,27 @@ RETIRED_READS += (
       "/api/v1/testing/dvp/id/{item_id}/executions"), "dvp_item_id"),
 )
 
+RETIRED_READS += (
+    ("/api/v1/approvals", ("/api/v1/governance/approvals",), None),
+    ("/api/v1/approvals/{approval_no}",
+     ("/api/v1/governance/approvals/{approval_no}/summary",
+      "/api/v1/governance/approvals/{approval_no}/steps",
+      "/api/v1/governance/approvals/{approval_no}/actions"), "approval_id"),
+    ("/api/v1/activity", ("/api/v1/audit/events",), None),
+)
+
 MIGRATION_INSTRUCTIONS = {
+    "/api/v1/approvals/{approval_no}": (
+        "Read the exact approval summary; pass its id as approval_id to independent "
+        "steps/actions pages with limit/offset and complete counts. Preserve the "
+        "original release and Snapshot binding; do not substitute the latest. "
+        "Recorded approval actions are separate from formal release decisions; "
+        "a visible pending step is not authority or permission to execute."),
+    "/api/v1/activity": (
+        "Use the audit catalog with strict exact identity/time filters and limit/offset. "
+        "Read /api/v1/activity/{event_no} for an exact event payload. Preserve actor "
+        "principal identity separately from declared actor names; no truncated head "
+        "or inferred latest release selection."),
     "/api/v1/testing/dvp/id/{item_id}": (
         "Read the exact item profile; pass its id as dvp_item_id to independent "
         "criteria/points/issues pages with limit/offset and complete relation_counts. "

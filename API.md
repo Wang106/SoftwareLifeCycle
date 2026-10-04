@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.25`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.26`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -895,3 +895,25 @@ to31; successor instructions preserve exact item and historical execution select
 The profile array removal is an intentional contract change: external callers must
 migrate to relation_counts and relation pages. All14 writes and internal legacy helpers
 remain. See docs/compatibility-read-retirement.md. No migration/public-write change.
+
+## Complete approval steps and governance/audit retirement — API0.18.26
+
+GET /api/v1/governance/approvals/{approval_no}/summary returns exact original
+release/Snapshot binding and full step_total/action_total without loading steps.
+/steps requires approval_id UUID matching the exact number; strict limit1..100
+(default50), offset0..100000(default0), unknown fields rejected. Returns
+approval_id/approval_no/total/limit/offset/next_offset/items. Deterministic step_order,
+UUID ordering and full counts support steps beyond the former200-row preview.
+/actions accepts an optional approval_id pin and returns both parent identities;
+wrong pin404. Existing direct callers may omit this pin. The frontend always pins
+both independent children and preserves both cursors/action selection. Invalid child
+pages are isolated; stale parent fails closed. Preparation uses only exact visible
+step UUIDs, not inferred current-step authority. Legacy bounded governance profile
+with explicit200-row preview/truncation marker remains compatible; UI uses summary.
+
+Old GET /api/v1/approvals, /approvals/{approval_no}, /activity now return DB-free410,
+with encoded successors and explicit migration instructions. Retirement count34.
+Audit catalog provides full filtered counts, strict identity/time filters and bounded
+summaries; exact /activity/{event_no} retains complete payload/actor identity fields.
+All14 POSTs and internal legacy helper functions remain. No migration, auth/provider
+or public-write change. See docs/compatibility-read-retirement.md.

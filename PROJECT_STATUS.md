@@ -1,15 +1,15 @@
 # Project Status
 
-- Last reviewed: 2026-10-04 (Asia/Shanghai)
+- Last reviewed: 2026-10-05 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1` — DVP relation pagination and two old GET retirements (API0.18.25); plan1 advances to70%
+- Reviewed starting repository baseline: `74c0b626ffa3a2c6bc8abf7cf36341fd04081086` — complete approval step pages and three governance/audit retirements (API0.18.26); plan1 advances to80%
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Reviewed legacy GET retirements total31; release/ASR and governance/audit retirement/bounds remain. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total34. Release/ASR compatibility review and full closure remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -1878,3 +1878,32 @@ ROADMAP34/44=77%, phases100/100-demo/100-demo/89/89/60/0, consumers17/17.
 CI PR1 is still open/unmerged. Governance/audit, release/ASR and53-path closure
 remain; then CI, approved identity/session, controlled command submissions/recovery,
 corrections/revocation and operational/company acceptance. Public staging read-only.
+
+## 2026-10-05 — API0.18.26 complete governance steps and legacy retirement
+
+Codex cloud continued from main74c0b626ffa3a2c6bc8abf7cf36341fd04081086.
+Approval detail now uses scalar original-target summary, owned paged steps and
+independent action history. Complete totals and exact approval UUIDs preserve
+navigation beyond200 steps. Cursors/action filters preserve each other; wrong parent
+fails closed, invalid child is isolated. Visible pending-step preparation retains
+its exact UUID without inferring execution authority. Existing bounded200-step
+profile remains compatible; internal legacy helpers and all14 commands remain.
+Three legacy approval/audit GETs retire with DB-free410; total31→34. Exact event
+payloads/actor identities and bounded audit catalog remain. No migration, provider,
+grant or public-write change. Chinese default/English selectable preserved.
+
+Validation: backend1155 passed, zero skipped (128 real PostgreSQL regressions);
+9168 existing model/deprecation/collection warnings. Frontend465 passed, zero skipped;
+OpenNext/Cloudflare build complete. Sixteen production Next SSR groups pass:
+zh/en catalogs/exact records,205-step navigation, empty window, invalid one-child
+isolation, stale-parent failure and no retired HTTP calls. SQL growth tests verify
+complete traversal and constant read query count; PostgreSQL reads leave audit count
+unchanged. Alembic head0018_asr_evidence_index and offline full upgrade SQL pass.
+
+Seven plans: compatibility8/10=80% (70→80); CI0/4=0%; identity/session1/5=20%;
+first submit2/6=33%; all14 commands2/5=40%; corrections1/5=20%; ops/company0/6=0%.
+Fixed acceptance milestones are not effort/production readiness. ROADMAP34/44=77%,
+phases100/100-demo/100-demo/89/89/60/0; read consumers17/17. Fixed53 candidate paths
+remain. Next release/ASR family review and full-inventory closure; then CI, approved
+identity/session, real submissions/recovery, corrections and operational acceptance.
+Public staging read-only. Cloud rollout evidence follows publication/verification.

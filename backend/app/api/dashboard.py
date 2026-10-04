@@ -928,7 +928,6 @@ def _readiness_for_release(release: Release, db: Session, *, bounded=False):
 
 
 
-@router.get("/approvals")
 def list_approvals(db: Session = Depends(get_db)):
     rows = db.scalars(
         select(ApprovalRequest).order_by(ApprovalRequest.created_at.desc())
@@ -947,7 +946,6 @@ def list_approvals(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/approvals/{approval_no}")
 def get_approval(approval_no: str, db: Session = Depends(get_db)):
     approval = db.scalars(
         select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)

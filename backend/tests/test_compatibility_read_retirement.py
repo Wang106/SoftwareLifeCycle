@@ -6,7 +6,7 @@ import re
 import pytest
 from fastapi.testclient import TestClient
 from app.api.compatibility_reads import RETIRED_READS, MIGRATION_INSTRUCTIONS
-from app.api import organizations, production, distribution, dashboard, change_coverage, impact, snapshots
+from app.api import organizations, production, distribution, dashboard, change_coverage, impact, snapshots, activity
 from app.core.db import get_db
 from app.main import app
 
@@ -25,9 +25,10 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
     for module, names in ((organizations, ('_suppliers', '_customers', '_projects')),
                           (production, ('_deployment_detail', '_deployment_provenance')),
                           (distribution, ('_delivery_detail', '_distribution_detail', '_authorization_detail')),
-                          (dashboard, ('change_detail', 'get_issue', 'list_dvp', 'dvp_item_detail')),
+                          (dashboard, ('change_detail', 'get_issue', 'list_dvp', 'dvp_item_detail', 'list_approvals', 'get_approval')),
                           (change_coverage, ('report_coverage',)),
                           (snapshots, ('_manifest', 'compare_manifests')),
+                          (activity, ('_release_links', '_event_detail')),
                           (impact, ('_contexts', '_assessment'))):
         for name in names:
             helper = Mock(side_effect=AssertionError('retirement must not serialize a graph'))
@@ -57,7 +58,7 @@ def test_reviewed_legacy_reads_return_410_without_db_or_graphs(monkeypatch, path
 
 def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacements():
     retired = {path for path, _, _ in RETIRED_READS}
-    assert len(retired) == 31
+    assert len(retired) == 34
     for path in retired:
         routes = [r for r in app.routes if r.path == path and 'GET' in (getattr(r, 'methods', None) or set())]
         assert len(routes) == 1
@@ -66,7 +67,13 @@ def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacemen
     paths = {(r.path, method) for r in app.routes for method in (getattr(r, 'methods', None) or set())}
     assert ('/api/v1/organizations/release-matrix', 'GET') in paths
     assert ('/api/v1/manufacturing-views/sites', 'GET') in paths
-    for path in ['/api/v1/testing/dvp/catalog',
+    for path in ['/api/v1/governance/approvals',
+                 '/api/v1/governance/approvals/{approval_no}/summary',
+                 '/api/v1/governance/approvals/{approval_no}/steps',
+                 '/api/v1/governance/approvals/{approval_no}/actions',
+                 '/api/v1/audit/events',
+                 '/api/v1/activity/{event_no}',
+                 '/api/v1/testing/dvp/catalog',
                  '/api/v1/testing/dvp/id/{item_id}/profile',
                  '/api/v1/testing/dvp/id/{item_id}/relations/{kind}',
                  '/api/v1/testing/dvp/id/{item_id}/executions',
