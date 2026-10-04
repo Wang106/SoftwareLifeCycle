@@ -42,7 +42,7 @@ The solution is evidence-oriented:
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
 | Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.23 verified ready; schema 0018 |
+| API | FastAPI + SQLAlchemy services | Render API 0.18.27 verified ready; schema 0018 |
 | Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
@@ -68,7 +68,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 1 — Domain foundation | 5 / 5 | 100% | Complete |
 | Phase 2 — Release governance | 5 / 5 | 100% | Complete for demo scope |
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
-| Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Retained compatibility API retirement/bounds remain |
+| Phase 4 — Evidence, review and auditability | 9 / 9 | 100% | Fixed53-candidate compatibility scope completed |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
 | Phase 6 — Controlled write experience | 3 / 5 | 60% | Safety slices and UI priorities implemented; submission/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
@@ -2012,3 +2012,31 @@ upgrade SQL. Existing warnings are deprecations/collection notices (9661).
 No schema, provider, credentials or grant change; all14 POSTs and shared command
 helpers remain. Public sample remains read-only. Cloud rollout still requires
 independent feature-commit build and live API/page checks recorded below.
+
+### Verified cloud rollout — release closure API0.18.27
+
+Feature commit `cb41bac08a45d527c1001aeb6a49db8a69e592de` is on GitHub main.
+Its exact Cloudflare Workers Builds check completed success at2026-10-04T21:37:58Z.
+Live Render ready endpoint returns HTTP200, version0.18.27 and schema0018.
+Render provider deployment ID/commit metadata is unavailable; this is independent
+runtime version/behavior evidence, not a claim of verified provider commit identity.
+
+Live checks pass all50 tombstones (including unknown identifiers and invalid old
+query fields), three retained scalar reads, ten summaries/resolver responses,
+15 bounded first/end page pairs with complete stable totals, wrong/missing Snapshot
+pins, stale readiness and unsupported component-query pins. A newer catalog sample
+has no Snapshot; evidence/page checks explicitly use the2.3.4 frozen sample rather
+than assuming every release is frozen. Directory responses need not echo limit;
+requested row bounds, totals and end windows are checked per actual contract.
+
+All nine release directory/SSR/ASR/components/policy/passport/readiness/history
+views pass online in default Chinese and selectable English (18 checks). Empty
+Snapshot-create and Deployment POSTs return403 read_only_mode; no business mutation
+is submitted. No provider/credential/grant/company-target setup occurred.
+
+Final progress: plans100/0/20/33/40/20/0; fixed denominators10/4/5/6/5/5/6.
+ROADMAP35/44=80%; phases100/100-demo/100-demo/100/89/60/0; consumers17/17.
+Next package: CI PR#1 is still open/unmerged; reconcile it with current main,
+validate backend/PostgreSQL/migrations/frontend and establish mainline gates.
+Then approved identity/session and controlled submissions, broader append-only
+correction/revocation and production operations remain. The project is incomplete.

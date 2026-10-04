@@ -309,3 +309,31 @@ upgrade SQL. Existing warnings are deprecations/collection notices (9661).
 No schema, provider, credentials or grant change; all14 POSTs and shared command
 helpers remain. Public sample remains read-only. Cloud rollout still requires
 independent feature-commit build and live API/page checks recorded below.
+
+### Release-family migration map
+
+| Retired GET | Bounded successors | Collection pin |
+| --- | --- | --- |
+| `/api/v1/releases` | `/api/v1/release-catalog/standard`; `/api/v1/release-catalog/application` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/standard` | `/api/v1/release-catalog/standard` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/standard/id/{release_id}` | `/api/v1/releases/standard/id/{release_id}/summary`; `/api/v1/releases/standard/id/{release_id}/components`; `/api/v1/releases/standard/id/{release_id}/applications` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application` | `/api/v1/release-catalog/application` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/id/{release_id}/decision` | `/api/v1/releases/application/id/{release_id}/passport/summary`; `/api/v1/governance/decisions?release_id={release_id}` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/id/{release_id}/decisions` | `/api/v1/governance/decisions?release_id={release_id}` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/id/{release_id}/components` | `/api/v1/releases/application/id/{release_id}/components/summary`; `/api/v1/releases/application/id/{release_id}/components/declarations`; `/api/v1/releases/application/id/{release_id}/components/unlinked-base` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/id/{release_id}/evidence` | `/api/v1/releases/application/id/{release_id}/evidence-summary`; `/api/v1/releases/application/id/{release_id}/evidence/artifacts`; `/api/v1/releases/application/id/{release_id}/evidence/executions` | `snapshot_id` |
+| `/api/v1/releases/application/id/{release_id}/snapshot-policy` | `/api/v1/releases/application/id/{release_id}/snapshot-policy/summary`; `/api/v1/releases/application/id/{release_id}/snapshot-policy/artifacts`; `/api/v1/releases/application/id/{release_id}/snapshot-policy/rules` | `snapshot_id` |
+| `/api/v1/releases/application/id/{release_id}/downstream` | `/api/v1/releases/application/id/{release_id}/downstream-summary`; `/api/v1/distribution/catalog/deliveries?release_id={release_id}`; `/api/v1/production/catalog/deployments?authorization_release_id={release_id}` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/id/{release_id}/readiness` | `/api/v1/releases/application/id/{release_id}/readiness/summary`; `/api/v1/releases/application/id/{release_id}/readiness/exceptions` | `snapshot_id` |
+| `/api/v1/releases/application/{version}/overview` | `/api/v1/release-catalog/application/resolve?identifier={version}` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/{version}/verification` | `/api/v1/release-catalog/application/resolve?identifier={version}` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/{version}/artifacts` | `/api/v1/release-catalog/application/resolve?identifier={version}` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/{version}/readiness` | `/api/v1/release-catalog/application/resolve?identifier={version}` | UUID path / catalog selection; see instructions |
+| `/api/v1/releases/application/{version}/decision` | `/api/v1/release-catalog/application/resolve?identifier={version}` | UUID path / catalog selection; see instructions |
+
+The resolver is a selection step, not a rich response substitute. Complete
+scalar metadata remains available from exact ASR profile; working artifact/policy
+aggregates come from current readiness and frozen evidence from selected Snapshot
+children. Migration can require multiple independently bounded reads. Unknown
+external clients receive410 and must explicitly migrate; no fallback bulk endpoint
+remains in the reviewed candidate set. Internal command/guard helpers remain.

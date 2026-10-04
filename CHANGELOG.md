@@ -1091,3 +1091,31 @@ upgrade SQL. Existing warnings are deprecations/collection notices (9661).
 No schema, provider, credentials or grant change; all14 POSTs and shared command
 helpers remain. Public sample remains read-only. Cloud rollout still requires
 independent feature-commit build and live API/page checks recorded below.
+
+### Verified cloud rollout — release closure API0.18.27
+
+Feature commit `cb41bac08a45d527c1001aeb6a49db8a69e592de` is on GitHub main.
+Its exact Cloudflare Workers Builds check completed success at2026-10-04T21:37:58Z.
+Live Render ready endpoint returns HTTP200, version0.18.27 and schema0018.
+Render provider deployment ID/commit metadata is unavailable; this is independent
+runtime version/behavior evidence, not a claim of verified provider commit identity.
+
+Live checks pass all50 tombstones (including unknown identifiers and invalid old
+query fields), three retained scalar reads, ten summaries/resolver responses,
+15 bounded first/end page pairs with complete stable totals, wrong/missing Snapshot
+pins, stale readiness and unsupported component-query pins. A newer catalog sample
+has no Snapshot; evidence/page checks explicitly use the2.3.4 frozen sample rather
+than assuming every release is frozen. Directory responses need not echo limit;
+requested row bounds, totals and end windows are checked per actual contract.
+
+All nine release directory/SSR/ASR/components/policy/passport/readiness/history
+views pass online in default Chinese and selectable English (18 checks). Empty
+Snapshot-create and Deployment POSTs return403 read_only_mode; no business mutation
+is submitted. No provider/credential/grant/company-target setup occurred.
+
+Final progress: plans100/0/20/33/40/20/0; fixed denominators10/4/5/6/5/5/6.
+ROADMAP35/44=80%; phases100/100-demo/100-demo/100/89/60/0; consumers17/17.
+Next package: CI PR#1 is still open/unmerged; reconcile it with current main,
+validate backend/PostgreSQL/migrations/frontend and establish mainline gates.
+Then approved identity/session and controlled submissions, broader append-only
+correction/revocation and production operations remain. The project is incomplete.
