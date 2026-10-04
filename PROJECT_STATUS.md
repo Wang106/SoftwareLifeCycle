@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated, old compatibility API retirement/bounds remain. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Reviewed legacy GET retirements total31; release/ASR and governance/audit retirement/bounds remain. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -1855,3 +1855,26 @@ Next review governance/audit callers and scoped bounded successors, then release
 and full closure; CI, approved identity/session, real submissions/recovery,
 corrections and operational/company acceptance remain. Public staging read-only.
 Cloud rollout evidence is recorded after publishing and live verification.
+
+### Verified cloud rollout — DVP API0.18.25
+
+Feature commit7e5ed80a57a7a11f1c64aed663442d73b7d34d72 (tree
+3f67f2b7ade4286b2b043e012fb04155b07c30df) is published to GitHub main.
+Cloudflare Workers Builds: softwarelifecycle success for this exact commit,
+completed2026-10-04T14:52:20Z. HTTPS health reports API0.18.25/schema0018.
+This verifies runtime behavior/version; no exact Render provider commit/deployment
+identifier is claimed. Final followup changes documentation only.
+
+Live: all31 tombstones return410 with malformed old queries. DVP catalog and exact
+profile return200; independent relation pages preserve item UUID, complete total,
+one-row limits and empty end windows. Missing owned pins422, wrong owned pins404.
+Execution history preserves item_id and original release/Snapshot context; explicit
+recorded historical Snapshot selection succeeds. Six zh/en catalog/detail/empty-page
+views pass. Empty public deployment POST remains403 read_only_mode. Small sample
+counts do not prove growth;105-record SQLite/PostgreSQL regression supplies it.
+
+Seven-plan report70/0/20/33/40/20/0%: plan1 advances60→70%; other rows unchanged.
+ROADMAP34/44=77%, phases100/100-demo/100-demo/89/89/60/0, consumers17/17.
+CI PR1 is still open/unmerged. Governance/audit, release/ASR and53-path closure
+remain; then CI, approved identity/session, controlled command submissions/recovery,
+corrections/revocation and operational/company acceptance. Public staging read-only.

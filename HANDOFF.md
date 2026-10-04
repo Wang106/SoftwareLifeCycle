@@ -1898,3 +1898,26 @@ Next review governance/audit callers and scoped bounded successors, then release
 and full closure; CI, approved identity/session, real submissions/recovery,
 corrections and operational/company acceptance remain. Public staging read-only.
 Cloud rollout evidence is recorded after publishing and live verification.
+
+### Verified cloud rollout — DVP API0.18.25
+
+Feature commit7e5ed80a57a7a11f1c64aed663442d73b7d34d72 (tree
+3f67f2b7ade4286b2b043e012fb04155b07c30df) is published to GitHub main.
+Cloudflare Workers Builds: softwarelifecycle success for this exact commit,
+completed2026-10-04T14:52:20Z. HTTPS health reports API0.18.25/schema0018.
+This verifies runtime behavior/version; no exact Render provider commit/deployment
+identifier is claimed. Final followup changes documentation only.
+
+Live: all31 tombstones return410 with malformed old queries. DVP catalog and exact
+profile return200; independent relation pages preserve item UUID, complete total,
+one-row limits and empty end windows. Missing owned pins422, wrong owned pins404.
+Execution history preserves item_id and original release/Snapshot context; explicit
+recorded historical Snapshot selection succeeds. Six zh/en catalog/detail/empty-page
+views pass. Empty public deployment POST remains403 read_only_mode. Small sample
+counts do not prove growth;105-record SQLite/PostgreSQL regression supplies it.
+
+Seven-plan report70/0/20/33/40/20/0%: plan1 advances60→70%; other rows unchanged.
+ROADMAP34/44=77%, phases100/100-demo/100-demo/89/89/60/0, consumers17/17.
+CI PR1 is still open/unmerged. Governance/audit, release/ASR and53-path closure
+remain; then CI, approved identity/session, controlled command submissions/recovery,
+corrections/revocation and operational/company acceptance. Public staging read-only.
