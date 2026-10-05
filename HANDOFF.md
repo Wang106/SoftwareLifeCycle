@@ -2123,3 +2123,32 @@ npx wrangler preview。PR#2首次只补frontend配置，遗漏根目录配置，
 新增根目录构建入口回归。当前远端Preview结果需要绑定新提交独立确认；
 旧PR#1日志不能代表PR#2 00:53失败日志。计划100/100/20/33/40/20/0，
 ROADMAP36/44不变。
+
+## 2026-10-05 — Work conversation continuation and explicit Preview URL activation
+
+Mode: Codex. Engineering baseline main `4ec8dcf3395e719590749bc7dd125b1d856dbda1`;
+continued existing draft PR#2 at `3a349b2bf29dbc11bb6597521c1256d78641bdad`.
+Personal-context retrieval returned selected summaries from SoftwareLifeCycle_CodeX,
+including the latest continuation request and interrupted push. It did not return
+an exact ten-message transcript; no ten-message analysis is claimed. The Library
+API/database guide was read; its older schema0010 instructions do not supersede
+current API0.18.27/schema0018 repository state. Source inventory and evidence are
+recorded in docs/work-conversation-continuation.md.
+
+The remote update had completed: Actions37304274627 succeeded and Cloudflare's
+PR comment reports Preview deployment794eff35-0645-4262-a9a4-d0bee4fbf185 successful
+for3a349b2 at2026-10-05T11:40:05Z, but explicitly says No Preview URL / Enable.
+This supersedes the earlier pending/failed status for40e23fe; an inaccessible URL
+is not a failed build. Both root and frontend now explicitly set preview_urls=true.
+Preflight rejects absent, false and non-boolean settings; existing explicit sample
+API bindings and OpenNext configuration remain checked.
+
+Cloudflare documents that the host switch is applied by wrangler deploy, so an
+initial main deployment is needed before expecting accessible branch URLs. Merge
+requires successful current CI/Preview build; URL/page verification follows that
+activation deployment. Do not infer a URL or claim runtime validation from build
+success. Local frontend471 tests pass, no skips; final OpenNext and remote CI/build
+results are recorded in a subsequent follow-up. No backend/schema change.
+ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17; seven plans
+100/100/20/33/40/20/0 unchanged. Next complete activation/runtime verification,
+then provider/session, controlled submissions/recovery, correction and operations.

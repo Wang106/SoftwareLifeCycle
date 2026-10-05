@@ -39,9 +39,24 @@ API、OpenNext入口和顶层assets保留。没有增加公司数据、身份秘
 2. 预览失败时读取对应构建日志的首个错误与实际命令；不因CI绿色而跳过供应商检查。
 3. 检查root目录、`npm ci`/`npm run cf:build`、预览命令及显式API变量；仅验证
    公共只读样例，不将预览当成公司或受控写入环境。
-4. 新PR预览成功后确认返回URL与commit，访问中英文页面，再合并并核验main。
+4. 区分构建失败与已构建但预览主机未启用。若主机已启用，先核验返回URL与commit、中英文页面，再合并。若提供方明确报告No Preview URL / Enable，先在两份配置显式设置preview_urls=true，通过CI与Preview构建后合并，以main正式部署应用该主机开关；随后重新核验分支返回URL与中英文页面。不得把待激活状态写成已访问成功。
 5. 若旧Workers仍用 `wrangler versions upload`，其Version URL模型与新Worker
    Previews不同；先确认实际设置。旧日志已确认使用新Preview命令，未改供应商控制台设置。
 
 7项计划维持100/100/20/33/40/20/0，ROADMAP36/44=82%。预览配置修正不完成
 环境隔离、恢复、回滚或公司上线验收，不增加固定里程碑勾选。
+
+## Preview URL activation — 2026-10-05
+
+PR#2 `3a349b2` now has successful Actions run37304274627 and Cloudflare Preview
+794eff35-0645-4262-a9a4-d0bee4fbf185; its bot comment reports No Preview URL / Enable.
+Both configs now set `preview_urls: true`; preflight rejects absent/false/non-boolean
+values. Cloudflare applies this setting through `wrangler deploy`, not by merely
+uploading a branch Preview. Current official references:
+
+- https://developers.cloudflare.com/workers/previews/custom-domains/#enable-workersdev-preview-urls
+- https://developers.cloudflare.com/workers/wrangler/configuration/#inheritable-keys
+
+The opt-in applies to Version URLs as well as workers.dev Worker Previews. These
+previews serve the existing public sample frontend/API; no custom-domain wildcard
+route is added. Successful upload and accessible runtime are separately verified.

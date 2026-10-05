@@ -3,6 +3,11 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {validateWorkerConfig,readWorkerConfig}=require('../scripts/check-worker-config.cjs');
 const config=readWorkerConfig();
+test('missing, disabled or non-boolean Preview URL settings fail the deploy preflight',()=>{
+  for (const preview_urls of [undefined, false, 'true', 1]) {
+    assert.throws(()=>validateWorkerConfig({...config,preview_urls}),/explicitly enabled/);
+  }
+});
 test('Wrangler accepts explicit Preview bindings and existing OpenNext production config',()=>{
   assert.doesNotThrow(()=>validateWorkerConfig(config));
 });

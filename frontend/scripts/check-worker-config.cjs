@@ -3,6 +3,9 @@ const path = require('node:path');
 const sampleApi = 'https://softwarelifecycle-api-test.onrender.com';
 function validateWorkerConfig(config) {
   if (config.name !== 'softwarelifecycle') throw new Error('Unexpected Worker target');
+  if (config.preview_urls !== true) {
+    throw new Error('Worker Preview URLs must be explicitly enabled for branch verification');
+  }
   if (!config.previews || config.previews.vars?.API_BASE_URL !== sampleApi) {
     throw new Error('Worker Previews require an explicit API_BASE_URL for the read-only sample API');
   }

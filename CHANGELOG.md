@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-05 — Explicit Preview URL activation and Work handoff
+
+Both Wrangler entry configurations now opt into Preview URLs. The deploy preflight rejects missing/disabled/non-boolean activation, with regression coverage. Reconciled the interrupted Work handoff against PR#2: root Preview configuration has successful CI and a provider deployment, but the host is disabled. Recorded that activation requires a production deploy before branch URL verification. Default Chinese/English behavior, API/schema and fixed progress remain unchanged.
+
 ## 2026-10-04 — SCR/Issue retirement and seven-plan percentages
 
 - API 0.18.23 retires 8 reviewed SCR/Issue GETs (27 total); exact historical selection and owned bounded successors remain. Shared helpers and all 14 commands stay.

@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "softwarelifecycle",
+  "preview_urls": true,
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-28",
   "compatibility_flags": [
