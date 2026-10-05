@@ -451,3 +451,12 @@ credentials are retained; CI acceptance fails if either validation job does not
 succeed. No deployment/identity/company secrets or public database are used.
 Branch protection and existing deployment triggers remain separate settings.
 See docs/ci.md and final run evidence in HANDOFF.md.
+
+## Current identity read boundary (0.18.28)
+
+Two private GETs at /api/v1/security/me and /grants reuse API OIDC validation and
+return only the caller's local identity/active grant context. They are not browser
+login/session endpoints. Public sample reads stay separate; self reads fail401 in
+auth-disabled mode. Responses are private/no-store, parent identity is rechecked,
+and grants use bounded SQL queries against existing0015 tables. No new service,
+provider, credential storage or database migration is introduced.

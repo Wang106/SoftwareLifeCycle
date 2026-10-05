@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.26`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.28`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -25,6 +25,7 @@ This document is a maintained map, not a replacement for the generated OpenAPI s
 | Governance | `/api/v1/governance/approvals`, `/decisions`, exact profiles/actions | Preferred bounded governance history |
 | Distribution | `/api/v1/distribution/catalog/deliveries`, `/distributions`, `/authorizations` | Preferred bounded catalogs; exact delivery revision is significant |
 | Production | `/api/v1/production/catalog/{kind}`, `/deployments/{deployment_no}/profile`, `/batches/{batch_no}` | `{kind}` is deployments, changeovers or batches |
+| Current identity | `/api/v1/security/me`, `/security/me/grants` | Authenticated self-only identity summary and bounded active grants; never anonymous demo data |
 | Audit/resources | `/api/v1/audit/events`, `/activity/{event_no}`, `/resources` | Bounded audit review and append-only external references |
 
 API 0.18.22 retires legacy delivery/distribution/authorization/deployment/batch lists and rich production/distribution reads with HTTP 410; use the bounded successors below. The fixed53-candidate review closes in API0.18.27:50 retired routes and3 retained scalar reads with explicit growth evidence.
@@ -954,3 +955,27 @@ upgrade SQL. Existing warnings are deprecations/collection notices (9661).
 No schema, provider, credentials or grant change; all14 POSTs and shared command
 helpers remain. Public sample remains read-only. Cloud rollout still requires
 independent feature-commit build and live API/page checks recorded below.
+
+## Authenticated current identity — API 0.18.28
+
+`GET /api/v1/security/me` always requires configured OIDC authentication, even in
+read-only mode. It returns only local principal UUID/type/display name, read-only
+status and complete active grant counts for GLOBAL, PROJECT and SOFTWARE.
+No issuer, subject, email, token or provider secret is returned. Query fields are
+forbidden. Auth-disabled mode returns401 oidc_not_enabled; there is no demo fallback.
+
+`GET /api/v1/security/me/grants?scope=PROJECT&limit=50&offset=0` requires scope
+GLOBAL/PROJECT/SOFTWARE, limit1–100 and offset0–100000; unknown fields return422.
+It lists only the caller's active grants, with assignment UUID, role, scope UUID
+(null for global) and recorded creation time. total covers the complete selected
+scope; next_offset is null at the end. Suspended scoped memberships are omitted.
+Global assignments have no status field: a stored assignment is a grant.
+
+Both endpoints reuse issuer/audience/signature/time and ACTIVE local identity
+validation, then recheck the exact principal in the read transaction. All success,
+auth-denial and query-error responses carry Cache-Control: private, no-store,
+Pragma: no-cache and Vary: Authorization (preserving existing Vary values).
+Counts and grants are current observations, not a session, permission receipt or
+write authorization; all14 command checks still run independently on every write.
+No provider configuration, browser token input, identity/grant mutation, schema
+migration or public write enablement is included.
