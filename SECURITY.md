@@ -402,3 +402,22 @@ credentials are retained; CI acceptance fails if either validation job does not
 succeed. No deployment/identity/company secrets or public database are used.
 Branch protection and existing deployment triggers remain separate settings.
 See docs/ci.md and final run evidence in HANDOFF.md.
+
+## Authenticated self-read boundary — API 0.18.28
+
+The current identity endpoints are protected GETs, separate from public sample
+business reads. AUTH_MODE=disabled cannot expose a self identity; missing/invalid
+OIDC credentials and absent/disabled local principals return401. Middleware reuses
+the existing authentication implementation for these two exact read paths, including
+trailing-slash redirect requests. The route rechecks UUID/issuer/subject/ACTIVE state
+in its database session before returning own grants. It never accepts a target user.
+
+Only UUID/type/display name and active grant observations are returned. Subject,
+issuer, email and all credential material are omitted. Active project/software
+memberships and stored global assignments are independently counted/paged with
+fixed query count and a100-row cap. PRIVATE/NO-STORE and authorization Vary headers
+apply to successful, denied and validation responses. Existing CORS Vary survives.
+No browser session/provider/admin API is claimed; grants cannot be created or changed
+here. Role displays do not bypass any of the14 scoped write/audit/replay contracts.
+Public sample remains read-only; its auth-disabled deployment returns401 for these
+new endpoints. No principals or grants are seeded and no schema change is needed.

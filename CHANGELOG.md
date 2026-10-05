@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-05 — Authenticated self identity and scoped-grant pages (0.18.28)
+
+Added private current-identity and paginated own-active-grant GETs, reusing OIDC authentication and exact ACTIVE principal resolution. Strict filters, complete counts, suspended/other-user exclusion and no-store responses prevent anonymous or cross-user identity fallback. SQLite/PostgreSQL regressions cover signed tokens, identity changes and growing grant collections. No browser session, selected provider, admin mutation, schema or public-write change.
+
 ## 2026-10-05 — Explicit Preview URL activation and Work handoff
 
 Both Wrangler entry configurations now opt into Preview URLs. The deploy preflight rejects missing/disabled/non-boolean activation, with regression coverage. Reconciled the interrupted Work handoff against PR#2: root Preview configuration has successful CI and a provider deployment, but the host is disabled. Recorded that activation requires a production deploy before branch URL verification. Default Chinese/English behavior, API/schema and fixed progress remain unchanged.

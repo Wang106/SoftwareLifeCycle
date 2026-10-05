@@ -2180,3 +2180,26 @@ branch updates. This final follow-up changes documentation only.
 ROADMAP36/44=82%; seven plans100/100/20/33/40/20/0; module percentages unchanged.
 Next obtain returned Preview URL/page-access evidence, then the approved identity/
 session and controlled-write development sequence described above.
+
+## 2026-10-05 — Current identity and bounded own-grant reads, API0.18.28
+
+Mode: Codex. Starting main9f39932ee5501c06150295e931a1b67f1a8f7631.
+Added authenticated GET /api/v1/security/me and /grants for future browser-session
+integration. OIDC signature/issuer/audience/time and ACTIVE local identity checks
+are reused; exact local identity is rechecked before reading grant counts/pages.
+Only self UUID/type/display name is returned, with read-only status and complete
+active counts. No issuer/subject/email/token is exposed. Own GLOBAL/PROJECT/SOFTWARE
+grants use required scope, strict query fields, max100 rows and full totals; suspended
+memberships and other principals are excluded. Responses are private/no-store and
+vary on Authorization, including auth/query denials. Public/auth-disabled deployments
+return401, not demo identity. Existing14 write contracts and schema0018 remain.
+
+SQLite and real migrated PostgreSQL regression cover signed token rejection,
+self isolation, suspended/disabled identity, mid-request disable recheck, SERVICE/no
+roles, strict queries, privacy/cache controls and106-grant complete pagination with
+constant query count. Local targeted checks pass; complete cloud CI/PG and rollout
+are recorded after publication. No provider, real browser session or grant-admin
+mutation is configured. ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0 unchanged: this extends an already-complete identity
+foundation milestone, not provider/session acceptance. Next approved provider/target
+configuration and browser session, then authenticated submission/recovery remain.
