@@ -96,3 +96,19 @@ jobs:
         run: npm test
       - name: Build Next.js and OpenNext Cloudflare Worker
         run: npm run cf:build
+
+  acceptance:
+    name: CI acceptance
+    needs: [backend, frontend]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Require both validation jobs to succeed
+        env:
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+        run: |
+          test "$BACKEND_RESULT" = success
+          test "$FRONTEND_RESULT" = success

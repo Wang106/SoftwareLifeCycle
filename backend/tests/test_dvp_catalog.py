@@ -3,7 +3,7 @@ import pytest
 from fastapi import HTTPException
 from test_impact_assessments import context
 from test_change_coverage import coverage_context
-from app.api.dvp_catalog import dvp_catalog, dvp_history, dvp_profile
+from app.api.dvp_catalog import dvp_catalog, dvp_history, dvp_profile, dvp_relations, RelationPage
 from app.models.acceptance import AcceptanceDvpLink
 from app.models.core import ApplicationReleaseDetail, Customer, Project, Release
 from app.models.snapshot import ReleaseSnapshot
@@ -140,9 +140,9 @@ def test_profile_reverse_links_and_missing_item(executed):
     db.add(AcceptanceDvpLink(id=uuid.uuid4(), criterion_id=criterion.id, dvp_item_id=items[0].id,
         actor_name='Engineer', reason='Verification')); db.commit()
     profile = dvp_profile(items[0].id, db)
-    assert profile['linked_acceptance'][0]['criterion_no'] == criterion.criterion_no
-    assert profile['linked_change_points'][0]['change_no'] == points[0].change_no
-    assert profile['linked_issues'][0]['issue_no'] == issue.issue_no
+    assert profile['relation_counts'] == {'criteria': 1, 'points': 1, 'issues': 1}
+    for kind, number in [('criteria', criterion.criterion_no), ('points', points[0].change_no), ('issues', issue.issue_no)]:
+        assert dvp_relations(items[0].id, kind, RelationPage(dvp_item_id=items[0].id), db)['items'][0]['number'] == number
     assert profile['plan']['change_request_no'] == 'SCR-1'
     with pytest.raises(HTTPException) as error: dvp_profile(uuid.uuid4(), db)
     assert error.value.status_code == 404

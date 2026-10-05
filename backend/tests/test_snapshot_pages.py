@@ -101,7 +101,7 @@ def test_fixed_sql_and_no_bulk_child_models_when_growing(policy):
     assert 'limit' in large[2][-1]
 
 
-def test_http_strict_queries_pin_readonly_and_old_detail(policy,monkeypatch):
+def test_http_strict_queries_pin_readonly_and_retired_detail(policy,monkeypatch):
     from app import main
     db,r,s,rows,_=policy;rid,sid,name=r.id,s.id,s.snapshot_no
     engine=create_engine('sqlite://',connect_args={'check_same_thread':False},poolclass=StaticPool)
@@ -110,7 +110,8 @@ def test_http_strict_queries_pin_readonly_and_old_detail(policy,monkeypatch):
     try:
         with TestClient(app) as client:
             root=f'/api/v1/snapshots/{name}'
-            assert client.get(root).json()['artifacts'] and client.get(root+'/summary').json()['artifact_count']==4
+            assert client.get(root).status_code == 410
+            assert client.get(root+'/summary').json()['artifact_count']==4
             assert client.get(root+'/summary?unknown=1').status_code==422
             for name in ['artifacts','rules']:
                 endpoint=root+'/'+name

@@ -1,5 +1,7 @@
 """Bounded DVP browsing and exact-context execution history."""
 import uuid
+from typing import Annotated, Literal
+from pydantic import BaseModel, ConfigDict, Field
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
@@ -23,11 +25,11 @@ def execution_context(db, release_id, snapshot_no):
     if release:
         stmt = select(ReleaseSnapshot).where(ReleaseSnapshot.release_id == release.id, ReleaseSnapshot.status == 'FROZEN')
         if snapshot_no:
-            snapshot = db.scalars(stmt.where(ReleaseSnapshot.snapshot_no == snapshot_no)).first()
+            snapshot = db.scalars(stmt.where(ReleaseSnapshot.snapshot_no == snapshot_no).limit(1)).first()
             if not snapshot:
                 raise HTTPException(409, 'snapshot is not a frozen snapshot of the selected release')
         else:
-            snapshot = db.scalars(stmt.order_by(ReleaseSnapshot.snapshot_number.desc())).first()
+            snapshot = db.scalars(stmt.order_by(ReleaseSnapshot.snapshot_number.desc(), ReleaseSnapshot.id.desc()).limit(1)).first()
     return release, snapshot
 
 
@@ -115,6 +117,42 @@ def dvp_catalog(scr: str | None = Query(None, max_length=50), plan: str | None =
         'release_options_truncated': len(options) > 100}
 
 
+class RelationPage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    dvp_item_id: uuid.UUID
+    limit: int = Field(50, ge=1, le=100)
+    offset: int = Field(0, ge=0, le=100000)
+
+
+def relation_rows(item_id, kind):
+    if kind == 'criteria':
+        c, link = AcceptanceCriterion, AcceptanceDvpLink
+        return select(c.id, c.criterion_no.label('number'), c.description.label('text')).where(
+            select(link.id).where(link.criterion_id == c.id, link.dvp_item_id == item_id).exists())
+    if kind == 'points':
+        c, link = ChangePoint, ChangePointDvpItem
+        return select(c.id, c.change_no.label('number'), c.title.label('text')).where(
+            select(link.change_point_id).where(link.change_point_id == c.id, link.dvp_item_id == item_id).exists())
+    c, link = Issue, IssueDvpItem
+    return select(c.id, c.issue_no.label('number'), c.title.label('text')).where(
+        select(link.issue_id).where(link.issue_id == c.id, link.dvp_item_id == item_id).exists())
+
+
+@router.get('/id/{item_id}/relations/{kind}')
+def dvp_relations(item_id: uuid.UUID, kind: Literal['criteria', 'points', 'issues'],
+    filters: Annotated[RelationPage, Query()], db: Session = Depends(get_db)):
+    if filters.dvp_item_id != item_id or not db.get(DvpItem, item_id):
+        raise HTTPException(404, 'DVP item not found')
+    rows = relation_rows(item_id, kind).subquery()
+    total = db.scalar(select(func.count()).select_from(rows))
+    page = db.execute(select(rows).order_by(rows.c.number, rows.c.id)
+                      .limit(filters.limit).offset(filters.offset)).mappings()
+    return {'item_id': str(item_id), 'kind': kind, 'total': total,
+        'limit': filters.limit, 'offset': filters.offset,
+        'next_offset': filters.offset + filters.limit if filters.offset + filters.limit < total else None,
+        'items': [dict(row, id=str(row['id'])) for row in page]}
+
+
 @router.get('/id/{item_id}/profile')
 def dvp_profile(item_id: uuid.UUID, db: Session = Depends(get_db)):
     item = db.get(DvpItem, item_id)
@@ -124,16 +162,10 @@ def dvp_profile(item_id: uuid.UUID, db: Session = Depends(get_db)):
     scr = db.get(SoftwareChangeRequest, plan.change_request_id) if plan else None
     options = db.scalars(select(Release).where(Release.id.in_(select(DvpExecution.release_id)
         .where(DvpExecution.dvp_item_id == item.id))).order_by(Release.created_at.desc(), Release.id.desc()).limit(101)).all()
-    criteria = db.scalars(select(AcceptanceCriterion).join(AcceptanceDvpLink, AcceptanceDvpLink.criterion_id == AcceptanceCriterion.id)
-        .where(AcceptanceDvpLink.dvp_item_id == item.id).order_by(AcceptanceCriterion.criterion_no)).all()
-    points = db.scalars(select(ChangePoint).join(ChangePointDvpItem, ChangePointDvpItem.change_point_id == ChangePoint.id)
-        .where(ChangePointDvpItem.dvp_item_id == item.id).order_by(ChangePoint.change_no)).all()
-    issues = db.scalars(select(Issue).join(IssueDvpItem, IssueDvpItem.issue_id == Issue.id)
-        .where(IssueDvpItem.dvp_item_id == item.id).order_by(Issue.issue_no)).all()
+    counts = {kind: db.scalar(select(func.count()).select_from(relation_rows(item.id, kind).subquery()))
+              for kind in ('criteria', 'points', 'issues')}
     return {'id': str(item.id), 'item_no': item.item_no, 'title': item.title, 'scope': item.scope, 'status': item.status,
-        'linked_acceptance': [{'id': str(c.id), 'criterion_no': c.criterion_no, 'description': c.description} for c in criteria],
-        'linked_change_points': [{'id': str(p.id), 'change_no': p.change_no, 'title': p.title} for p in points],
-        'linked_issues': [{'issue_no': i.issue_no, 'title': i.title} for i in issues],
+        'relation_counts': counts,
         'plan': {'plan_no': plan.plan_no, 'title': plan.title, 'change_request_no': scr.request_no if scr else None} if plan else None,
         'release_options': [{'id': str(r.id), 'version': r.version, 'type': r.release_type} for r in options[:100]],
         'release_options_truncated': len(options) > 100}
@@ -157,5 +189,5 @@ def dvp_history(item_id: uuid.UUID, release_id: uuid.UUID | None = None,
         stmt = stmt.where(DvpExecution.execution_no < before_number)
     rows = db.scalars(stmt.order_by(DvpExecution.execution_no.desc()).limit(limit + 1)).all()
     page = rows[:limit]
-    return {'context': context_json(release, snapshot), 'total': total, 'items': serialize_executions(db, page),
+    return {'item_id': str(item_id), 'context': context_json(release, snapshot), 'total': total, 'items': serialize_executions(db, page),
         'next_before_number': page[-1].execution_no if len(rows) > limit else None}

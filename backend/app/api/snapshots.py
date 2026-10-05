@@ -12,7 +12,6 @@ from app.services.snapshot_comparison import SnapshotComparisonError, compare_ma
 router = APIRouter(prefix="/api/v1/snapshots", tags=["snapshots"])
 
 
-@router.get("/{snapshot_no}")
 def snapshot_detail(snapshot_no: str, db: Session = Depends(get_db)):
     snapshot = db.scalars(select(ReleaseSnapshot).where(
         ReleaseSnapshot.snapshot_no == snapshot_no)).first()
@@ -57,7 +56,6 @@ def _manifest(db: Session, snapshot_id):
         } for row in artifacts]
 
 
-@router.get("/{snapshot_no}/compare/{target_no}")
 def compare_snapshots(snapshot_no: str, target_no: str, db: Session = Depends(get_db)):
     source = db.scalars(select(ReleaseSnapshot).where(
         ReleaseSnapshot.snapshot_no == snapshot_no)).first()

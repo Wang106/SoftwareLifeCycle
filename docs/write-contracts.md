@@ -414,3 +414,42 @@ by the full real PostgreSQL regression suite. SQL policy summary records complet
 not authorization; recipient evaluate and frozen delivery validators are unchanged.
 Readiness eligibility is neither a write grant nor a cross-request concurrency token.
 No authenticated UI submission, provider configuration or staging writes are enabled.
+
+## Release catalog consumer migration — API 0.18.14
+
+API 0.18.14 adds read routes only. All 14 command contracts, scope/actor binding, keyed retry, row serialization and atomic audit behavior remain unchanged. Catalog or resolver outcomes do not authorize submission; public staging retains read_only_mode.
+
+## SCR/Issue directory migration — API 0.18.15
+
+API 0.18.15 adds only SCR/Issue directory reads. All 14 existing command contracts are unchanged. Catalog status markers and counts confer no approval, scope grant or submission outcome.
+
+## SCR detail read migration — API 0.18.16
+
+Only read endpoints/consumers change. All 14 command contracts, scoped actor binding,
+keyed replay, row serialization and atomic business/audit behavior remain. SCR/child
+identity pins are not write preconditions or grants. Public writes remain denied.
+
+## SCR coverage read migration — API 0.18.17
+
+All 14 command contracts, exact actor/scope binding, keyed replay, row serialization
+and business/audit atomicity are unchanged. Criterion preparation links still target
+exact SCR/criterion UUID; new read context pins are neither submission preconditions
+nor permission grants. Coverage retains exclusion and latest-execution semantics;
+public writes remain denied.
+
+## Issue detail/impact read migration — API 0.18.18
+
+All 14 commands retain actor/scope binding, keyed replay, row serialization and
+atomic business/audit behavior. Exact impact-preparation links remain pinned to Issue,
+release and frozen Snapshot; new read pins grant no submission permission. Current
+judgments and verification results are separate evidence. Public writes remain denied.
+
+
+## Organization read migration — API 0.18.19
+
+All 14 command contracts, actor/scope binding, keyed replay, row serialization and atomic business/audit behavior remain unchanged. Organization directories/profiles add only reads; their parent UUID pins and latest release context do not authorize submissions.
+
+
+## Manufacturing read migration — API 0.18.20
+
+All 14 existing commands retain trusted actor/exact scope, keyed replay, row serialization and atomic business/audit behavior. Manufacturing line preparation carries the exact line UUID; read identity pins and stored-state summaries do not authorize submission. No non-read endpoint changed.

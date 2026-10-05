@@ -1,35 +1,15 @@
 # Project Status
 
-- Last reviewed: 2026-10-03 (Asia/Shanghai)
+- Last reviewed: 2026-10-05 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Previous reviewed repository baseline: `8ab38722f62b7221fe8cdf90e9c3c70cb07d935d` — `feat: bound ASR passport histories with exact decision and Snapshot pins` (developed from `f63862a45b0b2e4c945f2252cc8f74d0ac25d769`; translation follow-up `03892f7637e92a2f402118c0d4dcfb351baaf838`)
+- Reviewed starting repository baseline: `5e35e9314803365bdcc20eb3bf8e90eca9abc1e3` — release/ASR retirement and full53-candidate closure (API0.18.27); plan1 advances to100%
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
-## Current Codex continuation — 2026-10-03
-
-Developed from GitHub main `12660a160750218e0997ecd322d652d6c36f1ea2`,
-after retrieving the “继续开发_3” context, governance v1.1 baseline and the
-API/database guide, and rereading current repository documents and source.
-Current source is API 0.18.13 / Alembic 0018_asr_evidence_index. Older verification
-entries below are historical and must not be treated as fresh deployment evidence.
-
-This package adds GitHub Actions CI for complete backend tests with disposable
-PostgreSQL 16, migration head/SQL/round-trip checks, strict JUnit evidence validation,
-and frontend tests plus Next.js/OpenNext production build. See `docs/ci.md`.
-Remote CI acceptance passed on PR #1 at feature commit `1f3c672aec080f6590a0b878a44b361b20bcfc15`. The CI roadmap checkbox and
-34/44 main count remain unchanged until the PR is merged. Identity/session,
-public read-only settings and existing business/API contracts are unchanged.
-
-Next business package remains release catalogs/exact legacy resolver, then other
-rich profiles/domain catalogs (read migration ledger 15/17). Approved identity,
-controlled submission/recovery/corrections, backups, monitoring, environment and
-company network/data governance remain open.
-
 ## Current phase
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; other compatibility consumers remain unbounded. Authenticated submission remains pending; public staging remains read-only.**
+**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -42,14 +22,14 @@ Progress is counted from checked items in `ROADMAP.md`; it measures implemented 
 | Phase 1 — Domain foundation | 5 / 5 | 100% | Complete |
 | Phase 2 — Release governance | 5 / 5 | 100% | Complete for demo scope |
 | Phase 3 — Distribution and production trace | 5 / 5 | 100% | Complete for demo scope |
-| Phase 4 — Evidence, review and auditability | 8 / 9 | 89% | Remaining: retire/bound compatibility lists |
+| Phase 4 — Evidence, review and auditability | 9 / 9 | 100% | Fixed compatibility scope completed |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Remaining: configure an approved OIDC provider |
 | Phase 6 — Controlled write experience | 3 / 5 | 60% | Safety slices and UI priorities implemented; submission/correction/result items partial |
 | Phase 7 — Production operations | 0 / 6 | 0% | Not started |
-| **Overall** | **34 / 44** | **77%** | Demo lifecycle is coherent; controlled writes and operations remain |
+| **Overall** | **35 / 44** | **80%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
-Separate read-consumer tracking: **15 / 17 (88%)**, up from 14 / 17 (82%) at the
-reviewed development baseline. See [the fixed scope-group ledger](docs/read-consumer-migration.md).
+Separate read-consumer tracking: **17 / 17 (100%)**; manufacturing completes the
+last identified group-17 consumers. The fixed compatibility endpoint retirement/bounds acceptance requirement is complete (50 retired +3 bounded). See [the fixed scope-group ledger](docs/read-consumer-migration.md).
 This finer counter does not change ROADMAP acceptance-item accounting or certify production readiness.
 
 ## Completed and evidenced in `main`
@@ -98,8 +78,8 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 | Layer | Configured target | Verified 2026-10-03 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live bilingual ASR policy pinned artifact/rule pagination/filtering and counts verified | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.9`; Snapshot/Batch probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
+| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live SCR/Issue directories verified: Chinese/English, full statistics, pagination and invalid filters | Demo/test frontend, not evidence of production readiness |
+| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.15`; Snapshot/Deployment probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
 | Database | PostgreSQL behind the Render API | Ready at `0018_asr_evidence_index`; read-only SQL confirms revision and index | Sample/test data only; read-only schema/index inspection |
 | Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
 
@@ -135,7 +115,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 - All current OIDC writes use the authenticated principal for their atomic audit event and retain request declarations separately; historical/disabled-mode events remain unverified by design.
 - All 14 current command routes are authenticated/scoped and atomically audited. Snapshot/Batch now support optional request-ID replay and PostgreSQL locking; actual-software keyed reporting now adds retry/version protection and correction evidence; legacy paths remain weaker. See `docs/write-contracts.md`.
 - Some legacy list/history APIs remain unbounded; migration to bounded catalog endpoints is incomplete.
-- CI workflow is implemented and remotely verified on PR #1; main integration awaits merge. Branch protection and CI-gated deployment are not configured.
+- There is no CI workflow in the reviewed tree, so tests/builds are not enforced automatically on every push.
 - Backend tests require Python 3.12 (matching `backend/Dockerfile`); this review used the repository's pinned `pytest==9.1.1` environment.
 - The passing backend run reports deprecation/collection warnings, dominated by `datetime.utcnow()` usage and one SQLAlchemy `TestRelease` model name collected as a possible test class.
 - Frontend build emits an existing Autoprefixer warning for `end`; use `flex-end` when that CSS is next touched.
@@ -1012,41 +992,1008 @@ approved identity/session, authenticated submission/recovery/corrections and ope
 follow. Conditional estimate 5–9 internal-use packages, 13–21 total production review.
 Public staging remains read-only; online verification will be recorded after push.
 
-Local verification before initial push: frontend **370 passed, zero skips**;
-Next.js/OpenNext Cloudflare production build passed. Python 3.12 backend **813
-passed, 119 skipped, 4854 warnings** because this workspace has no PostgreSQL;
-this is explicitly not a full-suite acceptance. The new report gate correctly
-rejects that actual skipped report, plus empty/missing-PostgreSQL/failure/error/skip
-fixtures. Workflow YAML structure, SHA pins, permission checks, script compilation,
-single Alembic head, full upgrade/head downgrade SQL and remote-URL rejection passed.
-The isolated PostgreSQL round trip and complete no-skip suite await remote CI.
-Existing CSS/dependency deprecation warnings remain. No migration added.
+## Release catalogs and exact legacy resolution — 2026-10-03
 
-## CI remote acceptance and handback — 2026-10-03
+Mode: Codex cloud. Developed from GitHub main `12660a160750218e0997ecd322d652d6c36f1ea2`.
+API 0.18.14 adds `/api/v1/release-catalog/application` and `/standard`, with
+strict q/status/software_id/limit/offset filters, complete filtered counts and
+stable created_at/UUID ordering. Page size is 1..100 (default 50), offset
+0..100000. ASR latest Snapshot is a single SQL scalar projection; no growing
+Snapshot/child arrays or ORM graph are fetched. Stored optional references are
+outer joined and release rows survive missing metadata. The two frontend release
+directories use these pages, keep filters in navigation, distinguish beyond-end
+from unavailable, and retain default Chinese/selectable English and exact links.
 
-Mode: Codex. PR #1: https://github.com/Wang106/SoftwareLifeCycle/pull/1
-Feature commit: `1f3c672aec080f6590a0b878a44b361b20bcfc15`.
-GitHub Actions run 37104734307 concluded **success**, with both jobs successful:
-https://github.com/Wang106/SoftwareLifeCycle/actions/runs/37104734307
+`/api/v1/release-catalog/application/resolve?identifier=...` queries at most two
+exact APPLICATION UUID-or-version matches. It returns unique/ambiguous/missing;
+only unique supplies a release. UUID/version collisions stay ambiguous, without
+UUID precedence or arbitrary selection. This fixes old links beyond the former
+200-row directory cutoff; demo and unavailable/ambiguous fallbacks remain the
+application directory. Legacy list APIs remain for compatibility, not retired.
 
-Python 3.12 backend **932 passed, 6024 existing warnings, no skips**, including
-all 119 tests skipped in the PostgreSQL-free local run. The JUnit gate independently
-reports 103 cases in specifically named PostgreSQL modules; the other 16 database
-cases live in ordinary profile/pagination test modules. Single configured head,
-upgrade/head downgrade SQL and fresh PostgreSQL 16 schema upgrade/downgrade/upgrade
-passed. JUnit and SQL evidence uploaded. Node 22 frontend **370 passed, zero skips**;
-Next.js/OpenNext Worker production build passed. No application/schema change.
+No migration or write change; head remains `0018_asr_evidence_index`. Offset/count
+reads are live observations, not a frozen cross-request dataset, authorization,
+readiness or proof of release. Public staging remains read-only. Read consumer
+ledger advances 15/17 (88%) to 16/17 (94%); ROADMAP remains 34/44 (77%) because
+rich profiles/domain catalogs remain in group 17. Next review those consumers,
+then approved OIDC/session, controlled submission/outcome recovery, broader
+correction/revocation and operations. CI PR #1 (`438a663`) remains open and is
+not counted as merged CI. Conditional planning: 4–8 focused packages toward
+internal use, 12–20 total toward production review; group 17 may span packages.
 
-Direct main push was rejected by automatic approval review because the present
-request did not explicitly authorize default-branch mutation. Remote main remains
-12660a16. The safer feature-branch/PR route succeeded through the connected GitHub
-account; shell git push itself had no credential. PR merge requires user approval.
-No merge, deploy, public setting, staging business write or company-data access
-was performed. A fresh live health GET timed out, so no new live health claim is made.
+Validation for this package: complete Python 3.12 backend **948 passed**,
+**7665 warnings**, no skips; includes **120 real PostgreSQL 16.15 tests** in
+disposable migrated schemas. Sixteen new backend cases cover legacy row parity,
+complete pagination, beyond-end, missing metadata, literal filters, ambiguity,
+strict HTTP input, >200 release growth and >120 Snapshot growth with fixed
+scalar query shape/no ORM child graph, plus no audit writes. Frontend **378
+passed**, no skips, including eight new catalog/resolver/actual Chinese-English
+SSR rendering cases. Next.js and OpenNext Cloudflare production build passed.
+Single Alembic head 0018 and generated PostgreSQL upgrade SQL passed. Existing
+write safety suites pass unchanged. Public rollout verification passed; see the dated rollout record below.
 
-The main-based roadmap remains **34/44 (77%)**, operations **0/6** until merge.
-On accepting this CI item into main it becomes **35/44 (80%)**, operations **1/6
-(17%)**. The read-consumer ledger stays 15/17; business/auth/write phases do not
-advance. Next: approve/merge the concrete PR, resume release catalogs/exact resolver
-and remaining rich reads, then approved identity/session/submission/recovery,
-append-only corrections, backups/monitoring/environment/network/data governance.
+## Release catalog rollout verified — 2026-10-03
+
+Feature commit `347cd541e05e70967b8c15b14e4a3cd51b86d4cb` is on GitHub main.
+The uploaded 19 file blob hashes and full Git tree match the local tested commit.
+Cloudflare check `Workers Builds: softwarelifecycle` completed successfully for
+that exact commit. Live API health returned HTTP 200, version 0.18.14 and revision
+0018_asr_evidence_index. Both catalogs passed one-row/full-count/beyond-end checks
+and rejected invalid limit/offset/unknown-field filters with 422. Exact UUID
+resolution and missing resolution passed; legacy version passport redirected to
+the exact ASR UUID. Snapshot and Deployment POST probes returned 403
+read_only_mode; no business data was written. Live Chinese pages passed normal,
+beyond-end and invalid-filter states; slc_language=en served English directories
+with HTTP 200. Public environment remains sample-only/read-only. No Render
+provider deployment ID or exact provider commit metadata was exposed in this
+verification; the API version/behavior is independently verified over HTTPS.
+CI PR #1 remains open. Verification-only documentation follows the feature commit.
+
+## Bounded SCR and Issue directories — 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from GitHub main `665c0335d278125b748a4aa05e16ea0a5e60d9e2`.
+API 0.18.15 adds strict bounded change-request and Issue catalogs. Both frontend
+directories now retain filter context, complete totals, first/next links and explicit
+beyond-end/unavailable states, with default Chinese/selectable English. SCR
+verification/ready cards are SQL aggregates over the entire filtered set, preserving
+previous case-sensitive status substring display semantics rather than redefining
+release readiness. Exact UUID software/customer/project filters select stored SCR
+fields only; Issue filters do not infer ownership/impact from version text. Literal
+search escapes wildcard characters. Directory rows do not transfer Issue descriptions
+or rich child histories; descriptions remain on exact profiles. Two scalar SQL
+queries supply totals and a bounded window without growing ORM graphs/ID arrays.
+
+No migration or write change; schema head stays `0018_asr_evidence_index`.
+Legacy bulk `/changes` and `/issues` APIs and rich profiles remain compatible.
+Offset pages/counts are mutable observations, not frozen evidence or write grants.
+Public staging stays read-only. ROADMAP remains 34/44 (77%), read ledger 16/17
+(94%): this package advances two directory consumers inside still-open group 17,
+not that whole group's completion. Remaining: SCR details, Issue details/impact
+evidence, supplier/customer/project directories and rich profiles, manufacturing
+directories/profiles; then approved identity/session, controlled submission/recovery,
+broader corrections/revocations and operations. CI PR #1 remains open. The prior
+conditional package estimate is not reduced merely for finishing this partial group;
+remaining rich reads need decomposition before a reliable new estimate.
+
+Validation: full Python 3.12 backend **965 passed**, **7717 warnings**, no skips,
+including **121 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+Seventeen focused new backend cases cover row projection parity, complete filtered
+counts, case-sensitive TEST/READY statistics, exact stored scopes, escaped search,
+tied ordering, >200 row growth with two fixed scalar queries/no ORM graph, strict
+HTTP fields and unchanged read-only rejection; PostgreSQL reads add no audit event.
+Frontend **385 passed**, no skips, including six new directory/render tests plus
+localization coverage for the new component. Actual Chinese/English SSR retains
+original titles, numbers and links. Next.js/OpenNext Cloudflare production build,
+single Alembic head and generated PostgreSQL upgrade SQL passed. Head stays 0018.
+Existing write/authentication/atomic-audit suites pass unchanged. Rollout passed independent HTTPS checks; see the dated verification below.
+
+## SCR/Issue directory rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature commit `e7e86211cf89cae09ccdb824993f5ba6b72fb409` is on GitHub main;
+uploaded Git tree matches the tested local commit. Cloudflare Workers Builds
+completed successfully for this exact feature commit. Live API health returned
+HTTP 200 / version 0.18.15 / schema 0018_asr_evidence_index. Both catalogs passed
+one-row/full-total/beyond-end/no-match and strict invalid-filter checks. Public
+sample legacy rows matched complete counts, and SCR status statistics matched
+case-sensitive TEST/READY markers across the full legacy sample. Issue directory
+omits descriptions as documented. Chinese and English directory pages, beyond-end
+and invalid-filter states passed. Snapshot and Deployment POST probes returned
+403 read_only_mode; no domain records were written. Public staging remains
+sample-only/read-only. Render provider deployment ID/commit metadata was not
+exposed; HTTPS independently verifies API version and behavior. CI PR #1 remains
+open. Overall 34/44 (77%), read groups 16/17 (94%); only the two directory
+consumers inside group 17 completed in this package.
+
+## Bounded SCR detail — API 0.18.16, 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from GitHub main `bc28abe5f5f8d7e73b6b75b3c923268e0e2e7281`.
+SCR detail now reads a scalar parent summary plus independently bounded acceptance
+criteria, Issue relations, change points and DVP plans. Selecting a point or plan
+loads its items by exact owned UUID, rather than loading every nested test item.
+Complete counts remain visible on beyond-end or failed child pages; each cursor and
+selection preserves the others. Default Chinese and selectable English remain.
+Parent metadata, raw business text, materials UUID and coverage links are preserved.
+
+The required change_id binds each child request to the resolved SCR UUID. Point/plan
+UUIDs must belong to that SCR. These pins select live identity, not a frozen Snapshot
+or cross-request transaction. Scalar SQL counts and bounded rows avoid growing ORM
+graphs/ID lists. Duplicate display numbers and multiple Issue relation types are
+preserved. Missing referenced Issues/DVP items are excluded as in the legacy profile;
+real cross-plan DVP assignments remain visible. Point assignment counts count bindings,
+not distinct tests, executions or passing results. Legacy rich APIs remain compatible.
+
+No migration or write-contract change; head `0018_asr_evidence_index`, 14 command
+contracts and public read-only mode remain. ROADMAP stays 34/44 (77%), read ledger
+16/17 (94%): group 17 is still partial. Next inspect SCR coverage, Issue detail/impact,
+organization and manufacturing reads; then approved identity/session, controlled
+submission/recovery/corrections and operations. CI PR #1 remains unmerged. Conditional
+estimates (4–8 packages toward internal use, 12–20 toward production review) remain
+unchanged until the remaining rich-read scope is decomposed.
+
+Verification: full Python 3.12 backend **983 passed**, **7774 warnings**, no skips,
+including **122 real PostgreSQL 16.15 tests** on migrated disposable schemas. New
+cases cover scalar full counts, duplicate display numbers, multiple Issue relation
+types, cross-plan/orphan semantics, ownership pins, beyond-end pages, strict HTTP
+validation/read-only denial, fixed SQL shapes after 120-child growth and no audit
+writes. Existing command concurrency/replay/rollback regressions passed. Frontend
+**394 passed**, no skips; final Next/OpenNext Cloudflare production build passed.
+Six actual production Next SSR groups passed (default Chinese/English, metadata,
+beyond-end, selected UUID items, independently invalid page, foreign parent summary).
+Single Alembic head and PostgreSQL full upgrade SQL generation passed; no migration.
+Cloud rollout is pending at this feature commit and must be verified independently.
+
+## SCR detail cloud rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature commit `53bb1f9188fd0a9b2647a2525e6fd0b39dfdbfd2` is pushed to main.
+GitHub's `Workers Builds: softwarelifecycle` check completed successfully for that
+exact commit at 2026-10-03T16:38:05Z. Render HTTPS health/live and health/ready return
+200, API 0.18.16 and schema 0018_asr_evidence_index. Provider-side Render deployment
+ID/commit metadata was not inspected; API version and behavior are live evidence.
+
+SCR-142 UUID `8c923022-b24c-4358-b808-74d484285881` retains parent metadata and
+complete counts: 1 criterion, 1 Issue relation, 2 points, 1 plan, 3 point assignments
+and 4 owned-plan DVP items. Six collection/selected-child routes were checked with
+limit 1, beyond-end/full totals, invalid/missing pins/limits and foreign child UUIDs.
+Cloudflare Chinese/English SCR detail, exact selected point/plan item links, beyond-end
+criteria and an independently invalid repeated criterion cursor passed. Empty
+Deployment and Snapshot POST probes return 403 read_only_mode without business
+writes. No migration, provider/grant configuration or public-write enablement.
+
+Next package: bound SCR coverage while preserving release/frozen-Snapshot selection,
+then Issue detail/impact (linked SCR relations, candidate releases and full judgment
+history). Inspect organization/manufacturing consumers after those. Progress remains
+34/44 (77%), read ledger 16/17 (94%); CI PR #1 remains unmerged.
+
+## Bounded SCR coverage — API 0.18.17, 2026-10-04 (Asia/Shanghai)
+
+Mode: Codex cloud. Developed from main `79e5f767d74c818d2642aee8408d47c5ec733717`.
+SCR coverage now separates a fixed SQL summary/full counts from paged candidate
+releases, gaps, criteria, points, distinct Issues and owned-plan test items. Selecting
+a group UUID loads its exact summary and bounded assigned tests; selected criteria
+also expose bounded formal assignment history and the existing preparation link.
+No page downloads all nested test/assignment histories. Full parent counts persist
+on beyond-end or failed pages, and unrelated cursors/selection remain independent.
+Default Chinese and selectable English are retained. Candidate pages replace the
+first-100 dropdown; direct exact UUID selection remains possible beyond any page.
+
+Coverage preserves legacy semantics: Issues are distinct despite multiple relations;
+valid tests belong to this SCR's plans, foreign/missing links are excluded and counted
+as gaps, latest execution_no on the exact release/FROZEN Snapshot wins, any latest
+FAIL/ERROR/CANCELLED yields FAILED, all assigned latest PASS yields PASSED, otherwise
+PENDING. Unassigned/no-context/no-freeze remain distinct. Assignment percent retains
+Python rounding and null for empty groups. Formal criterion records remain visible
+even when their test references are excluded. Unicode whitespace matches Python
+strip for blank acceptance text. SCR detail still shows real cross-plan assignments;
+coverage intentionally excludes them, as it did before this migration.
+
+Page pins require exact change_id plus release_id/snapshot_id UUID or literal none.
+Historical frozen execution pins survive newer freezes. A previously missing freeze
+that now exists rejects stale none context with 409 instead of silently substituting
+evidence. Current SCR definitions/assignments remain live: these pins do not freeze
+definitions, confer incorporation, authorize release, or grant write permission.
+Legacy report/assignment APIs, all 14 command contracts and schema head
+0018_asr_evidence_index remain. Public staging stays sample-only/read-only.
+
+Progress remains ROADMAP 34/44 (77%) and read groups 16/17 (94%); broad group 17 is
+still partial. Next Issue detail/impact (linked SCRs, candidates and judgment history),
+then organization/manufacturing reads; approved identity/session, controlled
+submission/recovery/corrections and operations follow. CI PR #1 is unmerged.
+Conditional estimates remain 4–8 focused packages toward internal use and 12–20
+total toward production review, pending decomposition/provider decisions.
+
+Verification: final Python 3.12 backend **1007 passed**, **8004 warnings**, no skips,
+including **123 real PostgreSQL 16.15 tests**. New coverage cases verify legacy full
+summary/gap/group parity, exact latest PASS/FAIL/ERROR/CANCELLED/pending states,
+software/customer/project scope, distinct Issues, foreign/orphan assignments, Unicode
+blank text, complete candidates beyond 100, historical/stale-none context pins,
+strict HTTP identity/pagination, fixed SQL shapes after 120-child growth, bounded
+selected histories and no audit writes. Existing real lock/replay/rollback suites pass.
+An early local temporary PostgreSQL data-directory read error caused fixture failures;
+a newly initialized isolated instance resolved that infrastructure problem and the
+final full suite passed. Online databases were not changed for regression testing.
+Frontend **405 passed**, no skips; final Next/OpenNext Cloudflare build passed. Seven
+actual production Next SSR groups passed across Chinese/English, selected criterion
+history/preparation UUID, pinned execution context, beyond-end full counts, independent
+invalid cursor, blank-form assignments-only and foreign parent summary stopping reads.
+Single Alembic head and PostgreSQL full upgrade SQL generation pass; no migration.
+Cloud rollout is pending at this feature commit and requires independent verification.
+
+## SCR coverage cloud rollout verified — 2026-10-04 (Asia/Shanghai)
+
+Feature `317780bb23b1b4b79ba1af3db305593c5e1d7d94` is pushed to main. GitHub
+Workers Builds: softwarelifecycle completed successfully for that exact commit
+at 2026-10-04T06:30:40Z. Render HTTPS readiness returns 200, API 0.18.17, schema
+0018_asr_evidence_index. Render provider deployment ID/commit metadata was not
+inspected; HTTPS version/feature behavior is the API rollout evidence.
+
+SCR-142 UUID 8c923022-b24c-4358-b808-74d484285881 has 3 complete candidate releases.
+ASR 2.3.3 (2bac628d-4335-43f6-90a5-efcdd490eaf8) has no frozen Snapshot: coverage
+shows 1 criterion/0 assigned, 2 points/2 assigned, 1 distinct Issue/1 assigned,
+4 owned-plan items and 2 gaps; execution totals remain unknown, matching legacy.
+Six collections passed limit-1/full-count/beyond-end/invalid-limit checks; exact
+selected criterion summary/items/history and foreign SCR/group rejection passed.
+Chinese/English selected criterion pages, beyond-end gaps and independently invalid
+repeated gap cursors passed. Empty Deployment POST returns 403 read_only_mode;
+no business writes were performed.
+
+Frozen context: ASR 2.3.4 UUID 271334c3-9a99-4dc0-a7dc-75ba5754377b, SNAP-008
+UUID c6f38c25-c42e-4bdb-8327-e16f7e85dd7b / freeze 8. Full summary matches legacy:
+4 items, 3 executed, 3 latest PASS; 1 of 2 assigned points passed and 1 Issue passed.
+All four limit-1 item pages preserve exact execution_no/result/observation/time with
+no missing/duplicate item UUID; selected point items also match. Chinese/English
+actual first/next pages retain that same frozen UUID and group selection.
+
+No migration, provider/grant configuration or public-write enablement. CI PR #1
+was independently checked open/unmerged. Next Issue detail/impact, then remaining
+organization/manufacturing reads. ROADMAP 34/44 (77%), read ledger 16/17 (94%).
+
+## Bounded Issue detail and impact evidence — API 0.18.18, 2026-10-04
+
+Mode: Codex cloud. Developed from main `a248b1ab79578a960260f2e14f0d1abb80b06c4b`.
+Issue detail now has a scalar parent summary/full counts plus independent linked
+SCR relation, candidate release and complete judgment-history pages. Exact impact
+review has a scalar context/latest judgment summary and independent distinct frozen
+component and linked DVP verification pages. Both default-Chinese/English pages
+retain complete counts on beyond-end/failed child reads and preserve unrelated
+cursors. Materials, release/customer/project/Snapshot/item UUID links and exact
+impact-preparation targets remain. Historical judgment links select their recorded
+Snapshot UUID instead of silently showing the newest freeze.
+
+Candidate scope preserves the prior software-product relationship via linked SCRs;
+it does not infer impact or require the SCR's customer/project scope. Directory rows
+retain the legacy real-product metadata visibility rule, full actual-release deployment
+and batch counts, newest FROZEN Snapshot and newest judgment for that exact Snapshot.
+Multiple relation types remain separate records; candidate releases are not duplicated.
+History retains exact formal records when optional release/Snapshot display metadata
+is missing. Distinct component code/version pairs normalize null versions to empty
+strings. Verification includes real Issue-linked items across plans, selects latest
+execution_no only for the exact release/Snapshot, and excludes missing DVP references.
+A PASS is execution evidence, not an impact decision. Current Issue links and newest
+judgments remain live; historical pins freeze execution selection, not definitions.
+
+Required page issue_id binds the business number to the exact Issue UUID. Impact
+pages additionally pin release path and Snapshot UUID/none. A historical FROZEN
+UUID remains valid after newer freezes; stale none that now has a freeze returns
+409. No migration, command contract/provider/grant changes; head
+0018_asr_evidence_index and 14 commands remain. Public staging stays sample-only
+read-only. Legacy rich APIs remain for compatibility.
+
+ROADMAP remains 34/44 (77%) and read groups 16/17 (94%). Group 17 is still partial:
+SCR/Issue detail/coverage/impact consumers are migrated, organization and manufacturing
+catalogs/profiles remain. Next bound those reads, then approved identity/session,
+controlled submission/recovery/correction/revocation and operational acceptance.
+CI PR #1 remains unmerged. Conditional estimates remain 4–8 focused packages toward
+internal use, 12–20 toward production review pending remaining scope/provider decisions.
+
+Verification: full Python 3.12 backend **1025 passed**, **8617 warnings**, no skips,
+including **124 real PostgreSQL 16.15 tests** on newly initialized disposable
+instances/migrated schemas. New cases cover legacy parent/candidate/history/evidence
+parity, multiple SCR relation types, full candidate counts beyond 200, normalized
+distinct component pairs, latest exact execution scope/failure, historical/stale-none
+Snapshot selection, orphan history metadata retention, strict pins/pagination/read-only
+denial and 120-child growth with fixed SQL shapes/no ORM graph. Real PostgreSQL
+verifies candidate windows, frozen components, newer FAIL precedence and no audit
+writes. Existing command concurrency/replay/rollback/actor/scope suites pass.
+Frontend **416 passed**, no skips; final Next/OpenNext Cloudflare production build
+passed. Eight actual production Next SSR groups passed: Issue Chinese/English,
+impact Chinese/English with exact preparation UUID, complete beyond-end history,
+independently invalid component cursor, no-freeze without preparation, foreign Issue
+summary stopping child reads. Single Alembic head and full PostgreSQL upgrade SQL
+generation pass; no migration. Cloud rollout pending at this feature commit.
+
+
+## 2026-10-04 — Verified Issue detail cloud rollout
+
+Feature commit `121e7ac10674ea0868d499ac10143e7def4464ab` is on main.
+Cloudflare Workers Builds for that exact commit succeeded at
+2026-10-04T07:00:22Z. Live HTTPS verification completed on 2026-10-04:
+Render `/health/ready` returned 200, API **0.18.18**, schema
+`0018_asr_evidence_index`. Provider deployment metadata was not inspected;
+API rollout evidence is the live version and behavior, not a claimed Render deploy ID.
+
+Sample Issue #310 (`e9aea1f4-26cf-4a4d-97b1-b63ef3c1cddb`) has one linked
+SCR relation, three candidates and zero manual judgments. New complete counts
+match legacy reads. Limit-one pages, beyond-end empty pages, invalid limits,
+foreign Issue pins and unknown Issue selection behaved as specified.
+Selected ASR 2.3.4 (`271334c3-9a99-4dc0-a7dc-75ba5754377b`) uses FROZEN
+SNAP-008 (`c6f38c25-c42e-4bdb-8327-e16f7e85dd7b`), hash
+`ed7e8188c12661c328110366b0c17cc2299cc6faa37cea2e04130dc3d166cc21`.
+Its two distinct frozen component pairs and one verification item match legacy
+components and latest exact execution result/observation/time. Latest manual
+judgment is absent in this sample; nonempty judgment/history behavior is covered
+by local regression and production SSR fixtures. Invalid Snapshot selection
+returns 409. No storage reference is exposed by component pages.
+
+Cloudflare Chinese/English Issue and impact pages preserve complete counts,
+selected Snapshot UUID and exact preparation target. Beyond-end history stays
+empty with its full count; repeated component cursor fails only that collection.
+An empty impact-assessment POST returns 403 `read_only_mode`. Public staging
+remains sample-only read-only. No migration, grant or command contract change.
+Full verification remains backend 1025 passed (124 real PostgreSQL), frontend
+416 passed, production build and eight production SSR groups passed.
+
+ROADMAP remains **34/44 (77%)**, read groups **16/17 (94%)**. Organization and
+manufacturing catalogs/profiles remain in partial group 17. CI PR #1 remains
+open/unmerged and is not counted as operational acceptance. Next continue those
+bounded consumers, then approved identity/session and controlled submission,
+recovery/correction/revocation, followed by operational acceptance.
+
+
+## Bounded organization directories and profiles — API 0.18.19, 2026-10-04
+
+Mode: Codex cloud. Developed from verified GitHub main `b3a621975d174d79444bf360ad978eec353ef30b`.
+All six supplier/customer/project directory/profile consumers now use
+`organization_views.py`, `organization-catalog.tsx` and `organization-profile.tsx`.
+Directories fetch bounded scalar rows and full filtered counts instead of every
+software/project/site name and release array. Open a profile to browse related
+records. Profiles retain exact metadata/materials UUID, supplier introduction,
+customer region/release-history link and project customer/platform/latest release.
+Software portfolio, customer projects/current software and project sites each have
+owned bounded pages. Project site links use the stored unique site code accepted by the existing
+manufacturing profile route; the API retains each exact site UUID. Supplier
+product links select its exact software UUID; latest
+SSR and ASR links target the stored release UUID, not a version string.
+
+Search treats wildcard characters literally; status/country/customer UUID filters
+are exact. Region includes null-only UNASSIGNED; blank region selects all. Limits
+are 1..100 (default 50), offsets 0..100000; unknown/kind-inappropriate fields fail
+422. Stable code/UUID ordering avoids duplicate display-code pagination. Project
+UUID selection retains precedence over code; duplicate codes return 409 and
+canonical/uppercase/compact UUID links select the same project. Required
+organization_id pins each collection to the resolved parent; a foreign pin is 404.
+No parent or child rich-array fallback is used. Failed/beyond-end child pages keep
+full parent counts; missing optional customer display metadata retains project UUID.
+
+Counts preserve existing relationships: supplier products by supplier UUID;
+customer projects by stored customer UUID; projects with current software require
+real Release/detail membership matching both project and customer. Project latest
+release uses detail project UUID alone, preserving legacy scope even when detail
+customer differs. Supplier latest selects STANDARD releases only. Latest is
+created_at DESC NULLS LAST then release UUID DESC. These are live context/count
+observations, not release approval, impact, frozen evidence or access grants.
+
+No migration, head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only, default Chinese/selectable English.
+Legacy organization APIs remain compatible. Release matrix already has bounded
+reads and is unchanged. The remaining group-17 consumers are manufacturing site
+directory/detail and their line/current-deployment context; organization reads
+are migrated. ROADMAP stays **34/44 (77%)**, read groups **16/17 (94%)**;
+Phase 4 remains 8/9 until the entire open read acceptance item is verified.
+Next manufacturing reads, then approved identity/session, controlled submission,
+uncertain-result recovery/correction/revocation and operational acceptance.
+CI PR #1 remains open/unmerged. Conditional estimates remain 4–8 focused packages
+toward internal use and 12–20 toward production review, pending provider decisions.
+
+Validation: full Python 3.12 backend **1048 passed**, **8687 warnings**, no skips,
+including **125 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+23 new backend cases cover legacy parent/child/latest parity, exact cross-customer
+release semantics, 205-parent and 120-child growth with constant scalar SQL/no ORM
+identity graph, literal filters/null region, duplicate project-code identity,
+missing metadata, owned pins and public-write rejection. PostgreSQL verifies
+complete totals beyond 200, deterministic latest release ties and read audit purity.
+Frontend **435 passed**, no skips; final Next/OpenNext production build passed.
+**24 actual production Next SSR groups** verify six Chinese/English views, full
+beyond-end totals, invalid owned pages, repeated catalog filters, exact related/
+materials/release links and missing/foreign parents stopping child reads.
+Single Alembic head/full upgrade SQL generation pass. Cloud rollout pending
+at this feature commit; verified rollout will be recorded separately.
+
+
+## 2026-10-04 — Verified organization cloud rollout
+
+Main contains feature `4620a35b06c92736a2076c1e6d856c1afe2f0dfd` and site-link
+compatibility correction `50140be3ea8fef84653fc667d7e35f98c848e2cb`.
+Cloudflare Workers Builds succeeded for the feature at 2026-10-04T09:01:40Z
+and for the correction at **2026-10-04T09:11:26Z**. Live HTTPS readiness is
+200, API **0.18.19**, schema `0018_asr_evidence_index`. Render provider deployment
+metadata was not inspected; the API version/behavior is live rollout evidence.
+
+Public sample has one supplier, one customer and one project. New full counts,
+owned collection totals and latest versions match the legacy reads. Supplier
+SUP-001 UUID `46fbde85-314c-440b-a3b8-df5be03a28a4` has one product; customer
+CUS-001 UUID `a2b8a98d-bb2d-4581-bf7b-451bbc0d731e` has one project; project
+PRJ-X UUID `c6448937-7b6e-4324-91cf-050177a0f0bc` has one site. Limit-one,
+beyond-end counts/empty items, invalid/unknown filters and foreign parent pins
+behave correctly. The larger parent/child windows and next-page transitions
+are covered by local SQLite/PostgreSQL and production SSR fixtures; this single-row
+live sample does not claim multi-page traversal.
+
+All six Cloudflare views pass Chinese/English checks, retain exact materials UUIDs
+and preserve parent context on invalid child cursors. Project site link uses the
+stored unique code `/manufacturing/sites/FACTORY-A`, resolving the exact linked
+site UUID `935fa56f-30e7-4f3a-b809-b6fd0ea3bd27`. Actual project HTML contains
+that link; the site frontend returns HTTP 200 with Factory A and the legacy site
+API returns the same UUID. This corrects an initial UUID URL incompatible with
+the existing code-based site route. Final frontend 435 tests, production build
+and 24 production SSR groups passed again after correction; backend remains
+1048 passed (125 real PostgreSQL), no backend/schema change in the correction.
+Empty deployment POST returns 403 `read_only_mode`. No business writes occurred.
+
+ROADMAP **34/44 (77%)**, read groups **16/17 (94%)** remain; organization migration
+is complete for six consumers, manufacturing site/line context remains. All 14
+commands, schema 0018, sample-only public read-only mode and unmerged CI PR #1
+remain unchanged. Next manufacturing reads, then approved identity/session,
+controlled submission/recovery/corrections and operational acceptance.
+
+
+## Bounded manufacturing consumers — API 0.18.20, 2026-10-04
+
+Mode: Codex cloud. Developed from verified main `4fc79aa4e04885465cc15a582cee101f235bc670`.
+Manufacturing site directory now uses a scalar catalog with full filtered totals;
+site detail uses a scalar summary and one owned bounded line page. Neither consumer
+loads all sites, all lines or every latest-deployment changeover/batch history.
+Stored metadata, full line/deployed/MATCH/attention/approved-authorization counts,
+first-line context, recorded batch context and precise line command targets remain.
+Detailed deployment history opens the existing bounded deployment profile/catalog.
+Default Chinese/selectable English, independent failed/empty page states and full
+parent counts remain. Directory now links exact site UUID; existing site-code links
+from projects/production still work through the new resolver.
+
+Latest deployment is per-line created_at DESC NULLS LAST then deployment UUID DESC.
+MATCH/attention counts preserve stored deployment status, not rederived actual UUID
+matches. Approved authorization counts use real current authorization status on
+latest deployments; they count lines, not unique authorizations. No deployment is
+not an attention state. All-MATCH requires at least one line. Summary first context
+uses line name/UUID ordering. Recorded batch remains the earliest started_at/UUID
+batch on the first name/UUID-ordered line with batches on its latest deployment,
+regardless of batch status; it is not a claim of active production. Changeover
+context is earliest changed_at/UUID on the first line's latest deployment. Null
+history times sort last, matching production PostgreSQL ASC behavior. A new latest
+deployment can remove an older batch/changeover context. Foreign-site/older-deployment
+history cannot leak into these selections. Optional metadata remains null while
+stored UUIDs survive. No arbitrary release/version substitute is shown.
+
+New summary accepts exact site code or UUID (LIMIT 2); a UUID/code collision is
+409, missing site 404. Required site_id binds each line request to its resolved
+parent UUID; wrong pin is 404. Catalog supports literal q and exact status/region/
+customer_id/project_id filters; limit 1..100/default 50, offset 0..100000/default 0,
+extra/invalid fields 422. Stable site name/UUID and line name/UUID ordering.
+Encoded site-code separators are supported by suffix path routes. Links preserve
+actual existing route contracts: deployment/authorization/batch use stored unique
+numbers; release uses UUID and type; Snapshot uses number plus manifest_snapshot_id
+UUID; line expectation preparation carries exact line UUID. No bulk fallback.
+
+No migration; head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only. Identified read-consumer ledger now
+**17/17 (100%)**, previously 16/17: group 17's final two consumers are migrated.
+This is consumer completion, not removal of compatibility APIs. ROADMAP remains
+**34/44 (77%)**, Phase 4 **8/9 (89%)**: its literal remaining acceptance item asks
+to retire or bound old compatibility reads after migration. Those endpoints still
+exist with rich arrays; caller review and retirement/bounds are unfinished. The
+criterion and denominator are not rewritten to claim earned completion. See
+`docs/compatibility-read-retirement.md` for the concrete follow-up inventory.
+Next complete that compatibility contract review, then approved identity/session,
+controlled submission/outcome recovery, broader corrections/revocations and operations.
+CI PR #1 remains open/unmerged. Conditional package ranges stay 4–8 internal-use /
+12–20 production-review pending remaining contract/provider scope; no automatic reduction.
+
+Validation: full Python 3.12 backend **1069 passed**, **9112 warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+21 new backend cases cover legacy counts/latest/context parity, complete bounded
+line windows, tied latest UUID selection, exact filters/pins, empty/foreign context,
+missing metadata, encoded site code and ambiguous identifier, read-only denial and
+120-site/line/deployment growth with constant SQL shapes and no ORM identity graph.
+PostgreSQL verifies 209-line totals, latest MISMATCH precedence, missing current batch
+and no audit writes. Frontend **448 passed**, no skips; production Next/OpenNext
+build passed. **9 actual production Next SSR groups** verify catalog/profile zh/en,
+full beyond-end context, failed/repeated pagination, empty-site CHECK, parent identity
+stopping child reads and exact supported links/preparation UUID. Single Alembic head
+and full PostgreSQL upgrade SQL generation pass. Cloud rollout pending at feature
+commit; successful live verification is recorded separately afterward.
+
+
+## 2026-10-04 — Verified manufacturing cloud rollout
+
+Feature main commit `1d4cfed98fed3ec961f7da89b44b8c06b88d683e` has successful
+Cloudflare Workers Builds, completed **2026-10-04T12:28:32Z**. Live HTTPS
+`/health/ready` returns 200, API **0.18.20**, schema
+`0018_asr_evidence_index`. Render provider deployment metadata was not inspected;
+this is live API version/behavior evidence, not a claimed provider deployment ID.
+
+Public sample FACTORY-A UUID `935fa56f-30e7-4f3a-b809-b6fd0ea3bd27` is one site
+with one line, one latest deployment, one stored MATCH, zero attention lines and
+one current APPROVED-authorization line. Latest deployment UUID is
+`7c8338a6-9070-4090-9f74-999d845be058`; recorded batch UUID is
+`beb73c74-f10e-4ac7-a22a-02090ed1160f`. New scalar counts, latest line/authorization/
+expected Snapshot projection, first-line context, first changeover and recorded
+batch match legacy reads. UUID and legacy site-code summaries resolve identical
+site context. Limit-one/beyond-end pages preserve full totals; invalid/unknown
+fields and foreign site pins reject as specified. The one-line public sample does
+not demonstrate real next-page traversal; local growth, PostgreSQL 209-line windows
+and SSR fixtures cover larger pagination/tie cases.
+
+Cloudflare catalog/profile pass default Chinese and selected English. Directory
+links exact site UUID; old FACTORY-A links still open the same profile. Rendered
+line expectation preparation carries exact line UUID, deployment/authorization
+links use the stored unique numbers accepted by their existing profiles, Snapshot
+link carries manifest_snapshot_id. Invalid/beyond-end line pages preserve parent
+context/counts. Empty deployment POST returns 403 `read_only_mode`; verification
+requests wrote no business data. No migration or command/grant/provider change.
+Backend 1069 passed (126 real PostgreSQL), frontend 448 passed, final production
+build and nine production SSR groups passed; schema head remains 0018.
+
+Read-consumer ledger now **17/17 (100%)** under its original denominator. ROADMAP
+remains **34/44 (77%)**, Phase 4 **8/9 (89%)**, because its separate literal endpoint
+acceptance requires retirement/bounds on retained compatibility APIs. Their caller/
+contract review remains pending, documented in compatibility-read-retirement.md.
+CI PR #1 remains open/unmerged. Next compatibility endpoint review/transition,
+approved identity/session, controlled submission/recovery/corrections and operations.
+
+## 2026-10-04 — First compatibility read retirement / API 0.18.21
+
+Eight reviewed legacy supplier/customer/project and manufacturing site GET routes
+now return 410 `legacy_read_retired` with safely encoded successor URLs, required
+child UUID pin and summary-first migration instructions. Tombstones have no DB
+dependency and never invoke old rich serializers; nonexistent parents and invalid
+query fields still return the same retirement contract. OpenAPI marks exactly these
+GET paths deprecated. Internal comparison helpers remain callable. Release-matrix,
+bounded consumers, all 14 commands, identity settings and schema are unchanged.
+This deliberately breaks legacy HTTP response contracts; unknown external callers
+must migrate. Concrete paths and repository caller evidence are documented in
+docs/compatibility-read-retirement.md.
+
+Full backend: **1086 passed**, **9112 warnings**, no skips, including **126 real
+PostgreSQL 16.15 tests**. Seventeen new cases verify eight paths with normal/invalid
+queries, no DB/helper work, encoded identifiers, precise replacement pins, no
+route shadowing and retained commands. Frontend: **448 passed**, no skips; final
+Next/OpenNext production build passed. Alembic single head remains
+`0018_asr_evidence_index`, full offline upgrade SQL passed. Production SSR passed 33 groups (24 organization + 9 manufacturing), covering
+all eight bilingual consumers, invalid/empty windows, parent pins and exact links.
+Cloud rollout evidence is recorded after verification below.
+
+Read consumers remain 17/17, ROADMAP 34/44 (77%), Phase 4 8/9 (89%); other rich
+compatibility families still require retirement/bounds. The new Chinese plan in
+docs/development-plan.md lists ordered packages, acceptance gates and provider/
+environment dependencies. Next remaining compatibility reads and CI review; then
+approved OIDC/session, controlled submission/recovery, broad corrections and
+operations/company migration. Public staging stays sample-only and read-only.
+
+## Verified cloud rollout — API 0.18.21
+
+Feature commit: `f28553c6aad27a6a39b8c140b2af606362d83e6a`; tree
+`9c4a668dfa4d20528c841efd9243e0f5e7bcd5dc`. Cloudflare Workers Builds for this
+exact commit completed success at `2026-10-04T13:04:30Z`. Live smoke completed
+before this record at `2026-10-04T13:06:45+00:00`. Render provider deployment metadata was not
+inspected; HTTPS readiness and runtime behavior establish observed API version,
+not an asserted provider deployment ID or exact Render commit.
+
+HTTPS ready returns API **0.18.21**, schema **0018_asr_evidence_index**. All eight
+retired organization/manufacturing GET paths return 410 with successor instructions,
+Link and no-store headers; invalid legacy query fields also return 410. All four
+bounded catalogs, summaries and owned child pages remain usable; release-matrix
+still returns 200. Live default-Chinese/selected-English checks pass for eight
+consumers (16 rendered views). Strict extra filters reject 422, foreign site pin
+rejects 404, beyond-end owned line window preserves total with empty items.
+
+Supplier/customer/project each retain one owned record. FACTORY-A remains one
+line, one deployed line, one stored MATCH, zero attention, one approved-authorization
+line. Exact first deployment and recorded batch UUIDs match the previous verified
+sample. UUID and old site-code links resolve the same bounded summary. Public
+empty deployment POST rejects 403 `read_only_mode`; smoke creates no business data.
+Small sample checks do not establish large next-page behavior; regression growth/PG
+and 33 production SSR groups provide that evidence.
+
+Final verified tests: backend 1086 (126 real PostgreSQL), frontend 448, no skips;
+production build, 33 production SSR groups, single migration head and upgrade SQL
+pass. Existing datetime.utcnow deprecation warnings (9112) remain. CI PR #1 was
+checked open/unmerged this turn and is not counted complete. ROADMAP remains
+34/44; next packages and acceptance/dependencies are in docs/development-plan.md.
+
+## 2026-10-04 — Production/distribution retirement / API 0.18.22
+
+Eleven additional legacy production/distribution GET routes now return 410 with
+encoded successor URLs and explicit exact-scope instructions; cumulative retired
+HTTP reads: **19**. Four production routes (deployment list/detail/provenance and
+batch list) and seven distribution routes (delivery list/latest detail/exact rich
+revision, distribution list/detail, authorization list/detail) are reviewed. Exact
+Batch, bounded catalogs/profile/artifacts, shared helpers and all 14 POST commands
+remain. Internal comparison fixtures retain direct legacy helper calls. Unknown
+external HTTP consumers must migrate; this is an intentional contract break.
+
+Delivery selection is explicit by stored number/revision/UUID, not automatic latest
+or q substring identity. Deployment decision-history scope is the delivered pair
+from provenance.delivery, not actual software; missing delivery infers no decision
+scope. Retirement performs no DB read, graph loading or old validation, even for
+unknown parents/invalid old revision values. Named parameters are encoded separately.
+No migration, provider/identity/grant change or public-write enablement.
+
+Full backend **1111 passed**, **9112 existing deprecation warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests**. Twenty-five added cases cover new
+paths with normal/invalid queries, encoded numbers/revisions, no DB/helper work,
+unchanged registered successors/commands and exact provenance instructions.
+Targeted retirement/catalog/profile/command regression: 140 passed. Frontend
+**448 passed**, no skips. Single Alembic head remains `0018_asr_evidence_index`;
+full offline upgrade SQL passes. Final production Next/OpenNext build passes.
+24 actual production Next SSR groups pass: 11 views zh/en, sibling revision and
+exact deployment history/command links against a real backend SQLite fixture;
+no retired API requests occur. Cloud rollout is recorded after verification below.
+
+Progress remains ROADMAP **34/44 (77%)**, Phase 4 **8/9 (89%)**, identified read
+consumers **17/17**. Other compatibility families remain; no approved overall
+retirement denominator exists. CI PR #1 was checked open/unmerged and is not counted.
+Next remaining SCR/Issue/release/governance/audit contract review, then CI, approved
+identity/session, submission/recovery, broader corrections and operations.
+
+The plan now answers the completion question explicitly: seven work groups mean
+current-version scope, not seven turns. All acceptance gates plus 44/44 evidenced
+roadmap items establish development completion. Actual company target identity,
+permissions, recovery, network/data/operations review and release acceptance are
+required for deployment approval. VIN/additional features and maintenance remain
+separate later scope. Public sample continues read-only. See development-plan.md.
+
+## Verified cloud rollout — API 0.18.22
+
+Feature commit: `b3b90e7c723001f8ffdd31ff7a1094a59b81b42d`; tree
+`3f7498a54a599f442e25964ebccc79145b048b6c`. Cloudflare Workers Builds for this
+exact commit completed success at `2026-10-04T13:37:54Z`. Live smoke completed
+before this record at `2026-10-04T13:41:16+00:00`. Render provider metadata was not inspected;
+HTTPS version and behavior are runtime evidence, not an asserted provider deployment
+ID or exact Render commit.
+
+API ready reports **0.18.22**, schema **0018_asr_evidence_index**. All **19**
+reviewed tombstones return 410 with encoded successor URLs, Link and no-store
+headers, including unknown parents, malformed query and invalid old revision.
+Six bounded production/distribution catalogs and exact delivery revision profile/
+artifacts, distribution/authorization/deployment profiles and exact Batch pass.
+**22 live bilingual views** (11 views, Chinese default/selected English) pass.
+Each of six exact history filters matches its profile full count: delivery
+distributions, distribution authorizations, authorization deployments/batches,
+deployment batches/changeovers each equals one in the current sample. The delivered
+release/Snapshot decision scope passes. Beyond-end history keeps total with empty
+items; invalid limit rejects 422. Release-matrix remains 200. Five empty POSTs
+(deployment, actual report, delivery, distribution, authorization) all reject
+403 `read_only_mode`; no business data is created. Small live samples do not prove
+large pagination; backend growth/PG and production SSR fixtures cover those cases.
+
+Final verified checks: backend **1111 passed** including **126 real PostgreSQL**;
+frontend **448 passed**, no skips. Production Next/OpenNext build completes;
+**24 production Next SSR groups** against real backend fixtures pass. Alembic has
+one head and full upgrade SQL passes. Existing 9112 datetime deprecation warnings
+remain. CI PR #1 remains open/unmerged at this turn's check. Progress stays
+**34/44 (77%)**, read consumers **17/17**; first work group is still incomplete.
+See development-plan.md for remaining order, dependencies and completion gates.
+
+## 2026-10-04 — SCR/Issue retirement and seven-plan reporting / API 0.18.23
+
+Eight reviewed SCR/Issue GET routes retire with explicit 410 and exact summary/
+child/historical-Snapshot migration instructions; cumulative tombstones: 27.
+Internal comparison helpers, all bounded successors and all 14 commands remain.
+The old bounded-but-truncated assessment head is retired in favor of navigable
+complete history; not every route in the slice was unbounded. No DB/graph work or
+old query/UUID validation occurs before retirement. Unknown external callers must
+migrate; no redirect, historical-query forwarding or latest Snapshot substitution.
+No schema, identity/provider/grant or public-write change.
+
+Full backend **1132 passed**, **9112 existing deprecation warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests**. Eighteen added retirement cases
+verify eight paths with normal/invalid queries and historical-selection instructions.
+Three reporting checks enforce fixed scope/evidence, all 27 tombstones in the
+53-candidate ledger, no unresolved completed family and no stale plan table.
+Frontend **448 passed**, no skips; final production Next/OpenNext build passes.
+**21 actual production Next SSR groups** pass (6 SCR, 7 coverage, 8 Issue/impact),
+including bilingual views, independent invalid/empty pages, frozen UUID preparation
+and foreign-parent rejection. Single migration head and full offline upgrade SQL
+pass; schema remains 0018. Cloud evidence is recorded after verification below.
+
+Seven independent work-group milestone progress rows are now mandatory in every
+completion report and reproducible from docs/development-plan-progress.json using
+scripts/report_development_plan_progress.py. Plans 1–7: **50%, 0%, 20%, 33%,
+40%, 20%, 0%**. Plan 1 advances **40% → 50%** after SCR/Issue family completion;
+other values include existing verified preparation/backend safety foundations,
+not new provider-backed submission. Nine compatibility families plus one closure
+gate fix that plan's denominator at 10; remaining release/ASR, Snapshot, DVP,
+governance/audit and inventory acceptance prevent completion. Denominator changes
+require explicit scope explanation. These are equal milestone counts, not effort
+or production-readiness estimates; do not average them into ROADMAP progress.
+
+ROADMAP remains **34/44 (77%)**, Phase 4 **8/9**, read consumers **17/17**.
+CI PR #1 was checked open/unmerged. Next remaining compatibility families and
+closure, CI, approved identity/session, submission/recovery, corrections and
+operations. Public staging stays sample-only/read-only.
+
+## Verified cloud rollout and mandatory plan report — API 0.18.23
+
+Feature commit: `0e7366f49f52a4683f934c18eb4960adb05ae451`; tree
+`1f58b554abb338de25f5df5da8f43ca4e01bc489`. Cloudflare Workers Builds for this
+exact commit completed success at `2026-10-04T14:02:48Z`. Live checks completed
+before this record at `2026-10-04T14:12:05+00:00`. Render provider metadata was not inspected;
+HTTPS version/behavior is observed runtime evidence, not a provider deployment ID
+or asserted exact Render commit.
+
+Ready reports **0.18.23**, schema **0018_asr_evidence_index**. All **27** reviewed
+legacy GETs return 410 with successor/Link/no-store, even invalid old identities/
+queries. Two bounded catalogs, SCR/Issue summaries and all owned collections pass.
+**14 initial bilingual page checks** plus **2 explicit historical SCR checks**
+pass. The initial smoke had compared a translated Chinese title to English API
+text; the rule was corrected to use localized/HTML-escaped text and the full smoke
+rerun passed. This required no product change.
+
+SCR-142 retains one criterion, one linked Issue, two change points and one plan.
+Issue 310 retains one linked SCR, three candidate releases and zero judgments.
+Issue impact selects exact ASR `271334c3-9a99-4dc0-a7dc-75ba5754377b` and frozen
+Snapshot `c6f38c25-c42e-4bdb-8327-e16f7e85dd7b` (SNAP-008). Initial SCR selection
+used a candidate without a freeze, preserving none. A separate explicit historical
+SCR check selects that ASR/SNAP-008: snapshot-number selection equals UUID selection;
+owned group/item pages and Chinese/English coverage retain exact pins; beyond-end
+items preserve complete total. Foreign Issue pins reject 404, invalid limits 422.
+Three empty POSTs (SCR assignment, Issue judgment, Deployment) all reject 403
+read_only_mode; no business data is created. Small samples do not establish large
+page traversal; backend growth/PG and SSR fixtures cover those cases.
+
+Final verification: backend **1132 passed** (126 real PostgreSQL), frontend **448
+passed**, no skips; production build, **21 production SSR groups**, single migration
+head and upgrade SQL pass. Three final reporting checks were rerun after allowing
+explicit bounded_evidence for retained active paths and removing hardcoded current
+percentage assertions, so later legitimate progress can advance. Existing 9112
+datetime deprecation warnings remain. CI PR #1 is open/unmerged at this turn's check.
+
+### Seven-plan milestone report (include in every completion)
+
+| 计划 | 已完成 / 验收里程碑 | 完成度 |
+| --- | ---: | ---: |
+| 1. 其余兼容读取治理 | 5/10 | **50%** |
+| 2. 持续集成 | 0/4 | **0%** |
+| 3. 身份、权限管理及会话 | 1/5 | **20%** |
+| 4. 首批受控提交 | 2/6 | **33%** |
+| 5. 覆盖全部 14 项命令 | 2/5 | **40%** |
+| 6. 追加式更正和撤销 | 1/5 | **20%** |
+| 7. 生产运营与公司迁移 | 0/6 | **0%** |
+
+Plan 1 advances 40% → 50%; other rows establish fixed accounting of already
+implemented foundations. Percentages are completed/equal acceptance milestones,
+not effort, real-provider acceptance or production-readiness estimates. Retained
+bounded paths require per-route code/test evidence; candidate inventory is 53 paths,
+not a claim that all are unbounded. Roadmap/module progress stays **34/44 (77%)**:
+100/100-demo/100-demo/89/89/60/0 by Phases 1–7. Read consumers stay **17/17**.
+Next release/ASR, Snapshot, DVP, governance/audit families and inventory closure,
+then CI, approved identity/session, submission/recovery, corrections and operations.
+
+## 2026-10-04 — API 0.18.24 exact Snapshot retirement
+
+Codex cloud continued from main 43bbe138e2e99942e541dbc48c0394d0ff1067af.
+Two legacy Snapshot GET routes retire with DB-free HTTP410 and encoded successor
+URLs. Exact manifests require snapshot_id; comparison files require source_id and
+target_id. Internal legacy helpers remain comparison fixtures. Reviewed tombstones
+27 → 29; all 14 commands remain. No migration or public-write enablement.
+
+Validation: full backend 1137 passed, zero skipped, including 126 real PostgreSQL
+regressions (16.15); existing 9112 datetime/deprecation warnings remain. Frontend
+448 passed, zero skipped; OpenNext/Cloudflare build complete. Eight production Next
+SSR groups pass against actual backend fixtures: historical/current manifests,
+paired comparison, Chinese/English, empty windows, exact pins and no retired calls.
+Alembic head remains 0018_asr_evidence_index; offline upgrade SQL passes.
+
+Seven plans: compatibility 6/10=60% (50% → 60%), CI 0/4=0%, identity/session
+1/5=20%, first controlled submit 2/6=33%, all14 commands 2/5=40%, corrections
+1/5=20%, operations/company migration 0/6=0%. Denominators stay fixed; these are
+acceptance milestones, not effort or production readiness. ROADMAP 34/44=77%; phase
+percentages 100/100-demo/100-demo/89/89/60/0; read consumers 17/17.
+
+DVP catalog/history are bounded, but replacement dvp_profile has unbounded linked
+criteria/change-point/Issue arrays. Do not mark the DVP family complete or retire
+its old GETs until these owned relations are paginated and the frontend migrated.
+Next: DVP relation pages, then release/ASR, governance/audit, full inventory closure.
+CI PR1 remains open/unmerged. Approved provider/session, real writes/recovery,
+corrections and operations remain incomplete. Public staging remains read-only.
+Cloud rollout evidence is recorded after publishing and live verification.
+
+### Verified cloud rollout — Snapshot API 0.18.24
+
+Feature commit ce57ab523ed610aa3f8da20fcf8e1e69ae87c089 (tree
+c60515bfff14d9058d5d5c4f5b8c5eddb0a57002) is published to GitHub main.
+Cloudflare Workers Builds: softwarelifecycle reports success for this exact commit,
+completed 2026-10-04T14:31:30Z. HTTPS /health/ready reports API0.18.24 and exact
+schema0018_asr_evidence_index; this is runtime behavior/version evidence, not a
+claim about Render provider deployment identifiers or an exact Render commit.
+
+Live checks: all 29 retired routes return HTTP410 with malformed old query fields;
+SNAP-008 exact summary and artifact/rule pages preserve UUIDs/full counts, one-row
+limits and empty end windows. Missing Snapshot pin returns422; wrong pin404.
+Self-comparison summary/files carry both source_id/target_id; missing pair422 and
+empty end window preserved. Four zh/en manifest/comparison views load successfully;
+DVP bounded catalog remains200. Public empty snapshot POST returns403 read_only_mode.
+The sample's small counts do not prove growth; SQL growth, historical comparison,
+same-release, ambiguous identity and PostgreSQL regressions provide that evidence.
+
+Plan delta: compatibility 50% → 60%; other plans remain 0/20/33/40/20/0%.
+Next prioritize DVP owned relation pagination and consumer migration before retiring
+its directory/detail. Then release/ASR, governance/audit and the 53-path closure.
+ROADMAP remains34/44=77%, phase progress100/100-demo/100-demo/89/89/60/0;
+read consumers17/17. Seven-plan report is reproducible with the reporting script.
+
+## 2026-10-04 — API 0.18.25 DVP relations and legacy retirement
+
+Codex cloud continued from main f4f9f786ef46ba13c9c6b652ba44b5b76d7922a1.
+DVP profile replaces three full linked arrays with complete SQL relation_counts.
+Independent criteria/points/issues pages require exact dvp_item_id, strict limits,
+complete totals and stable display-number/UUID order. Frontend consumes these pages,
+preserves independent offsets and historical execution filters, fails closed for
+wrong parent and isolates unavailable children. History adds item_id; selected
+Snapshot lookup now uses LIMIT1. Chinese default/English selectable remain.
+
+Legacy DVP directory/detail GETs now return410 without DB work; cumulative reviewed
+retirements29→31. Internal helper functions and all14 commands remain. External
+profile array clients must migrate to counts and relation pages. No migration,
+provider/grant change or public-write enablement.
+
+Validation: backend1146 passed, zero skipped, including127 real PostgreSQL tests;
+9141 existing/model deprecation and collection warnings remain. Frontend457 passed,
+zero skipped; OpenNext/Cloudflare build succeeds. Ten production Next SSR groups
+pass with real backend fixture: zh/en, independent pages, empty end windows,
+historical OLD execution selection, invalid one-page isolation, stale parent fail
+closed and no retired API requests. Growth covers105 records per relation,
+nonunique criterion/change-point numbers, complete navigation, stable read-query
+count and sibling isolation in SQLite/PostgreSQL. Read audit count stays unchanged.
+Schema head0018_asr_evidence_index and full offline upgrade SQL pass.
+
+Seven plans: compatibility7/10=70% (60%→70%); CI0/4=0%; identity/session1/5=20%;
+first controlled submit2/6=33%; all14 commands2/5=40%; corrections1/5=20%;
+operations/company migration0/6=0%. Fixed acceptance milestones are not effort or
+production readiness. ROADMAP34/44=77%; phases100/100-demo/100-demo/89/89/60/0;
+read consumers17/17. Release/ASR, governance/audit and full53-path closure remain.
+Next review governance/audit callers and scoped bounded successors, then release/ASR
+and full closure; CI, approved identity/session, real submissions/recovery,
+corrections and operational/company acceptance remain. Public staging read-only.
+Cloud rollout evidence is recorded after publishing and live verification.
+
+### Verified cloud rollout — DVP API0.18.25
+
+Feature commit7e5ed80a57a7a11f1c64aed663442d73b7d34d72 (tree
+3f67f2b7ade4286b2b043e012fb04155b07c30df) is published to GitHub main.
+Cloudflare Workers Builds: softwarelifecycle success for this exact commit,
+completed2026-10-04T14:52:20Z. HTTPS health reports API0.18.25/schema0018.
+This verifies runtime behavior/version; no exact Render provider commit/deployment
+identifier is claimed. Final followup changes documentation only.
+
+Live: all31 tombstones return410 with malformed old queries. DVP catalog and exact
+profile return200; independent relation pages preserve item UUID, complete total,
+one-row limits and empty end windows. Missing owned pins422, wrong owned pins404.
+Execution history preserves item_id and original release/Snapshot context; explicit
+recorded historical Snapshot selection succeeds. Six zh/en catalog/detail/empty-page
+views pass. Empty public deployment POST remains403 read_only_mode. Small sample
+counts do not prove growth;105-record SQLite/PostgreSQL regression supplies it.
+
+Seven-plan report70/0/20/33/40/20/0%: plan1 advances60→70%; other rows unchanged.
+ROADMAP34/44=77%, phases100/100-demo/100-demo/89/89/60/0, consumers17/17.
+CI PR1 is still open/unmerged. Governance/audit, release/ASR and53-path closure
+remain; then CI, approved identity/session, controlled command submissions/recovery,
+corrections/revocation and operational/company acceptance. Public staging read-only.
+
+## 2026-10-05 — API0.18.26 complete governance steps and legacy retirement
+
+Codex cloud continued from main5e35e9314803365bdcc20eb3bf8e90eca9abc1e3.
+Approval detail now uses scalar original-target summary, owned paged steps and
+independent action history. Complete totals and exact approval UUIDs preserve
+navigation beyond200 steps. Cursors/action filters preserve each other; wrong parent
+fails closed, invalid child is isolated. Visible pending-step preparation retains
+its exact UUID without inferring execution authority. Existing bounded200-step
+profile remains compatible; internal legacy helpers and all14 commands remain.
+Three legacy approval/audit GETs retire with DB-free410; total31→34. Exact event
+payloads/actor identities and bounded audit catalog remain. No migration, provider,
+grant or public-write change. Chinese default/English selectable preserved.
+
+Validation: backend1155 passed, zero skipped (128 real PostgreSQL regressions);
+9168 existing model/deprecation/collection warnings. Frontend465 passed, zero skipped;
+OpenNext/Cloudflare build complete. Sixteen production Next SSR groups pass:
+zh/en catalogs/exact records,205-step navigation, empty window, invalid one-child
+isolation, stale-parent failure and no retired HTTP calls. SQL growth tests verify
+complete traversal and constant read query count; PostgreSQL reads leave audit count
+unchanged. Alembic head0018_asr_evidence_index and offline full upgrade SQL pass.
+
+Seven plans: compatibility8/10=80% (70→80); CI0/4=0%; identity/session1/5=20%;
+first submit2/6=33%; all14 commands2/5=40%; corrections1/5=20%; ops/company0/6=0%.
+Fixed acceptance milestones are not effort/production readiness. ROADMAP34/44=77%,
+phases100/100-demo/100-demo/89/89/60/0; read consumers17/17. Fixed53 candidate paths
+remain. Next release/ASR family review and full-inventory closure; then CI, approved
+identity/session, real submissions/recovery, corrections and operational acceptance.
+Public staging read-only. Cloud rollout evidence follows publication/verification.
+
+### Verified cloud rollout — governance/audit API0.18.26
+
+Feature commitf21a81a97dff0336693de703af862b892ddde6a7 (tree
+e96281b446457473b133abee1c40691b42b944b4) is published to GitHub main.
+Cloudflare Workers Builds: softwarelifecycle succeeds for this exact commit,
+completed2026-10-04T21:20:38Z (2026-10-05 Asia/Shanghai). HTTPS health confirms
+API0.18.26 and schema0018_asr_evidence_index. This is runtime behavior/version
+verification, not an exact Render provider deployment/commit claim.
+
+Live: all34 tombstones return410 with malformed old queries; scalar approval summary
+preserves exact original binding/full counts. Steps/actions preserve approval UUID/no,
+one-row limit and empty end windows; wrong pins404, missing required step pin422.
+Bounded decision/audit catalogs remain200; exact event payload and principal-identity
+fields remain accessible. Ten zh/en approval/decision/audit directory/detail/empty-page
+views pass. Empty public approval-action POST remains403 read_only_mode.
+Small sample counts are not growth evidence;205-step SQLite/PostgreSQL regression
+verifies navigation beyond the retained legacy bounded200-step preview.
+
+Seven plans80/0/20/33/40/20/0%: compatibility advances70→80, others unchanged.
+ROADMAP34/44=77%, phase percentages100/100-demo/100-demo/89/89/60/0; consumers17/17.
+CI PR1 remains open/unmerged. Next release/ASR candidate review with per-route bounded
+proof or explicit retirement, then full53-path closure. Approved identity/session,
+real controlled command submissions/recovery, corrections and operations remain.
+Public sample remains read-only. Final followup changes documentation only.
+
+## 2026-10-05 — Release/ASR retirement and fixed-candidate closure, API0.18.27
+
+The 19 release-family candidates are resolved: 16 legacy GETs now return HTTP410
+without database access; three active scalar reads remain: exact ASR profile,
+ASR downstream-summary and release coverage. Retained reads use full SQL counts,
+no growing child arrays or child ORM graph, and preserve stored UUID/Snapshot scope.
+SQLite growth checks compare fixed read-query count before/after120 records;
+PostgreSQL verifies complete aggregates and no audit mutation. Existing downstream
+summary tests cover the fixed seven count queries and exact recorded parent chain.
+
+Retired paths are the combined/standard/application directories, rich exact SSR,
+ASR decision/decisions/components/evidence/snapshot-policy/downstream/readiness,
+and five version-only overview/verification/artifacts/readiness/decision reads.
+Bounded summaries/catalogs/children remain. Version consumers first use exact
+release-catalog/application/resolve and explicitly handle unique/ambiguous/missing;
+no arbitrary release or UUID is inferred. SSR/components pages use the UUID path
+and returned identity, not unsupported query pins. Evidence/frozen policy pages
+pin selected Snapshot; passport children pin Snapshot/decision together. Current
+readiness fails closed on stale selection. Working artifact/policy aggregates
+and frozen Snapshot manifests/rules remain different scopes. Coverage preserves
+any-PASS semantics; this slice does not infer latest-result semantics or approval.
+
+Fixed53 candidates now equal50 retired +3 audited bounded, disjoint and exact.
+All nine families and full closure pass: plan1 10/10=100% (80→100).
+The corresponding ROADMAP endpoint acceptance item completes: Phase4 9/9=100%,
+overall35/44=80%. Consumers remain17/17. Other plans remain0/20/33/40/20/0;
+phase percentages100/100-demo/100-demo/100/89/60/0. This completes the fixed
+compatibility scope, not authenticated submissions, CI or production readiness.
+
+Validation:1191 backend tests pass with no skips, including129 real PostgreSQL
+checks;465 frontend tests; Cloudflare/OpenNext build;18 production Next SSR
+checks across nine views in Chinese/English; single migration head0018 and full
+upgrade SQL. Existing warnings are deprecations/collection notices (9661).
+No schema, provider, credentials or grant change; all14 POSTs and shared command
+helpers remain. Public sample remains read-only. Cloud rollout still requires
+independent feature-commit build and live API/page checks recorded below.
+
+### Verified cloud rollout — release closure API0.18.27
+
+Feature commit `cb41bac08a45d527c1001aeb6a49db8a69e592de` is on GitHub main.
+Its exact Cloudflare Workers Builds check completed success at2026-10-04T21:37:58Z.
+Live Render ready endpoint returns HTTP200, version0.18.27 and schema0018.
+Render provider deployment ID/commit metadata is unavailable; this is independent
+runtime version/behavior evidence, not a claim of verified provider commit identity.
+
+Live checks pass all50 tombstones (including unknown identifiers and invalid old
+query fields), three retained scalar reads, ten summaries/resolver responses,
+15 bounded first/end page pairs with complete stable totals, wrong/missing Snapshot
+pins, stale readiness and unsupported component-query pins. A newer catalog sample
+has no Snapshot; evidence/page checks explicitly use the2.3.4 frozen sample rather
+than assuming every release is frozen. Directory responses need not echo limit;
+requested row bounds, totals and end windows are checked per actual contract.
+
+All nine release directory/SSR/ASR/components/policy/passport/readiness/history
+views pass online in default Chinese and selectable English (18 checks). Empty
+Snapshot-create and Deployment POSTs return403 read_only_mode; no business mutation
+is submitted. No provider/credential/grant/company-target setup occurred.
+
+Final progress: plans100/0/20/33/40/20/0; fixed denominators10/4/5/6/5/5/6.
+ROADMAP35/44=80%; phases100/100-demo/100-demo/100/89/60/0; consumers17/17.
+Next package: CI PR#1 is still open/unmerged; reconcile it with current main,
+validate backend/PostgreSQL/migrations/frontend and establish mainline gates.
+Then approved identity/session and controlled submissions, broader append-only
+correction/revocation and production operations remain. The project is incomplete.

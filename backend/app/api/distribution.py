@@ -222,7 +222,6 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization, *, include_hi
     }
 
 
-@router.get("/deliveries")
 def list_deliveries(db: Session = Depends(get_db)):
     rows = db.scalars(select(DeliveryPackage).order_by(DeliveryPackage.created_at.desc())).all()
     return [
@@ -240,7 +239,6 @@ def list_deliveries(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/deliveries/{package_no}")
 def get_delivery(package_no: str, db: Session = Depends(get_db)):
     package = db.scalars(
         select(DeliveryPackage)
@@ -253,7 +251,6 @@ def get_delivery(package_no: str, db: Session = Depends(get_db)):
     return _delivery_detail(db, package)
 
 
-@router.get("/deliveries/{package_no}/revisions/{revision}")
 def get_delivery_revision(package_no: str, revision: int, db: Session = Depends(get_db)):
     return _delivery_detail(db, _delivery_revision(db, package_no, revision))
 
@@ -368,7 +365,6 @@ def create_delivery(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
-@router.get("/distributions")
 def list_distributions(db: Session = Depends(get_db)):
     rows = db.scalars(select(Distribution).order_by(Distribution.distribution_no)).all()
     return [
@@ -383,7 +379,6 @@ def list_distributions(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/distributions/{distribution_no}")
 def get_distribution(distribution_no: str, db: Session = Depends(get_db)):
     row = db.scalars(
         select(Distribution).where(Distribution.distribution_no == distribution_no)
@@ -431,7 +426,6 @@ def create_distribution(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
-@router.get("/authorizations")
 def list_authorizations(db: Session = Depends(get_db)):
     rows = db.scalars(select(SoftwareAuthorization).order_by(SoftwareAuthorization.authorization_no)).all()
     return [
@@ -453,7 +447,6 @@ def list_authorizations(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/authorizations/{authorization_no}")
 def get_authorization(authorization_no: str, db: Session = Depends(get_db)):
     row = db.scalars(
         select(SoftwareAuthorization).where(

@@ -1,8 +1,10 @@
 # 持续集成 / Continuous integration
 
 GitHub Actions runs `.github/workflows/ci.yml` for every push to `main`, every
-pull request and manual `workflow_dispatch`. Two independent required-to-pass jobs
-validate the backend/database and frontend. Branch protection is not configured
+pull request and manual `workflow_dispatch`. Two independent validation jobs
+check the backend/database and frontend; the stable `CI acceptance` job fails
+unless both finish successfully (including failed/skipped/cancelled dependency
+results). Branch protection is not configured
 by this workflow; a green run is test evidence, not a production approval.
 
 ## 检查范围 / Checks
@@ -61,3 +63,16 @@ wait for CI, create branch protections or certify a live deployment.
 
 Remaining operations work includes backup/restore drills, retention policy,
 monitoring/alerts, environment separation and approved company network/data use.
+
+## 本轮整合 / Current integration — 2026-10-05
+
+PR#1 is refreshed against main a18cc718. Current API0.18.27, schema0018,
+fixed53 compatibility closure and all17 migrated consumers are preserved.
+Report-gate regressions exercise process exit codes for failures, errors, skips,
+missing PostgreSQL evidence, empty/malformed/missing reports; migration guard tests
+prove remote/company/query-option targets never reach database connection.
+The workflow needs no deployment/OIDC/company credentials. `CI acceptance` is a
+stable candidate check name for a future protected-branch rule. Red CI does not
+configure GitHub branch protection or stop existing independent Render/Cloudflare
+automatic deploys. Actual main run evidence and seven-plan acceptance are recorded
+in HANDOFF/PROJECT_STATUS after merge; no unmerged PR is counted as main completion.

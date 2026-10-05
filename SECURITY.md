@@ -2,8 +2,6 @@
 
 ## Current status
 
-CI uses read-only repository permissions, SHA-pinned actions, non-persisted checkout credentials and disposable PostgreSQL service data. It uses no deployment/identity/company secrets and cannot grant public writes or deploy. The workflow runs ordinary `pull_request` events, not privileged `pull_request_target`. See `docs/ci.md`.
-
 The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. Every current write records an atomic audit event bound to that principal. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and legacy no-key writes retain weaker semantics; controlled UI, provider-backed acceptance and operations remain unfinished.
 
 ## Authentication boundary
@@ -351,3 +349,56 @@ Existing evaluate/recipient precedence and frozen delivery write validators are 
 Summary eligibility is an observation, not permission or a persisted approval receipt.
 All scoped authorization/trusted actor/request-ID/number/quota/atomic audit contracts
 remain unchanged. Public staging stays read-only; verification creates no business data.
+
+## Release catalog consumer migration — API 0.18.14
+
+Catalog and legacy resolver are read-only sample projections, not authorization or evidence of release. Exact ambiguous UUID/version matches fail closed in navigation. Strict filters reject malformed UUIDs/unknown fields; literal search escapes SQL wildcard characters. Public read-only guard and all 14 write contracts are unchanged.
+
+## SCR/Issue directory migration — API 0.18.15
+
+The new directory reads expose sample projections only, not authorization or readiness. Unknown filters/invalid UUIDs fail with 422, literal SQL substring search escapes wildcard characters. All write authentication/scope/actor/retry/atomic-audit guards remain unchanged; public staging stays read-only.
+
+## SCR detail read boundary — API 0.18.16
+
+Required SCR UUID pins and owned point/plan UUID checks prevent accidental mixed
+identity reads; they are not authorization grants or frozen-evidence guarantees.
+Public reads remain sample-only and read-only. DVP assignments and counts do not
+prove execution, passing results, release approval or permission to submit. No
+identity provider, write route, grant or public-write configuration changes here.
+
+## SCR coverage read pins — API 0.18.17
+
+SCR identity, exact candidate release scope and FROZEN Snapshot ownership are checked
+for every page; selected criterion/point/Issue UUID must belong to the SCR. These read
+pins do not grant authorization or freeze current definitions/assignments. Coverage
+excludes foreign/missing DVP references, distinguishes assignments from execution,
+and does not assert incorporation or authorize release. No grants/provider settings,
+write routes or public-write flags change. Public sample data remains read-only.
+
+## Issue read boundary — API 0.18.18
+
+Exact Issue UUID and linked-SCR software membership select candidate review context;
+FROZEN Snapshot ownership is checked on every impact page. These are read identity
+and evidence checks, not impact decisions, authorization grants or frozen definition
+guarantees. PASS/deployment counts do not confirm impact. No write/provider/grant
+configuration changes; public sample staging remains read-only.
+
+
+## Organization read migration — API 0.18.19
+
+Organization UUID pins prevent accidental mixed-parent collection reads; they grant no access or write permission. Software/project/site counts and latest version are mutable observations, not release authorization or frozen evidence. No identity/provider/scoped grant/public-write configuration changes. Public sample staging remains read-only.
+
+
+## Manufacturing read migration — API 0.18.20
+
+Exact site resolution and required site_id select read identity only. Stored MATCH/APPROVED counts are observations, not production grants; recorded batch is not necessarily active. New reads do not alter scoped actor permissions, provider settings or public-write guards. Public staging remains sample-only/read-only.
+
+## CI integration — 2026-10-05
+
+GitHub Actions CI checks complete backend tests on disposable PostgreSQL16,
+single migration head/SQL/isolated round trip and frontend tests/OpenNext build.
+Read-only repository permissions, SHA-pinned actions and unpersisted checkout
+credentials are retained; CI acceptance fails if either validation job does not
+succeed. No deployment/identity/company secrets or public database are used.
+Branch protection and existing deployment triggers remain separate settings.
+See docs/ci.md and final run evidence in HANDOFF.md.

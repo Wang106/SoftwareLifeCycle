@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.13`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.26`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -17,17 +17,17 @@ This document is a maintained map, not a replacement for the generated OpenAPI s
 | Area | Representative paths | Notes |
 | --- | --- | --- |
 | Dashboard/search | `/api/v1/dashboard/summary`, `/api/v1/search` | Live counts and cross-domain lookup |
-| Organizations | `/api/v1/organizations/suppliers`, `/customers`, `/projects`, `/release-matrix` | Project detail uses UUID when codes may be ambiguous |
-| Releases | `/api/v1/releases`, `/releases/standard`, `/releases/application`, `/releases/application/id/{release_id}` | Exact-ID application profiles are preferred over version-only compatibility routes |
-| Snapshot evidence | `/api/v1/releases/{release_id}/snapshots`, `/api/v1/snapshots/{snapshot_no}`, `/compare/{target_no}` | Frozen manifest/history and metadata comparison |
-| Change/Issue | `/api/v1/changes`, `/changes/{request_no}`, `/changes/{request_no}/coverage`, `/issues/{issue_no}/impact` | Coverage and impact remain release/snapshot scoped |
+| Organizations | `/api/v1/organization-views/{suppliers,customers,projects}`, summary/items; `/api/v1/organizations/release-matrix` | Bounded catalogs and UUID-pinned child pages; legacy organization reads return 410 |
+| Releases | `/api/v1/release-catalog/{standard,application}`, exact SSR `/summary`, ASR `/id/{release_id}` | Legacy catalogs/version graphs return410; retained exact ASR profile is scalar |
+| Snapshot evidence | `/api/v1/releases/{release_id}/snapshots`, `/api/v1/snapshots/{snapshot_no}/summary`, `/artifacts`, `/rules`, `/comparison/{target_no}/summary`, `/files` | Exact frozen manifests and paired comparisons use bounded pages; legacy detail/compare GETs return 410 |
+| Change/Issue | `/api/v1/change-catalog/{requests,issues}`, `/change-views/{request_no}/summary`, `/change-coverage-views/{request_no}/summary`, `/issue-views/{issue_no}/summary` and exact impact | Bounded summary/children preserve exact release/Snapshot scope; legacy GETs return 410 |
 | Testing | `/api/v1/testing/dvp/catalog`, `/testing/dvp/id/{item_id}/profile`, `/testing/releases` | Bounded DVP directory plus test-release records |
 | Governance | `/api/v1/governance/approvals`, `/decisions`, exact profiles/actions | Preferred bounded governance history |
 | Distribution | `/api/v1/distribution/catalog/deliveries`, `/distributions`, `/authorizations` | Preferred bounded catalogs; exact delivery revision is significant |
 | Production | `/api/v1/production/catalog/{kind}`, `/deployments/{deployment_no}/profile`, `/batches/{batch_no}` | `{kind}` is deployments, changeovers or batches |
 | Audit/resources | `/api/v1/audit/events`, `/activity/{event_no}`, `/resources` | Bounded audit review and append-only external references |
 
-Older unbounded list/detail routes such as `/api/v1/deliveries`, `/distributions`, `/authorizations`, `/deployments`, `/batches`, `/approvals` and `/activity` remain for compatibility. New directory consumers should prefer bounded catalog endpoints.
+API 0.18.22 retires legacy delivery/distribution/authorization/deployment/batch lists and rich production/distribution reads with HTTP 410; use the bounded successors below. The fixed53-candidate review closes in API0.18.27:50 retired routes and3 retained scalar reads with explicit growth evidence.
 
 ## Existing command endpoints
 
@@ -499,8 +499,8 @@ the other offset and exact pin. Search-generated frozen artifact links include t
 exact file query and retained #artifact-UUID anchor, even when the file was beyond the
 first page. Old bare fragment bookmarks alone locate only files on the current page;
 use the exact file query for off-page targets. Identity/full hashes/history/compare/
-resource and preparation links remain; no bulk fallback. Legacy bare detail and compare
-APIs remain compatible and unbounded. No migration; schema 0018.
+resource and preparation links remain; no bulk fallback. API 0.18.24 retires legacy bare
+detail and compare GETs with HTTP 410; internal helpers remain. No migration; schema 0018.
 
 ## Bounded Snapshot comparison — API 0.18.11
 
@@ -536,7 +536,7 @@ compare_source_id/compare_target_id pin pagination to both selected identities, 
 reselecting latest. Changing the comparison form resets paging. Returned summary/page
 name/UUID/release/filter mismatch fails closed; a failed file page retains summary.
 Each side links its exact frozen file to paginated rules on the detail page. Chinese
-default/English supported. Legacy comparison route remains compatible/unbounded.
+default/English supported. API 0.18.24 retires the legacy comparison GET with HTTP 410; internal comparison helpers remain.
 No migration, schema 0018; separate GETs are observations, not a transaction receipt.
 
 ## ASR passport bounded consumer — 2026-10-03
@@ -607,3 +607,350 @@ SQL EXISTS avoids multiplying artifact counts for duplicated nullable recipient 
 Legacy readiness/artifact endpoints and ArtifactPolicyService.evaluate remain compatible;
 legacy array routes/evaluator may still be unbounded. Current UI does not call them.
 Reads/counts/pages are live observations, not cross-request transaction receipts or grants.
+
+## Bounded release catalogs — API 0.18.14
+
+- GET `/api/v1/release-catalog/{application|standard}` accepts q (literal escaped
+  substring, max 200), status (exact, max 30), software_id (exact UUID),
+  limit (1..100, default 50), offset (0..100000, default 0). Unknown fields and
+  malformed filters return 422. Returns kind, total, limit, offset, next_offset,
+  items. Counts cover all matching rows, including beyond-end pages. Ordering
+  is created_at DESC NULLS LAST then id DESC. Original catalog row fields are
+  preserved; missing optional metadata is null rather than discarding a release.
+  ASR snapshot_no is the latest stored snapshot_number, not a release judgment.
+- GET `/api/v1/release-catalog/application/resolve?identifier=...` requires a
+  nonempty literal identifier of at most 100 characters. Exact canonical UUID
+  OR exact version matches only APPLICATION releases, with LIMIT 2. Returns
+  state unique/ambiguous/missing; release {id, version} only for unique. A UUID
+  equal to another ASR version is ambiguous. No trimming, case folding or
+  arbitrary first-match fallback. Resolution is not limited by catalog pages.
+- Legacy `/releases/application`, `/releases/standard` array contracts remain.
+  New frontend consumers do not call them. Counts/pages observe mutable records
+  and may change between requests; no frozen pagination session is implied.
+
+## Bounded change and Issue directories — API 0.18.15
+
+- GET `/api/v1/change-catalog/requests`: q (literal request_no/title substring, max
+  200), status (exact, max 40), scope (exact, max 30), source (max 30), change_type
+  (max 40), software_id/customer_id/project_id (exact stored UUID fields), limit
+  (1..100, default 50), offset (0..100000, default 0). Unknown/invalid fields get
+  422. Order created_at DESC NULLS LAST, UUID DESC; request rows preserve old list
+  fields. Returns kind=changes, total, in_verification, ready_for_release, limit,
+  offset, next_offset, items. All three counts cover the full filtered set; status
+  statistics preserve case-sensitive TEST/READY substring markers from the former
+  UI and are not authoritative readiness judgments. Empty counts are zero.
+- GET `/api/v1/change-catalog/issues`: shared q/status/scope/limit/offset plus
+  severity (exact, max 20), ordered issue_no then UUID ASC. q searches literal
+  issue_no/title. Returns kind=issues and the same pagination envelope without
+  SCR status statistics. Rows include id/issue_no/title/scope/severity/status;
+  description remains on exact Issue profiles. SCR-only filters are rejected.
+- Beyond-end pages preserve full counts. Legacy bulk `/changes`, `/issues` and
+  rich profiles remain; only these two frontend directories migrated. Counts and
+  offset pages are independent live observations, not frozen cross-request data.
+
+## Bounded SCR detail — API 0.18.16
+
+All GET paths start `/api/v1/change-views/{request_no}`. Exact business number
+lookup returns 404 when absent. Unknown query fields and invalid UUID/pagination
+values return 422. No legacy bulk fallback is used by the SCR detail page.
+
+| Suffix | Projection | Stable ascending ordering |
+| --- | --- | --- |
+| `/summary` | Parent metadata and six full scalar counts, no child arrays | Single exact parent |
+| `/criteria` | Criterion UUID/number/description | criterion_no, UUID |
+| `/issues` | Relation UUID, Issue UUID/number/title/type/status | issue_no, relation_type, relation UUID |
+| `/points` | Point UUID/number/title/description/status/item_count | change_no, UUID |
+| `/plans` | Plan UUID/number/title/status/item_count | plan_no, UUID |
+| `/points/{point_id}/items` | Exact point assignment with DVP UUID/number/title/status/plan_id/relation_type | item_no, DVP UUID |
+| `/plans/{plan_id}/items` | Exact owned-plan DVP UUID/number/title/status/plan_id | item_no, DVP UUID |
+
+Summary accepts no query fields. Counts: criterion_count, issue_count (relations to
+existing Issues), point_count, plan_count, point_item_count (bindings to existing
+DVP items, including other plans), plan_item_count (items in this SCR's plans).
+Optional software/customer/project metadata may be null without discarding parent.
+All six pages require `change_id` UUID matching the resolved business number;
+limit 1..100 (default 50), offset 0..100000 (default 0). Wrong parent pin or child
+not owned by the SCR returns 404. Envelope: change_id, request_no, total, limit,
+offset, next_offset, items; selected child pages also return point_id or plan_id.
+Full totals remain on beyond-end pages. Offset/count reads are independent mutable
+observations; identity pins do not promise Snapshot consistency.
+
+Frontend query keys: scr_limit, criteria_offset, issues_offset, points_offset,
+plans_offset, point_items_offset, plan_items_offset, point_id, plan_id. Repeated
+parameters remain invalid rather than silently selecting/resetting one. Selected
+DVP links use exact item UUIDs. Coverage remains a separate rich consumer.
+
+## Bounded SCR coverage — API 0.18.17
+
+All GET paths start `/api/v1/change-coverage-views/{request_no}`. Unknown or invalid
+query fields return 422; missing exact SCR or mismatched change_id returns 404.
+Summary accepts optional release_id UUID, snapshot_no (1..80 chars) or snapshot_id
+(UUID or none). Snapshot selection requires release_id; snapshot_no and snapshot_id
+are mutually exclusive. Omitted Snapshot chooses latest FROZEN number. Exact release
+selection checks stored software/customer/project candidate scope (409 on mismatch);
+missing release 404, wrong/non-frozen Snapshot 409. Historical pins remain valid after
+new freezes. Literal none on a release that now has a freeze gets 409; reset report.
+
+Summary returns change_id, request_no, release_id/snapshot_id (UUID or none), selected
+release/Snapshot metadata, basis, candidate_count, gap_count and full coverage summary.
+No child arrays. Every page/selected-group summary requires change_id, release_id and
+snapshot_id pins; assignments-only uses none/none. limit 1..100 (default 50), offset
+0..100000 (default 0); Snapshot without release is rejected. Envelopes preserve pins
+plus total, limit, offset, next_offset, items; selected pages add kind/group_id.
+
+| Suffix | Rows | Stable ordering |
+| --- | --- | --- |
+| `/candidates` | Complete candidate release set, scalar UUID/type/version/status/created_at | created_at DESC NULLS LAST, UUID DESC |
+| `/gaps` | Full definition/assignment gaps, code/ref/message/owner_id/kind | code, ref, kind, owner_id ASC |
+| `/groups/{kind}` | Definitions with full assigned/excluded counts and verification | ref, UUID ASC |
+| `/items` | All items from SCR-owned plans, exact latest execution fields | item_no, UUID ASC |
+| `/groups/{kind}/{group_id}/summary` | Exact owned criterion/point/linked Issue scalar metadata/counts; no arrays | One exact record |
+| `/groups/{kind}/{group_id}/items` | Valid assigned items from SCR-owned plans, exact latest execution fields | item_no, UUID ASC |
+| `/acceptance/{criterion_id}/assignments` | Formal assignment UUID/test UUID/reviewer/reason/time, including excluded references | created_at, UUID ASC |
+
+kind is acceptance/points/issues. A selected UUID must be in this SCR's group or
+returns 404. Group summary includes assignment_count (criteria only); pagination
+fields are validated but do not change its single-record lookup. Test item rows
+include id/item_no/title/scope/declared_status/plan_id/execution_no/result/actual_result/
+executed_at; last four are null without matching execution context. Latest execution
+number is scoped to exact release + frozen Snapshot; prior PASS never replaces later
+FAIL. Full counts survive beyond-end and page failures. Definitions/assignments are
+current observations, not Snapshot-frozen definitions. Legacy coverage/write APIs remain.
+
+Frontend query keys: release_id, snapshot_no or snapshot_id, coverage_limit,
+candidates_offset, gaps_offset, acceptance_offset, coverage_points_offset,
+coverage_issues_offset, coverage_items_offset, group_items_offset, assignments_offset,
+group_kind, group_id. Links retain exact execution pins and other cursors; selecting a
+new group resets only its two child offsets. A new release review resets the context.
+Empty release/Snapshot form fields select assignments-only/default freeze; repeated
+parameters are forwarded as invalid rather than silently resetting.
+
+## Bounded Issue detail/impact — API 0.18.18
+
+All GET paths start `/api/v1/issue-views/{issue_no}`. Unknown fields/invalid UUIDs
+or pagination return 422. Missing business number or mismatched issue_id returns
+404. Summary accepts no query fields and returns existing Issue metadata plus
+linked_count (relations to real SCRs), candidate_count (visible releases with real
+software product metadata), assessment_count (all formal records), basis.
+
+| Suffix | Projection | Stable ordering |
+| --- | --- | --- |
+| `/changes` | Relation UUID, SCR UUID/number/title/status/relation_type | request_no, relation_type, relation UUID ASC |
+| `/candidates` | Scalar release/software/customer/project metadata, full actual-release deployment/batch counts, newest frozen Snapshot/current judgment UUID/decision | created_at DESC NULLS LAST, release UUID DESC |
+| `/assessments` | Complete formal judgment UUID/release/Snapshot/decision/reason/evidence/reviewer/time and optional display metadata | created_at, judgment UUID DESC |
+| `/impact/{release_id}/summary` | Exact candidate release, selected frozen Snapshot metadata/hash, newest judgment, distinct component_count and verification_count | One exact context |
+| `/impact/{release_id}/components` | Distinct frozen component code/normalized version | code, version ASC |
+| `/impact/{release_id}/verification` | Issue-linked item UUID/number/title and latest exact execution_no/result/actual_result/executed_at | item_no, item UUID ASC |
+
+All pages require issue_id UUID; limit 1..100 default 50, offset 0..100000 default 0.
+Envelope issue_id, issue_no, total, limit, offset, next_offset, items. Impact pages
+also require snapshot_id UUID or none and return release_id/snapshot_id pins. Impact
+summary accepts optional snapshot_id UUID/none; omitted selects newest FROZEN number.
+Wrong/non-frozen/sibling Snapshot or stale none returns 409. Historical frozen pins
+survive newer freezes. Missing release 404; release outside linked SCR software 409.
+Exact impact scope preserves software membership even when product display metadata
+is absent; the candidate directory retains the legacy product visibility rule.
+
+No customer/project ownership or shared version string infers impact. Multiple SCR
+relation types remain; Issue-linked verification items may be in different plans,
+matching the prior evidence API. Missing DVP references are excluded. History keeps
+formal records with null display metadata instead of discarding/crashing. Component
+projection includes no storage references. Latest judgments are current observations
+for the selected Snapshot and can change independently of page requests. Legacy APIs
+and write contracts remain; no write grant is implied.
+
+Frontend query: issue_limit, changes_offset, candidates_offset, assessments_offset,
+components_offset, verification_offset; impact context additionally snapshot_id.
+First/next preserve unrelated cursors and exact selected Snapshot; invalid repeated
+values remain invalid. Recorded judgment links use their stored release/Snapshot UUIDs.
+
+
+## Organization scalar views — API 0.18.19
+
+Prefix `/api/v1/organization-views`. All new routes are GET.
+
+| Path | Result / specific filters |
+| --- | --- |
+| `/suppliers` | Scalar supplier rows + complete software_count; country exact |
+| `/customers` | Scalar customer rows + project_count/released_project_count; region enum or UNASSIGNED/null |
+| `/projects` | Scalar project/customer/latest release rows + site_count; customer_id UUID exact |
+| `/{kind}/{identifier}/summary` | Scalar parent metadata/full counts; no query fields accepted |
+| `/{kind}/{identifier}/items` | Supplier software, customer projects/current release or project sites; required organization_id UUID |
+
+Catalog shared fields: q (max 200, literal contains in code/name), status (max 30,
+exact), limit 1..100/default 50, offset 0..100000/default 0. Country max 100.
+Region APAC/EUROPE/AMERICAS/OTHER/UNASSIGNED; blank means no filter. Only region
+UNASSIGNED selects null: supplier country text UNASSIGNED remains literal.
+Unknown/wrong-kind fields or invalid pagination/UUID return 422. Kind must be
+suppliers/customers/projects; unknown parent kind/missing parent returns 404.
+Supplier/customer identifier is exact business code. Project identifier is UUID
+with precedence, or exact code (LIMIT 2); ambiguous code 409. Page organization_id
+must match resolved parent or 404. Envelope kind, total, limit, offset,
+next_offset, items; owned pages also organization_id. Stable code/UUID ascending.
+
+No child arrays or long supplier description in directories. Summary retains
+supplier website/description. Owned software/project rows include exact latest
+release UUID/version (project also status); site rows include exact site UUID.
+Latest scope/order and count semantics are recorded in HANDOFF. Complete counts
+remain on beyond-end pages; a failed child does not substitute zero parent counts.
+Frontend uses limit/offset, retains valid filters and sends repeated values as
+invalid. These pins select live identity, not authorization or frozen evidence.
+At API 0.18.19 the legacy organization APIs remained compatible. API 0.18.21 retires the six supplier/customer/project GET routes (see below); bounded release-matrix remains available.
+
+
+## Manufacturing scalar views — API 0.18.20
+
+All GET; prefix `/api/v1/manufacturing-views/sites`.
+
+| Path suffix | Result / query |
+| --- | --- |
+| empty | Bounded site rows, full total and scalar line/deployed/stored MATCH/attention counts; q/status/region/customer_id/project_id/limit/offset |
+| `/{identifier}/summary` | Exact scalar site metadata/full counts and legacy first-line/recorded-batch context; no query fields |
+| `/{identifier}/lines` | Flattened owned lines and latest deployment/release/Snapshot/authorization metadata; required site_id UUID, limit/offset |
+
+q max 200 literal code/name contains; status max 30 and region max 100 exact;
+customer_id/project_id exact UUID. Limit 1..100/default 50; offset 0..100000/default 0.
+Unknown/invalid fields 422. Exact UUID or code resolution LIMIT 2; collision 409,
+missing 404; encoded code path separators supported. Required site_id mismatch 404.
+Envelope kind, total, limit, offset, next_offset, items; lines add site_id/site_code.
+Site name/UUID and line name/UUID ascending; repeated numeric frontend values fail.
+Latest per line is created_at DESC NULLS LAST/id DESC. Counts preserve stored states;
+summary ordering and batch non-active semantics are detailed in HANDOFF. Raw stored
+UUIDs survive optional metadata loss. No nested batch/changeover arrays are returned.
+These are mutable reads, not authorization or frozen evidence. Legacy manufacturing
+APIs remain compatible; endpoint retirement/bounds remain a separate acceptance task.
+
+## Reviewed compatibility retirement — API 0.18.21
+
+The six legacy organization GET catalog/profile routes and two manufacturing site
+GET catalog/profile routes return HTTP 410 `legacy_read_retired`. Response includes
+encoded `replacements`, `required_collection_pin` and migration instructions; Link
+rel=successor-version points to the first successor. Summary-first child reads use
+its UUID as organization_id/site_id. No DB read or rich serializer runs. Unknown
+parents and malformed legacy query fields also return 410, not existence results.
+This is an intentional compatibility break, not a redirect or partial old response.
+
+See docs/compatibility-read-retirement.md for the exact eight paths/caller review.
+Release matrix, bounded views, shared helper functions and all 14 commands remain.
+Other retained compatibility families are not retired by this change. No migration,
+identity/grant or public-write change; public staging remains sample-only/read-only.
+
+## Production/distribution compatibility retirement — API 0.18.22
+
+Eleven additional reviewed GET routes return 410 `legacy_read_retired`; cumulative
+tombstones total 19. Exact paths and repository caller evidence are in
+docs/compatibility-read-retirement.md. Rich delivery/distribution/authorization
+reads migrate to exact profiles plus bounded children. The unrevisioned delivery
+read points to the bounded catalog for explicit package/revision/UUID selection; q
+is a substring search, and no latest revision is silently substituted.
+
+Deployment rich detail/provenance migrate to the exact profile. History catalogs
+use its deployment UUID; decision history uses BOTH delivered release UUID and
+Snapshot UUID from provenance.delivery, never current actual software. Missing
+delivery does not infer decision scope. Invalid old queries/revisions or nonexistent
+parents return retirement 410 without DB work. Successor endpoint validation is
+unchanged. Exact Batch remains. All 14 POST commands sharing these paths remain.
+No schema, provider, identity/grant or public-write change.
+
+## SCR/Issue compatibility retirement — API 0.18.23
+
+Eight legacy SCR/Issue GETs return 410 `legacy_read_retired`, bringing the reviewed
+total to 27. Exact paths and caller review are in compatibility-read-retirement.md.
+Response successor paths and instructions require summary-first change_id/issue_id
+pins, independent pages and complete counts. Historical coverage selection carries
+release_id plus snapshot_no/snapshot_id; exact impact selection carries snapshot_id
+and preserves recorded judgment/frozen execution scope. None sentinels remain.
+No query forwarding, redirects, latest substitutes or silent evidence truncation.
+
+Retirement performs no DB read or old UUID/query validation. The old truncated
+assessment head is replaced by the navigable bounded history. Internal helpers,
+all bounded successors and all 14 commands are retained. No migration or public
+write change; sample staging remains read-only.
+
+## Snapshot compatibility retirement — API 0.18.24
+
+GET /api/v1/snapshots/{snapshot_no} and its /compare/{target_no} return
+410 without database work. Exact summary plus independent artifacts/rules pages
+require snapshot_id. Comparison summary plus files require source_id AND target_id;
+same-release and ambiguous-identity checks remain in the successors. Complete counts,
+historical selection and show/limit/offset replace full graph loads. Reviewed
+retirement count is now 29; all 14 POST commands remain. DVP retirement is pending:
+its replacement profile still loads unbounded linked criteria/change points/issues.
+
+## Bounded DVP relations and retirement — API 0.18.25
+
+GET /api/v1/testing/dvp/id/{item_id}/profile replaces its three linked arrays with
+complete scalar relation_counts (criteria/points/issues). Independently read
+/id/{item_id}/relations/{kind}, kind=criteria|points|issues, with required dvp_item_id
+UUID matching the path. Limit1..100/default50, offset0..100000/default0; strict queries
+reject unknown fields. Returns item_id/kind/total/limit/offset/next_offset/items;
+rows contain stored id, display number and text. Deterministic number/UUID ordering,
+full SQL counts and empty-page totals preserve complete navigation. Exact profile
+release options remain bounded100 with an explicit truncation marker.
+
+Execution history adds item_id and retains full context/total/limit/before_number.
+Release/Snapshot lookup uses LIMIT1; historical snapshot_no remains explicit.
+Legacy DVP list/detail GETs now return410 without DB work, bringing retirement count
+to31; successor instructions preserve exact item and historical execution selection.
+The profile array removal is an intentional contract change: external callers must
+migrate to relation_counts and relation pages. All14 writes and internal legacy helpers
+remain. See docs/compatibility-read-retirement.md. No migration/public-write change.
+
+## Complete approval steps and governance/audit retirement — API0.18.26
+
+GET /api/v1/governance/approvals/{approval_no}/summary returns exact original
+release/Snapshot binding and full step_total/action_total without loading steps.
+/steps requires approval_id UUID matching the exact number; strict limit1..100
+(default50), offset0..100000(default0), unknown fields rejected. Returns
+approval_id/approval_no/total/limit/offset/next_offset/items. Deterministic step_order,
+UUID ordering and full counts support steps beyond the former200-row preview.
+/actions accepts an optional approval_id pin and returns both parent identities;
+wrong pin404. Existing direct callers may omit this pin. The frontend always pins
+both independent children and preserves both cursors/action selection. Invalid child
+pages are isolated; stale parent fails closed. Preparation uses only exact visible
+step UUIDs, not inferred current-step authority. Legacy bounded governance profile
+with explicit200-row preview/truncation marker remains compatible; UI uses summary.
+
+Old GET /api/v1/approvals, /approvals/{approval_no}, /activity now return DB-free410,
+with encoded successors and explicit migration instructions. Retirement count34.
+Audit catalog provides full filtered counts, strict identity/time filters and bounded
+summaries; exact /activity/{event_no} retains complete payload/actor identity fields.
+All14 POSTs and internal legacy helper functions remain. No migration, auth/provider
+or public-write change. See docs/compatibility-read-retirement.md.
+
+## 2026-10-05 — Release/ASR retirement and fixed-candidate closure, API0.18.27
+
+The 19 release-family candidates are resolved: 16 legacy GETs now return HTTP410
+without database access; three active scalar reads remain: exact ASR profile,
+ASR downstream-summary and release coverage. Retained reads use full SQL counts,
+no growing child arrays or child ORM graph, and preserve stored UUID/Snapshot scope.
+SQLite growth checks compare fixed read-query count before/after120 records;
+PostgreSQL verifies complete aggregates and no audit mutation. Existing downstream
+summary tests cover the fixed seven count queries and exact recorded parent chain.
+
+Retired paths are the combined/standard/application directories, rich exact SSR,
+ASR decision/decisions/components/evidence/snapshot-policy/downstream/readiness,
+and five version-only overview/verification/artifacts/readiness/decision reads.
+Bounded summaries/catalogs/children remain. Version consumers first use exact
+release-catalog/application/resolve and explicitly handle unique/ambiguous/missing;
+no arbitrary release or UUID is inferred. SSR/components pages use the UUID path
+and returned identity, not unsupported query pins. Evidence/frozen policy pages
+pin selected Snapshot; passport children pin Snapshot/decision together. Current
+readiness fails closed on stale selection. Working artifact/policy aggregates
+and frozen Snapshot manifests/rules remain different scopes. Coverage preserves
+any-PASS semantics; this slice does not infer latest-result semantics or approval.
+
+Fixed53 candidates now equal50 retired +3 audited bounded, disjoint and exact.
+All nine families and full closure pass: plan1 10/10=100% (80→100).
+The corresponding ROADMAP endpoint acceptance item completes: Phase4 9/9=100%,
+overall35/44=80%. Consumers remain17/17. Other plans remain0/20/33/40/20/0;
+phase percentages100/100-demo/100-demo/100/89/60/0. This completes the fixed
+compatibility scope, not authenticated submissions, CI or production readiness.
+
+Validation:1191 backend tests pass with no skips, including129 real PostgreSQL
+checks;465 frontend tests; Cloudflare/OpenNext build;18 production Next SSR
+checks across nine views in Chinese/English; single migration head0018 and full
+upgrade SQL. Existing warnings are deprecations/collection notices (9661).
+No schema, provider, credentials or grant change; all14 POSTs and shared command
+helpers remain. Public sample remains read-only. Cloud rollout still requires
+independent feature-commit build and live API/page checks recorded below.

@@ -57,7 +57,6 @@ def _contexts(db, issue_id, releases):
     return result
 
 
-@router.get("/{issue_no}/impact")
 def issue_impact(issue_no: str, db: Session = Depends(get_db)):
     issue = db.scalars(select(Issue).where(Issue.issue_no == issue_no)).first()
     if issue is None:
@@ -117,7 +116,6 @@ def issue_impact(issue_no: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get('/{issue_no}/impact/{release_id}')
 def impact_evidence(issue_no: str, release_id: uuid.UUID, db: Session = Depends(get_db)):
     issue = db.scalars(select(Issue).where(Issue.issue_no == issue_no)).first()
     release = db.get(Release, release_id)
@@ -145,7 +143,6 @@ def impact_evidence(issue_no: str, release_id: uuid.UUID, db: Session = Depends(
                 if item.id in latest else None} for item in items]}
 
 
-@router.get('/{issue_no}/impact-assessments')
 def assessment_history(issue_no: str, limit: int = Query(50, ge=1, le=200), db: Session = Depends(get_db)):
     issue = db.scalars(select(Issue).where(Issue.issue_no == issue_no)).first()
     if not issue:

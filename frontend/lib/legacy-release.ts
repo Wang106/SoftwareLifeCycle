@@ -1,13 +1,12 @@
 import { apiGet } from './api';
 
-type ReleaseRecord = { id: string; version: string };
+type Resolution = { state: 'unique' | 'ambiguous' | 'missing'; release: { id: string; version: string } | null };
 
-/** Resolve old version-based URLs only when they identify exactly one real ASR. */
+/** Resolve exact UUID/version matches without loading a release directory. */
 export async function legacyReleaseTarget(id: string, suffix = ''): Promise<string> {
   if (id === 'demo') return '/releases/application';
-  const releases = await apiGet<ReleaseRecord[]>('/api/v1/releases/application');
-  const matches = releases?.filter(row => row.id === id || row.version === id) || [];
-  return matches.length === 1
-    ? `/releases/application/${encodeURIComponent(matches[0].id)}${suffix}`
+  const result = await apiGet<Resolution>(`/api/v1/release-catalog/application/resolve?${new URLSearchParams({identifier: id})}`);
+  return result?.state === 'unique' && result.release
+    ? `/releases/application/${encodeURIComponent(result.release.id)}${suffix}`
     : '/releases/application';
 }

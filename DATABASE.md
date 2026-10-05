@@ -11,12 +11,6 @@
 
 SQLite is used by isolated tests where supported, but it does not validate PostgreSQL JSONB, database triggers or row-lock concurrency. PostgreSQL is required for schema and append-only-rule verification.
 
-GitHub Actions now provisions a disposable PostgreSQL 16 database for every CI
-backend job. Migration verification checks the single configured head, full upgrade
-and head downgrade SQL, and a fresh-schema upgrade/downgrade/re-upgrade. Existing
-real PostgreSQL tests use isolated schemas; the JUnit gate rejects skips or missing
-PostgreSQL-module evidence. No schema revision is added. See `docs/ci.md`.
-
 ## Table groups
 
 | Domain | Main tables |
@@ -413,3 +407,62 @@ DB work. Compatibility array APIs and evaluate remain unchanged. A real PostgreS
 second-session newer Snapshot commit invalidates stale current-readiness summary pin
 with 409 while old exception UUID scope remains exact. Reads append no audit. Schema
 head remains 0018_asr_evidence_index; full PostgreSQL upgrade SQL remains valid.
+
+## Release catalog consumer migration — API 0.18.14
+
+No schema migration: head stays 0018_asr_evidence_index. Catalogs use outer joins to preserve parent release rows and SQL counts; latest Snapshot lookup uses the existing (release_id, snapshot_number) uniqueness/index. Resolver selects at most two scalar rows. Offset pages/counts are live observations; large-offset performance requires future workload measurements.
+
+## SCR/Issue directory migration — API 0.18.15
+
+No migration; single head 0018_asr_evidence_index. Scalar SCR status counts use case-sensitive SQL replace/length on PostgreSQL and SQLite; issue_no/UUID and SCR created_at/UUID ordering are deterministic. Filtering never expands child ID sets. Large-offset performance still needs representative load measurement.
+
+## SCR detail scalar projections — API 0.18.16
+
+No migration; head 0018_asr_evidence_index. Correlated scalar counts summarize
+criteria, valid Issue relations, points, plans, owned-plan items and valid point-item
+bindings. Child projections use count subqueries and stable bounded ORDER/LIMIT/OFFSET
+without ORM graph hydration or growing ID lists. Exact point/plan ownership checks
+prevent selecting another SCR's child. Existing cross-plan point assignments remain
+visible; missing references match legacy inner-join visibility. SQL statement shapes
+remain fixed after 120-row child/assignment growth. Counts/pages are live reads.
+
+## SCR coverage SQL projections — API 0.18.17
+
+No migration, head 0018. Owned-plan items form a scalar CTE; newest execution_no is
+selected with ROW_NUMBER on exact release/Snapshot/item UUID. Correlated group counts
+exclude outside-SCR/missing references, aggregate full assignment/result states and
+union all definition/assignment gaps without growing ID lists or ORM graphs. Issue
+membership uses EXISTS to avoid duplicate relation inflation. Bounded pages project
+only selected rows; formal criterion histories have their own pages. Counts preserve
+null/rounding/current-definition semantics. Historical execution pins do not freeze
+assignments; stale missing-freeze context rejects a newer freeze.
+
+## Issue scalar projections — API 0.18.18
+
+No migration, head 0018. Candidate software membership uses EXISTS via real SCR
+relations without growing ID lists; newest frozen Snapshot/current judgment and
+actual-release deployment/batch counts use correlated scalar selections. Judgment
+history outer joins optional display metadata and preserves formal UUIDs. Components
+use distinct code/coalesced version; latest Issue-linked execution uses ROW_NUMBER
+on exact release/Snapshot/item. Bounded projections/full counts avoid ORM graphs
+and rich artifact/deployment/batch arrays. Existing indexes remain in use.
+
+
+## Organization read migration — API 0.18.19
+
+No migration; head 0018. Correlated scalar COUNT/EXISTS and latest-release LIMIT 1 avoid transferring child/release arrays. Customer release membership matches stored customer plus project; project release context uses project only. Optional customer metadata outer join preserves project identity. Stable code/UUID pages and created_at/UUID latest selections are verified on PostgreSQL; reads append no audit event.
+
+
+## Manufacturing read migration — API 0.18.20
+
+No migration; head 0018. Latest per-line window uses created_at/id ordering; scalar count/context queries retain stored status and exact current authorization membership. Recorded batch joins only latest deployments and sorts line name/id then started_at/id, null times last. No growing ID lists or ORM graphs; optional metadata outer joins retain identities. PostgreSQL verifies tied latest UUID, 209-line totals and no audit writes.
+
+## CI integration — 2026-10-05
+
+GitHub Actions CI checks complete backend tests on disposable PostgreSQL16,
+single migration head/SQL/isolated round trip and frontend tests/OpenNext build.
+Read-only repository permissions, SHA-pinned actions and unpersisted checkout
+credentials are retained; CI acceptance fails if either validation job does not
+succeed. No deployment/identity/company secrets or public database are used.
+Branch protection and existing deployment triggers remain separate settings.
+See docs/ci.md and final run evidence in HANDOFF.md.

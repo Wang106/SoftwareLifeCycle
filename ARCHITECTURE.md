@@ -11,7 +11,7 @@ Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.9
+FastAPI 0.18.27
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
@@ -84,7 +84,6 @@ Frontend data pages prefer explicit unavailable/empty states over fabricated fal
 
 ## Runtime configurations
 
-- CI: GitHub Actions uses disposable hosted runners, Python 3.12/PostgreSQL 16 and Node 22. Backend tests and isolated migration round trips run alongside frontend tests/Next.js/OpenNext builds; no deployment credentials or public data are used. See `docs/ci.md`.
 - Local: Docker Compose runs PostgreSQL, FastAPI and Next.js; API startup migrates and optionally seeds.
 - Public demo: Cloudflare Worker serves the frontend and calls the Render FastAPI service; Render uses managed PostgreSQL and should set `READ_ONLY_MODE=true`.
 - Future company environment: requires a fresh database, `SEED_ON_STARTUP=false`, authentication/authorization and an approved frontend-to-API network path.
@@ -360,3 +359,95 @@ The frontend reads current summary first, checks exact release/Snapshot identity
 exception navigation and rejects stale current selections. Artifact checks remain based
 on live release declarations; DVP/exception checks remain tied to the observed current
 Snapshot. New reads do not create permissions, stored readiness receipts or write flows.
+
+## Release catalog consumer migration — API 0.18.14
+
+Release catalogs now use joined scalar projections, SQL counts and bounded windows; latest ASR Snapshot is a correlated LIMIT 1 scalar. Legacy ASR URL resolution uses a separate LIMIT 2 exact UUID-or-version query. The frontend shares a bilingual catalog component; bulk compatibility APIs remain.
+
+## SCR/Issue directory migration — API 0.18.15
+
+SCR/Issue directories now use two scalar SQL queries: full filtered aggregates plus a bounded page. They exclude rich child histories and long Issue descriptions. SCR TEST/READY indicators retain case-sensitive prior display semantics; exact scope filters use stored SCR fields. No inferred Issue ownership or release judgments.
+
+## SCR detail consumer — API 0.18.16
+
+`change_views.py` separates exact scalar parent metadata/full counts from four parent
+collections and two selected-child item collections. `change-collections.tsx` requests
+only selected point/plan items and verifies response SCR/child identities. Each
+collection fails independently while parent totals remain. First/next/select links
+preserve unrelated offsets. The parent page no longer requests the legacy rich
+SCR profile; coverage and other group-17 reads remain pending. No command changes.
+
+## SCR coverage consumer — API 0.18.17
+
+change_coverage_views.py separates full SQL summary/counts from six independent
+collections and exact selected-group item/criterion-history pages. Coverage frontend
+retains other cursors, verifies all SCR/release/Snapshot/group response pins, and
+keeps parent totals when a page fails. Candidate pagination replaces a truncated
+dropdown; exact UUID release input and historical Snapshot review remain. First/next
+links retain execution context. Legacy report and assignment service remain unchanged.
+
+## Issue detail/impact consumer — API 0.18.18
+
+issue_views.py supplies scalar Issue/impact summaries and five bounded collections.
+issue-collections.tsx checks Issue/release/Snapshot response pins and preserves
+independent first/next cursors with parent full counts on failures. Historical record
+links choose recorded Snapshot UUID; impact preparation carries exact target pins.
+No bulk fallback; legacy rich APIs remain. Organization/manufacturing reads are the
+remaining group-17 consumers.
+
+
+## Organization read migration — API 0.18.19
+
+organization_views.py projects scalar metadata/counts and bounded windows for three directories and three owned profile collections. Two SQL queries per catalog, three per owned page (including parent resolution); no growing ID arrays/ORM graphs. Shared frontend components verify parent kind/identifier and child organization UUID before rendering. Full counts remain when child pages fail; no legacy rich fallback.
+
+
+## Manufacturing read migration — API 0.18.20
+
+manufacturing_views.py uses a latest-per-line ROW_NUMBER projection, scalar CTE counts/context and bounded site/line windows. Summary/line consumers validate site kind/identity and owned page UUID/code. Full context remains when lines fail. Existing bounded deployment profile/catalog supplies history; no legacy rich fallback. All 17 identified consumer groups now migrated; compatibility API retirement is separate.
+
+## 2026-10-05 — Release/ASR retirement and fixed-candidate closure, API0.18.27
+
+The 19 release-family candidates are resolved: 16 legacy GETs now return HTTP410
+without database access; three active scalar reads remain: exact ASR profile,
+ASR downstream-summary and release coverage. Retained reads use full SQL counts,
+no growing child arrays or child ORM graph, and preserve stored UUID/Snapshot scope.
+SQLite growth checks compare fixed read-query count before/after120 records;
+PostgreSQL verifies complete aggregates and no audit mutation. Existing downstream
+summary tests cover the fixed seven count queries and exact recorded parent chain.
+
+Retired paths are the combined/standard/application directories, rich exact SSR,
+ASR decision/decisions/components/evidence/snapshot-policy/downstream/readiness,
+and five version-only overview/verification/artifacts/readiness/decision reads.
+Bounded summaries/catalogs/children remain. Version consumers first use exact
+release-catalog/application/resolve and explicitly handle unique/ambiguous/missing;
+no arbitrary release or UUID is inferred. SSR/components pages use the UUID path
+and returned identity, not unsupported query pins. Evidence/frozen policy pages
+pin selected Snapshot; passport children pin Snapshot/decision together. Current
+readiness fails closed on stale selection. Working artifact/policy aggregates
+and frozen Snapshot manifests/rules remain different scopes. Coverage preserves
+any-PASS semantics; this slice does not infer latest-result semantics or approval.
+
+Fixed53 candidates now equal50 retired +3 audited bounded, disjoint and exact.
+All nine families and full closure pass: plan1 10/10=100% (80→100).
+The corresponding ROADMAP endpoint acceptance item completes: Phase4 9/9=100%,
+overall35/44=80%. Consumers remain17/17. Other plans remain0/20/33/40/20/0;
+phase percentages100/100-demo/100-demo/100/89/60/0. This completes the fixed
+compatibility scope, not authenticated submissions, CI or production readiness.
+
+Validation:1191 backend tests pass with no skips, including129 real PostgreSQL
+checks;465 frontend tests; Cloudflare/OpenNext build;18 production Next SSR
+checks across nine views in Chinese/English; single migration head0018 and full
+upgrade SQL. Existing warnings are deprecations/collection notices (9661).
+No schema, provider, credentials or grant change; all14 POSTs and shared command
+helpers remain. Public sample remains read-only. Cloud rollout still requires
+independent feature-commit build and live API/page checks recorded below.
+
+## CI integration — 2026-10-05
+
+GitHub Actions CI checks complete backend tests on disposable PostgreSQL16,
+single migration head/SQL/isolated round trip and frontend tests/OpenNext build.
+Read-only repository permissions, SHA-pinned actions and unpersisted checkout
+credentials are retained; CI acceptance fails if either validation job does not
+succeed. No deployment/identity/company secrets or public database are used.
+Branch protection and existing deployment triggers remain separate settings.
+See docs/ci.md and final run evidence in HANDOFF.md.

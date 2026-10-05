@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "as_of_api": "0.18.27",
+  "baseline_commit": "5e35e9314803365bdcc20eb3bf8e90eca9abc1e3",
+  "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
+  "groups": [
+    {
+      "id": 1,
+      "name": "其余兼容读取治理",
+      "milestones": [
+        {
+          "id": "organization",
+          "label": "组织旧读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py"
+          ],
+          "routes": [
+            "/api/v1/organizations/suppliers",
+            "/api/v1/organizations/customers",
+            "/api/v1/organizations/projects",
+            "/api/v1/organizations/suppliers/{code}",
+            "/api/v1/organizations/customers/{code}",
+            "/api/v1/organizations/projects/{identifier}"
+          ]
+        },
+        {
+          "id": "manufacturing",
+          "label": "工厂旧读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py"
+          ],
+          "routes": [
+            "/api/v1/manufacturing/sites",
+            "/api/v1/manufacturing/sites/{site_code}"
+          ]
+        },
+        {
+          "id": "production",
+          "label": "生产旧读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py"
+          ],
+          "routes": [
+            "/api/v1/deployments",
+            "/api/v1/deployments/{deployment_no}",
+            "/api/v1/deployments/{deployment_no}/provenance",
+            "/api/v1/batches"
+          ]
+        },
+        {
+          "id": "distribution",
+          "label": "分发旧读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py"
+          ],
+          "routes": [
+            "/api/v1/deliveries",
+            "/api/v1/deliveries/{package_no}",
+            "/api/v1/deliveries/{package_no}/revisions/{revision}",
+            "/api/v1/distributions",
+            "/api/v1/distributions/{distribution_no}",
+            "/api/v1/authorizations",
+            "/api/v1/authorizations/{authorization_no}"
+          ]
+        },
+        {
+          "id": "scr-issue",
+          "label": "SCR/Issue 旧读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py"
+          ],
+          "routes": [
+            "/api/v1/changes",
+            "/api/v1/changes/{request_no}",
+            "/api/v1/changes/{request_no}/coverage",
+            "/api/v1/issues",
+            "/api/v1/issues/{issue_no}",
+            "/api/v1/issues/{issue_no}/impact",
+            "/api/v1/issues/{issue_no}/impact/{release_id}",
+            "/api/v1/issues/{issue_no}/impact-assessments"
+          ]
+        },
+        {
+          "id": "release",
+          "label": "发布/ASR 兼容读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_release_retirement_closure.py"
+          ],
+          "routes": [
+            "/api/v1/releases",
+            "/api/v1/releases/standard",
+            "/api/v1/releases/standard/id/{release_id}",
+            "/api/v1/releases/application",
+            "/api/v1/releases/application/id/{release_id}",
+            "/api/v1/releases/application/id/{release_id}/decision",
+            "/api/v1/releases/application/id/{release_id}/decisions",
+            "/api/v1/releases/application/id/{release_id}/components",
+            "/api/v1/releases/application/id/{release_id}/evidence",
+            "/api/v1/releases/application/id/{release_id}/snapshot-policy",
+            "/api/v1/releases/application/id/{release_id}/downstream-summary",
+            "/api/v1/releases/application/id/{release_id}/downstream",
+            "/api/v1/releases/application/{version}/overview",
+            "/api/v1/releases/application/{version}/verification",
+            "/api/v1/releases/application/{version}/artifacts",
+            "/api/v1/releases/application/{version}/readiness",
+            "/api/v1/releases/application/id/{release_id}/readiness",
+            "/api/v1/releases/application/{version}/decision",
+            "/api/v1/releases/{release_id}/coverage"
+          ],
+          "bounded_evidence": {
+            "/api/v1/releases/application/id/{release_id}": [
+              "backend/tests/test_release_retirement_closure.py",
+              "backend/tests/test_coverage_aggregates.py"
+            ],
+            "/api/v1/releases/application/id/{release_id}/downstream-summary": [
+              "backend/tests/test_release_retirement_closure.py",
+              "backend/tests/test_release_downstream_summary.py"
+            ],
+            "/api/v1/releases/{release_id}/coverage": [
+              "backend/tests/test_release_retirement_closure.py",
+              "backend/tests/test_coverage_aggregates.py"
+            ]
+          }
+        },
+        {
+          "id": "snapshot",
+          "label": "Snapshot/比较旧读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_snapshot_pages.py",
+            "backend/tests/test_snapshot_comparison_pages.py"
+          ],
+          "routes": [
+            "/api/v1/snapshots/{snapshot_no}",
+            "/api/v1/snapshots/{snapshot_no}/compare/{target_no}"
+          ]
+        },
+        {
+          "id": "dvp",
+          "label": "DVP 旧目录/详情",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_dvp_relations.py",
+            "frontend/tests/dvp-relations.test.cjs"
+          ],
+          "routes": [
+            "/api/v1/testing/dvp",
+            "/api/v1/testing/dvp/id/{item_id}"
+          ]
+        },
+        {
+          "id": "governance-audit",
+          "label": "治理/审计旧读取",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_compatibility_read_retirement.py",
+            "backend/tests/test_governance_catalog.py",
+            "backend/tests/test_governance_steps.py",
+            "backend/tests/test_audit_catalog.py"
+          ],
+          "routes": [
+            "/api/v1/approvals",
+            "/api/v1/approvals/{approval_no}",
+            "/api/v1/activity"
+          ]
+        },
+        {
+          "id": "closure",
+          "label": "全清单复核及迁移验收",
+          "complete": true,
+          "evidence": [
+            "docs/compatibility-read-retirement.md",
+            "backend/tests/test_release_retirement_closure.py",
+            "backend/tests/test_development_plan_progress.py"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "持续集成",
+      "milestones": [
+        {
+          "id": "ci-main",
+          "label": "CI 配置进入 main",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ci-backend-pg",
+          "label": "自动后端/真实 PG 验证",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ci-migration-frontend",
+          "label": "自动迁移/生产构建验证",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ci-failure-gate",
+          "label": "失败阻断与主线成功运行验收",
+          "complete": false,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "身份、权限管理及会话",
+      "milestones": [
+        {
+          "id": "identity-foundation",
+          "label": "API 身份/精确角色/拒绝及审计基础",
+          "complete": true,
+          "evidence": [
+            "SECURITY.md",
+            "backend/tests/test_auth.py",
+            "backend/tests/test_authorization.py",
+            "backend/tests/test_command_audit.py"
+          ]
+        },
+        {
+          "id": "identity-provider",
+          "label": "批准的 OIDC/受控环境配置",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "identity-session",
+          "label": "浏览器登录/注销/过期会话",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "identity-admin",
+          "label": "审计身份/授权管理",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "identity-real-e2e",
+          "label": "真实提供方正反例与凭据验收",
+          "complete": false,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "首批受控提交",
+      "milestones": [
+        {
+          "id": "first-prepare",
+          "label": "Snapshot/实际报告/Batch 请求准备",
+          "complete": true,
+          "evidence": [
+            "docs/controlled-write-ui.md",
+            "frontend/lib/command-draft.ts"
+          ]
+        },
+        {
+          "id": "first-safety",
+          "label": "首批后端重试/版本/并发/审计保护",
+          "complete": true,
+          "evidence": [
+            "docs/write-contracts.md",
+            "backend/tests/test_command_retry.py",
+            "backend/tests/test_actual_retry.py",
+            "backend/tests/test_command_concurrency_postgres.py"
+          ]
+        },
+        {
+          "id": "first-submit",
+          "label": "首批真实身份提交",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "first-recovery",
+          "label": "中断/不确定结果恢复",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "first-results",
+          "label": "成功/冲突结果及精确追溯",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "first-e2e",
+          "label": "首批中英文真实提供方端到端验收",
+          "complete": false,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "覆盖全部 14 项命令",
+      "milestones": [
+        {
+          "id": "all-prepare",
+          "label": "14 项请求准备表单",
+          "complete": true,
+          "evidence": [
+            "docs/controlled-write-ui.md",
+            "frontend/lib/command-draft.ts"
+          ]
+        },
+        {
+          "id": "all-safety",
+          "label": "14 项身份/角色/重试/并发/原子审计基础",
+          "complete": true,
+          "evidence": [
+            "docs/write-contracts.md",
+            "backend/tests/test_write_contracts.py",
+            "backend/tests/test_command_retry.py"
+          ]
+        },
+        {
+          "id": "all-submit",
+          "label": "14 项真实身份提交",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "all-recovery-results",
+          "label": "14 项确认/结果/恢复完整体验",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "all-e2e",
+          "label": "14 项中英文真实提供方正反例验收",
+          "complete": false,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "追加式更正和撤销",
+      "milestones": [
+        {
+          "id": "actual-correction",
+          "label": "实际报告追加审计更正",
+          "complete": true,
+          "evidence": [
+            "backend/tests/test_actual_retry.py",
+            "backend/tests/test_actual_concurrency_postgres.py"
+          ]
+        },
+        {
+          "id": "judgment-correction",
+          "label": "评审/影响判断/DVP 关系历史替代",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "distribution-revocation",
+          "label": "发布/分发/授权更正撤销",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "production-correction",
+          "label": "部署/更换/批次更正规则",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "correction-e2e",
+          "label": "全部更正权限/重试/并发/下游一致性验收",
+          "complete": false,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "生产运营与公司迁移",
+      "milestones": [
+        {
+          "id": "ops-environments",
+          "label": "演示/受控/公司环境隔离与禁 seed 验收",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ops-restore",
+          "label": "保留策略/备份及真实恢复演练",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ops-monitoring",
+          "label": "日志/指标/告警/事件处置",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ops-release",
+          "label": "重复部署/回滚手册及演练",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ops-network",
+          "label": "批准的公司网络与隔离验收",
+          "complete": false,
+          "evidence": []
+        },
+        {
+          "id": "ops-data",
+          "label": "公司数据隐私/权限审查及上线接受",
+          "complete": false,
+          "evidence": []
+        }
+      ]
+    }
+  ]
+}

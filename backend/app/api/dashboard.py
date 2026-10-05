@@ -21,7 +21,6 @@ from app.models.production import Deployment, ProductionBatch, SoftwareChangeove
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
 
 
-@router.get("/releases/standard")
 def list_standard_releases(db: Session = Depends(get_db)):
     releases = db.scalars(select(Release).where(Release.release_type == "STANDARD")
         .order_by(Release.created_at.desc(), Release.id.desc()).limit(200)).all()
@@ -40,7 +39,6 @@ def list_standard_releases(db: Session = Depends(get_db)):
             for release in releases]
 
 
-@router.get("/releases/standard/id/{release_id}")
 def standard_release_profile(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "STANDARD":
@@ -75,7 +73,6 @@ def standard_release_profile(release_id: uuid.UUID, db: Session = Depends(get_db
                              for row in applications if row.release_id in application_releases]}
 
 
-@router.get("/releases/application")
 def list_application_releases(db: Session = Depends(get_db)):
     releases = db.scalars(select(Release).where(Release.release_type == "APPLICATION")
         .order_by(Release.created_at.desc(), Release.id.desc()).limit(200)).all()
@@ -132,7 +129,6 @@ def application_release_profile(release_id: uuid.UUID, db: Session = Depends(get
     }
 
 
-@router.get("/releases/application/id/{release_id}/decision")
 def application_release_decision(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "APPLICATION":
@@ -168,7 +164,6 @@ def application_release_decision(release_id: uuid.UUID, db: Session = Depends(ge
     }
 
 
-@router.get("/releases/application/id/{release_id}/decisions")
 def application_release_decisions(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "APPLICATION":
@@ -202,7 +197,6 @@ def application_release_decisions(release_id: uuid.UUID, db: Session = Depends(g
     }
 
 
-@router.get("/releases/application/id/{release_id}/components")
 def application_release_components(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "APPLICATION":
@@ -243,7 +237,6 @@ def application_release_components(release_id: uuid.UUID, db: Session = Depends(
     }
 
 
-@router.get("/releases/application/id/{release_id}/evidence")
 def application_release_evidence(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "APPLICATION":
@@ -280,7 +273,6 @@ def application_release_evidence(release_id: uuid.UUID, db: Session = Depends(ge
     }
 
 
-@router.get("/releases/application/id/{release_id}/snapshot-policy")
 def application_snapshot_policy(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "APPLICATION":
@@ -360,7 +352,6 @@ def application_release_downstream_summary(release_id: uuid.UUID, db: Session = 
     }
 
 
-@router.get("/releases/application/id/{release_id}/downstream")
 def application_release_downstream(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "APPLICATION":
@@ -453,7 +444,6 @@ def dashboard_summary(db: Session = Depends(get_db)):
     }
 
 
-@router.get("/changes")
 def list_changes(db: Session = Depends(get_db)):
     rows = db.scalars(select(SoftwareChangeRequest).order_by(SoftwareChangeRequest.created_at.desc())).all()
     return [
@@ -470,7 +460,6 @@ def list_changes(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/changes/{request_no}")
 def change_detail(request_no: str, db: Session = Depends(get_db)):
     change = db.scalars(select(SoftwareChangeRequest).where(
         SoftwareChangeRequest.request_no == request_no
@@ -534,7 +523,6 @@ def change_detail(request_no: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/issues")
 def list_issues(db: Session = Depends(get_db)):
     rows = db.scalars(select(Issue).order_by(Issue.issue_no)).all()
     return [
@@ -551,7 +539,6 @@ def list_issues(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/issues/{issue_no}")
 def get_issue(issue_no: str, db: Session = Depends(get_db)):
     issue = db.scalars(select(Issue).where(Issue.issue_no == issue_no)).first()
     if not issue:
@@ -583,7 +570,6 @@ def get_issue(issue_no: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/testing/dvp")
 def list_dvp(db: Session = Depends(get_db)):
     items = db.scalars(select(DvpItem)).all()
     executions = db.scalars(select(DvpExecution)).all()
@@ -609,7 +595,6 @@ def list_dvp(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/testing/dvp/id/{item_id}")
 def dvp_item_detail(item_id: uuid.UUID, db: Session = Depends(get_db)):
     item = db.get(DvpItem, item_id)
     if item is None:
@@ -655,7 +640,6 @@ def _application_release(db: Session, version: str) -> Release | None:
     ).first()
 
 
-@router.get("/releases/application/{version}/overview")
 def release_overview(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
     if not release:
@@ -691,7 +675,6 @@ def release_overview(version: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/releases/application/{version}/verification")
 def release_verification(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
     if not release:
@@ -736,7 +719,6 @@ def release_verification(version: str, db: Session = Depends(get_db)):
     return {"coverage": coverage, "items": sorted(rows, key=lambda row: row["item_no"])}
 
 
-@router.get("/releases/application/{version}/artifacts")
 def release_artifacts(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
     if not release:
@@ -782,7 +764,6 @@ def release_artifacts(version: str, db: Session = Depends(get_db)):
     return {"summary": summary, "artifacts": rows}
 
 
-@router.get("/releases/application/{version}/readiness")
 def release_readiness(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
     if not release:
@@ -790,7 +771,6 @@ def release_readiness(version: str, db: Session = Depends(get_db)):
     return _readiness_for_release(release, db)
 
 
-@router.get("/releases/application/id/{release_id}/readiness")
 def application_release_readiness(release_id: uuid.UUID, db: Session = Depends(get_db)):
     release = db.get(Release, release_id)
     if release is None or release.release_type != "APPLICATION":
@@ -934,7 +914,6 @@ def _readiness_for_release(release: Release, db: Session, *, bounded=False):
 
 
 
-@router.get("/approvals")
 def list_approvals(db: Session = Depends(get_db)):
     rows = db.scalars(
         select(ApprovalRequest).order_by(ApprovalRequest.created_at.desc())
@@ -953,7 +932,6 @@ def list_approvals(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/approvals/{approval_no}")
 def get_approval(approval_no: str, db: Session = Depends(get_db)):
     approval = db.scalars(
         select(ApprovalRequest).where(ApprovalRequest.approval_no == approval_no)
@@ -1011,7 +989,6 @@ def get_approval(approval_no: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/releases/application/{version}/decision")
 def get_release_decision(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
     if not release:

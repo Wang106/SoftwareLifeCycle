@@ -1,14 +1,14 @@
 # Read-consumer migration tracking
 
-Reviewed main baseline: 2a4dd835659effeefcabdd1845efdbc5e18c4eac.
-Updated 2026-10-03 (Asia/Shanghai), API 0.18.13.
+Reviewed main baseline: 4fc79aa4e04885465cc15a582cee101f235bc670.
+Updated 2026-10-04 (Asia/Shanghai), API 0.18.20.
 
 The top-level ROADMAP counts completed acceptance items: 34/44 (77%). The remaining
-Phase 4 item covers several consumers, so finishing one consumer does not complete
-that entire item. This new ledger tracks **17 named scope groups**, equally counted
+Phase 4 item also requires retirement or bounds on retained compatibility endpoints.
+All identified consumers are now migrated; that separate endpoint acceptance is open. This new ledger tracks **17 named scope groups**, equally counted
 for visibility, not weighted effort or production readiness. At the original 27ce7b7 baseline,
-11/17 groups were migrated; exact detail made 12/17 (71%) at 2f34a9a. Comparison made 13/17 (76%); passport made 14/17 (82%); this package
-closes current readiness, making 15/17 (88%) under the same scope grouping. This is a finer
+11/17 groups were migrated; exact detail made 12/17 (71%) at 2f34a9a. Comparison made 13/17 (76%); passport made 14/17 (82%); readiness
+made 15/17 (88%); release catalogs/resolver made 16/17 (94%); manufacturing completes 17/17 (100%) under the same scope grouping. This is a finer
 breakdown, not a replacement for ROADMAP's denominator. A group closes only
 when its identified frontend consumer no longer relies on the bulk read. Legacy
 compatibility APIs can still exist; removing them requires caller review.
@@ -30,8 +30,8 @@ compatibility APIs can still exist; removing them requires caller review.
 | 13 | Snapshot comparison | Migrated | backend/app/api/snapshot_comparison_views.py; SQL summary and pinned bounded differences, exact rule-inspection links; legacy API remains |
 | 14 | ASR passport | Migrated | backend/app/api/asr_passport.py; fixed summary and four independently bounded histories, paired UUID pins and safe historical release display |
 | 15 | ASR readiness and compatibility policy reads | Migrated this package | backend/app/api/asr_readiness.py; SQL coverage/policy/exception aggregates and bounded approved exceptions; eight gates unchanged. Legacy array APIs/evaluate retained, not retired |
-| 16 | Release catalogs and legacy resolver | Pending | frontend release/application and release/standard catalog pages; frontend/lib/legacy-release.ts still loads application catalog for UUID/version resolution |
-| 17 | Other rich profiles and legacy domain catalogs | Pending | frontend changes/issues/organizations/manufacturing catalogs and details; change coverage/issue impact child sets need individual review and bounded contracts |
+| 16 | Release catalogs and legacy resolver | Migrated | backend/app/api/release_catalog.py; both release directories use bounded pages/full counts; legacy-release.ts uses exact bounded UUID/version resolution, including ambiguity beyond 200 rows |
+| 17 | Other rich profiles and legacy domain catalogs | Migrated | SCR/Issue directory pages now use backend/app/api/change_catalog.py and complete SQL counts. SCR detail now uses backend/app/api/change_views.py and independently bounded collections/selected-child items. SCR coverage now uses backend/app/api/change_coverage_views.py with full SQL summary, independently bounded collections and exact selected-group items/assignment history. Issue detail/impact now uses backend/app/api/issue_views.py for full-count relation/candidate/judgment pages and Snapshot-pinned component/verification pages. Organization catalogs/profiles now use backend/app/api/organization_views.py for scalar counts and owned bounded pages. Manufacturing site directory/detail now use backend/app/api/manufacturing_views.py for scalar full counts/context and owned bounded lines; detailed history opens existing bounded deployment views. All identified consumers in this group are migrated; legacy APIs remain |
 
 Groups 16–17 are broad and can require several packages. Splitting a group later must
 record a denominator change rather than implying earned progress. New consumers must
@@ -40,8 +40,166 @@ to ASR via the legacy resolver; no independent SSR passport migration is claimed
 No approved OIDC environment, authenticated UI submission, broad correction/revocation
 or operational release acceptance is inferred from this read work.
 
-Next: release catalogs/resolver and remaining rich reads; then
+Next: caller review and retirement/bounds for retained compatibility endpoints (the separate literal Phase 4 acceptance item); then
 approved identity/session, controlled submission and recovery/corrections, operations.
-Planning ranges remain conditional: 5–9 focused packages toward internal use and
-13–21 total toward production review, subject to remaining group sizes and provider
+Planning ranges remain conditional: 4–8 focused packages toward internal use and
+12–20 total toward production review, subject to remaining group sizes and provider
 configuration. Public staging remains read-only throughout.
+
+### Group 17 directory slice — API 0.18.15
+
+Completed this package: frontend `/changes` and `/issues` stop loading bulk lists.
+Two directories are migrated; rich profiles/domain catalogs remain. No denominator
+change, no earned group completion: 16/17 (94%), ROADMAP 34/44 (77%).
+Next bounded SCR detail collections, then Issue detail/impact and organization/
+manufacturing reads. Existing estimates remain conditional, not automatically reduced.
+
+### Group 17 SCR detail slice — API 0.18.16
+
+SCR detail parent and selected point/plan item consumers migrated. This adds no scope
+group completion: 16/17 (94%), ROADMAP 34/44 (77%). SCR coverage, Issue detail/impact
+and organization/manufacturing reads remain to inspect/migrate. Identity/session,
+controlled submission/recovery/corrections and operations remain. Public staging
+is sample-only read-only; package estimates stay conditional and unchanged.
+
+### Group 17 SCR coverage slice — API 0.18.17
+
+Summary, candidates, gaps, definitions, owned-plan items and selected-group
+evidence/criterion history migrated. Group 17 remains partial: 16/17 (94%),
+ROADMAP 34/44 (77%). Next Issue detail/impact, organization/manufacturing reads.
+Current definitions are not frozen by historical execution context pins. Legacy
+report remains compatible; public writes stay denied. Estimates unchanged.
+
+### Group 17 Issue detail/impact slice — API 0.18.18
+
+Issue parent, linked SCR relations, candidates, full judgment history and exact
+impact component/verification consumers migrated. Group 17 remains partial:
+16/17 (94%), ROADMAP 34/44 (77%). Next organization and manufacturing reads;
+then identity/session, controlled submission/recovery/corrections and operations.
+Historical execution pins do not freeze Issue links/judgments. Estimates unchanged.
+
+
+## Bounded organization directories and profiles — API 0.18.19, 2026-10-04
+
+Mode: Codex cloud. Developed from verified GitHub main `b3a621975d174d79444bf360ad978eec353ef30b`.
+All six supplier/customer/project directory/profile consumers now use
+`organization_views.py`, `organization-catalog.tsx` and `organization-profile.tsx`.
+Directories fetch bounded scalar rows and full filtered counts instead of every
+software/project/site name and release array. Open a profile to browse related
+records. Profiles retain exact metadata/materials UUID, supplier introduction,
+customer region/release-history link and project customer/platform/latest release.
+Software portfolio, customer projects/current software and project sites each have
+owned bounded pages. Project site links use the stored unique site code accepted by the existing
+manufacturing profile route; the API retains each exact site UUID. Supplier
+product links select its exact software UUID; latest
+SSR and ASR links target the stored release UUID, not a version string.
+
+Search treats wildcard characters literally; status/country/customer UUID filters
+are exact. Region includes null-only UNASSIGNED; blank region selects all. Limits
+are 1..100 (default 50), offsets 0..100000; unknown/kind-inappropriate fields fail
+422. Stable code/UUID ordering avoids duplicate display-code pagination. Project
+UUID selection retains precedence over code; duplicate codes return 409 and
+canonical/uppercase/compact UUID links select the same project. Required
+organization_id pins each collection to the resolved parent; a foreign pin is 404.
+No parent or child rich-array fallback is used. Failed/beyond-end child pages keep
+full parent counts; missing optional customer display metadata retains project UUID.
+
+Counts preserve existing relationships: supplier products by supplier UUID;
+customer projects by stored customer UUID; projects with current software require
+real Release/detail membership matching both project and customer. Project latest
+release uses detail project UUID alone, preserving legacy scope even when detail
+customer differs. Supplier latest selects STANDARD releases only. Latest is
+created_at DESC NULLS LAST then release UUID DESC. These are live context/count
+observations, not release approval, impact, frozen evidence or access grants.
+
+No migration, head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only, default Chinese/selectable English.
+Legacy organization APIs remain compatible. Release matrix already has bounded
+reads and is unchanged. The remaining group-17 consumers are manufacturing site
+directory/detail and their line/current-deployment context; organization reads
+are migrated. ROADMAP stays **34/44 (77%)**, read groups **16/17 (94%)**;
+Phase 4 remains 8/9 until the entire open read acceptance item is verified.
+Next manufacturing reads, then approved identity/session, controlled submission,
+uncertain-result recovery/correction/revocation and operational acceptance.
+CI PR #1 remains open/unmerged. Conditional estimates remain 4–8 focused packages
+toward internal use and 12–20 toward production review, pending provider decisions.
+
+Validation: full Python 3.12 backend **1048 passed**, **8687 warnings**, no skips,
+including **125 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+23 new backend cases cover legacy parent/child/latest parity, exact cross-customer
+release semantics, 205-parent and 120-child growth with constant scalar SQL/no ORM
+identity graph, literal filters/null region, duplicate project-code identity,
+missing metadata, owned pins and public-write rejection. PostgreSQL verifies
+complete totals beyond 200, deterministic latest release ties and read audit purity.
+Frontend **435 passed**, no skips; final Next/OpenNext production build passed.
+**24 actual production Next SSR groups** verify six Chinese/English views, full
+beyond-end totals, invalid owned pages, repeated catalog filters, exact related/
+materials/release links and missing/foreign parents stopping child reads.
+Single Alembic head/full upgrade SQL generation pass. Cloud rollout pending
+at this feature commit; verified rollout will be recorded separately.
+
+
+## Bounded manufacturing consumers — API 0.18.20, 2026-10-04
+
+Mode: Codex cloud. Developed from verified main `4fc79aa4e04885465cc15a582cee101f235bc670`.
+Manufacturing site directory now uses a scalar catalog with full filtered totals;
+site detail uses a scalar summary and one owned bounded line page. Neither consumer
+loads all sites, all lines or every latest-deployment changeover/batch history.
+Stored metadata, full line/deployed/MATCH/attention/approved-authorization counts,
+first-line context, recorded batch context and precise line command targets remain.
+Detailed deployment history opens the existing bounded deployment profile/catalog.
+Default Chinese/selectable English, independent failed/empty page states and full
+parent counts remain. Directory now links exact site UUID; existing site-code links
+from projects/production still work through the new resolver.
+
+Latest deployment is per-line created_at DESC NULLS LAST then deployment UUID DESC.
+MATCH/attention counts preserve stored deployment status, not rederived actual UUID
+matches. Approved authorization counts use real current authorization status on
+latest deployments; they count lines, not unique authorizations. No deployment is
+not an attention state. All-MATCH requires at least one line. Summary first context
+uses line name/UUID ordering. Recorded batch remains the earliest started_at/UUID
+batch on the first name/UUID-ordered line with batches on its latest deployment,
+regardless of batch status; it is not a claim of active production. Changeover
+context is earliest changed_at/UUID on the first line's latest deployment. Null
+history times sort last, matching production PostgreSQL ASC behavior. A new latest
+deployment can remove an older batch/changeover context. Foreign-site/older-deployment
+history cannot leak into these selections. Optional metadata remains null while
+stored UUIDs survive. No arbitrary release/version substitute is shown.
+
+New summary accepts exact site code or UUID (LIMIT 2); a UUID/code collision is
+409, missing site 404. Required site_id binds each line request to its resolved
+parent UUID; wrong pin is 404. Catalog supports literal q and exact status/region/
+customer_id/project_id filters; limit 1..100/default 50, offset 0..100000/default 0,
+extra/invalid fields 422. Stable site name/UUID and line name/UUID ordering.
+Encoded site-code separators are supported by suffix path routes. Links preserve
+actual existing route contracts: deployment/authorization/batch use stored unique
+numbers; release uses UUID and type; Snapshot uses number plus manifest_snapshot_id
+UUID; line expectation preparation carries exact line UUID. No bulk fallback.
+
+No migration; head `0018_asr_evidence_index`; all 14 write contracts unchanged.
+Public staging stays sample-only/read-only. Identified read-consumer ledger now
+**17/17 (100%)**, previously 16/17: group 17's final two consumers are migrated.
+This is consumer completion, not removal of compatibility APIs. ROADMAP remains
+**34/44 (77%)**, Phase 4 **8/9 (89%)**: its literal remaining acceptance item asks
+to retire or bound old compatibility reads after migration. Those endpoints still
+exist with rich arrays; caller review and retirement/bounds are unfinished. The
+criterion and denominator are not rewritten to claim earned completion. See
+`docs/compatibility-read-retirement.md` for the concrete follow-up inventory.
+Next complete that compatibility contract review, then approved identity/session,
+controlled submission/outcome recovery, broader corrections/revocations and operations.
+CI PR #1 remains open/unmerged. Conditional package ranges stay 4–8 internal-use /
+12–20 production-review pending remaining contract/provider scope; no automatic reduction.
+
+Validation: full Python 3.12 backend **1069 passed**, **9112 warnings**, no skips,
+including **126 real PostgreSQL 16.15 tests** on disposable migrated schemas.
+21 new backend cases cover legacy counts/latest/context parity, complete bounded
+line windows, tied latest UUID selection, exact filters/pins, empty/foreign context,
+missing metadata, encoded site code and ambiguous identifier, read-only denial and
+120-site/line/deployment growth with constant SQL shapes and no ORM identity graph.
+PostgreSQL verifies 209-line totals, latest MISMATCH precedence, missing current batch
+and no audit writes. Frontend **448 passed**, no skips; production Next/OpenNext
+build passed. **9 actual production Next SSR groups** verify catalog/profile zh/en,
+full beyond-end context, failed/repeated pagination, empty-site CHECK, parent identity
+stopping child reads and exact supported links/preparation UUID. Single Alembic head
+and full PostgreSQL upgrade SQL generation pass. Cloud rollout pending at feature
+commit; successful live verification is recorded separately afterward.

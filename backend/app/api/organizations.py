@@ -1,4 +1,4 @@
-"""Read-only organization profiles and their current software context."""
+"""Internal legacy comparison helpers; HTTP reads retired in compatibility_reads."""
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -66,13 +66,11 @@ def _projects(db: Session, rows: list[Project]) -> list[dict]:
             for row in rows]
 
 
-@router.get("/suppliers")
 def list_suppliers(db: Session = Depends(get_db)):
     rows = db.scalars(select(Supplier).order_by(Supplier.code).limit(200)).all()
     return _suppliers(db, rows)
 
 
-@router.get("/suppliers/{code}")
 def get_supplier(code: str, db: Session = Depends(get_db)):
     row = db.scalars(select(Supplier).where(Supplier.code == code)).first()
     if row is None:
@@ -80,13 +78,11 @@ def get_supplier(code: str, db: Session = Depends(get_db)):
     return _suppliers(db, [row])[0]
 
 
-@router.get("/customers")
 def list_customers(db: Session = Depends(get_db)):
     rows = db.scalars(select(Customer).order_by(Customer.code).limit(200)).all()
     return _customers(db, rows)
 
 
-@router.get("/customers/{code}")
 def get_customer(code: str, db: Session = Depends(get_db)):
     row = db.scalars(select(Customer).where(Customer.code == code)).first()
     if row is None:
@@ -94,13 +90,11 @@ def get_customer(code: str, db: Session = Depends(get_db)):
     return _customers(db, [row])[0]
 
 
-@router.get("/projects")
 def list_projects(db: Session = Depends(get_db)):
     rows = db.scalars(select(Project).order_by(Project.project_code).limit(200)).all()
     return _projects(db, rows)
 
 
-@router.get("/projects/{identifier}")
 def get_project(identifier: str, db: Session = Depends(get_db)):
     try:
         project_id = uuid.UUID(identifier)

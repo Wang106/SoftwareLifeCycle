@@ -61,7 +61,6 @@ def _event_detail(event: AuditEvent, related_release_id: str | None = None) -> d
     }
 
 
-@router.get("/activity")
 def list_activity(
     event_type: str | None = None,
     entity_type: str | None = None,
