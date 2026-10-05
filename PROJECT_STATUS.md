@@ -2403,3 +2403,19 @@ seven plans100/100/20/33/40/20/0, delta0. Next audited principal/grant
 administration, approved OIDC provider and real browser credential/recovery
 acceptance, controlled submission/outcome recovery for all14 commands,
 broader corrections and production operations remain.
+
+## Audited membership status development — 2026-10-06 (Asia/Shanghai)
+
+Mode Codex; started from main e6b2ecd6bda4c3d893292253206070696bbe5495.
+API0.18.30 adds an OIDC-required, read-only-blocked PLATFORM_ADMIN status
+transition for exact existing PROJECT/SOFTWARE memberships. Required event key,
+expected status and reason; same-admin exact-request retry reports historical
+applied and current states without reapplying. Principal/grant/membership locks
+and same-transaction authenticated audit; inactive recipients cannot resume.
+Separate ADMIN_CONTROL_CONTRACTS preserves the14 business command inventory.
+No schema/provider/secret/principal/global grant/environment write change.
+Full identity/grant administration and actual browser/provider acceptance remain
+pending. docs/development-plan.md now lists the remaining development sequence,
+external dependencies and completion conditions. Local/remote verification and
+rollout will be recorded after publication. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0.

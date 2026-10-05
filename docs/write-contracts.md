@@ -463,3 +463,13 @@ regardless of public read-only mode, ACTIVE USER, principal row locking and atom
 trusted-actor audit. They grant no software/project/business-write role. The route
 drift test compares all registered writes to the union of both exact inventories.
 See docs/oidc-browser-auth.md for ownership, expiry, quota and failure boundaries.
+
+## Authorization administration (separate from14 business commands)
+
+`ADMIN_CONTROL_CONTRACTS` independently inventories POST
+`/api/v1/security/admin/memberships/{scope}/{membership_id}/status`.
+OIDC_REQUIRED, ACTIVE_PLATFORM_ADMIN, authenticated actor, READ_ONLY_BLOCKED,
+ATOMIC_APPEND, admin identity/grant and exact membership row locks, mandatory
+event_no bound to exact request/admin, and expected membership status. It has no
+own-session read-only exception and does not expand the14 business command count.
+See docs/membership-administration.md for retry and in-flight request boundaries.

@@ -1,3 +1,4 @@
+from app.api.membership_admin import router as membership_admin_router
 from app.api.compatibility_reads import router as compatibility_reads_router
 from app.api.manufacturing_views import router as manufacturing_views_router
 from app.api.organization_views import router as organization_views_router
@@ -47,7 +48,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.29"
+APP_VERSION = "0.18.30"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -101,6 +102,7 @@ app.include_router(production_catalog_router)
 app.include_router(governance_catalog_router)
 app.include_router(current_identity_router)
 app.include_router(browser_sessions_router)
+app.include_router(membership_admin_router)
 
 
 @app.middleware("http")
@@ -112,12 +114,14 @@ async def read_only_guard(request: Request, call_next):
     path = request.url.path.rstrip('/')
     is_session_control = request.method == 'POST' and (path == '/api/v1/security/me/browser-sessions' or
         re.fullmatch(r'/api/v1/security/me/browser-sessions/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}/revoke', path) is not None)
-    is_private = is_identity_read or is_session_control
+    is_admin_control = path.startswith("/api/v1/security/admin/")
+    is_private = is_identity_read or is_session_control or is_admin_control
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
     if settings.read_only_mode and is_write and not is_session_control:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={"detail": "read_only_mode"},
+            headers=private_headers if is_private else None,
         )
     if is_private and settings.auth_mode != "oidc":
         return JSONResponse(status_code=401, content={"detail": "oidc_not_enabled"},
@@ -138,7 +142,7 @@ async def read_only_guard(request: Request, call_next):
         vary = response.headers.get("Vary", "")
         if "authorization" not in {part.strip().lower() for part in vary.split(',')}:
             response.headers["Vary"] = (vary + ", Authorization").lstrip(', ')
-        if is_identity_read:
+        if is_identity_read or is_admin_control:
             response.headers['Vary'] += ', X-Browser-Session'
     return response
 

@@ -195,3 +195,24 @@ SESSION_CONTROL_CONTRACTS = {
     ('POST', '/api/v1/security/me/browser-sessions'): SessionControlContract('Register own browser session'),
     ('POST', '/api/v1/security/me/browser-sessions/{session_id}/revoke'): SessionControlContract('Revoke own browser session'),
 }
+
+
+@dataclass(frozen=True)
+class AdminControlContract:
+    operation: str
+    authentication: str = 'OIDC_REQUIRED'
+    authorization: str = 'ACTIVE_PLATFORM_ADMIN'
+    actor_binding: str = 'AUTHENTICATED_PRINCIPAL'
+    public_exposure: str = 'READ_ONLY_BLOCKED'
+    audit: str = 'ATOMIC_APPEND'
+    concurrency: str = 'PRINCIPAL_GRANT_AND_MEMBERSHIP_ROW_LOCK'
+    idempotency: str = 'EVENT_NO_EXACT_REQUEST_AND_ADMIN'
+    precondition: str = 'EXPECTED_MEMBERSHIP_STATUS'
+
+
+# Authorization administration is separate from the fixed14 domain commands and
+# from own-session metadata. It has no read-only or auth-disabled exception.
+ADMIN_CONTROL_CONTRACTS = {
+    ('POST', '/api/v1/security/admin/memberships/{scope}/{membership_id}/status'):
+        AdminControlContract('Suspend or resume an existing project/software membership'),
+}

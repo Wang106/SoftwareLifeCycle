@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.29`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.30`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -1014,3 +1014,21 @@ confirmed revocation; outage returns a generic retry result. Session revocation
 leaves the provider bearer token and other sessions valid. Provider-wide logout,
 real-provider/browser acceptance and retention/recovery policy remain pending.
 Full contracts and rollout/rollback boundaries: docs/oidc-browser-auth.md.
+
+## Audited membership status administration — API0.18.30
+
+`POST /api/v1/security/admin/memberships/{scope}/{membership_id}/status`
+requires OIDC and a currently ACTIVE PLATFORM_ADMIN; it is blocked in read-only
+mode even for admins. Scope is PROJECT or SOFTWARE. Required body fields:
+event_no (global audit key,1–50 safe characters), expected_status, status
+(ACTIVE/SUSPENDED, distinct), reason (5–500 printable characters). Existing exact
+membership rows only. No identity/role/global grant creation. See
+[administration contract](docs/membership-administration.md).
+
+200 returns membership_id, scope, applied_status, current_status, replayed and
+audit_event_no. Identical retries require the same authenticated admin and exact
+request; older retries do not reapply transitions. Invalid input422, missing
+membership404, stale state/inactive resume recipient/conflicting key409, no
+admin403, auth disabled/missing/invalid token401, read-only403. Responses are
+private,no-store. Status and authenticated audit commit atomically, with exact
+membership row locking; schema remains0019. Provider/browser acceptance pending.
