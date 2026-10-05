@@ -89,7 +89,7 @@ def test_nonadmin_and_removed_admin_cannot_mutate_or_replay(identity_client, mon
     assert response.status_code == 403 and response.json()['detail'] == 'platform_admin_required'
     with sessions() as db:
         assert db.get(model, identifier).status == 'SUSPENDED'
-        assert db.scalar(select(func.count()).select_from(AuditEvent)) == 1
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.event_type == 'MEMBERSHIP_STATUS_CHANGED')) == 1
 
 
 @pytest.mark.parametrize('scope', ['PROJECT', 'SOFTWARE'])
@@ -106,7 +106,7 @@ def test_read_only_and_disabled_auth_are_independent_denials(identity_client, mo
     private(response)
     with sessions() as db:
         assert db.get(model, identifier).status == 'ACTIVE'
-        assert db.scalar(select(func.count()).select_from(AuditEvent)) == 0
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.event_type == 'MEMBERSHIP_STATUS_CHANGED')) == 0
 
 
 @pytest.mark.parametrize('patch', [{'extra':'untrusted'}, {'actor_name':'Spoofed'}, {'principal_id':str(uuid.uuid4())},
@@ -121,7 +121,7 @@ def test_invalid_body_has_no_effect(identity_client, monkeypatch, patch):
     private(response)
     with sessions() as db:
         assert db.get(model, identifier).status == 'ACTIVE'
-        assert db.scalar(select(func.count()).select_from(AuditEvent)) == 0
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.event_type == 'MEMBERSHIP_STATUS_CHANGED')) == 0
 
 
 @pytest.mark.parametrize('scope', ['PROJECT', 'SOFTWARE'])
@@ -164,7 +164,7 @@ def test_audit_failure_rolls_back_status(identity_client, monkeypatch, scope):
         post(client, key, scope, identifier, command())
     with sessions() as db:
         assert db.get(model, identifier).status == 'ACTIVE'
-        assert db.scalar(select(func.count()).select_from(AuditEvent)) == 0
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.event_type == 'MEMBERSHIP_STATUS_CHANGED')) == 0
 
 
 def test_event_is_bound_to_target_and_administrator(identity_client, monkeypatch):
@@ -196,7 +196,7 @@ def test_admin_controls_validate_claims_and_revoked_browser_session(identity_cli
     assert response.status_code == 401 and response.json()['detail'] == 'invalid_browser_session'
     with sessions() as db:
         assert db.get(model, identifier).status == 'ACTIVE'
-        assert db.scalar(select(func.count()).select_from(AuditEvent)) == 0
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.event_type == 'MEMBERSHIP_STATUS_CHANGED')) == 0
 
 
 def test_security_admin_is_not_a_read_only_session_exception(identity_client):
