@@ -1,9 +1,12 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "softwarelifecycle",
+  "preview_urls": true,
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-28",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "vars": {
     "API_BASE_URL": "https://softwarelifecycle-api-test.onrender.com"
   },
@@ -19,5 +22,10 @@
   },
   "observability": {
     "enabled": true
+  },
+  "previews": {
+    "vars": {
+      "API_BASE_URL": "https://softwarelifecycle-api-test.onrender.com"
+    }
   }
 }
