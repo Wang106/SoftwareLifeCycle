@@ -14,25 +14,25 @@
 | 证据、评审与审计 | 9/9 | 100% | 固定53项兼容读取范围完成 |
 | 身份与授权 | 8/9 | 89% | 批准的 OIDC 配置及真实提供方验收 |
 | 受控写入体验 | 3/5 | 60% | 登录、提交、结果恢复、完整更正/撤销 |
-| 生产运营 | 0/6 | 0% | CI、恢复、监控、环境隔离、网络与数据审批 |
-| **合计** | **35/44** | **80%** | 按 ROADMAP 已勾选项计算，不代表生产就绪 |
+| 生产运营 | 1/6 | 17% | 恢复、监控、环境隔离、部署门禁及网络/数据审批 |
+| **合计** | **36/44** | **82%** | 按 ROADMAP 已勾选项计算，不代表生产就绪 |
 
 17/17 个已识别前端读取组完成迁移。API0.18.27 完成固定53项候选审查：
 50项退役、3项保留且具备有界增长证据。Phase4 对应验收项完成，
-总进度35/44（80%）。该结果不代表真实身份、受控提交或生产运营完成。
+CI 也完成后，当前总进度36/44（82%）。该结果不代表真实身份、受控提交或生产运营完成。
 
 ## 7 项开发计划进度（每轮必须报告）
 
 计算规则：每组采用固定、等权的验收里程碑，完成度＝已通过数÷该组总数，
 四舍五入至整数。计入已有且验证过的准备表单和后端安全基础；真实登录、
 提交、恢复和公司环境验收仍未完成。百分比不是工时、上线就绪度，也不把
-7 组的平均值替代 ROADMAP 的 35/44（80%）。
+7 组的平均值替代 ROADMAP 的 36/44（82%）。
 
 <!-- development-plan-progress:start -->
 | 计划 | 已完成 / 验收里程碑 | 完成度 |
 | --- | ---: | ---: |
 | 1. 其余兼容读取治理 | 10/10 | **100%** |
-| 2. 持续集成 | 0/4 | **0%** |
+| 2. 持续集成 | 4/4 | **100%** |
 | 3. 身份、权限管理及会话 | 1/5 | **20%** |
 | 4. 首批受控提交 | 2/6 | **33%** |
 | 5. 覆盖全部 14 项命令 | 2/5 | **40%** |
@@ -153,3 +153,43 @@ upgrade SQL. Existing warnings are deprecations/collection notices (9661).
 No schema, provider, credentials or grant change; all14 POSTs and shared command
 helpers remain. Public sample remains read-only. Cloud rollout still requires
 independent feature-commit build and live API/page checks recorded below.
+
+## 2026-10-05 — CI integrated and verified on main
+
+Mode: Codex cloud. Started from a18cc71816b89472f02e2b6a61fec50f5faed9a1.
+PR#1 was reconciled with current main without restoring old API0.18.13 documents
+or undoing the fixed53 compatibility closure. Updated feature c156d1e01fa41ea8062f05c899bdeb47d95df5da
+passed PR run37248117693. Merge 479e0a292e921b1f325985038903d71edafa7a8c passed main push run37248330054.
+See https://github.com/Wang106/SoftwareLifeCycle/actions/runs/37248330054.
+
+Python3.12/PostgreSQL16 backend1204 passed, no skips (1191 existing +13 CI gate/
+target-guard tests);129 real PostgreSQL cases are retained, including ordinary
+module database fixtures. The report gate's named _postgres count is a narrower
+classification, not the total real-database count. Single0018 head, full upgrade
+and head downgrade SQL, isolated upgrade/downgrade/re-upgrade, report gate and
+artifact upload pass. Node22 frontend465 passed and OpenNext production build pass.
+The stable CI acceptance job requires both validations to succeed. Local execution
+of all16 success/failure/skipped/cancelled dependency combinations allows only
+both-success; process regressions reject malformed/missing/empty/failed/error/
+skipped/no-PostgreSQL reports and prevent remote/company database connection.
+
+Actions run on main push, PR and manual dispatch, with SHA-pinned actions,
+read-only repository token, no persisted checkout credentials and disposable
+PostgreSQL data. No deployment/OIDC/company credentials or grants were introduced.
+This does not install branch protection or make independent Render/Cloudflare
+automatic deployment wait for CI. CI failures make the workflow/check red;
+merge/deployment enforcement and recovery remain separate operations work.
+
+CI plan2 now4/4=100% (0→100); plans100/100/20/33/40/20/0 retain fixed denominators.
+The ROADMAP CI item completes:36/44=82%, phases100/100-demo/100-demo/100/89/60/17.
+Plan7 still0/6 because its fixed environment/restore/monitor/release/network/data
+milestones are broader than adding CI. Read consumers17/17 and53=50+3 remain.
+API0.18.27/schema0018 and public sample read-only remain; deployment health and
+Cloudflare build evidence are recorded separately below.
+
+Next: approved OIDC provider/controlled target configuration, browser session and
+audited grant administration, then first authenticated submissions/recovery/results;
+all14 commands, broader append-only corrections and operational acceptance follow.
+No approved provider or company target is inferred from CI success. Backup/restore,
+monitoring, environment separation, gated deploy/rollback and company network/data
+acceptance are still incomplete. This is not a production-ready certificate.

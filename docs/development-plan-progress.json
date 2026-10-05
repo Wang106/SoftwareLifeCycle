@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.27",
-  "baseline_commit": "5e35e9314803365bdcc20eb3bf8e90eca9abc1e3",
+  "baseline_commit": "a18cc71816b89472f02e2b6a61fec50f5faed9a1",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -201,26 +201,46 @@
         {
           "id": "ci-main",
           "label": "CI 配置进入 main",
-          "complete": false,
-          "evidence": []
+          "complete": true,
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "docs/ci.md",
+            "backend/tests/test_ci_evidence.py",
+            "HANDOFF.md"
+          ]
         },
         {
           "id": "ci-backend-pg",
           "label": "自动后端/真实 PG 验证",
-          "complete": false,
-          "evidence": []
+          "complete": true,
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "docs/ci.md",
+            "backend/tests/test_ci_evidence.py",
+            "HANDOFF.md"
+          ]
         },
         {
           "id": "ci-migration-frontend",
           "label": "自动迁移/生产构建验证",
-          "complete": false,
-          "evidence": []
+          "complete": true,
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "docs/ci.md",
+            "backend/tests/test_ci_evidence.py",
+            "HANDOFF.md"
+          ]
         },
         {
           "id": "ci-failure-gate",
           "label": "失败阻断与主线成功运行验收",
-          "complete": false,
-          "evidence": []
+          "complete": true,
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "docs/ci.md",
+            "backend/tests/test_ci_evidence.py",
+            "HANDOFF.md"
+          ]
         }
       ]
     },

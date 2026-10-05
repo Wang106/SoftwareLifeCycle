@@ -5,9 +5,9 @@
 - Date: 2026-10-05 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `5e35e9314803365bdcc20eb3bf8e90eca9abc1e3`
-- Developed from: `5e35e9314803365bdcc20eb3bf8e90eca9abc1e3`
-- Baseline subject: `docs: record verified governance and audit retirement rollout`
+- Verified starting baseline: `a18cc71816b89472f02e2b6a61fec50f5faed9a1`
+- Developed from: `a18cc71816b89472f02e2b6a61fec50f5faed9a1`
+- Baseline subject: `docs: record verified release retirement and compatibility closure rollout`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -71,8 +71,8 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 | Phase 4 — Evidence, review and auditability | 9 / 9 | 100% | Fixed53-candidate compatibility scope completed |
 | Phase 5 — Identity and authorization | 8 / 9 | 89% | Approved OIDC provider configuration remains |
 | Phase 6 — Controlled write experience | 3 / 5 | 60% | Safety slices and UI priorities implemented; submission/correction/result items partial |
-| Phase 7 — Production operations | 0 / 6 | 0% | Not started |
-| **Overall** | **35 / 44** | **80%** | Demo lifecycle is coherent; controlled writes and operations remain |
+| Phase 7 — Production operations | 1 / 6 | 17% | CI complete; recovery/monitoring/environments/network/data remain |
+| **Overall** | **36 / 44** | **82%** | Demo lifecycle is coherent; controlled writes and operations remain |
 
 ## Completed capabilities
 
@@ -97,7 +97,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment/Changeover now have retry and locks; actual reports now have keyed retry/version checks and audited corrections.
 5. Actual software has keyed retry/version/correction protection; legacy no-key reports may still overwrite without a precondition.
 6. Some legacy list/history endpoints remain unbounded.
-7. CI, backup/restore, monitoring, alerting and incident runbooks are not present.
+7. CI is complete on main; backup/restore, monitoring, alerting and incident runbooks remain incomplete.
 8. Public reads are suitable only for non-sensitive sample data; CORS is not access control.
 
 ## Recommended next development package
@@ -2040,3 +2040,53 @@ Next package: CI PR#1 is still open/unmerged; reconcile it with current main,
 validate backend/PostgreSQL/migrations/frontend and establish mainline gates.
 Then approved identity/session and controlled submissions, broader append-only
 correction/revocation and production operations remain. The project is incomplete.
+
+## 2026-10-05 — CI integrated and verified on main
+
+Mode: Codex cloud. Started from a18cc71816b89472f02e2b6a61fec50f5faed9a1.
+PR#1 was reconciled with current main without restoring old API0.18.13 documents
+or undoing the fixed53 compatibility closure. Updated feature c156d1e01fa41ea8062f05c899bdeb47d95df5da
+passed PR run37248117693. Merge 479e0a292e921b1f325985038903d71edafa7a8c passed main push run37248330054.
+See https://github.com/Wang106/SoftwareLifeCycle/actions/runs/37248330054.
+
+Python3.12/PostgreSQL16 backend1204 passed, no skips (1191 existing +13 CI gate/
+target-guard tests);129 real PostgreSQL cases are retained, including ordinary
+module database fixtures. The report gate's named _postgres count is a narrower
+classification, not the total real-database count. Single0018 head, full upgrade
+and head downgrade SQL, isolated upgrade/downgrade/re-upgrade, report gate and
+artifact upload pass. Node22 frontend465 passed and OpenNext production build pass.
+The stable CI acceptance job requires both validations to succeed. Local execution
+of all16 success/failure/skipped/cancelled dependency combinations allows only
+both-success; process regressions reject malformed/missing/empty/failed/error/
+skipped/no-PostgreSQL reports and prevent remote/company database connection.
+
+Actions run on main push, PR and manual dispatch, with SHA-pinned actions,
+read-only repository token, no persisted checkout credentials and disposable
+PostgreSQL data. No deployment/OIDC/company credentials or grants were introduced.
+This does not install branch protection or make independent Render/Cloudflare
+automatic deployment wait for CI. CI failures make the workflow/check red;
+merge/deployment enforcement and recovery remain separate operations work.
+
+CI plan2 now4/4=100% (0→100); plans100/100/20/33/40/20/0 retain fixed denominators.
+The ROADMAP CI item completes:36/44=82%, phases100/100-demo/100-demo/100/89/60/17.
+Plan7 still0/6 because its fixed environment/restore/monitor/release/network/data
+milestones are broader than adding CI. Read consumers17/17 and53=50+3 remain.
+API0.18.27/schema0018 and public sample read-only remain; deployment health and
+Cloudflare build evidence are recorded separately below.
+
+Next: approved OIDC provider/controlled target configuration, browser session and
+audited grant administration, then first authenticated submissions/recovery/results;
+all14 commands, broader append-only corrections and operational acceptance follow.
+No approved provider or company target is inferred from CI success. Backup/restore,
+monitoring, environment separation, gated deploy/rollback and company network/data
+acceptance are still incomplete. This is not a production-ready certificate.
+
+### Deployment/runtime evidence after CI merge
+
+Merged-main Cloudflare Workers Builds completed success at2026-10-05T00:40:34Z
+for479e0a292e921b1f325985038903d71edafa7a8c. Live API ready200 reports0.18.27
+and0018_asr_evidence_index; no API or schema change. Default Chinese and English
+release directory pages return200. Empty Deployment POST returns403 read_only_mode;
+no business mutation is submitted. Render provider commit/deployment metadata was
+not obtained; runtime health/version is the evidence. Follow-up is documentation/
+fixed-ledger only. The successful main Actions run is37248330054.

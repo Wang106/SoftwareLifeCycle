@@ -64,7 +64,7 @@ Exit gate: every exposed write is authorized, auditable, retry-safe where requir
 
 ## Phase 7 — Production operations
 
-- [ ] Add CI for backend tests, migration validation and frontend production build
+- [x] Add CI for backend tests, migration validation and frontend production build — PR#1 merged; current main push run37248330054 passes both validations and CI acceptance
 - [ ] Add supported backup/restore, retention and disaster-recovery procedures
 - [ ] Define metrics, structured logs, alerting and incident runbooks
 - [ ] Separate demo, staging and company environments and disable seed in non-demo databases
@@ -79,8 +79,8 @@ Use `规划：<目标>` to agree on scope and acceptance criteria. A roadmap ite
 
 ## Current measurable progress and remaining sequence
 
-Checked roadmap items are now 35/44 (80%): Phase 1 5/5, Phase 2 5/5 (demo),
-Phase 3 5/5 (demo), Phase 4 9/9, Phase 5 8/9, Phase 6 3/5 (60%) and Phase 7 0/6.
+Checked roadmap items are now 36/44 (82%): Phase 1 5/5, Phase 2 5/5 (demo),
+Phase 3 5/5 (demo), Phase 4 9/9, Phase 5 8/9, Phase 6 3/5 (60%) and Phase 7 1/6.
 All 14 write routes declare request-ID, row serialization, exact scope, trusted actor
 and atomic audit. Actual keyed reports require expected_version and replacement
 reason. Legacy no-key paths remain compatible and weaker; broad correction/revocation,
@@ -94,10 +94,10 @@ not provider configuration or production-readiness certification.
    keep public staging read-only and use a separately approved controlled target.
 3. Extend append-only correction/revocation contracts beyond actual reporting;
    never infer physical flashing reversal or alter existing batch history.
-4. All 17 identified read-consumer groups are migrated. Complete route/caller review and retirement or explicit bounds for retained compatibility endpoints; see docs/compatibility-read-retirement.md.
+4. All17 read-consumer groups and the fixed53-candidate compatibility review are complete; preserve bounded ownership and growth evidence for future additions.
 5. Configure an approved OIDC provider, provider-backed tests, audited grant
    administration and browser login/session flow before protected multi-user use.
-6. Add CI backend/PostgreSQL/migration/frontend checks; backup/restore, retention,
+6. CI backend/PostgreSQL/migration/frontend checks are complete; add backup/restore, retention,
    monitoring, alerts and incident procedures.
 7. Separate demo/staging/company environments, disable non-demo seed, approve
    network/data governance and validate recovery before loading company data.
@@ -558,3 +558,43 @@ upgrade SQL. Existing warnings are deprecations/collection notices (9661).
 No schema, provider, credentials or grant change; all14 POSTs and shared command
 helpers remain. Public sample remains read-only. Cloud rollout still requires
 independent feature-commit build and live API/page checks recorded below.
+
+## 2026-10-05 — CI integrated and verified on main
+
+Mode: Codex cloud. Started from a18cc71816b89472f02e2b6a61fec50f5faed9a1.
+PR#1 was reconciled with current main without restoring old API0.18.13 documents
+or undoing the fixed53 compatibility closure. Updated feature c156d1e01fa41ea8062f05c899bdeb47d95df5da
+passed PR run37248117693. Merge 479e0a292e921b1f325985038903d71edafa7a8c passed main push run37248330054.
+See https://github.com/Wang106/SoftwareLifeCycle/actions/runs/37248330054.
+
+Python3.12/PostgreSQL16 backend1204 passed, no skips (1191 existing +13 CI gate/
+target-guard tests);129 real PostgreSQL cases are retained, including ordinary
+module database fixtures. The report gate's named _postgres count is a narrower
+classification, not the total real-database count. Single0018 head, full upgrade
+and head downgrade SQL, isolated upgrade/downgrade/re-upgrade, report gate and
+artifact upload pass. Node22 frontend465 passed and OpenNext production build pass.
+The stable CI acceptance job requires both validations to succeed. Local execution
+of all16 success/failure/skipped/cancelled dependency combinations allows only
+both-success; process regressions reject malformed/missing/empty/failed/error/
+skipped/no-PostgreSQL reports and prevent remote/company database connection.
+
+Actions run on main push, PR and manual dispatch, with SHA-pinned actions,
+read-only repository token, no persisted checkout credentials and disposable
+PostgreSQL data. No deployment/OIDC/company credentials or grants were introduced.
+This does not install branch protection or make independent Render/Cloudflare
+automatic deployment wait for CI. CI failures make the workflow/check red;
+merge/deployment enforcement and recovery remain separate operations work.
+
+CI plan2 now4/4=100% (0→100); plans100/100/20/33/40/20/0 retain fixed denominators.
+The ROADMAP CI item completes:36/44=82%, phases100/100-demo/100-demo/100/89/60/17.
+Plan7 still0/6 because its fixed environment/restore/monitor/release/network/data
+milestones are broader than adding CI. Read consumers17/17 and53=50+3 remain.
+API0.18.27/schema0018 and public sample read-only remain; deployment health and
+Cloudflare build evidence are recorded separately below.
+
+Next: approved OIDC provider/controlled target configuration, browser session and
+audited grant administration, then first authenticated submissions/recovery/results;
+all14 commands, broader append-only corrections and operational acceptance follow.
+No approved provider or company target is inferred from CI success. Backup/restore,
+monitoring, environment separation, gated deploy/rollback and company network/data
+acceptance are still incomplete. This is not a production-ready certificate.
