@@ -72,7 +72,7 @@ def test_bilingual_disabled_checks_are_read_only_bounded_and_credential_free(url
     (403, {}, 'error code: 1010', 'cloudflare_1010'),
     (403, {'server': 'cloudflare', 'cf-ray': 'abc-NRT'}, '<h1>Error 1010</h1>', 'cloudflare_1010'),
     (403, {'server': 'cloudflare'}, '<h1>Error 1020</h1>', 'cloudflare_1020'),
-    (403, {'server': 'cloudflare'}, 'Access denied', 'cloudflare_denied'),
+    (403, {'server': 'cloudflare', 'cf-error-origin': 'security'}, 'Access denied', 'cloudflare_denied'),
     (401, {}, '{"error":"session_required"}', 'unexpected_status'),
     (302, {'location': 'https://evil.test?token=private'}, '', 'redirect_not_followed'),
     (200, {'content-type':'text/html'}, '<html/>', 'missing_no_store'),
@@ -152,3 +152,10 @@ def test_cli_records_failure_evidence_and_exit_status(monkeypatch, tmp_path, cap
 def test_cli_invalid_origin_fails_before_network():
     result = subprocess.run([sys.executable,str(SCRIPT),'https://company.example'],capture_output=True,text=True)
     assert result.returncode == 2 and 'approved HTTPS' in result.stderr
+
+
+def test_proxied_application403_is_not_mislabeled_as_cloudflare_denial():
+    headers = {'server':'cloudflare','cf-ray':'abc-NRT','content-type':'application/json'}
+    body = '{"detail":"invalid_origin"}'
+    assert access.edge_error(403, headers, body) is None
+    assert access.inspect_response('/auth/session', None, 503, 403, headers, body)['classification'] == 'unexpected_status'

@@ -75,7 +75,9 @@ def edge_error(status, headers, body):
         if (re.fullmatch(r'error code:\s*'+code, plain) or
                 (is_cloudflare and re.search(r'\berror(?:\s+code)?\s*:?\s*'+code+r'\b', plain))):
             return 'cloudflare_'+code
-    return 'cloudflare_denied' if is_cloudflare else None
+    # CF-Ray/Server also appear on proxied origin403 responses.
+    generated_error = 'cf-error-origin' in headers or ('cloudflare' in plain and 'cf-error-details' in plain)
+    return 'cloudflare_denied' if is_cloudflare and generated_error else None
 
 
 def diagnostic_headers(headers):
