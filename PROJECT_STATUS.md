@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-05 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `4ec8dcf3395e719590749bc7dd125b1d856dbda1` — PR#2 root configuration fix has successful CI/Preview build; explicit Preview URL activation and deployment verification in progress; percentages unchanged
+- Reviewed starting repository baseline: `4ec8dcf3395e719590749bc7dd125b1d856dbda1` — PR#2 merged as7738bd9; exact-main CI and production build succeeded; Preview URL configuration deployed, live-page verification incomplete; percentages unchanged
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -2100,3 +2100,31 @@ results are recorded in a subsequent follow-up. No backend/schema change.
 ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17; seven plans
 100/100/20/33/40/20/0 unchanged. Next complete activation/runtime verification,
 then provider/session, controlled submissions/recovery, correction and operations.
+
+### Verified publication and main deployment — 2026-10-05
+
+Feature commit7e6cc65063dbfb7036c878365c84297ee17fdbdd passed Actions37314835622:
+backend1204/no skips, PostgreSQL/migration evidence, frontend471/no skips,
+Wrangler preflight and OpenNext build. Cloudflare Preview build7a047640 succeeded;
+deployment824250e1-18fc-4924-ad95-377b6ca1319f still reported No Preview URL / Enable.
+PR#2 merged as7738bd9b6db43c773f88bb3c88522927eb0cfd91. All four exact-main checks
+(CI acceptance, backend, frontend, Workers Builds) completed success. Production
+Cloudflare builde072f852-331d-44ab-bf73-d47fbe00b577 completed2026-10-05T13:17:51Z.
+The explicit Preview host configuration is now deployed; actual returned branch
+URL verification remains outstanding. No accessible Preview URL was obtained.
+
+Fresh sample API health returns200/version0.18.27/schema0018_asr_evidence_index.
+An empty Deployment POST returns403 {"detail":"read_only_mode"} with no mutation.
+This execution environment's HTTPS requests to the Chinese and English production
+release pages both return403, so bilingual live-page acceptance is not claimed.
+The cause of those403 responses is not established; do not assume an application
+failure or a particular provider rule. Render provider commit identity was not
+checked. Local471 tests/build and exact-main remote checks are independent evidence.
+
+The Git CLI initially hit approval review; verified repository1392323013 owner,
+public visibility and admin/push permission allowed a retry, which failed for absent
+CLI credentials. Publication used the connected GitHub service with non-force
+branch updates. This final follow-up changes documentation only.
+ROADMAP36/44=82%; seven plans100/100/20/33/40/20/0; module percentages unchanged.
+Next obtain returned Preview URL/page-access evidence, then the approved identity/
+session and controlled-write development sequence described above.
