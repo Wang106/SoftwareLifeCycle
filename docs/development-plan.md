@@ -193,3 +193,11 @@ all14 commands, broader append-only corrections and operational acceptance follo
 No approved provider or company target is inferred from CI success. Backup/restore,
 monitoring, environment separation, gated deploy/rollback and company network/data
 acceptance are still incomplete. This is not a production-ready certificate.
+
+## 2026-10-06 — 默认关闭的 OIDC 浏览器认证实现
+
+新增登录、回调、会话读取、本地退出和双语账户页；修正前端 HUMAN 与后端
+USER 的身份类型不一致。签名模拟提供方请求往返及实际 Next 关闭态路由/SSR
+检查通过，CI 增加该路由检查。真实提供方、浏览器及服务器撤销验收尚未完成，
+因此 identity-session 保留未完成状态，记录部分实现证据而不增加百分比。
+详见 [浏览器认证契约与验收边界](oidc-browser-auth.md)。

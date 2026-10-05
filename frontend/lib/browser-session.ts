@@ -1,6 +1,6 @@
 import 'server-only';
 
-// Server integration foundation. No login route issues these cookies yet.
+// Server-only session helpers; OIDC routes opt in with explicit operator configuration.
 export const SESSION_COOKIE = '__Host-slc_session';
 const MAX_AGE = 900;
 const MAX_COOKIE = 3800;
@@ -9,7 +9,7 @@ const decoder = new TextDecoder('utf-8', { fatal: true });
 type Environment = Record<string, string | undefined>;
 export type SessionConfig = Readonly<{ origin: string; apiBase: string; key: string; binding: string }>;
 export type Identity = {
-  principal: { id: string; principal_type: 'HUMAN' | 'SERVICE'; display_name: string };
+  principal: { id: string; principal_type: 'USER' | 'SERVICE'; display_name: string };
   read_only_mode: boolean;
   active_grant_counts: { GLOBAL: number; PROJECT: number; SOFTWARE: number };
 };
@@ -31,7 +31,7 @@ function endpoint(value: string | undefined, originOnly = false): string {
       (originOnly && url.pathname !== '/')) throw new Error('invalid_session_endpoint');
   return originOnly ? url.origin : url.href.replace(/\/$/, '');
 }
-export async function sessionConfig(env: Environment): Promise<SessionConfig | null> {
+export async function sessionConfig(env: Environment, providerBinding = ''): Promise<SessionConfig | null> {
   if (!env.BROWSER_SESSION_MODE || env.BROWSER_SESSION_MODE === 'disabled') return null;
   if (env.BROWSER_SESSION_MODE !== 'encrypted') throw new Error('invalid_session_mode');
   const key = env.BROWSER_SESSION_KEY || '';
@@ -39,11 +39,31 @@ export async function sessionConfig(env: Environment): Promise<SessionConfig | n
   const origin = endpoint(env.BROWSER_SESSION_ORIGIN, true);
   // Deliberately do not fall back to any NEXT_PUBLIC variable.
   const apiBase = endpoint(env.API_BASE_URL);
-  const binding = encode(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(JSON.stringify([origin, apiBase])))));
+  const binding = encode(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(JSON.stringify([origin, apiBase, providerBinding])))));
   return Object.freeze({ origin, apiBase, key, binding });
 }
 async function encryptionKey(config: SessionConfig) {
   return crypto.subtle.importKey('raw', decode(config.key) as BufferSource, 'AES-GCM', false, ['encrypt', 'decrypt']);
+}
+export async function sealCookie(config: SessionConfig, name: string, value: unknown): Promise<string | null> {
+  const bytes = encoder.encode(JSON.stringify(value));
+  if (bytes.length > 2700) return null;
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: encoder.encode(name) },
+    await encryptionKey(config), bytes);
+  const result = `v1.${encode(iv)}.${encode(new Uint8Array(ciphertext))}`;
+  return result.length <= MAX_COOKIE ? result : null;
+}
+export async function openCookie(config: SessionConfig, name: string, value: string | undefined): Promise<unknown> {
+  if (!value || value.length > MAX_COOKIE) return null;
+  try {
+    const parts = value.split('.');
+    if (parts.length !== 3 || parts[0] !== 'v1') return null;
+    const iv = decode(parts[1]); if (iv.length !== 12) return null;
+    const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv as BufferSource,
+      additionalData: encoder.encode(name) }, await encryptionKey(config), decode(parts[2]) as BufferSource);
+    return JSON.parse(decoder.decode(new Uint8Array(plaintext)));
+  } catch { return null; }
 }
 function validToken(token: string): boolean {
   return typeof token === 'string' && token.length > 0 && token.length <= 2400 && !/[\s\x00-\x1f\x7f]/.test(token);
@@ -53,7 +73,7 @@ function parseIdentity(value: unknown): Identity | null {
   if (!value || typeof value !== 'object') return null;
   const data = value as Identity;
   if (!data.principal || typeof data.principal.id !== 'string' || !uuid.test(data.principal.id) ||
-      !['HUMAN', 'SERVICE'].includes(data.principal.principal_type) ||
+      !['USER', 'SERVICE'].includes(data.principal.principal_type) ||
       typeof data.principal.display_name !== 'string' || typeof data.read_only_mode !== 'boolean' ||
       !data.active_grant_counts || !['GLOBAL', 'PROJECT', 'SOFTWARE'].every(scope => {
         const count = data.active_grant_counts[scope as keyof Identity['active_grant_counts']];
@@ -103,14 +123,11 @@ export async function establishSession(config: SessionConfig, token: string, tok
   fetcher: typeof fetch = fetch, now = Math.floor(Date.now() / 1000)) {
   if (!validToken(token) || !Number.isSafeInteger(now) || !Number.isSafeInteger(tokenExpires) || tokenExpires <= now) return null;
   const identity = await currentIdentity(config, token, fetcher);
-  if (!identity || identity.principal.principal_type !== 'HUMAN') return null;
+  if (!identity || identity.principal.principal_type !== 'USER') return null;
   const expires = Math.min(tokenExpires, now + MAX_AGE);
   const envelope: Envelope = { v: 1, binding: config.binding, issued: now, expires, principal: identity.principal.id, token };
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: encoder.encode(SESSION_COOKIE) },
-    await encryptionKey(config), encoder.encode(JSON.stringify(envelope)));
-  const value = `v1.${encode(iv)}.${encode(new Uint8Array(ciphertext))}`;
-  if (value.length > MAX_COOKIE) return null;
+  const value = await sealCookie(config, SESSION_COOKIE, envelope);
+  if (!value) return null;
   return { cookie: sessionCookie(value, expires - now), identity };
 }
 
@@ -118,17 +135,12 @@ export async function resolveSession(config: SessionConfig, value: string | unde
   fetcher: typeof fetch = fetch, now = Math.floor(Date.now() / 1000)): Promise<Identity | null> {
   if (!value || value.length > MAX_COOKIE || !Number.isSafeInteger(now)) return null;
   try {
-    const parts = value.split('.');
-    if (parts.length !== 3 || parts[0] !== 'v1') return null;
-    const iv = decode(parts[1]); if (iv.length !== 12) return null;
-    const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv as BufferSource,
-      additionalData: encoder.encode(SESSION_COOKIE) }, await encryptionKey(config), decode(parts[2]) as BufferSource);
-    const envelope = JSON.parse(decoder.decode(new Uint8Array(plaintext))) as Envelope;
-    if (envelope.v !== 1 || envelope.binding !== config.binding || !Number.isSafeInteger(envelope.issued) ||
+    const envelope = await openCookie(config, SESSION_COOKIE, value) as Envelope | null;
+    if (!envelope || envelope.v !== 1 || envelope.binding !== config.binding || !Number.isSafeInteger(envelope.issued) ||
         !Number.isSafeInteger(envelope.expires) || envelope.issued > now || envelope.expires <= now ||
         envelope.expires <= envelope.issued || envelope.expires - envelope.issued > MAX_AGE ||
         typeof envelope.principal !== 'string' || !uuid.test(envelope.principal) || !validToken(envelope.token)) return null;
     const identity = await currentIdentity(config, envelope.token, fetcher);
-    return identity?.principal.id === envelope.principal && identity.principal.principal_type === 'HUMAN' ? identity : null;
+    return identity?.principal.id === envelope.principal && identity.principal.principal_type === 'USER' ? identity : null;
   } catch { return null; }
 }

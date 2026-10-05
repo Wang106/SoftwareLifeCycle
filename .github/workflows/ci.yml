@@ -98,6 +98,8 @@ jobs:
         run: npm test
       - name: Build Next.js and OpenNext Cloudflare Worker
         run: npm run cf:build
+      - name: Verify disabled authentication routes and bilingual account SSR
+        run: npm run auth:check
 
   acceptance:
     name: CI acceptance

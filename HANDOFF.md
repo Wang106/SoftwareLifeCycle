@@ -2296,3 +2296,25 @@ Next: provider selection/configuration, code/PKCE/state/nonce callback checks,
 login/logout/expiry and revocation/CSRF integration, then controlled submissions.
 Progress remains36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
 seven plans100/100/20/33/40/20/0 (turn milestone delta0).
+
+## OIDC browser routes and bilingual account — 2026-10-06 (Asia/Shanghai)
+
+Adds default-disabled POST login, GET callback, GET session, POST logout and a
+Chinese-default/English account page. Code flow uses PKCE S256, encrypted state/nonce
+transaction and RS256 ID/API JWT verification, fixed HTTPS callback and same-origin
+POSTs. Active USER identity is resolved against the existing API before issuance and
+every session read; USER fixes the prior HUMAN discriminator contract bug.
+No provider/secret/principal/grant/environment write settings are provisioned.
+Local logout clears cookies; stateless copied-cookie revocation remains pending.
+Implementation/configuration/limits/acceptance are recorded in
+[OIDC browser authentication](docs/oidc-browser-auth.md).
+
+Local frontend533 tests include50 signed-provider/boundary cases. Signed flow and actual default-disabled Next routes
+are independently verified; production Next/OpenNext build and CI are checked before
+merge. API0.18.28/schema0018 unchanged. Public staging remains read-only and login
+is unavailable. No real provider/browser/revocation acceptance is claimed.
+All64 page entrypoints have localization coverage. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0 unchanged.
+Session ledger now records partial implementation evidence and remaining acceptance.
+Next: approved provider/controlled target, real browser and revocation acceptance,
+then controlled submission/recovery, all14 commands, corrections and operations.

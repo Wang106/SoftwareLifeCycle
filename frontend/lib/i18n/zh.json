@@ -1588,5 +1588,21 @@
   "Full linked total": "关联总数",
   "No linked records on this page.": "当前页没有关联记录。",
   "Linked records unavailable. Check pagination or API availability.": "关联记录不可用，请检查分页参数或接口状态。",
-  "Approval steps unavailable. Check pagination or API availability.": "审批步骤不可用，请检查分页参数或接口状态。"
+  "Approval steps unavailable. Check pagination or API availability.": "审批步骤不可用，请检查分页参数或接口状态。",
+  "Account": "账户",
+  "ACCOUNT": "账户",
+  "Account and session": "账户与会话",
+  "Use your organization account to sign in.": "使用组织账户登录。",
+  "Login is not available in this environment.": "此环境暂未开放登录。",
+  "Signed in": "已登录",
+  "Signed out": "未登录",
+  "Active global grants": "有效全局授权",
+  "Active project memberships": "有效项目成员资格",
+  "Active software memberships": "有效软件成员资格",
+  "This environment is read-only.": "此环境为只读。",
+  "Signing out ends this browser session. Your organization account may remain signed in.": "退出将结束此浏览器中的会话，组织账户可能仍处于登录状态。",
+  "Sign out": "退出登录",
+  "If your session expired, sign in again.": "会话过期后，请重新登录。",
+  "Sign in": "登录",
+  "Sign-in failed. Please try again.": "登录失败，请重试。"
 }
