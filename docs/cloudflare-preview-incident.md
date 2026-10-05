@@ -85,3 +85,43 @@ results are recorded in a subsequent follow-up. No backend/schema change.
 ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17; seven plans
 100/100/20/33/40/20/0 unchanged. Next complete activation/runtime verification,
 then provider/session, controlled submissions/recovery, correction and operations.
+
+### Verified identity API rollout and Preview mail — 2026-10-05
+
+Feature6ec12bc56dc5308cd124c6d563e2424e3aebd79e passed PR Actions37317778657:
+backend1250/no skips, frontend471/no skips, PostgreSQL/migration round trip and
+OpenNext build. New self-read tests add46 cases:23 SQLite and23 real migrated
+PostgreSQL. PR#3 merged as013d7abd0be28dc4645745bd455a95c75553aa16. Its exact-main
+Actions37318388790 and all four checks succeeded (acceptance at13:42:24Z).
+Cloudflare production buildd25323eb-8e2a-4fa7-bc77-2415223622b4, completed13:40:24Z, Version ID
+327ce510-ca0e-4558-b24c-0017e00fcd87.
+
+The user's Cloudflare email matches PR#3's provider comment: commit6ec12bc,
+Preview deploymentc0aa288e-f92a-4bab-83b6-39fe34bf0832 at13:37:23Z,
+Build Success and Deployment Success. The actual returned Preview URL is
+https://codex-current-identity-20261005-softwarelifecycle.whf969.workers.dev
+and immutable deployment URLhttps://c0aa288e-softwarelifecycle.whf969.workers.dev.
+This confirms the earlier explicit preview_urls switch is now effective; the mail
+is a success notification, not the previous missing-previews failure.
+
+Fresh Render runtime ready returns200/version0.18.28/schema0018_asr_evidence_index.
+GET /security/me and /grants return401 oidc_not_enabled in public auth-disabled
+staging, with private,no-store, Vary Authorization and Bearer challenge. Empty
+Deployment POST remains403 read_only_mode. No business mutation was submitted.
+Render provider deployment/commit identity was not obtained; runtime version and
+behavior are verified separately.
+
+Preview release-page requests with slc_language=zh and=en both returned403 and
+body error code1010 from this execution environment. Cloudflare documents1010 as
+a browser-signature access rejection:
+https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/
+No exact security rule was inspected or changed. An actual URL and successful
+deployment are verified; bilingual live page access is not. Local/remote frontend
+tests and production build pass independently of that runtime-access limitation.
+
+Final follow-up is documentation only. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0 unchanged.
+Own-identity reads extend the existing foundation; provider/browser-session/grant
+administration and controlled submissions remain incomplete. Next provider/controlled
+target configuration and browser login/logout/expiration, followed by submission/
+recovery, all14 commands, corrections and operational/company acceptance.

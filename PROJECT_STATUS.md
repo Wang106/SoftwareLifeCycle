@@ -3,11 +3,13 @@
 - Last reviewed: 2026-10-05 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `4ec8dcf3395e719590749bc7dd125b1d856dbda1` — PR#2 merged as7738bd9; exact-main CI and production build succeeded; Preview URL configuration deployed, live-page verification incomplete; percentages unchanged
+- Reviewed starting repository baseline: `9f39932ee5501c06150295e931a1b67f1a8f7631` — self identity/grant API0.18.28 merged as013d7ab; exact-main CI, production deployment and API denial/runtime checks passed; Preview URL returned, browser access blocked1010
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
+
+Authenticated self identity and independently paginated active own-grant reads are implemented in API0.18.28. They provide session integration context; provider-backed browser login/logout/expiration and audited grant administration remain pending.
 
 **All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
 
@@ -2151,3 +2153,43 @@ mutation is configured. ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60
 seven plans100/100/20/33/40/20/0 unchanged: this extends an already-complete identity
 foundation milestone, not provider/session acceptance. Next approved provider/target
 configuration and browser session, then authenticated submission/recovery remain.
+
+### Verified identity API rollout and Preview mail — 2026-10-05
+
+Feature6ec12bc56dc5308cd124c6d563e2424e3aebd79e passed PR Actions37317778657:
+backend1250/no skips, frontend471/no skips, PostgreSQL/migration round trip and
+OpenNext build. New self-read tests add46 cases:23 SQLite and23 real migrated
+PostgreSQL. PR#3 merged as013d7abd0be28dc4645745bd455a95c75553aa16. Its exact-main
+Actions37318388790 and all four checks succeeded (acceptance at13:42:24Z).
+Cloudflare production buildd25323eb-8e2a-4fa7-bc77-2415223622b4, completed13:40:24Z, Version ID
+327ce510-ca0e-4558-b24c-0017e00fcd87.
+
+The user's Cloudflare email matches PR#3's provider comment: commit6ec12bc,
+Preview deploymentc0aa288e-f92a-4bab-83b6-39fe34bf0832 at13:37:23Z,
+Build Success and Deployment Success. The actual returned Preview URL is
+https://codex-current-identity-20261005-softwarelifecycle.whf969.workers.dev
+and immutable deployment URLhttps://c0aa288e-softwarelifecycle.whf969.workers.dev.
+This confirms the earlier explicit preview_urls switch is now effective; the mail
+is a success notification, not the previous missing-previews failure.
+
+Fresh Render runtime ready returns200/version0.18.28/schema0018_asr_evidence_index.
+GET /security/me and /grants return401 oidc_not_enabled in public auth-disabled
+staging, with private,no-store, Vary Authorization and Bearer challenge. Empty
+Deployment POST remains403 read_only_mode. No business mutation was submitted.
+Render provider deployment/commit identity was not obtained; runtime version and
+behavior are verified separately.
+
+Preview release-page requests with slc_language=zh and=en both returned403 and
+body error code1010 from this execution environment. Cloudflare documents1010 as
+a browser-signature access rejection:
+https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/
+No exact security rule was inspected or changed. An actual URL and successful
+deployment are verified; bilingual live page access is not. Local/remote frontend
+tests and production build pass independently of that runtime-access limitation.
+
+Final follow-up is documentation only. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0 unchanged.
+Own-identity reads extend the existing foundation; provider/browser-session/grant
+administration and controlled submissions remain incomplete. Next provider/controlled
+target configuration and browser login/logout/expiration, followed by submission/
+recovery, all14 commands, corrections and operational/company acceptance.
