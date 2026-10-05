@@ -1169,3 +1169,27 @@ release directory pages return200. Empty Deployment POST returns403 read_only_mo
 no business mutation is submitted. Render provider commit/deployment metadata was
 not obtained; runtime health/version is the evidence. Follow-up is documentation/
 fixed-ledger only. The successful main Actions run is37248330054.
+
+## 2026-10-05 — Cloudflare Preview failure triage, unresolved provider log
+
+Mode: Codex cloud; starting main91ad0b55. The user mail refers to c156d1e PR#1
+Preview failure a3ca5368, not a current production failure. Main479e0a2 and91ad0b5
+Cloudflare builds succeeded;91ad0b5 CI37248690400 succeeded. Fresh live checks pass
+Chinese/English release catalog200, API0.18.27/schema0018 ready200 and empty
+Deployment POST403 read_only_mode, without business mutation.
+
+Draft PR#2 /40e23fe fixes a verified missing Worker Previews block and explicit
+sample API binding, adds Wrangler configuration preflight and four regressions.
+CI37249193295 passes backend1204/no skips, frontend469/no skips, preflight and
+OpenNext build. Its Cloudflare Preview44a78aac still fails; no Preview URL exists.
+This configuration fix is not a verified remote failure resolution and is unmerged.
+Cloudflare log access requires login; the cloud browser verification fails even
+after one reload. No error lines or actual Preview command were obtained.
+
+See docs/cloudflare-preview-incident.md. Next obtain the first provider ERROR and
+its surrounding log/command, fix based on evidence, verify a new Preview URL, then
+merge. Current main includes incident documentation only; public settings remain.
+Then approved identity/session/controlled submissions, corrections and operations
+remain. Plans100/100/20/33/40/20/0; ROADMAP36/44=82%; module percentages
+100/100-demo/100-demo/100/89/60/17, read consumers17/17 and53=50+3 unchanged.
+No milestone is awarded for the unmerged Preview patch.

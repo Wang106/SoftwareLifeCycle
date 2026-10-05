@@ -19,13 +19,18 @@ function validateWorkerConfig(config) {
     throw new Error('OpenNext entry point and assets must stay at the top level');
   }
 }
-function readWorkerConfig() {
-  return require('wrangler').unstable_readConfig({config:path.resolve(__dirname, '../wrangler.jsonc')});
+function readWorkerConfig(configPath = path.resolve(__dirname, '../wrangler.jsonc')) {
+  return require('wrangler').unstable_readConfig({config:configPath});
 }
 if (require.main === module) {
   try {
     validateWorkerConfig(readWorkerConfig());
-    console.log('Worker configuration passed: production target and explicit read-only Preview API');
+    const root = readWorkerConfig(path.resolve(__dirname, '../../wrangler.jsonc'));
+    validateWorkerConfig(root);
+    if (root.build?.command !== 'cd frontend && npm ci && npx opennextjs-cloudflare build') {
+      throw new Error('Root deployment must build the frontend OpenNext Worker');
+    }
+    console.log('Worker configuration passed: root and frontend production targets and explicit read-only Preview API');
   } catch (error) {
     console.error('Invalid Worker configuration:', error.message);
     process.exitCode = 1;

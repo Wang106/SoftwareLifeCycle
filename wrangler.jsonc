@@ -22,5 +22,10 @@
   },
   "observability": {
     "enabled": true
+  },
+  "previews": {
+    "vars": {
+      "API_BASE_URL": "https://softwarelifecycle-api-test.onrender.com"
+    }
   }
 }

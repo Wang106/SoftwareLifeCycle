@@ -21,3 +21,14 @@ test('Preview changes cannot silently replace the production domain or OpenNext 
   assert.throws(()=>validateWorkerConfig({...config,routes:[{pattern:'preview.example',custom_domain:true}]}),/production API\/domain/);
   assert.throws(()=>validateWorkerConfig({...config,assets:{directory:'public',binding:'ASSETS'}}),/top level/);
 });
+
+test('repository-root Wrangler config supports the actual Workers Builds Preview command',()=>{
+  const path=require('node:path');
+  const root=readWorkerConfig(path.resolve(__dirname,'../../wrangler.jsonc'));
+  assert.doesNotThrow(()=>validateWorkerConfig(root));
+  assert.equal(root.previews.vars.API_BASE_URL, config.previews.vars.API_BASE_URL);
+  assert.equal(root.build.command, 'cd frontend && npm ci && npx opennextjs-cloudflare build');
+  assert.ok(root.main.replaceAll('\\','/').endsWith('/frontend/.open-next/worker.js'));
+  assert.ok(root.assets.directory.replaceAll('\\','/') === 'frontend/.open-next/assets');
+  assert.throws(()=>validateWorkerConfig({...root,previews:undefined}),/explicit API_BASE_URL/);
+});
