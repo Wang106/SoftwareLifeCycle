@@ -125,3 +125,11 @@ Own-identity reads extend the existing foundation; provider/browser-session/gran
 administration and controlled submissions remain incomplete. Next provider/controlled
 target configuration and browser login/logout/expiration, followed by submission/
 recovery, all14 commands, corrections and operational/company acceptance.
+
+## 2026-10-06 — PR#6通知与1010客户端差异
+
+1f9f828的07:03构建中邮件已被07:05构建/部署成功取代；与业务部署失败无关。
+正式站和immutable Preview的Python默认客户端403，但声明项目User-Agent的
+账户GET返回200。只读新检查器验证中英文账户及禁用态认证，未修改Cloudflare
+安全规则。实际浏览器是否受影响、具体安全服务仍需事件确认。完整步骤见
+[1010与邮件处理](cloudflare-1010.md)；不把用户旧邮件当作当前main部署状态。
