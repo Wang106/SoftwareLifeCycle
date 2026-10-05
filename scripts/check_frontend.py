@@ -71,9 +71,11 @@ def edge_error(status, headers, body):
         return None
     plain = body.strip().lower()
     is_cloudflare = headers.get('server', '').lower() == 'cloudflare' or 'cf-ray' in headers
+    # Cloudflare's standard page places Error and its code in separate spans.
+    headings = ' '.join(re.sub(r'<[^>]*>', ' ', value) for value in re.findall(r'<h1\b[^>]*>(.*?)</h1>', plain, re.S))
     for code in ('1010', '1020'):
         if (re.fullmatch(r'error code:\s*'+code, plain) or
-                (is_cloudflare and re.search(r'\berror(?:\s+code)?\s*:?\s*'+code+r'\b', plain))):
+                (is_cloudflare and re.search(r'\berror(?:\s+code)?\s*:?\s*'+code+r'\b', plain+' '+headings))):
             return 'cloudflare_'+code
     # CF-Ray/Server also appear on proxied origin403 responses.
     generated_error = 'cf-error-origin' in headers or ('cloudflare' in plain and 'cf-error-details' in plain)

@@ -72,6 +72,7 @@ def test_bilingual_disabled_checks_are_read_only_bounded_and_credential_free(url
     (403, {}, 'error code: 1010', 'cloudflare_1010'),
     (403, {'server': 'cloudflare', 'cf-ray': 'abc-NRT'}, '<h1>Error 1010</h1>', 'cloudflare_1010'),
     (403, {'server': 'cloudflare'}, '<h1>Error 1020</h1>', 'cloudflare_1020'),
+    (403, {'server': 'cloudflare'}, '<h1><span>Error</span>\n<span class="cf-error-code">1010</span></h1>', 'cloudflare_1010'),
     (403, {'server': 'cloudflare', 'cf-error-origin': 'security'}, 'Access denied', 'cloudflare_denied'),
     (401, {}, '{"error":"session_required"}', 'unexpected_status'),
     (302, {'location': 'https://evil.test?token=private'}, '', 'redirect_not_followed'),
