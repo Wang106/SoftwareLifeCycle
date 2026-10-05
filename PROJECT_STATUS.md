@@ -2227,3 +2227,22 @@ seven plans100/100/20/33/40/20/0. No acceptance milestone is closed by this slic
 
 Validation: frontend482/482 tests passed, Next production build/type checks passed,
 and git diff whitespace checks passed. Backend code/schema and API0.18.28 are unchanged.
+
+### Browser-session foundation rollout evidence
+
+PR#4 feature080c3b80ec8e7344d82dec786fd2bb05efb1136e merged as
+ccec106d45ea043680fc7bd391e16743151c85c5. PR Actions37327774581 and exact-merge main
+Actions37328414263 passed all backend/frontend/acceptance checks;
+frontend482 tests, backend1250 tests with real PostgreSQL and no skips,
+migration head0018_asr_evidence_index SQL/round-trip verified. Local Next/OpenNext
+builds passed. Main Cloudflare build7b158000-9ae3-44c7-87c9-9713223ad425 succeeded
+2026-10-05T14:55:42Z, versiond38a1026-2024-4d95-9d83-761f15b31a09.
+PR Preview build/deployment succeeded at14:52:06Z, deployment
+2d0ffc9d-f8de-4365-9ce5-903d3feabe94:
+https://codex-browser-session-foundation-20261005-softwarelifecycle.whf969.workers.dev
+No new live browser-login acceptance is claimed: the helper has no HTTP routes,
+no real provider is configured, and public session defaults remain disabled.
+Next: provider selection/configuration, code/PKCE/state/nonce callback checks,
+login/logout/expiry and revocation/CSRF integration, then controlled submissions.
+Progress remains36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0 (turn milestone delta0).
