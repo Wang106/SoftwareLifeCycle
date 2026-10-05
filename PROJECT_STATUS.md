@@ -1,9 +1,9 @@
 # Project Status
 
-- Last reviewed: 2026-10-05 (Asia/Shanghai)
+- Last reviewed: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed starting repository baseline: `9f39932ee5501c06150295e931a1b67f1a8f7631` — self identity/grant API0.18.28 merged as013d7ab; exact-main CI, production deployment and API denial/runtime checks passed; Preview URL returned, browser access blocked1010
+- Reviewed feature merge: `625648a7a2658dcead4bab876a3ed49e19dc2b84` — PR#5 default-disabled OIDC browser flow; exact-merge CI and Workers deployment passed; real provider/browser/revocation acceptance pending
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -2268,3 +2268,34 @@ All64 page entrypoints have localization coverage. ROADMAP36/44=82%; modules
 Session ledger now records partial implementation evidence and remaining acceptance.
 Next: approved provider/controlled target, real browser and revocation acceptance,
 then controlled submission/recovery, all14 commands, corrections and operations.
+
+### OIDC browser flow rollout acceptance — 2026-10-06 (Asia/Shanghai)
+
+PR#5 featureafb0b24871c7b1ddaafef15edad9ab85fc626633 merged as
+625648a7a2658dcead4bab876a3ed49e19dc2b84. PR Actions37340442349 and exact-merge main
+Actions37341096873 passed all four backend/frontend/acceptance/Workers
+checks. Frontend533 passed; backend1250 passed with real PostgreSQL and no skips;
+schema head0018_asr_evidence_index SQL/isolated round-trip passed. Production Next
+route checks verified disabled503/405/no-store plus Chinese/English account and
+generic failure SSR on both local and remote CI. Signed mock-provider50 cases
+exercise code/PKCE/state/nonce/JWT claims, USER identity, logout, expiry and refusals.
+
+Cloudflare main build00817246-ea03-4f99-821f-71c9ebe980fd succeeded
+2026-10-05T16:30:13Z, version03d241d0-da85-4565-95a2-c76f69a93042.
+PR Preview build/deployment succeeded2026-10-05T16:26:00Z,
+deploymentdddb31d5-99b1-42b9-a574-2a9b9955d095:
+https://codex-oidc-browser-flow-20261006-softwarelifecycle.whf969.workers.dev
+Runtime Render /health/ready retry returned200, version0.18.28 and schema0018;
+first request timed out. Live main /account from this execution environment
+returned403/body error code1010. No security rule was changed or bypassed. Actual
+live page access and real provider/browser acceptance remain unverified; deployment
+success, signed mock flow and production local/CI SSR are separate evidence.
+
+This final follow-up changes documentation only. No provider/secret/principal/grant
+or public business-write settings were configured. Stateless logout remains local
+cookie clearing; copied-cookie/server/provider-wide revocation remains pending.
+ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0, delta0. Session partial implementation evidence is
+recorded without closing the real-browser/revocation acceptance milestone. Next
+approved provider/controlled target and real browser/revocation acceptance, then
+controlled submission/recovery, all14 commands, corrections and operations.
