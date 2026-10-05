@@ -421,3 +421,37 @@ No browser session/provider/admin API is claimed; grants cannot be created or ch
 here. Role displays do not bypass any of the14 scoped write/audit/replay contracts.
 Public sample remains read-only; its auth-disabled deployment returns401 for these
 new endpoints. No principals or grants are seeded and no schema change is needed.
+
+## Browser session foundation — 2026-10-05
+
+`frontend/lib/browser-session.ts` is server-only integration code; no browser login,
+callback, logout or session HTTP route is enabled by this change. Default
+`BROWSER_SESSION_MODE=disabled` is unchanged in public deployments. Encrypted mode
+requires an operator-managed random 32-byte base64url key, an HTTPS application
+origin and an explicit server-only HTTPS API_BASE_URL (no NEXT_PUBLIC fallback).
+
+The helper authenticates a HUMAN principal using `/api/v1/security/me` before
+issuing an AES-256-GCM encrypted `__Host-slc_session` cookie. Attributes are Secure,
+HttpOnly, SameSite=Lax, Path=/, no Domain; maximum lifetime is 15 minutes and is
+capped by the validated token expiry supplied by the future provider adapter.
+Each read authenticates again against the backend and checks the same principal;
+identity/grant counts are projected from the current response, never cached as
+authorization. Cookies bind to the configured origin/API and fail closed after
+key rotation, tampering, expiry, rebinding or backend failure. Fetches disable
+caching and redirects, have a five-second timeout and a 16KiB response cap.
+
+This is a stateless foundation, not a completed login flow: copied cookies can
+remain usable until expiry while the principal/token remains valid. Clearing the
+local cookie is not server-side or provider-wide revocation. Provider authorization
+code/PKCE/state/nonce verification, trusted token-expiration verification, CSRF
+protection on future state-changing routes, replay/revocation strategy and real
+provider/browser acceptance remain required. No token-entry UI, refresh tokens,
+principal provisioning or business mutation is added. Eleven new boundary tests
+cover encryption/tampering, expiry, configuration binding, identity rechecks,
+malformed/oversized responses and projection of sensitive extra fields.
+
+ROADMAP remains36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0. No acceptance milestone is closed by this slice.
+
+Validation: frontend482/482 tests passed, Next production build/type checks passed,
+and git diff whitespace checks passed. Backend code/schema and API0.18.28 are unchanged.
