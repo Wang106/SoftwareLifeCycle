@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-Authenticated self identity and independently paginated active own-grant reads are implemented in API0.18.28. They provide session integration context; provider-backed browser login/logout/expiration and audited grant administration remain pending.
+API0.18.28 self identity/grant reads now integrate with default-disabled OIDC browser login/callback/session/local-logout routes and a bilingual account page. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
 
 **All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
 
@@ -2246,3 +2246,25 @@ Next: provider selection/configuration, code/PKCE/state/nonce callback checks,
 login/logout/expiry and revocation/CSRF integration, then controlled submissions.
 Progress remains36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
 seven plans100/100/20/33/40/20/0 (turn milestone delta0).
+
+## OIDC browser routes and bilingual account — 2026-10-06 (Asia/Shanghai)
+
+Adds default-disabled POST login, GET callback, GET session, POST logout and a
+Chinese-default/English account page. Code flow uses PKCE S256, encrypted state/nonce
+transaction and RS256 ID/API JWT verification, fixed HTTPS callback and same-origin
+POSTs. Active USER identity is resolved against the existing API before issuance and
+every session read; USER fixes the prior HUMAN discriminator contract bug.
+No provider/secret/principal/grant/environment write settings are provisioned.
+Local logout clears cookies; stateless copied-cookie revocation remains pending.
+Implementation/configuration/limits/acceptance are recorded in
+[OIDC browser authentication](docs/oidc-browser-auth.md).
+
+Local frontend533 tests include50 signed-provider/boundary cases. Signed flow and actual default-disabled Next routes
+are independently verified; production Next/OpenNext build and CI are checked before
+merge. API0.18.28/schema0018 unchanged. Public staging remains read-only and login
+is unavailable. No real provider/browser/revocation acceptance is claimed.
+All64 page entrypoints have localization coverage. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0 unchanged.
+Session ledger now records partial implementation evidence and remaining acceptance.
+Next: approved provider/controlled target, real browser and revocation acceptance,
+then controlled submission/recovery, all14 commands, corrections and operations.

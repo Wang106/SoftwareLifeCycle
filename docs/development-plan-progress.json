@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.27",
-  "baseline_commit": "a18cc71816b89472f02e2b6a61fec50f5faed9a1",
+  "as_of_api": "0.18.28",
+  "baseline_commit": "df7a5baab6783646bf782bfb077755d25e5cfea1",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -270,7 +270,19 @@
           "id": "identity-session",
           "label": "浏览器登录/注销/过期会话",
           "complete": false,
-          "evidence": []
+          "evidence": [
+            "docs/oidc-browser-auth.md",
+            "frontend/lib/browser-auth.ts",
+            "frontend/lib/browser-session.ts",
+            "frontend/tests/browser-auth.test.cjs",
+            "frontend/tests/browser-session.test.cjs",
+            "frontend/scripts/check-browser-auth.cjs"
+          ],
+          "acceptance_pending": [
+            "Approved provider/controlled target",
+            "Real browser login/logout/expiration acceptance",
+            "Server-side session revocation/credential acceptance"
+          ]
         },
         {
           "id": "identity-admin",

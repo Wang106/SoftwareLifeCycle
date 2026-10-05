@@ -8,7 +8,7 @@ const {sessionConfig,establishSession,resolveSession,clearSessionCookie}=exports
 after(()=>fs.rmSync(output,{recursive:true,force:true}));
 const env={BROWSER_SESSION_MODE:'encrypted',BROWSER_SESSION_KEY:Buffer.alloc(32,7).toString('base64url'),BROWSER_SESSION_ORIGIN:'https://app.example.test',API_BASE_URL:'https://api.example.test'};
 const id='12345678-1234-1234-1234-123456789abc',token='signed-access-token';
-const identity={principal:{id,principal_type:'HUMAN',display_name:'Operator'},read_only_mode:true,active_grant_counts:{GLOBAL:0,PROJECT:3,SOFTWARE:2}};
+const identity={principal:{id,principal_type:'USER',display_name:'Operator'},read_only_mode:true,active_grant_counts:{GLOBAL:0,PROJECT:3,SOFTWARE:2}};
 function backend(data=identity,status=200){return async(url,options)=>{assert.equal(url,'https://api.example.test/api/v1/security/me');assert.equal(options.headers.Authorization,`Bearer ${token}`);assert.equal(options.cache,'no-store');assert.equal(options.redirect,'error');assert.ok(options.signal);return Response.json(data,{status});};}
 async function issued(fetcher=backend(),expires=5000){return establishSession(await sessionConfig(env),token,expires,fetcher,1000);}
 test('disabled by default; malformed enabled config fails closed',async()=>{
