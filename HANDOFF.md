@@ -2,12 +2,12 @@
 
 ## Handoff identity
 
-- Date: 2026-10-05 (Asia/Shanghai)
+- Date: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `91ad0b55d3277656b91f05cca348dcbab0c77539`
-- Developed from: `91ad0b55d3277656b91f05cca348dcbab0c77539`
-- Baseline subject: `docs: record merged main CI acceptance and fixed progress`
+- Verified starting baseline: `aee73172fd13bc726b7d57112105edaf62d24c4b`
+- Developed from: `aee73172fd13bc726b7d57112105edaf62d24c4b`
+- Baseline subject: `docs: record OIDC browser flow CI and deployment acceptance`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -41,9 +41,9 @@ The solution is evidence-oriented:
 
 | Layer | Current implementation | Current state |
 | --- | --- | --- |
-| Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`, browser User-Agent HTTP 200; Python User-Agent 403/1010 |
-| API | FastAPI + SQLAlchemy services | Render API 0.18.27 verified ready; schema 0018 |
-| Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0018_asr_evidence_index` |
+| Frontend | Next.js 15 / React 19, Cloudflare Worker through OpenNext | `https://softwarelifecycle.whf969.com`; latest main build/deploy passed; execution-environment HTTP403/1010; live browser acceptance pending |
+| API | FastAPI + SQLAlchemy services | Render API0.18.29 verified ready; schema0019 |
+| Database | PostgreSQL (Render 18; local tests 16) + Alembic | Required/verified revision `0019_browser_sessions` |
 | Identity | Provider-neutral principals and scoped global/software/project roles | Implemented in code; approved OIDC provider not configured |
 | Public-write protection | `READ_ONLY_MODE=true` | Verified write rejection: HTTP 403 `read_only_mode` |
 | Engineering source | GitHub `main` | Baseline above was pushed successfully |
@@ -2370,3 +2370,40 @@ ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
 seven plans100/100/20/33/40/20/0, delta0. Next approved provider/controlled target,
 real browser credential/recovery acceptance, audited grant administration,
 controlled submission/outcome recovery for14 commands, corrections and operations.
+
+## Session revocation rollout acceptance — 2026-10-06 (Asia/Shanghai)
+
+PR#6 feature `1f9f828cc84c0f9f9ad2fa364a5e0cbbf9948692` merged as `a9e4765a7f8ed60e7abf70342cc0265a7e03f79a`.
+PR Actions37386095765 and exact-merge main Actions37386533240 passed backend,
+frontend, CI acceptance and Workers checks. Both complete backend runs passed1285,
+with107 PostgreSQL-module cases and no skips; additional parametrized PostgreSQL
+cases are included in the total. Frontend541 passed. Single Alembic head0019,
+full upgrade/downgrade SQL and isolated0019→0018→0019 round trip passed. Actual
+production Next checks cover unavailable/login-error/logout-error SSR in Chinese
+and English and five private/no-store disabled route denials. Real PostgreSQL
+blocking proves retry/quota/revoke/revoke-versus-register serialization.
+
+Cloudflare PR Preview build/deployment succeeded at2026-10-05T23:05:28.428Z,
+deploymentbbddba4c-99b2-4039-998b-6d7117264dc8:
+https://codex-browser-session-revocation-20261006-softwarelifecycle.whf969.workers.dev
+Main build e144df91-5d82-4ae6-9316-921ca4eef6fb passed at23:08:37Z,
+Worker version417daa7f-53bc-485c-b7d2-9c37adafeaa4.
+Render /health/ready returned200 / API0.18.29 /0019_browser_sessions. Both new
+session POST controls returned401 oidc_not_enabled with private,no-store;
+a harmless random-release Snapshot POST returned403 read_only_mode. No business
+row, principal, grant, provider or secret was created. Render provider deployment
+ID/commit metadata was not independently inspected; the runtime version/schema
+are observed evidence. Live main /account and /auth/session from this environment
+returned403/error1010; no access rule was changed or bypassed. Successful builds,
+local/CI production SSR and simulated signed-provider flow do not constitute real
+provider or actual live browser credential acceptance.
+
+This final follow-up updates documentation only; the verified code merge above
+remains the feature/CI baseline. ROADMAP36/44=82%; module percentages
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0, delta0.
+Server session revocation is now implemented/tested; approved provider/controlled
+target, actual browser login/logout/expiry and credential/recovery acceptance,
+audited identity/grant administration, controlled submission/outcome recovery for
+all14 commands, broader corrections and operations remain. Before older-frontend
+rollback disable browser auth and rotate its session key; registry retention and
+backup/restore acceptance are still required before production.

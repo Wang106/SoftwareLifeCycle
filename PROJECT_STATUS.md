@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed feature merge: `625648a7a2658dcead4bab876a3ed49e19dc2b84` — PR#5 default-disabled OIDC browser flow; exact-merge CI and Workers deployment passed; real provider/browser/revocation acceptance pending
+- Reviewed feature merge: `a9e4765a7f8ed60e7abf70342cc0265a7e03f79a` — PR#6 revocable browser sessions; exact-merge CI and Workers deployment passed; approved provider/actual browser acceptance pending
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -11,7 +11,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 API0.18.29 adds a token-bound, revocable browser-session registry with migration0019; default-disabled OIDC login/callback/session/logout and the bilingual account page use registered v2 cookies. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
 
-**All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
+**All 64 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
 
 The repository implements and exposes a coherent demo/test lifecycle, but it is not yet a production multi-user system. The public environment is intentionally sample-only and read-only. Configurable OIDC authentication, exact scoped authorization and authenticated actor binding are implemented for all 14 current write routes, and every current command now appends an audit event in the same transaction. No identity provider is configured; controlled UI, broader correction/revocation and operations remain incomplete.
 
@@ -53,11 +53,11 @@ This finer counter does not change ROADMAP acceptance-item accounting or certify
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 66 backend test modules are present. The complete 2026-10-03 (Asia/Shanghai) Python 3.12 run passed **875 tests**, including **111 real PostgreSQL 16.15 tests**, with no skips. PostgreSQL tests apply the entire migration chain in disposable schemas, observe actual session blocking and verify replay/conflict/quota/rollback behavior. Warnings remain existing deprecations/collection notices (5456 in this run).
-- Alembic has the single head `0018_asr_evidence_index`; it adds only a DVP execution scope index. Full PostgreSQL upgrade and 0018-to-0017 downgrade SQL generation passed; real PostgreSQL index upgrade/downgrade/upgrade preserved records.
+- 84 backend test modules are present. Latest complete main CI passed **1285 tests**, with **107 PostgreSQL-module cases** plus additional parametrized PostgreSQL cases, and no skips. Disposable schemas validate migrations, actual blocking, replay/quota/revocation and audit rollback.
+- Alembic single head is `0019_browser_sessions`; it adds token-digest session metadata and a principal/expiry index. Full PostgreSQL SQL generation and isolated upgrade/downgrade/upgrade passed; no business data was rewritten.
 
 
-- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 339 cases; authenticated submission remains pending.
+- All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 541 cases; authenticated submission remains pending.
 
 ## In progress
 
@@ -71,19 +71,19 @@ This finer counter does not change ROADMAP acceptance-item accounting or certify
 2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
 3. Extend correction/revocation beyond actual reports, preserving formal history.
 4. Configure approved OIDC, provider-backed HTTP tests and audited grant administration.
-5. Migrate legacy lists and add CI, backup/restore, monitoring and environment governance.
+5. Implement backup/restore, monitoring and environment governance; the fixed compatibility read scope and CI are complete.
 
-Roadmap progress is **34/44 (77%)**, Phase 6 **3/5 (60%)**; these are implemented
+Roadmap progress is **36/44 (82%)**, Phase 6 **3/5 (60%)**; these are implemented
 scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.md).
 
 ## Deployment status
 
-| Layer | Configured target | Verified 2026-10-03 | Qualification |
+| Layer | Configured target | Verified 2026-10-06 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare Worker at `https://softwarelifecycle.whf969.com` | Live SCR/Issue directories verified: Chinese/English, full statistics, pagination and invalid filters | Demo/test frontend, not evidence of production readiness |
-| API | Render at `https://softwarelifecycle-api-test.onrender.com` | `/health/ready` HTTP 200, version `0.18.15`; Snapshot/Deployment probes rejected with HTTP 403 `read_only_mode` | Public sample API is current and remains read-only with OIDC disabled |
-| Database | PostgreSQL behind the Render API | Ready at `0018_asr_evidence_index`; read-only SQL confirms revision and index | Sample/test data only; read-only schema/index inspection |
-| Local stack | Docker Compose: PostgreSQL + FastAPI + Next.js | Configuration and YAML structure checked; Docker CLI was unavailable, so the stack was not started | Uses idempotent demo seed by default |
+| Frontend | Cloudflare `https://softwarelifecycle.whf969.com` | Main Workers build/deploy passed; version417daa7f; local/CI production zh/en auth SSR passed | Live execution-environment account/session probes return403/1010; actual browser/provider acceptance pending |
+| API | Render `https://softwarelifecycle-api-test.onrender.com` | /health/ready200, version0.18.29; identity/session metadata401 and harmless business POST403 | Public sample API remains read-only with OIDC disabled; provider deployment commit metadata not inspected |
+| Database | PostgreSQL behind Render API | Ready reports0019_browser_sessions; CI migration round trip passed | Runtime health proof, sample/test data only |
+| Local stack | Docker Compose | Docker unavailable; stack not started | Local unit/SQLite tests and remote PostgreSQL CI provide separate evidence |
 
 Historical actual-report rollout (2026-10-01): Render deployment `dep-dav0vf0473hc73a8vl10` was **live** for feature commit
 `bbd8a42b567c4f5b2c83017c570e47039442f3af` (finished 2026-10-01T07:48:56.742624Z UTC). Health returned HTTP 200 /
@@ -102,8 +102,8 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 
 ## Database and API status
 
-- Repository and verified online API version: `0.18.9`. Current rollout evidence is recorded below.
-- Required and verified online schema revision: `0018_asr_evidence_index`.
+- Repository and verified online API version: `0.18.29`. Current rollout evidence is recorded below.
+- Required and verified online schema revision: `0019_browser_sessions`.
 - Public test API is documented and configured for `READ_ONLY_MODE=true`; write requests should remain blocked with HTTP 403.
 - Local `.env.example` defaults to `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` for controlled development and `SEED_ON_STARTUP=true` for demo data.
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
@@ -2311,3 +2311,40 @@ secret, principal or grant was configured. Local frontend541 and focused SQLite3
 passed; production OpenNext build passed. Remote PostgreSQL/CI and deployment
 acceptance are pending and will be recorded after publication. Progress remains
 36/44=82%; modules100/100/100/100/89/60/17; plans100/100/20/33/40/20/0, delta0.
+
+## Session revocation rollout acceptance — 2026-10-06 (Asia/Shanghai)
+
+PR#6 feature `1f9f828cc84c0f9f9ad2fa364a5e0cbbf9948692` merged as `a9e4765a7f8ed60e7abf70342cc0265a7e03f79a`.
+PR Actions37386095765 and exact-merge main Actions37386533240 passed backend,
+frontend, CI acceptance and Workers checks. Both complete backend runs passed1285,
+with107 PostgreSQL-module cases and no skips; additional parametrized PostgreSQL
+cases are included in the total. Frontend541 passed. Single Alembic head0019,
+full upgrade/downgrade SQL and isolated0019→0018→0019 round trip passed. Actual
+production Next checks cover unavailable/login-error/logout-error SSR in Chinese
+and English and five private/no-store disabled route denials. Real PostgreSQL
+blocking proves retry/quota/revoke/revoke-versus-register serialization.
+
+Cloudflare PR Preview build/deployment succeeded at2026-10-05T23:05:28.428Z,
+deploymentbbddba4c-99b2-4039-998b-6d7117264dc8:
+https://codex-browser-session-revocation-20261006-softwarelifecycle.whf969.workers.dev
+Main build e144df91-5d82-4ae6-9316-921ca4eef6fb passed at23:08:37Z,
+Worker version417daa7f-53bc-485c-b7d2-9c37adafeaa4.
+Render /health/ready returned200 / API0.18.29 /0019_browser_sessions. Both new
+session POST controls returned401 oidc_not_enabled with private,no-store;
+a harmless random-release Snapshot POST returned403 read_only_mode. No business
+row, principal, grant, provider or secret was created. Render provider deployment
+ID/commit metadata was not independently inspected; the runtime version/schema
+are observed evidence. Live main /account and /auth/session from this environment
+returned403/error1010; no access rule was changed or bypassed. Successful builds,
+local/CI production SSR and simulated signed-provider flow do not constitute real
+provider or actual live browser credential acceptance.
+
+This final follow-up updates documentation only; the verified code merge above
+remains the feature/CI baseline. ROADMAP36/44=82%; module percentages
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0, delta0.
+Server session revocation is now implemented/tested; approved provider/controlled
+target, actual browser login/logout/expiry and credential/recovery acceptance,
+audited identity/grant administration, controlled submission/outcome recovery for
+all14 commands, broader corrections and operations remain. Before older-frontend
+rollback disable browser auth and rotate its session key; registry retention and
+backup/restore acceptance are still required before production.
