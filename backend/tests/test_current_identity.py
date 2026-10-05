@@ -15,7 +15,7 @@ from app import auth, main
 from app.core.db import Base, get_db
 from app.models.audit import AuditEvent
 from app.models.core import Customer, Project, SoftwareProduct, Supplier
-from app.models.security import GlobalRoleAssignment, ProjectMembership, SecurityPrincipal, SoftwareMembership
+from app.models.security import BrowserSession, GlobalRoleAssignment, ProjectMembership, SecurityPrincipal, SoftwareMembership
 from test_auth import ISSUER, AUDIENCE, signed_token
 from test_command_concurrency_postgres import pg
 
@@ -28,7 +28,7 @@ def identity_client(monkeypatch, request):
         engine = create_engine('sqlite+pysqlite:///:memory:', connect_args={'check_same_thread': False}, poolclass=StaticPool)
         monkeypatch.setattr(AuditEvent.__table__.c.payload_json, 'type', JSONB().with_variant(JSON(), 'sqlite'))
         Base.metadata.create_all(engine, tables=[model.__table__ for model in (
-            SecurityPrincipal, GlobalRoleAssignment, ProjectMembership, SoftwareMembership,
+            SecurityPrincipal, BrowserSession, GlobalRoleAssignment, ProjectMembership, SoftwareMembership,
             Supplier, Customer, Project, SoftwareProduct, AuditEvent,
         )])
     sessions = sessionmaker(bind=engine, expire_on_commit=False)

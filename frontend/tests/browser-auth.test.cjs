@@ -47,7 +47,7 @@ function privateResponse(response) {
 async function start(environment=env) {
  const response=await handleAuth(request('login'),'login',environment);privateResponse(response);assert.equal(response.status,303);
  const authorization=new URL(response.headers.get('location'));
- return {response,authorization,pending:cookie(response,LOGIN_COOKIE),environment};
+ return {response,authorization,pending:cookie(response,LOGIN_COOKIE),environment,registry:new Map()};
 }
 async function mockProvider(flow, options={}) {
  const keys=await keysPromise,now=Math.floor(Date.now()/1000);
@@ -72,9 +72,17 @@ async function mockProvider(flow, options={}) {
    return Response.json({access_token:access,id_token:idToken,token_type:'Bearer',expires_in:300,refresh_token:'must-not-be-retained',...options.tokens});
   }
   if(url===env.OIDC_JWKS_URL)return options.jwksResponse?options.jwksResponse():Response.json({keys:[keys.jwk]});
+  if(url===env.API_BASE_URL+'/api/v1/security/me/browser-sessions'){
+   assert.equal(init.method,'POST');assert.equal(init.headers.Authorization,`Bearer ${access}`);const body=JSON.parse(init.body);
+   flow.registry.set(body.id,{...body,revoked:false});return Response.json({id:body.id,expires_at:body.expires_at});
+  }
+  if(url.startsWith(env.API_BASE_URL+'/api/v1/security/me/browser-sessions/')&&url.endsWith('/revoke')){
+   const sid=url.split('/').at(-2),row=flow.registry.get(sid);if(!row)return Response.json({detail:'session_not_found'},{status:404});row.revoked=true;return Response.json({id:sid,status:'revoked'});
+  }
   if(url===env.API_BASE_URL+'/api/v1/security/me'){
    assert.equal(init.headers.Authorization,`Bearer ${access}`);
-   return Response.json(options.identity||identity,{status:options.identityStatus||200});
+   const sid=init.headers['X-Browser-Session'];if(sid&&(!flow.registry.has(sid)||flow.registry.get(sid).revoked))return Response.json({detail:'invalid_browser_session'},{status:401});
+   return Response.json({...options.identity||identity,...(sid?{browser_session_id:sid}:{})},{status:options.identityStatus||200});
   }
   throw new Error('unexpected outbound URL: '+url);
  };
@@ -110,7 +118,7 @@ test('cross-origin login/logout and GET login/logout do not change cookies',asyn
 });
 test('signed provider round trip issues USER session, returns current identity and logs out',async()=>{
  const flow=await start(),result=await complete(flow);assert.equal(result.response.status,303);assert.equal(result.response.headers.get('location'),origin+'/account');
- assert.equal(result.calls.length,3);const session=cookie(result.response,SESSION_COOKIE);assert.ok(session);assert.ok(cookie(result.response,LOGIN_COOKIE).endsWith('='));
+ assert.equal(result.calls.length,4);const session=cookie(result.response,SESSION_COOKIE);assert.ok(session);assert.ok(cookie(result.response,LOGIN_COOKIE).endsWith('='));
  const response=await handleAuth(request('session',{cookie:session}),'session',env,result.fetcher);assert.equal(response.status,200);privateResponse(response);
  const data=await response.json();assert.deepEqual(data,identity);assert.ok(!JSON.stringify(data).includes(result.access));assert.ok(!JSON.stringify(data).includes('must-not-be-retained'));
  const config=await authConfig(env);const envelope=await openCookie(config.session,SESSION_COOKIE,session.split('=')[1]);assert.equal(envelope.token,result.access);assert.equal(envelope.principal,id);assert.ok(envelope.expires-envelope.issued<=300);assert.equal(envelope.refresh_token,undefined);
@@ -220,4 +228,32 @@ test('cookie authenticated data prevents using a session cookie as a login trans
 });
 test('root issuer without trailing slash remains exact and valid in configuration',async()=>{
  const config=await authConfig({...env,OIDC_ISSUER_URL:'https://id.example.test'});assert.equal(config.issuer,'https://id.example.test');
+});
+test('successful logout revokes copied encrypted cookie and remains idempotent',async()=>{
+ const flow=await start(),result=await complete(flow),session=cookie(result.response,SESSION_COOKIE);
+ for(let n=0;n<2;n++){const response=await handleAuth(request('logout',{cookie:session}),'logout',env,result.fetcher);assert.equal(response.status,303);privateResponse(response);}
+ const replay=await handleAuth(request('session',{cookie:session}),'session',env,result.fetcher);assert.equal(replay.status,401);
+ assert.ok(cookie(replay,SESSION_COOKIE).endsWith('='));
+});
+for(const failure of ['network','500','401','malformed'])test('logout preserves cookie when revocation fails: '+failure,async()=>{
+ const flow=await start(),result=await complete(flow),session=cookie(result.response,SESSION_COOKIE);
+ const fetcher=async(url,init)=>{if(url.endsWith('/revoke')){if(failure==='network')throw Error('offline');if(failure==='malformed')return Response.json({status:'revoked'});return Response.json({detail:'private-provider-error'},{status:Number(failure)});}return result.fetcher(url,init);};
+ const response=await handleAuth(request('logout',{cookie:session}),'logout',env,fetcher);assert.equal(response.status,503);privateResponse(response);assert.equal(cookieLines(response).length,0);assert.deepEqual(await response.json(),{error:'logout_unavailable'});
+ assert.equal((await handleAuth(request('session',{cookie:session}),'session',env,result.fetcher)).status,200);
+ const req=request('logout',{cookie:session});req.headers.set('accept','text/html');const html=await handleAuth(req,'logout',env,fetcher);assert.equal(html.status,303);assert.equal(html.headers.get('location'),origin+'/account?auth=logout_failed');assert.equal(cookieLines(html).length,0);
+});
+test('backend rollback lacking session validation proof fails closed',async()=>{
+ const flow=await start(),result=await complete(flow),session=cookie(result.response,SESSION_COOKIE);
+ const fetcher=async(url,init)=>url===env.API_BASE_URL+'/api/v1/security/me'?Response.json(identity):result.fetcher(url,init);
+ assert.equal((await handleAuth(request('session',{cookie:session}),'session',env,fetcher)).status,401);
+});
+test('registration failure cannot issue a session cookie',async()=>{
+ const flow=await start(),provider=await mockProvider(flow);const fetcher=async(url,init)=>url.endsWith('/browser-sessions')?Response.json({detail:'unavailable'},{status:503}):provider.fetcher(url,init);
+ const response=await handleAuth(callback(flow),'callback',env,fetcher);assert.equal(response.status,401);assert.equal(cookie(response,SESSION_COOKIE),undefined);
+});
+test('legacy cookie requires new login and does not reach backend',async()=>{
+ const flow=await start(),result=await complete(flow),session=cookie(result.response,SESSION_COOKIE),config=await authConfig(env);
+ const envelope=await openCookie(config.session,SESSION_COOKIE,session.split('=')[1]);envelope.v=1;delete envelope.sid;
+ const old=SESSION_COOKIE+'='+await sealCookie(config.session,SESSION_COOKIE,envelope);let calls=0;
+ const response=await handleAuth(request('session',{cookie:old}),'session',env,async()=>{calls++;throw Error('unexpected');});assert.equal(response.status,401);assert.equal(calls,0);
 });

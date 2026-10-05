@@ -113,7 +113,7 @@ def test_authenticated_token_must_resolve_to_an_active_local_principal(monkeypat
     monkeypatch.setattr(
         auth,
         "decode_oidc_token",
-        lambda *_: {"iss": ISSUER, "sub": "user-123"},
+        lambda *_: {"iss": ISSUER, "sub": "user-123", "exp": int(datetime.now(timezone.utc).timestamp()) + 300},
     )
 
     incoming = request("Bearer token")

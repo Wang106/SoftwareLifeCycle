@@ -1604,5 +1604,6 @@
   "Sign out": "退出登录",
   "If your session expired, sign in again.": "会话过期后，请重新登录。",
   "Sign in": "登录",
-  "Sign-in failed. Please try again.": "登录失败，请重试。"
+  "Sign-in failed. Please try again.": "登录失败，请重试。",
+  "Sign-out could not be confirmed. Please retry signing out.": "尚未确认退出成功，请重试退出登录。"
 }

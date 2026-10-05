@@ -37,6 +37,20 @@ class SecurityPrincipal(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=now)
 
 
+class BrowserSession(Base):
+    __tablename__ = 'browser_sessions'
+    __table_args__ = (
+        CheckConstraint('expires_at > created_at', name='ck_browser_session_expiry'),
+        Index('ix_browser_sessions_principal_expiry', 'principal_id', 'expires_at'),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    principal_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('security_principals.id'), nullable=False)
+    token_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class GlobalRoleAssignment(Base):
     __tablename__ = "global_role_assignments"
     __table_args__ = (

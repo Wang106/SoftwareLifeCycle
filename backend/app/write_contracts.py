@@ -176,3 +176,22 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         known_gap="Registering a location does not verify that it exists or is accessible.",
     ),
 }
+
+
+@dataclass(frozen=True)
+class SessionControlContract:
+    operation: str
+    authentication: str = 'OIDC_REQUIRED'
+    authorization: str = 'ACTIVE_USER_SELF_AND_TOKEN'
+    public_exposure: str = 'AUTHENTICATED_METADATA_ONLY'
+    audit: str = 'ATOMIC_APPEND'
+    concurrency: str = 'PRINCIPAL_ROW_LOCK'
+    idempotency: str = 'SESSION_ID'
+
+
+# These metadata controls have a narrow read-only exception; all business commands
+# remain READ_ONLY_BLOCKED. Keeping both inventories exhaustive catches route drift.
+SESSION_CONTROL_CONTRACTS = {
+    ('POST', '/api/v1/security/me/browser-sessions'): SessionControlContract('Register own browser session'),
+    ('POST', '/api/v1/security/me/browser-sessions/{session_id}/revoke'): SessionControlContract('Revoke own browser session'),
+}

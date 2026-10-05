@@ -5,7 +5,7 @@
 - Engine: PostgreSQL 16 in the local Compose environment; current Render inventory reports PostgreSQL 18. The local real-concurrency regression uses 16.15.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0018_asr_evidence_index`.
+- Required schema revision: `0019_browser_sessions`.
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
@@ -466,3 +466,15 @@ credentials are retained; CI acceptance fails if either validation job does not
 succeed. No deployment/identity/company secrets or public database are used.
 Branch protection and existing deployment triggers remain separate settings.
 See docs/ci.md and final run evidence in HANDOFF.md.
+
+## Browser-session registry — 0019 / API0.18.29
+
+Additive migration0019_browser_sessions follows0018_asr_evidence_index. New table
+browser_sessions has UUID primary key, principal FK, SHA256 token digest and UTC
+created_at/expires_at/revoked_at; expiry must follow creation. The principal/expiry
+index supports bounded active-session checks. No credentials, principals or grants
+are seeded. No business/history rows are rewritten. Principal row locks serialize
+registration/revocation and the16 active-session quota; session change and audit
+append share one transaction. Audit payload contains expiry only. Downgrade drops
+the table and index; disable authentication before an older frontend rollback and
+rotate the session key. Tombstone retention/backup policy remains unimplemented.

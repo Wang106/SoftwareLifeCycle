@@ -91,4 +91,5 @@ def authenticate_write_request(request: Request, settings: Settings) -> Authenti
             email=row.email,
         )
     request.state.principal = principal
+    request.state.token_expires = claims['exp']
     return principal

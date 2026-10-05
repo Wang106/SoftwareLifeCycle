@@ -30,6 +30,9 @@ async function main() {
   for(const [language,message] of [['zh','登录失败，请重试。'],['en','Sign-in failed. Please try again.']]) {
    const response=await fetch(base+'/account?auth=failed',{headers:{Cookie:`slc_language=${language}`}});assert.equal(response.status,200);assert.ok((await response.text()).includes(message));console.log(`Account error SSR ${language}: translated generic failure`);
   }
+  for(const [language,message] of [['zh','尚未确认退出成功，请重试退出登录。'],['en','Sign-out could not be confirmed. Please retry signing out.']]) {
+   const response=await fetch(base+'/account?auth=logout_failed',{headers:{Cookie:`slc_language=${language}`}});assert.equal(response.status,200);assert.ok((await response.text()).includes(message));console.log(`Account logout error SSR ${language}: translated retry message`);
+  }
   for(const [route,method,status] of [['login','GET',405],['login','POST',503],['callback','GET',503],['session','GET',503],['logout','POST',503]]){
    const response=await fetch(`${base}/auth/${route}`,{method,headers:{Origin:base},redirect:'manual'});
    assert.equal(response.status,status);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.ok(response.headers.get('vary').includes('Cookie'));assert.equal(response.headers.get('location'),null);

@@ -8,7 +8,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   let config = null;
   try { config = await authConfig(process.env); } catch { /* Render the disabled state without configuration details. */ }
   const identity = config ? await resolveSession(config.session, (await cookies()).get(SESSION_COOKIE)?.value) : null;
-  const failed = (await searchParams).auth === 'failed';
+  const auth = (await searchParams).auth;
+  const failed = auth === 'failed';
   return <>
     <div className="top"><div><div className="eyebrow"><Localized>{'ACCOUNT'}</Localized></div>
       <h1><Localized>{'Account and session'}</Localized></h1>
@@ -16,6 +17,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     </div></div>
     <section className="panel">
       <Localized>{failed && <p role="alert"><Localized>{'Sign-in failed. Please try again.'}</Localized></p>}</Localized>
+      <Localized>{auth === 'logout_failed' && <p role="alert"><Localized>{'Sign-out could not be confirmed. Please retry signing out.'}</Localized></p>}</Localized>
       <Localized>{!config ? <p><Localized>{'Login is not available in this environment.'}</Localized></p> :
         identity ? <>
           <h2><Localized>{'Signed in'}</Localized></h2>

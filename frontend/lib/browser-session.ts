@@ -13,7 +13,7 @@ export type Identity = {
   read_only_mode: boolean;
   active_grant_counts: { GLOBAL: number; PROJECT: number; SOFTWARE: number };
 };
-type Envelope = { v: 1; binding: string; issued: number; expires: number; principal: string; token: string };
+type Envelope = { v: 2; sid: string; binding: string; issued: number; expires: number; principal: string; token: string };
 
 function encode(bytes: Uint8Array): string {
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -85,13 +85,16 @@ function parseIdentity(value: unknown): Identity | null {
     active_grant_counts: { GLOBAL: data.active_grant_counts.GLOBAL, PROJECT: data.active_grant_counts.PROJECT,
       SOFTWARE: data.active_grant_counts.SOFTWARE } };
 }
-async function currentIdentity(config: SessionConfig, token: string, fetcher: typeof fetch): Promise<Identity | null> {
+async function privateRequest(config: SessionConfig, path: string, token: string, fetcher: typeof fetch,
+  options: RequestInit = {}, sessionId?: string): Promise<{ status: number; value: unknown } | null> {
   try {
-    const response = await fetcher(`${config.apiBase}/api/v1/security/me`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    const response = await fetcher(`${config.apiBase}${path}`, { ...options,
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json',
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(sessionId ? { 'X-Browser-Session': sessionId } : {}) },
       cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(5000),
     });
-    if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) return null;
+    if (!response.headers.get('content-type')?.includes('application/json')) { await response.body?.cancel(); return null; }
     // Bound both declared and streamed size; never parse arbitrary provider bodies.
     if (Number(response.headers.get('content-length') || '0') > 16384) { await response.body?.cancel(); return null; }
     const reader = response.body?.getReader();
@@ -108,8 +111,15 @@ async function currentIdentity(config: SessionConfig, token: string, fetcher: ty
     } finally { reader.releaseLock(); }
     const bytes = new Uint8Array(size); let offset = 0;
     for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-    return parseIdentity(JSON.parse(decoder.decode(bytes)));
+    return { status: response.status, value: JSON.parse(decoder.decode(bytes)) };
   } catch { return null; }
+}
+async function currentIdentity(config: SessionConfig, token: string, fetcher: typeof fetch, sessionId?: string): Promise<Identity | null> {
+  const result = await privateRequest(config, '/api/v1/security/me', token, fetcher, {}, sessionId);
+  if (!result || result.status !== 200) return null;
+  if (sessionId && (!result.value || typeof result.value !== 'object' ||
+      (result.value as { browser_session_id?: string }).browser_session_id !== sessionId)) return null;
+  return parseIdentity(result.value);
 }
 export function sessionCookie(value: string, maxAge: number) {
   return { name: SESSION_COOKIE, value, httpOnly: true, secure: true, sameSite: 'lax' as const,
@@ -125,7 +135,13 @@ export async function establishSession(config: SessionConfig, token: string, tok
   const identity = await currentIdentity(config, token, fetcher);
   if (!identity || identity.principal.principal_type !== 'USER') return null;
   const expires = Math.min(tokenExpires, now + MAX_AGE);
-  const envelope: Envelope = { v: 1, binding: config.binding, issued: now, expires, principal: identity.principal.id, token };
+  const sid = crypto.randomUUID();
+  const registered = await privateRequest(config, '/api/v1/security/me/browser-sessions', token, fetcher,
+    { method: 'POST', body: JSON.stringify({ id: sid, expires_at: expires }) });
+  if (!registered || registered.status !== 200 || !registered.value || typeof registered.value !== 'object') return null;
+  const record = registered.value as { id: string; expires_at: number };
+  if (record.id !== sid || !Number.isSafeInteger(record.expires_at) || record.expires_at !== expires) return null;
+  const envelope: Envelope = { v: 2, sid, binding: config.binding, issued: now, expires, principal: identity.principal.id, token };
   const value = await sealCookie(config, SESSION_COOKIE, envelope);
   if (!value) return null;
   return { cookie: sessionCookie(value, expires - now), identity };
@@ -136,11 +152,26 @@ export async function resolveSession(config: SessionConfig, value: string | unde
   if (!value || value.length > MAX_COOKIE || !Number.isSafeInteger(now)) return null;
   try {
     const envelope = await openCookie(config, SESSION_COOKIE, value) as Envelope | null;
-    if (!envelope || envelope.v !== 1 || envelope.binding !== config.binding || !Number.isSafeInteger(envelope.issued) ||
+    if (!envelope || envelope.v !== 2 || typeof envelope.sid !== 'string' || !uuid.test(envelope.sid) || envelope.binding !== config.binding || !Number.isSafeInteger(envelope.issued) ||
         !Number.isSafeInteger(envelope.expires) || envelope.issued > now || envelope.expires <= now ||
         envelope.expires <= envelope.issued || envelope.expires - envelope.issued > MAX_AGE ||
         typeof envelope.principal !== 'string' || !uuid.test(envelope.principal) || !validToken(envelope.token)) return null;
-    const identity = await currentIdentity(config, envelope.token, fetcher);
+    const identity = await currentIdentity(config, envelope.token, fetcher, envelope.sid);
     return identity?.principal.id === envelope.principal && identity.principal.principal_type === 'USER' ? identity : null;
   } catch { return null; }
+}
+
+// Revoke before clearing browser cookies. Never claim success on an unconfirmed server failure.
+export async function revokeSession(config: SessionConfig, value: string | undefined,
+  fetcher: typeof fetch = fetch, now = Math.floor(Date.now() / 1000)): Promise<boolean> {
+  const envelope = await openCookie(config, SESSION_COOKIE, value) as Envelope | null;
+  if (!envelope || envelope.v !== 2 || typeof envelope.sid !== 'string' || !uuid.test(envelope.sid) ||
+      envelope.binding !== config.binding || !validToken(envelope.token)) return true;
+  if (Number.isSafeInteger(envelope.expires) && envelope.expires <= now) return true;
+  const result = await privateRequest(config, `/api/v1/security/me/browser-sessions/${envelope.sid}/revoke`,
+    envelope.token, fetcher, { method: 'POST' });
+  if (!result || !result.value || typeof result.value !== 'object') return false;
+  const body = result.value as { id?: string; status?: string; detail?: string };
+  return (result.status === 200 && body.id === envelope.sid && body.status === 'revoked') ||
+    (result.status === 404 && body.detail === 'session_not_found');
 }

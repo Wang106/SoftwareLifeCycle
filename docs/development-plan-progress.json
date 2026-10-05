@@ -276,12 +276,16 @@
             "frontend/lib/browser-session.ts",
             "frontend/tests/browser-auth.test.cjs",
             "frontend/tests/browser-session.test.cjs",
-            "frontend/scripts/check-browser-auth.cjs"
+            "frontend/scripts/check-browser-auth.cjs",
+            "backend/app/api/browser_sessions.py",
+            "backend/alembic/versions/0019_browser_sessions.py",
+            "backend/tests/test_browser_sessions.py",
+            "backend/tests/test_browser_session_concurrency_postgres.py"
           ],
           "acceptance_pending": [
             "Approved provider/controlled target",
             "Real browser login/logout/expiration acceptance",
-            "Server-side session revocation/credential acceptance"
+            "Real-provider credential revocation/recovery acceptance"
           ]
         },
         {
