@@ -15,6 +15,8 @@ from app.api.asr_components import router as asr_components_router
 from app.api.standard_release_views import router as standard_views_router
 from app.api.asr_evidence import router as asr_evidence_router
 from app.api.current_identity import router as current_identity_router
+from app.api.browser_sessions import router as browser_sessions_router
+import re
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -45,7 +47,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.28"
+APP_VERSION = "0.18.29"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -98,6 +100,7 @@ app.include_router(distribution_catalog_router)
 app.include_router(production_catalog_router)
 app.include_router(governance_catalog_router)
 app.include_router(current_identity_router)
+app.include_router(browser_sessions_router)
 
 
 @app.middleware("http")
@@ -106,31 +109,37 @@ async def read_only_guard(request: Request, call_next):
     is_identity_read = request.method in {"GET", "HEAD"} and request.url.path.rstrip('/') in {
         "/api/v1/security/me", "/api/v1/security/me/grants",
     }
+    path = request.url.path.rstrip('/')
+    is_session_control = request.method == 'POST' and (path == '/api/v1/security/me/browser-sessions' or
+        re.fullmatch(r'/api/v1/security/me/browser-sessions/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}/revoke', path) is not None)
+    is_private = is_identity_read or is_session_control
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
-    if settings.read_only_mode and is_write:
+    if settings.read_only_mode and is_write and not is_session_control:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={"detail": "read_only_mode"},
         )
-    if is_identity_read and settings.auth_mode != "oidc":
+    if is_private and settings.auth_mode != "oidc":
         return JSONResponse(status_code=401, content={"detail": "oidc_not_enabled"},
                             headers={**private_headers, "WWW-Authenticate": "Bearer"})
-    if (is_write and settings.auth_mode == "oidc") or is_identity_read:
+    if (is_write and settings.auth_mode == "oidc") or is_private:
         try:
             await run_in_threadpool(authenticate_write_request, request, settings)
         except AuthenticationError as exc:
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"detail": str(exc)},
-                headers={"WWW-Authenticate": "Bearer", **(private_headers if is_identity_read else {})},
+                headers={"WWW-Authenticate": "Bearer", **(private_headers if is_private else {})},
             )
     response = await call_next(request)
-    if is_identity_read:
+    if is_private:
         response.headers["Cache-Control"] = private_headers["Cache-Control"]
         response.headers["Pragma"] = private_headers["Pragma"]
         vary = response.headers.get("Vary", "")
         if "authorization" not in {part.strip().lower() for part in vary.split(',')}:
             response.headers["Vary"] = (vary + ", Authorization").lstrip(', ')
+        if is_identity_read:
+            response.headers['Vary'] += ', X-Browser-Session'
     return response
 
 @app.get("/health")

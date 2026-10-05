@@ -92,7 +92,7 @@ Progress is the count of checked items in `ROADMAP.md`. It is a roadmap-completi
 ## Current limitations and risks
 
 1. No approved OIDC issuer, audience or JWKS endpoint is configured in a target environment.
-2. There is no audited principal/grant administration API or browser login/session flow.
+2. Browser login/session and server revocation are implemented but disabled by default; approved provider/real browser acceptance and audited principal/grant administration remain pending.
 3. All 14 current routes support keyed retry; optional legacy/no-key paths retain weaker semantics.
 4. Snapshot numbering and shared production batch-limit checks are now serialized with PostgreSQL row locks. Approval actions and release decisions now share transaction locks; Deployment/Changeover now have retry and locks; actual reports now have keyed retry/version checks and audited corrections.
 5. Actual software has keyed retry/version/correction protection; legacy no-key reports may still overwrite without a precondition.
@@ -2349,3 +2349,24 @@ seven plans100/100/20/33/40/20/0, delta0. Session partial implementation evidenc
 recorded without closing the real-browser/revocation acceptance milestone. Next
 approved provider/controlled target and real browser/revocation acceptance, then
 controlled submission/recovery, all14 commands, corrections and operations.
+
+## Browser-session registry work — 2026-10-06 (Asia/Shanghai)
+
+Codex continues from aee73172fd13bc726b7d57112105edaf62d24c4b; no latest-ten-chat
+analysis is required. User email PR#5 Build In progress for afb0b24 at16:23:32Z was
+an old snapshot: bot comment build/deployment Success at16:26:00Z and exact merge
+CI/deployment Success were already verified. This package adds API0.18.29,
+0019_browser_sessions, token-bound self registration/revocation, atomic audit,
+principal locking and16-active quota. Frontend v2 cookies require registry check
+proof; successful logout denies copied-cookie reads. Revocation outage preserves
+the cookie and reports retry. All14 business commands remain read-only blocked;
+two session controls have separate exhaustive authentication/ownership contracts.
+No approved provider/secret/identity/grant or business-write target was configured.
+Local frontend541 and focused SQLite38 passed; OpenNext production build passed.
+Remote CI/PostgreSQL/migration/deployment acceptance will be recorded after rollout.
+Read docs/oidc-browser-auth.md for expiry, in-flight request, bearer/provider,
+legacy-cookie, rollback, tombstone retention and interrupted-issuance boundaries.
+ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0, delta0. Next approved provider/controlled target,
+real browser credential/recovery acceptance, audited grant administration,
+controlled submission/outcome recovery for14 commands, corrections and operations.

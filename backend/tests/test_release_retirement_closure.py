@@ -84,4 +84,7 @@ def test_full_candidate_closure_is_disjoint_exact_and_commands_are_preserved():
     for path in bounded:
         routes=[r for r in app.routes if r.path==path and 'GET' in (getattr(r,'methods',None) or set())]
         assert len(routes)==1 and not routes[0].deprecated
-    assert len([r for r in app.routes if 'POST' in (getattr(r,'methods',None) or set())])==14
+    from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS
+    writes = {('POST', r.path) for r in app.routes if 'POST' in (getattr(r,'methods',None) or set())}
+    assert len(WRITE_CONTRACTS) == 14
+    assert writes == set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS)

@@ -9,7 +9,7 @@ after(()=>fs.rmSync(output,{recursive:true,force:true}));
 const env={BROWSER_SESSION_MODE:'encrypted',BROWSER_SESSION_KEY:Buffer.alloc(32,7).toString('base64url'),BROWSER_SESSION_ORIGIN:'https://app.example.test',API_BASE_URL:'https://api.example.test'};
 const id='12345678-1234-1234-1234-123456789abc',token='signed-access-token';
 const identity={principal:{id,principal_type:'USER',display_name:'Operator'},read_only_mode:true,active_grant_counts:{GLOBAL:0,PROJECT:3,SOFTWARE:2}};
-function backend(data=identity,status=200){return async(url,options)=>{assert.equal(url,'https://api.example.test/api/v1/security/me');assert.equal(options.headers.Authorization,`Bearer ${token}`);assert.equal(options.cache,'no-store');assert.equal(options.redirect,'error');assert.ok(options.signal);return Response.json(data,{status});};}
+function backend(data=identity,status=200){return async(url,options)=>{if(url.endsWith('/browser-sessions')){const body=JSON.parse(options.body);return Response.json({id:body.id,expires_at:body.expires_at});}assert.equal(url,'https://api.example.test/api/v1/security/me');assert.equal(options.headers.Authorization,`Bearer ${token}`);assert.equal(options.cache,'no-store');assert.equal(options.redirect,'error');assert.ok(options.signal);return Response.json({...data,...(options.headers['X-Browser-Session']?{browser_session_id:options.headers['X-Browser-Session']}:{})},{status});};}
 async function issued(fetcher=backend(),expires=5000){return establishSession(await sessionConfig(env),token,expires,fetcher,1000);}
 test('disabled by default; malformed enabled config fails closed',async()=>{
  assert.equal(await sessionConfig({}),null);assert.equal(await sessionConfig({BROWSER_SESSION_MODE:'disabled'}),null);
@@ -21,16 +21,16 @@ test('encrypted randomized host-only cookie hides token and uses secure attribut
  assert.equal((await resolveSession(await sessionConfig(env),a.cookie.value,backend(),1001)).principal.id,id);
 });
 test('expiration caps token lifetime; reads never renew the cookie',async()=>{
- const a=await issued(backend(),1100),config=await sessionConfig(env);assert.equal(a.cookie.maxAge,100);let calls=0;const fetcher=async()=>{calls++;return Response.json(identity);};
+ const a=await issued(backend(),1100),config=await sessionConfig(env);assert.equal(a.cookie.maxAge,100);let calls=0;const fetcher=async(_url,options)=>{calls++;return Response.json({...identity,browser_session_id:options.headers['X-Browser-Session']});};
  assert.equal(await resolveSession(config,a.cookie.value,fetcher,1100),null);assert.equal(calls,0);assert.ok(await resolveSession(config,a.cookie.value,fetcher,1099));assert.equal(calls,1);
 });
 test('invalid tokens and expiration never reach backend',async()=>{
- let calls=0;const fetcher=async()=>{calls++;return Response.json(identity);},config=await sessionConfig(env);
+ let calls=0;const fetcher=async(_url,options)=>{calls++;return Response.json({...identity,browser_session_id:options.headers['X-Browser-Session']});},config=await sessionConfig(env);
  for(const bad of ['',token+'\r\nX: y','a'.repeat(2401),{},null]) assert.equal(await establishSession(config,bad,2000,fetcher,1000),null);
  for(const expiry of [1000,999,Infinity,1000.1]) assert.equal(await establishSession(config,token,expiry,fetcher,1000),null);assert.equal(calls,0);
 });
 test('tampered, truncated, malformed and oversized cookies fail before fetch',async()=>{
- const a=await issued(),config=await sessionConfig(env);let calls=0;const fetcher=async()=>{calls++;return Response.json(identity);};const [v,iv,body]=a.cookie.value.split('.');
+ const a=await issued(),config=await sessionConfig(env);let calls=0;const fetcher=async(_url,options)=>{calls++;return Response.json({...identity,browser_session_id:options.headers['X-Browser-Session']});};const [v,iv,body]=a.cookie.value.split('.');
  for(const value of [undefined,'',a.cookie.value.slice(0,-8),`v2.${iv}.${body}`,`${v}.${iv}.${body[0]==='A'?'B':'A'}${body.slice(1)}`,`${v}.${iv}=.${body}`,'a'.repeat(3801),'v1.a.b']) assert.equal(await resolveSession(config,value,fetcher,1001),null);assert.equal(calls,0);
 });
 test('key rotation, origin/API changes and future issuance invalidate before fetch',async()=>{
@@ -39,7 +39,7 @@ test('key rotation, origin/API changes and future issuance invalidate before fet
  assert.equal(await resolveSession(await sessionConfig(env),a.cookie.value,never,999),null);assert.equal(calls,0);
 });
 test('each resolution rechecks active principal and changed grant counts',async()=>{
- const a=await issued(),config=await sessionConfig(env);let calls=0;const fetcher=async()=>{calls++;return Response.json({...identity,active_grant_counts:{GLOBAL:0,PROJECT:0,SOFTWARE:0}});};
+ const a=await issued(),config=await sessionConfig(env);let calls=0;const fetcher=async(_url,options)=>{calls++;return Response.json({...identity,browser_session_id:options.headers['X-Browser-Session'],active_grant_counts:{GLOBAL:0,PROJECT:0,SOFTWARE:0}});};
  for(let i=0;i<2;i++) assert.equal((await resolveSession(config,a.cookie.value,fetcher,1001)).active_grant_counts.PROJECT,0);assert.equal(calls,2);
  assert.equal(await resolveSession(config,a.cookie.value,backend({detail:'inactive_principal'},401),1001),null);
 });

@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-API0.18.28 self identity/grant reads now integrate with default-disabled OIDC browser login/callback/session/local-logout routes and a bilingual account page. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
+API0.18.29 adds a token-bound, revocable browser-session registry with migration0019; default-disabled OIDC login/callback/session/logout and the bilingual account page use registered v2 cookies. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
 
 **All 63 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
 
@@ -2299,3 +2299,15 @@ seven plans100/100/20/33/40/20/0, delta0. Session partial implementation evidenc
 recorded without closing the real-browser/revocation acceptance milestone. Next
 approved provider/controlled target and real browser/revocation acceptance, then
 controlled submission/recovery, all14 commands, corrections and operations.
+
+## Browser-session registry work — 2026-10-06 (Asia/Shanghai)
+
+Developed from main aee73172fd13bc726b7d57112105edaf62d24c4b. API0.18.29 /
+0019_browser_sessions registers and revokes token-bound self sessions with atomic
+audit. Successful logout rejects subsequent copied-cookie reads; outages preserve
+cookies and show retry. Legacy stateless cookies require new login and missing API
+validation proof fails closed. Public business writes stay read-only; no provider,
+secret, principal or grant was configured. Local frontend541 and focused SQLite38
+passed; production OpenNext build passed. Remote PostgreSQL/CI and deployment
+acceptance are pending and will be recorded after publication. Progress remains
+36/44=82%; modules100/100/100/100/89/60/17; plans100/100/20/33/40/20/0, delta0.

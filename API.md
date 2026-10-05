@@ -1001,3 +1001,16 @@ All64 page entrypoints have localization coverage. ROADMAP36/44=82%; modules
 Session ledger now records partial implementation evidence and remaining acceptance.
 Next: approved provider/controlled target, real browser and revocation acceptance,
 then controlled submission/recovery, all14 commands, corrections and operations.
+
+## Browser-session revocation — API0.18.29 / schema0019
+
+The two POST controls under /api/v1/security/me/browser-sessions require OIDC,
+ACTIVE USER and exact self/token binding; they only mutate session metadata, with
+atomic authenticated audit. This narrow read-only exception does not open the14
+business commands. Header X-Browser-Session causes self identity/grant reads to
+check the live token-bound registry; me echoes the validated UUID. Frontend v2
+cookies require this echo, reject legacy envelopes, and are cleared only after
+confirmed revocation; outage returns a generic retry result. Session revocation
+leaves the provider bearer token and other sessions valid. Provider-wide logout,
+real-provider/browser acceptance and retention/recovery policy remain pending.
+Full contracts and rollout/rollback boundaries: docs/oidc-browser-auth.md.

@@ -1,7 +1,6 @@
 # OIDC browser authentication implementation — 2026-10-06 (Asia/Shanghai)
 
-Codex implementation; API version0.18.28 and database head0018_asr_evidence_index
-are unchanged. Public staging remains sample-only/read-only. No provider or secret
+Codex implementation; current API version0.18.29 and database head0019_browser_sessions. Public staging remains sample-only/read-only. No provider or secret
 has been configured or provisioned by this change.
 
 ## Implemented contract
@@ -12,7 +11,7 @@ has been configured or provisioned by this change.
 | `/auth/login` | POST | Same-origin start; encrypted five-minute pending cookie; redirect to configured provider |
 | `/auth/callback` | GET | Validate pending state/config/expiry, redeem code with PKCE, verify tokens, resolve active local USER, issue session |
 | `/auth/session` | GET | Current projected identity/grant counts; recheck backend every time; clear invalid session |
-| `/auth/logout` | POST | Same-origin local cookie clearing; redirect to fixed account page |
+| `/auth/logout` | POST | Same-origin backend session revocation, then cookie clearing; failures preserve the cookie |
 
 Auth HTTP routes are private/no-store, vary on Cookie, use no-referrer and nosniff.
 Wrong GET/POST methods return405. Disabled mode returns503 without provider/API
@@ -82,10 +81,11 @@ or15minutes; reads never extend it. Invalid session clears the local cookie.
 
 Callback clears the browser's pending cookie on success/failure. Provider must
 reject authorization-code reuse; there is no server-side pending-transaction store.
-Logout clears this browser's session and pending cookies only. A copied stateless
-session may remain usable until expiry while token/principal remains valid.
-Provider-wide logout, refresh, immediate server-side session revocation and replay
-storage remain future work; no completed real-provider/browser credential acceptance
+Logout revokes this registered browser session before clearing session/pending cookies.
+Subsequent requests with a copied cookie fail the backend session check. Revocation
+does not cancel a request whose session check already completed, other browser
+sessions, or the provider bearer token. Provider-wide logout, refresh and a server-side
+pending-transaction/code replay store remain future work; no completed real-provider/browser credential acceptance
 is claimed. Approved provider/controlled target and real browser session tests are
 still required before identity-session milestone closure or controlled submission.
 
@@ -101,7 +101,7 @@ still required before identity-session milestone closure or controlled submissio
 - `npm run auth:check`: actual built Next production server; Chinese/English account
   and generic failure SSR, no login form in disabled mode, five route/method private
   denial checks. Also runs in CI after Cloudflare build.
-- Local full frontend533 tests passed; Next/OpenNext production build and actual
+- Current local full frontend541 tests passed; Next/OpenNext production build and actual
   route/SSR smoke checks are required before publication.
 
 ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17; seven plans
@@ -114,7 +114,7 @@ https://www.rfc-editor.org/rfc/rfc9700.html ; PKCE RFC7636
 https://www.rfc-editor.org/rfc/rfc7636.html ; jose official implementation/docs
 https://github.com/panva/jose . Dependency jose6.2.12 is pinned in the frontend lockfile.
 
-### OIDC browser flow rollout acceptance — 2026-10-06 (Asia/Shanghai)
+### Historical OIDC browser flow rollout acceptance — 2026-10-06 (Asia/Shanghai)
 
 PR#5 featureafb0b24871c7b1ddaafef15edad9ab85fc626633 merged as
 625648a7a2658dcead4bab876a3ed49e19dc2b84. PR Actions37340442349 and exact-merge main
@@ -144,3 +144,61 @@ seven plans100/100/20/33/40/20/0, delta0. Session partial implementation evidenc
 recorded without closing the real-browser/revocation acceptance milestone. Next
 approved provider/controlled target and real browser/revocation acceptance, then
 controlled submission/recovery, all14 commands, corrections and operations.
+
+## Server session registry — 2026-10-06 (Asia/Shanghai)
+
+Migration0019 follows0018 and adds only browser_sessions. The API stores a session
+UUID, principal UUID, SHA256 bearer digest, creation/expiry/revocation timestamps;
+no token plaintext or refresh token is stored. Inner cookie envelope v2 includes
+this UUID; legacy v1 session envelopes require a new login. Encryption format v1
+and cookie attributes stay the same.
+
+| API route | Method | Contract |
+| --- | --- | --- |
+| `/api/v1/security/me/browser-sessions` | POST | OIDC required, ACTIVE USER only; self token-bound UUID registration; expiry capped by JWT exp and900seconds;16 active sessions per principal |
+| `/api/v1/security/me/browser-sessions/{session_id}/revoke` | POST | OIDC required, same USER and exact bearer digest; idempotent revocation;404 for absent/wrong owner/token |
+| `/api/v1/security/me` and `/grants` | GET | With X-Browser-Session: check owner/token/unrevoked/unexpired registry row; invalid401; successful me echoes validated browser_session_id |
+
+The frontend requires the validation echo for v2 session reads, so an API rollback
+that ignores the header fails closed. Registration must return the exact requested
+UUID/expiry before a cookie is issued. All requests use pinned server-only API,
+no-store, no redirects, five-second timeout and16KiB response bounds. The self
+identity projection never exposes token or session metadata to the browser.
+
+Creation/revocation lock the principal row and recheck ACTIVE USER in the same
+transaction. Each successful first change appends an authenticated audit event;
+retries append no duplicate audit; audit failure rolls back the session change.
+Audit payload holds expiry only. Revoked identifiers cannot be registered again.
+The exact two metadata routes have a read-only exception, protected by required
+OIDC even when AUTH_MODE is disabled. The14 business routes remain read-only
+blocked and keep their scoped command contracts. Executable route inventories
+cover14 business commands plus2 session controls, never silently omit routes.
+
+Successful logout means confirmed200 revoked or404 session_not_found, followed by
+local cookie clearing. Network,401, malformed or5xx responses keep cookies and
+return generic503; HTML forms redirect to fixed /account?auth=logout_failed with
+a translated retry message. Expired/invalid cookies can be cleared without a
+network call. Session endpoints are private/no-store; self reads also vary on
+X-Browser-Session. An endpoint outage prevents session reads and issuance.
+
+Deploy backend/migration before enabling browser authentication. Migration downgrade
+removes registry rows: do not downgrade an enabled authentication system. Before
+rollback to an older frontend that accepts stateless cookies, disable browser auth
+and rotate its session key; a frontend rollback alone can reintroduce old cookie
+semantics. Restoring old configuration/key/database snapshots is an operational
+credential boundary; deployment success does not verify that recovery procedure.
+No automatic registry/tombstone purge or global token revocation is implemented;
+rows may grow and require a reviewed retention/backup policy before production.
+Interrupted issuance may leave an unused registration for at most15minutes of
+active quota. Clock synchronization and representative-volume measurements remain
+operator acceptance items.
+
+Tests add signed-bearer SQLite/PostgreSQL ownership, expiry/quota, idempotent
+registration/revocation, replay rejection and atomic audit rollback; real PostgreSQL
+cases observe blocking for concurrent retry, last quota slot, concurrent revoke
+and revoke-versus-register. Frontend tests cover copied-cookie replay, outage
+handling, registration failure, legacy cookies and missing API validation proof.
+Real provider and actual browser credential acceptance remain pending. ROADMAP
+and seven plan percentages remain unchanged; this is implementation evidence.
+
+Session guidance: https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html

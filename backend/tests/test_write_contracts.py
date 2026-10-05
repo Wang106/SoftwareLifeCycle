@@ -2,7 +2,7 @@ import inspect
 
 from app.main import app
 from app.security_roles import ALL_ROLES
-from app.write_contracts import WRITE_CONTRACTS
+from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS
 
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -17,7 +17,8 @@ def registered_write_routes():
 
 
 def test_every_registered_write_route_has_exactly_one_reviewed_contract():
-    assert set(WRITE_CONTRACTS) == registered_write_routes()
+    assert not set(WRITE_CONTRACTS) & set(SESSION_CONTROL_CONTRACTS)
+    assert set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) == registered_write_routes()
 
 
 def test_current_write_contracts_remain_non_public_and_explicitly_protected():
@@ -42,7 +43,7 @@ def test_current_write_contracts_remain_non_public_and_explicitly_protected():
 
 def test_every_write_route_invokes_a_scoped_authorization_guard():
     for route in app.routes:
-        if getattr(route, "methods", set()) - SAFE_METHODS:
+        if any((method, route.path) in WRITE_CONTRACTS for method in getattr(route, "methods", set())):
             assert "authorize_" in inspect.getsource(route.endpoint), route.path
 
 
@@ -55,3 +56,17 @@ def test_every_audited_write_route_resolves_a_trusted_actor():
     for key, contract in WRITE_CONTRACTS.items():
         if contract.audit == "ATOMIC_APPEND":
             assert "resolve_actor" in inspect.getsource(routes[key].endpoint), key
+
+
+def test_session_controls_have_explicit_self_authentication_and_atomic_audit_contracts():
+    assert len(SESSION_CONTROL_CONTRACTS) == 2
+    for contract in SESSION_CONTROL_CONTRACTS.values():
+        assert contract.authentication == 'OIDC_REQUIRED'
+        assert contract.authorization == 'ACTIVE_USER_SELF_AND_TOKEN'
+        assert contract.public_exposure == 'AUTHENTICATED_METADATA_ONLY'
+        assert contract.audit == 'ATOMIC_APPEND'
+        assert contract.concurrency == 'PRINCIPAL_ROW_LOCK'
+    for route in app.routes:
+        if any((method, route.path) in SESSION_CONTROL_CONTRACTS for method in getattr(route, 'methods', set())):
+            assert 'active_user' in inspect.getsource(route.endpoint)
+            assert 'audit(' in inspect.getsource(route.endpoint)

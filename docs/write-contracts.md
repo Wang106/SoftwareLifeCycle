@@ -453,3 +453,13 @@ All 14 command contracts, actor/scope binding, keyed replay, row serialization a
 ## Manufacturing read migration — API 0.18.20
 
 All 14 existing commands retain trusted actor/exact scope, keyed replay, row serialization and atomic business/audit behavior. Manufacturing line preparation carries the exact line UUID; read identity pins and stored-state summaries do not authorize submission. No non-read endpoint changed.
+
+## Session metadata controls (2026-10-06)
+
+The14 business command contracts remain unchanged and READ_ONLY_BLOCKED. Two
+additional POST routes are explicitly inventoried in SESSION_CONTROL_CONTRACTS:
+register own browser session and revoke own token-bound session. They require OIDC
+regardless of public read-only mode, ACTIVE USER, principal row locking and atomic
+trusted-actor audit. They grant no software/project/business-write role. The route
+drift test compares all registered writes to the union of both exact inventories.
+See docs/oidc-browser-auth.md for ownership, expiry, quota and failure boundaries.

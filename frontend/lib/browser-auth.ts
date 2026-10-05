@@ -1,7 +1,7 @@
 import 'server-only';
 import { createLocalJWKSet, jwtVerify, type JSONWebKeySet } from 'jose';
 import { SESSION_COOKIE, sessionConfig, sessionCookie, clearSessionCookie, sealCookie,
-  openCookie, establishSession, resolveSession, type SessionConfig } from './browser-session';
+  openCookie, establishSession, resolveSession, revokeSession, type SessionConfig } from './browser-session';
 
 export const LOGIN_COOKIE = '__Host-slc_login';
 const LOGIN_AGE = 300;
@@ -178,7 +178,8 @@ export async function handleAuth(request: Request, operation: AuthOperation, env
     else if (operation === 'login') response = await startLogin(config, Math.floor(Date.now() / 1000));
     else if (operation === 'callback') response = await completeLogin(request, config, fetcher, Math.floor(Date.now() / 1000));
     else if (operation === 'logout') {
-      response = redirect(`${config.session.origin}/account`); setCookie(response, clearSessionCookie()); setCookie(response, loginCookie());
+      if (!await revokeSession(config.session, readCookie(request, SESSION_COOKIE), fetcher)) response = json('logout_unavailable', 503);
+      else { response = redirect(`${config.session.origin}/account`); setCookie(response, clearSessionCookie()); setCookie(response, loginCookie()); }
     } else {
       if (new URL(request.url).origin !== config.session.origin) response = json('invalid_origin', 403);
       else {
@@ -191,6 +192,9 @@ export async function handleAuth(request: Request, operation: AuthOperation, env
   // Browser errors return to the translated account page without provider text/code.
   if (operation === 'callback' && response.status >= 400 && configuration && request.headers.get('accept')?.includes('text/html')) {
     response = redirect(`${configuration.session.origin}/account?auth=failed`);
+  }
+  if (operation === 'logout' && response.status === 503 && configuration && request.headers.get('accept')?.includes('text/html')) {
+    response = redirect(`${configuration.session.origin}/account?auth=logout_failed`);
   }
   // Consume the browser's pending cookie on every callback, including errors.
   // Authorization code one-use is enforced by the provider; no refresh tokens are retained.

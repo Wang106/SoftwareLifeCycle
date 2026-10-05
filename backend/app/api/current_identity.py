@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.auth import AuthenticatedPrincipal
+from app.api.browser_sessions import require_browser_session
 from app.core.config import settings
 from app.core.db import get_db
 from app.models.security import GlobalRoleAssignment, ProjectMembership, SecurityPrincipal, SoftwareMembership
@@ -35,6 +36,7 @@ def current_principal(request: Request, db: Session):
                SecurityPrincipal.subject == principal.subject, SecurityPrincipal.status == 'ACTIVE')).mappings().first()
     if row is None:
         raise HTTPException(401, 'inactive_principal', headers={'WWW-Authenticate': 'Bearer'})
+    request.state.browser_session_id = require_browser_session(request, db, principal.id)
     return dict(row)
 
 
@@ -58,8 +60,11 @@ def total(db, stmt):
 @router.get('')
 def identity_summary(request: Request, filters: Annotated[Empty, Query()], db: Session = Depends(get_db)):
     principal = current_principal(request, db)
-    return {'principal': principal, 'read_only_mode': settings.read_only_mode,
+    result = {'principal': principal, 'read_only_mode': settings.read_only_mode,
             'active_grant_counts': {scope: total(db, grants(principal['id'], scope)) for scope in ('GLOBAL', 'PROJECT', 'SOFTWARE')}}
+    if request.state.browser_session_id is not None:
+        result['browser_session_id'] = request.state.browser_session_id
+    return result
 
 
 @router.get('/grants')
