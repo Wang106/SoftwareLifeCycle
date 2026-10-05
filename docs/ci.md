@@ -116,3 +116,13 @@ all14 commands, broader append-only corrections and operational acceptance follo
 No approved provider or company target is inferred from CI success. Backup/restore,
 monitoring, environment separation, gated deploy/rollback and company network/data
 acceptance are still incomplete. This is not a production-ready certificate.
+
+## 只读线上访问证据 — 2026-10-06
+
+新增手动工作流 frontend-access.yml（Read-only frontend access），调用
+scripts/check_frontend.py。正式站/项目Preview HTTPS白名单；只发GET，无凭据、
+无业务写入、不跟随重定向。准确检查中英文账户SSR、禁用态认证JSON、缓存
+与状态，并保存14天JSON证据；失败返回非零。脚本用明确项目User-Agent，
+不冒充真实浏览器，区分1010/1020边缘拦截与应用失败。自动CI仍仅运行其离线
+回归测试，不依赖公共站点网络，不把构建成功等同于线上访问成功。
+手动任务尚未触发；实际HTTP检查在本执行环境运行，详情见 cloudflare-1010.md。

@@ -80,7 +80,7 @@ scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.m
 
 | Layer | Configured target | Verified 2026-10-06 | Qualification |
 | --- | --- | --- | --- |
-| Frontend | Cloudflare `https://softwarelifecycle.whf969.com` | Main Workers build/deploy passed; version417daa7f; local/CI production zh/en auth SSR passed | Live execution-environment account/session probes return403/1010; actual browser/provider acceptance pending |
+| Frontend | Cloudflare `https://softwarelifecycle.whf969.com` | Main Workers build/deploy passed; explicit project-client live zh/en account SSR and disabled auth GET checks passed | Default Python-client account403; explicit project-client200; actual browser/provider acceptance pending |
 | API | Render `https://softwarelifecycle-api-test.onrender.com` | /health/ready200, version0.18.29; identity/session metadata401 and harmless business POST403 | Public sample API remains read-only with OIDC disabled; provider deployment commit metadata not inspected |
 | Database | PostgreSQL behind Render API | Ready reports0019_browser_sessions; CI migration round trip passed | Runtime health proof, sample/test data only |
 | Local stack | Docker Compose | Docker unavailable; stack not started | Local unit/SQLite tests and remote PostgreSQL CI provide separate evidence |
@@ -2348,3 +2348,26 @@ audited identity/grant administration, controlled submission/outcome recovery fo
 all14 commands, broader corrections and operations remain. Before older-frontend
 rollback disable browser auth and rotate its session key; registry retention and
 backup/restore acceptance are still required before production.
+
+## Frontend access diagnosis work — 2026-10-06 (Asia/Shanghai)
+
+Codex continued from main467b2840468b85b98d2644e0c45e7391e8291fc2.
+PR#6 Build In progress email was an old snapshot; bot Success at23:05:28Z
+(07:05:28 China time) and exact merged-main CI/deployment were confirmed.
+Same-environment GET /account comparison showed Python-default403 vs explicit
+SoftwareLifeCycle-DeploymentCheck/1.0 HTTP200, on both production and PR#6
+immutable Preview; no edge security policy was changed. The explicit-client
+production checker passed bilingual account SSR and disabled auth GET statuses
+200/200/503/503/405; this does not establish actual browser/provider acceptance.
+New scripts/check_frontend.py and manual frontend-access.yml persist safe JSON
+access evidence with strict approved HTTPS targets, GET-only probes, no tokens,
+no redirects, response bounds and edge/app failure distinctions. New offline
+access regression tests passed47. API0.18.29/schema0019 and read-only flags are
+unchanged. docs/cloudflare-1010.md provides official-source diagnosis and
+host-scoped BIC exception steps if an actual browser is affected. Cloudflare
+zone policy/triggering service remains uninspected; no global security toggle
+was changed. Main/PR CI and rollout for this package are pending publication.
+ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0, delta0. Remaining approved provider/actual
+browser credential acceptance, audited administration, controlled submissions/
+recovery, corrections and operations are unchanged.

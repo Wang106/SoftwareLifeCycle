@@ -2407,3 +2407,26 @@ audited identity/grant administration, controlled submission/outcome recovery fo
 all14 commands, broader corrections and operations remain. Before older-frontend
 rollback disable browser auth and rotate its session key; registry retention and
 backup/restore acceptance are still required before production.
+
+## Frontend access diagnosis work — 2026-10-06 (Asia/Shanghai)
+
+Codex continued from main467b2840468b85b98d2644e0c45e7391e8291fc2.
+PR#6 Build In progress email was an old snapshot; bot Success at23:05:28Z
+(07:05:28 China time) and exact merged-main CI/deployment were confirmed.
+Same-environment GET /account comparison showed Python-default403 vs explicit
+SoftwareLifeCycle-DeploymentCheck/1.0 HTTP200, on both production and PR#6
+immutable Preview; no edge security policy was changed. The explicit-client
+production checker passed bilingual account SSR and disabled auth GET statuses
+200/200/503/503/405; this does not establish actual browser/provider acceptance.
+New scripts/check_frontend.py and manual frontend-access.yml persist safe JSON
+access evidence with strict approved HTTPS targets, GET-only probes, no tokens,
+no redirects, response bounds and edge/app failure distinctions. New offline
+access regression tests passed47. API0.18.29/schema0019 and read-only flags are
+unchanged. docs/cloudflare-1010.md provides official-source diagnosis and
+host-scoped BIC exception steps if an actual browser is affected. Cloudflare
+zone policy/triggering service remains uninspected; no global security toggle
+was changed. Main/PR CI and rollout for this package are pending publication.
+ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0, delta0. Remaining approved provider/actual
+browser credential acceptance, audited administration, controlled submissions/
+recovery, corrections and operations are unchanged.
