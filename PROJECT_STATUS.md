@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed feature merge: `a9e4765a7f8ed60e7abf70342cc0265a7e03f79a` — PR#6 revocable browser sessions; exact-merge CI and Workers deployment passed; approved provider/actual browser acceptance pending
+- Reviewed feature merge: `95ba4077ba3ce6b51e0b0739fccbabacd93fbd8c` — PR#7 frontend access diagnosis; exact-merge CI, Workers deployment and five live HTTP/SSR probes passed; approved provider/actual browser acceptance pending
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -53,7 +53,7 @@ This finer counter does not change ROADMAP acceptance-item accounting or certify
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 84 backend test modules are present. Latest complete main CI passed **1285 tests**, with **107 PostgreSQL-module cases** plus additional parametrized PostgreSQL cases, and no skips. Disposable schemas validate migrations, actual blocking, replay/quota/revocation and audit rollback.
+- 85 backend test modules are present. Latest complete main CI passed **1332 tests**, with **107 PostgreSQL-module cases** plus additional parametrized PostgreSQL cases, and no skips. Disposable schemas validate migrations, actual blocking, replay/quota/revocation and audit rollback.
 - Alembic single head is `0019_browser_sessions`; it adds token-digest session metadata and a principal/expiry index. Full PostgreSQL SQL generation and isolated upgrade/downgrade/upgrade passed; no business data was rewritten.
 
 
@@ -2371,3 +2371,35 @@ ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
 seven plans100/100/20/33/40/20/0, delta0. Remaining approved provider/actual
 browser credential acceptance, audited administration, controlled submissions/
 recovery, corrections and operations are unchanged.
+
+## Frontend access diagnosis rollout acceptance — 2026-10-06 (Asia/Shanghai)
+
+PR#7 feature `558adf3364f1dccc52ed07140ef9261ee05f4081` merged as
+`95ba4077ba3ce6b51e0b0739fccbabacd93fbd8c`. PR Actions37388684638 and
+exact-merge main Actions37389097842 passed backend, frontend, CI acceptance
+and Workers checks. Each complete backend run passed1332 with107 PostgreSQL-module
+cases and no skips; frontend541 passed. Migration single head0019, full SQL
+upgrade/downgrade and PostgreSQL round trip passed. The47 new offline access
+cases include split-span1010 headings and avoid classifying a proxied app403
+as a Cloudflare-generated denial. Focused local acceptance passed63 cases.
+
+PR Preview succeeded at2026-10-05T23:30:30.797Z, deployment
+f02142e9-eae0-4a0f-9f06-fc5db159fd2a; all5 HTTP/SSR probes passed against
+https://f02142e9-softwarelifecycle.whf969.workers.dev.
+Main Cloudflare build f041af5d-a91f-42b0-a8aa-2b1312cf3f72 succeeded at23:34:52Z,
+Worker version6c2bc28c-dba1-436a-a675-a62031dad180. Production probes at23:36:00Z
+passed200 Chinese account /200 English account /503 session /503 callback
+/405 GET login. Public API readiness returned200, version0.18.29 and
+schema0019_browser_sessions. Default Python User-Agent still received an actual
+Error1010 heading; the declared project HTTP client passed. No Cloudflare zone
+setting was changed. Manual frontend-access workflow YAML/policy and its checker
+were validated, but that workflow was not dispatched. Real browser/provider
+credential and recovery acceptance remain pending. The prior pending-publication
+paragraph is superseded by this exact-commit acceptance record.
+
+This follow-up changes documentation only; the verified feature baseline is the
+merge above. ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+seven plans100/100/20/33/40/20/0, delta0. Next audited principal/grant
+administration, approved OIDC provider and real browser credential/recovery
+acceptance, controlled submission/outcome recovery for all14 commands,
+broader corrections and production operations remain.

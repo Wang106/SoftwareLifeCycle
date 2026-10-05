@@ -75,7 +75,7 @@ python scripts/check_frontend.py https://bbddba4c-softwarelifecycle.whf969.worke
 Set-Cookie和凭据。返回值0为全部通过，1为访问/契约失败，2为输入错误。
 
 分类区分 cloudflare_1010、cloudflare_1020、其他边缘拒绝、重定向、请求失败、
-响应超限、语言/登录状态错误与缓存错误。返回200还必须满足真正HTML可见文本、
+响应超限、语言/登录状态错误与缓存错误。返回200还必须满足HTML正文文本（排除script/style）、
 正确语言和关闭态登录表单约束；脚本内的文字不能冒充页面证据。
 JSON禁用态必须准确匹配错误码、private/no-store及Vary: Cookie。
 
@@ -93,3 +93,13 @@ Workers检查/机器人评论单独核对。HTTP/SSR检查不是真实浏览器/
 - Skip仅选BIC产品：https://developers.cloudflare.com/waf/custom-rules/skip/options/
 - 安全事件：https://developers.cloudflare.com/waf/analytics/security-events/
 - 自定义规则界面：https://developers.cloudflare.com/waf/custom-rules/create-dashboard/
+
+## PR #7 最终验收
+
+访问检查与47项新回归测试已合入main：PR #7，代码合并提交
+`95ba4077ba3ce6b51e0b0739fccbabacd93fbd8c`。PR CI37388684638和main
+CI37389097842全部通过：后端1332、前端541、PostgreSQL模块107项无跳过。
+PR Preview于07:30:30、main Cloudflare于07:34:52（北京时间）部署成功；
+正式站07:36的5项HTTP/SSR探针全部通过。API健康检查200，0.18.29/0019。
+手动访问工作流未触发；脚本本地、真实Preview和正式站执行已验收。
+这些结果不代表真实浏览器/身份提供方验收，也未修改任何Cloudflare安全规则。
