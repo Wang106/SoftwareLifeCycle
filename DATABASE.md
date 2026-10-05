@@ -456,3 +456,13 @@ No migration; head 0018. Correlated scalar COUNT/EXISTS and latest-release LIMIT
 ## Manufacturing read migration — API 0.18.20
 
 No migration; head 0018. Latest per-line window uses created_at/id ordering; scalar count/context queries retain stored status and exact current authorization membership. Recorded batch joins only latest deployments and sorts line name/id then started_at/id, null times last. No growing ID lists or ORM graphs; optional metadata outer joins retain identities. PostgreSQL verifies tied latest UUID, 209-line totals and no audit writes.
+
+## CI integration — 2026-10-05
+
+GitHub Actions CI checks complete backend tests on disposable PostgreSQL16,
+single migration head/SQL/isolated round trip and frontend tests/OpenNext build.
+Read-only repository permissions, SHA-pinned actions and unpersisted checkout
+credentials are retained; CI acceptance fails if either validation job does not
+succeed. No deployment/identity/company secrets or public database are used.
+Branch protection and existing deployment triggers remain separate settings.
+See docs/ci.md and final run evidence in HANDOFF.md.

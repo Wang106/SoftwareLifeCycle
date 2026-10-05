@@ -441,3 +441,13 @@ upgrade SQL. Existing warnings are deprecations/collection notices (9661).
 No schema, provider, credentials or grant change; all14 POSTs and shared command
 helpers remain. Public sample remains read-only. Cloud rollout still requires
 independent feature-commit build and live API/page checks recorded below.
+
+## CI integration — 2026-10-05
+
+GitHub Actions CI checks complete backend tests on disposable PostgreSQL16,
+single migration head/SQL/isolated round trip and frontend tests/OpenNext build.
+Read-only repository permissions, SHA-pinned actions and unpersisted checkout
+credentials are retained; CI acceptance fails if either validation job does not
+succeed. No deployment/identity/company secrets or public database are used.
+Branch protection and existing deployment triggers remain separate settings.
+See docs/ci.md and final run evidence in HANDOFF.md.

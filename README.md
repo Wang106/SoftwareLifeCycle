@@ -301,3 +301,13 @@ Approval, exact Delivery revision, Distribution and Authorization profiles link 
 Activity history. Delivery event catalog rows resolve revision from the recorded package UUID in
 the same SQL query; full event profiles use the recorded revision payload. Missing revision links
 lead to the package search directory, never an invented/latest revision.
+
+## CI integration — 2026-10-05
+
+GitHub Actions CI checks complete backend tests on disposable PostgreSQL16,
+single migration head/SQL/isolated round trip and frontend tests/OpenNext build.
+Read-only repository permissions, SHA-pinned actions and unpersisted checkout
+credentials are retained; CI acceptance fails if either validation job does not
+succeed. No deployment/identity/company secrets or public database are used.
+Branch protection and existing deployment triggers remain separate settings.
+See docs/ci.md and final run evidence in HANDOFF.md.

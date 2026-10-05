@@ -392,3 +392,13 @@ Organization UUID pins prevent accidental mixed-parent collection reads; they gr
 ## Manufacturing read migration — API 0.18.20
 
 Exact site resolution and required site_id select read identity only. Stored MATCH/APPROVED counts are observations, not production grants; recorded batch is not necessarily active. New reads do not alter scoped actor permissions, provider settings or public-write guards. Public staging remains sample-only/read-only.
+
+## CI integration — 2026-10-05
+
+GitHub Actions CI checks complete backend tests on disposable PostgreSQL16,
+single migration head/SQL/isolated round trip and frontend tests/OpenNext build.
+Read-only repository permissions, SHA-pinned actions and unpersisted checkout
+credentials are retained; CI acceptance fails if either validation job does not
+succeed. No deployment/identity/company secrets or public database are used.
+Branch protection and existing deployment triggers remain separate settings.
+See docs/ci.md and final run evidence in HANDOFF.md.
