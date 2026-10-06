@@ -2571,3 +2571,22 @@ bilingual management UI and actual administrator acceptance. Next principal
 registration/disable, then role creation/admin lifecycle/UI; approved provider
 and controlled target, first3/all14 submission/recovery, corrections, operations
 and company migration follow. VIN stays a separately defined last priority.
+
+## 2026-10-06 — Local principal administration implementation
+
+API0.18.32 adds disabled-first configured-issuer local identity registration and
+non-platform-admin enable/disable. Atomic trusted-actor audit, exact event/request/
+admin replay, expected-state conflicts and recipient principal locks are explicit.
+Disable bulk-revokes all unrevoked registered sessions without changing grants;
+re-enable cannot revive those cookies. All PLATFORM_ADMIN targets are protected
+pending global-admin/bootstrap/recovery policy. No migration; head0019.
+See docs/principal-administration.md for concurrency and in-flight/provider-token
+boundaries. No provider/environment/secret/grant or actual account was provisioned.
+
+Local/remote acceptance and exact deployment evidence will be recorded after the
+feature checks finish. The public sample remains read-only/OIDC-disabled; full
+identity administration and real provider/browser acceptance remain incomplete.
+Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0;
+ROADMAP36/44=82%. Next role creation, global-admin/recovery rules, bilingual admin
+UI and actual administrator acceptance; controlled provider/target, first3/all14
+submission/recovery, corrections, operations/company migration follow.

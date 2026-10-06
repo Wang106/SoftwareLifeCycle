@@ -473,3 +473,14 @@ ATOMIC_APPEND, admin identity/grant and exact membership row locks, mandatory
 event_no bound to exact request/admin, and expected membership status. It has no
 own-session read-only exception and does not expand the14 business command count.
 See docs/membership-administration.md for retry and in-flight request boundaries.
+
+## Principal controls — API0.18.32
+
+ADMIN_CONTROL_CONTRACTS now contains3 routes: existing membership status, disabled
+local principal registration and non-platform-admin principal status. Both new
+controls retain OIDC_REQUIRED/ACTIVE_PLATFORM_ADMIN/READ_ONLY_BLOCKED/ATOMIC_APPEND
+and exact event/request/admin replay. Registration requires configured issuer and
+new UUID/subject uniqueness; status requires expected state/no PLATFORM_ADMIN grant
+and recipient row lock, shared with own-session controls. Disable bulk-revokes
+existing registry entries in the audit transaction. All14 business contracts and
+2 own-session controls retain their scope and counts. See principal-administration.md.

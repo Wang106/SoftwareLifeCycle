@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.31",
+  "as_of_api": "0.18.32",
   "baseline_commit": "83eec4946fb944873ad2bf98dcde291923869af6",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
@@ -299,10 +299,14 @@
             "docs/membership-administration.md",
             "backend/app/api/admin_grants.py",
             "backend/tests/test_admin_grants.py",
-            "docs/admin-grant-reads.md"
+            "docs/admin-grant-reads.md",
+            "backend/app/api/principal_admin.py",
+            "backend/tests/test_principal_admin.py",
+            "backend/tests/test_principal_admin_postgres.py",
+            "docs/principal-administration.md"
           ],
           "acceptance_pending": [
-            "Audited principal provisioning/disable and role grant creation",
+            "Audited role grant creation; local principal registration/status implemented, actual provider/admin acceptance pending",
             "Global admin lifecycle and first-admin recovery policy",
             "Approved provider and actual administrator acceptance",
             "Bilingual controlled management UI and actual administrator acceptance"
