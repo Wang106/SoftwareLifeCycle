@@ -3,7 +3,8 @@
 POST `/api/v1/security/admin/memberships/{scope}` registers one exact role for an
 existing local identity and project/software target. Scope is PROJECT or SOFTWARE;
 GLOBAL is not supported. Initial status is always SUSPENDED. A separate audited
-existing status command must explicitly resume it before the role is effective.
+existing status command must explicitly resume it before the role is effective under existing
+command-specific policies. Viewer roles gain no write authority.
 There is no administrator UI or public write exception in this package.
 
 ## Request and response

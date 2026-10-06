@@ -2654,3 +2654,53 @@ corrections, operations/company migration follow; VIN remains last and separate.
 Late audit-service event-key conflicts are now caught by all4 admin controls as
 409 with rollback, including existing principal registration/status and membership
 status. Regression covers the post-entry-check/pre-record committed-key race.
+
+## 2026-10-06 — PR#11 exact-code acceptance and deployment
+
+Feature head72b427c2d23b357287059634f55bd5230726aa95, PR#11:
+https://github.com/Wang106/SoftwareLifeCycle/pull/11
+Merged main7453a3ec811b290f282e61c8de50d157372bc789. Revised-head PR CI37402048854
+and exact-merge main CI37402664000 passed all4 checks: backend/PostgreSQL/migrations,
+frontend production build, CI acceptance and Workers. Each run passed1800 backend
+cases,140 PostgreSQL-module cases plus parametrized PostgreSQL, no skips; frontend541
+passed. Single head0019, SQL generation and isolated PostgreSQL round trip passed.
+Local related regression264 passed. There are92 backend test modules.
+
+New package188 cases:86 SQLite and86 migrated-PostgreSQL signed/guard cases plus16
+real PostgreSQL tests. All9 scoped roles register SUSPENDED, then existing explicit
+resume makes the exact role effective under unchanged policies; Viewer gains no write
+role. Role/target/scope identities stay independent. Old registration replay preserves
+later membership and recipient state. Real blocking covers competing administrators,
+unique exact role creation, cross-recipient global audit-key collisions and disable
+versus registration in both orders. An actual other transaction committing the audit
+key after entry check and before record proves409 and rollback. All4 admin controls
+now catch late AuditEventError as409; principal registration/status and membership
+status retain their actor, read-only, privacy, replay and atomic-audit contracts.
+
+Revised Preview deploymentbfe07d4b-87ac-4b77-945b-fce612a72ae5 succeeded02:02:52Z
+(10:02:52 China). All5 HTTP/SSR probes passed against
+https://bfe07d4b-softwarelifecycle.whf969.workers.dev at02:04:30Z.
+Main Workers buildafbe4c3f-f726-464f-b3dc-edfc46f4d86c succeeded02:10:12Z
+(10:10:12 China), version564d15a3-c770-4b9d-8148-d9a4fa6b2f32. Formal production
+HTTP/SSR acceptance completed06:47:49Z (14:47:49 China), all5 probes passed. The
+interrupted earlier production probe did not save a report and is not claimed as
+acceptance. At02:10:30Z API readiness returned200 ready/version0.18.33/schema0019;
+self/admin grant reads401 oidc_not_enabled; PROJECT/SOFTWARE registration POSTs403
+read_only_mode, with private,no-store/Pragma:no-cache/Vary:Authorization. Fresh API
+checks on resumed work initially timed out; a retry returned200 ready, then all5
+assertions passed at2026-10-06T06:51:24.892959+00:00. The initial timeout is recorded without
+inference about its cause. Render provider deploy ID/commit
+metadata was not independently inspected; runtime version/schema and rejection
+behavior are the live API evidence. No actual account, grant, provider, secret or
+environment provisioned, no Cloudflare policy changed. Actual provider/browser/admin
+acceptance remains pending; these are HTTP/SSR probes, not actual browser login.
+
+Earlier pending publication paragraphs are superseded by this exact-code record.
+This final follow-up changes documentation only. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0, delta0.
+Scoped role registration is complete as a package. Full identity-admin acceptance
+still requires GLOBAL role lifecycle, administrator/first-admin bootstrap and recovery
+policy, bilingual management UI and approved-provider/actual-administrator acceptance.
+Next GLOBAL role state/admin protection/recovery, then bilingual administration UI;
+approved provider/controlled target, first3/all14 submissions/recovery, append-only
+corrections, operations/company migration follow. VIN remains last and separately scoped.
