@@ -74,7 +74,7 @@ def test_session_controls_have_explicit_self_authentication_and_atomic_audit_con
 
 
 def test_admin_status_contract_is_independently_authenticated_audited_and_read_only_blocked():
-    assert len(ADMIN_CONTROL_CONTRACTS) == 3
+    assert len(ADMIN_CONTROL_CONTRACTS) == 4
     for contract in ADMIN_CONTROL_CONTRACTS.values():
         assert contract.authentication == 'OIDC_REQUIRED'
         assert contract.authorization == 'ACTIVE_PLATFORM_ADMIN'
@@ -82,6 +82,7 @@ def test_admin_status_contract_is_independently_authenticated_audited_and_read_o
         assert contract.audit == 'ATOMIC_APPEND'
         assert contract.idempotency == 'EVENT_NO_EXACT_REQUEST_AND_ADMIN'
     assert {key[1]: value.precondition for key, value in ADMIN_CONTROL_CONTRACTS.items()} == {
+        '/api/v1/security/admin/memberships/{scope}': 'ACTIVE_CONFIGURED_ISSUER_NON_ADMIN_RECIPIENT_AND_NEW_EXACT_ROLE',
         '/api/v1/security/admin/memberships/{scope}/{membership_id}/status': 'EXPECTED_MEMBERSHIP_STATUS',
         '/api/v1/security/admin/principals': 'CONFIGURED_ISSUER_AND_NEW_UUID_AND_SUBJECT',
         '/api/v1/security/admin/principals/{principal_id}/status': 'EXPECTED_PRINCIPAL_STATUS_AND_NO_PLATFORM_ADMIN_GRANT',

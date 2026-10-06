@@ -2635,3 +2635,22 @@ administrator acceptance. Next role creation, then global-admin/recovery rules a
 UI; controlled provider/target, first3/all14 authenticated submissions/recovery,
 append-only corrections, operations and company migration follow. VIN remains last
 and separately scoped.
+
+## 2026-10-06 — Scoped membership registration implementation
+
+API0.18.33 adds suspended-first PROJECT/SOFTWARE role registration, not GLOBAL
+role changes. Current active admin/writable OIDC, active configured-issuer non-admin
+recipient, exact role/target, stable UUID/event key, atomic actor-bound audit and
+recipient principal locks are explicit. Existing resume independently grants exact
+permission. Old replay preserves later ACTIVE status and disabled identity state.
+See docs/membership-registration.md for ownership, uniqueness, locks and status-only
+history boundaries. No migration; head0019. No actual principal/provider/secret/role
+or environment provisioned. Exact CI and live deployment evidence follows validation.
+Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0;
+ROADMAP36/44=82%. Next GLOBAL roles/admin/bootstrap/recovery policy, bilingual admin
+UI and actual acceptance; approved provider/target, first3/all14 submission/recovery,
+corrections, operations/company migration follow; VIN remains last and separate.
+
+Late audit-service event-key conflicts are now caught by all4 admin controls as
+409 with rollback, including existing principal registration/status and membership
+status. Regression covers the post-entry-check/pre-record committed-key race.

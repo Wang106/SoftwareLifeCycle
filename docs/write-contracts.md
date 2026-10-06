@@ -484,3 +484,16 @@ new UUID/subject uniqueness; status requires expected state/no PLATFORM_ADMIN gr
 and recipient row lock, shared with own-session controls. Disable bulk-revokes
 existing registry entries in the audit transaction. All14 business contracts and
 2 own-session controls retain their scope and counts. See principal-administration.md.
+
+## Scoped role registration inventory — API0.18.33
+
+ADMIN_CONTROL_CONTRACTS contains4 commands, adding POST memberships/{scope}.
+This suspended-first PROJECT/SOFTWARE registration requires ACTIVE current-issuer
+non-admin recipient, existing exact target and new UUID/principal-target-role.
+Actor/admin grant and recipient principal locks, exact actor/request event replay,
+atomic audit and READ_ONLY_BLOCKED are independently reviewed. The14 business and
+2 own-session command inventories keep their scope. See membership-registration.md.
+
+All4 admin controls now also catch a late AuditEventError when another transaction
+commits the event key after the entry check. They roll back and return409, retaining
+the independent business/session inventories and existing private/read-only guards.
