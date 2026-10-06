@@ -2786,3 +2786,44 @@ Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0; delta0.
 ROADMAP36/44=82%; identity-admin incomplete pending bilingual UI and approved real
 provider/admin/operator acceptance. Next UI and controlled provider/target, first3/
 all14 submissions/recovery, corrections and operations/company migration; VIN last.
+
+
+## PR#13 exact-main acceptance — 2026-10-06
+
+Feature head4736eddf9c4bde1117515267d8eab60ed46dbac9 merged through PR#13 as
+b8b04f778ec1d8a26acb54ada16960cf03db0907 (treeab611ab4be9a336ac0e62181310f85ff21aa65f2).
+PR CI37443955445 and exact-main CI37486596969 each passed all acceptance checks:
+2021 backend cases,172 PostgreSQL-module cases with no skips,541 frontend cases,
+single migration head0020_global_role_status, generated SQL and isolated PostgreSQL
+upgrade/downgrade round trip, production Worker build and disabled-auth SSR checks.
+The suite now has96 backend test modules. Adds119 operator cases plus one separate
+non-HTTP contract inventory case; local related324/final operator-contract64 passed.
+Exact-main backend completed2026-10-06T15:27:40Z;172 counts the PostgreSQL-module
+cases, not all parameterized service tests executed on migrated PostgreSQL.
+
+Preview deployment8be87281-014f-4b58-950a-d5bdd880216a succeeded at
+2026-10-06T09:36:21.733Z; its5 HTTP/SSR probes passed at15:18:54.755139Z.
+Main Cloudflare build085dc637-adb3-4314-8d14-746c53fc8afb succeeded at15:21:38Z,
+Worker version8ca95470-69a4-40ce-a7a6-5a0f2a2b0f53. Public frontend5 probes passed
+at15:23:24.535012Z: zh/en account200, session/callback503 and GETlogin405.
+API5 probes passed at15:23:25.101858Z: readiness200 version0.18.35/schema0020,
+self/GLOBAL grants401 oidc_not_enabled, empty global-registration/status writes403
+read_only_mode. Negative private endpoints return private,no-store/Pragma:no-cache/
+Vary:Authorization. These current attempts had no failed probe or retry. Render
+provider deployment ID/commit metadata was not independently inspected; API runtime
+version/schema and negative behavior are verified, not provider metadata attribution.
+
+Public sample stays read-only/OIDC-disabled. No actual provider, account, grant,
+secret, operator flag or controlled/company environment was provisioned; no live
+bootstrap/recovery or browser/provider/admin acceptance was executed. HTTP inventory
+remains14 business +2 session +6 admin writes;2 offline operator modes are separate.
+Default-disabled operator command rejects before DB connection. CI fixtures exercise
+bootstrap/recovery, replay, competing operators/API writers/session registration,
+audit collisions and actual CLI/schema rejection on isolated PostgreSQL only.
+
+This record supersedes the implementation's pending CI/merge/deployment statement.
+Seven modules remain100/100/100/100/89/60/17%; seven development plans remain
+100/100/20/33/40/20/0%; ROADMAP36/44 (82%), all percentage deltas0. Next implement
+bilingual grant administration UI, then approved target/provider/operator/admin and
+browser acceptance, first3/all14 real submissions/recovery/results, corrections and
+operations/company migration. VIN remains last with separate scope.

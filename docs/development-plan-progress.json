@@ -321,7 +321,7 @@
           ],
           "acceptance_pending": [
             "Audited GLOBAL role lifecycle; scoped role creation and local principal lifecycle implemented, actual provider/admin acceptance pending",
-            "Global admin lifecycle and first-admin recovery policy",
+            "Global role lifecycle and offline first-admin/recovery protocol implemented; actual approved operator/provider/admin acceptance pending",
             "Approved provider and actual administrator acceptance",
             "Bilingual controlled management UI and actual administrator acceptance"
           ]

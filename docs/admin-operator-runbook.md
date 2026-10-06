@@ -122,3 +122,20 @@ history to unblock bootstrap. No such live window or cleanup is executed here.
 
 Bilingual management UI, real approved-provider/admin/operator acceptance and broader
 company migration remain pending. Module/plan acceptance percentages are unchanged.
+
+
+## Implementation verification — 2026-10-06
+
+PR#13 merged as b8b04f778ec1d8a26acb54ada16960cf03db0907. PR CI37443955445 and
+exact-main CI37486596969 each passed2021 backend tests (172 PostgreSQL-module cases,
+no skips),541 frontend tests, single-head0020 migration SQL/isolated round trip,
+production Worker build and disabled-auth SSR checks. Operator scope adds119 tests
+and one separate inventory case, including executable CLI on isolated PostgreSQL,
+concurrent bootstrap/recovery/API/session writes and audit-conflict rollback.
+
+Preview5, public frontend5 and public API5 HTTP/SSR probes passed. Runtime reports
+API0.18.35/schema0020; public auth remains disabled and writes read-only. No live
+operator flag/account/grant/provider was configured and no live bootstrap/recovery
+was run. Real approved operator/provider/admin/browser verification remains pending;
+CI evidence and disabled-public-runtime probes do not fulfill that acceptance.
+See HANDOFF.md and PROJECT_STATUS.md for exact deployment IDs/timestamps and scope.
