@@ -3,7 +3,7 @@
 - Last reviewed: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed feature merge: `68095d3c76e80fbb43c7a1fd595940adfbdd53ea` — PR#9 private admin grant reads; exact-merge CI, Workers deployment and five live HTTP/SSR probes passed; full admin/provider/actual browser acceptance pending
+- Reviewed feature merge: `c4be1208e655c82c6513c1b6cfaf01cebb8ab5de` — PR#10 local principal registration/status and atomic browser-session invalidation; exact-merge CI, Workers deployment and live HTTP/SSR/API rejection checks passed; full admin/provider/actual browser acceptance pending
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
@@ -53,7 +53,7 @@ This finer counter does not change ROADMAP acceptance-item accounting or certify
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 88 backend test modules are present. Latest complete main CI passed **1481 tests**, with **115 PostgreSQL-module cases** plus additional parametrized PostgreSQL cases, and no skips. Disposable schemas validate migrations, actual blocking, replay/quota/revocation and audit rollback.
+- 90 backend test modules are present. Latest complete main CI passed **1612 tests**, with **124 PostgreSQL-module cases** plus additional parametrized PostgreSQL cases, and no skips. Disposable schemas validate migrations, actual blocking, replay/quota/revocation and audit rollback.
 - Alembic single head is `0019_browser_sessions`; it adds token-digest session metadata and a principal/expiry index. Full PostgreSQL SQL generation and isolated upgrade/downgrade/upgrade passed; no business data was rewritten.
 
 
@@ -2522,3 +2522,48 @@ until bootstrap/recovery policy is accepted. It provisions no provider account o
 role. Migration stays0019; the public API remains read-only with OIDC disabled.
 See docs/principal-administration.md. Exact CI/deployment evidence follows after
 validation. Full identity-admin milestone remains open; progress counts unchanged.
+
+## 2026-10-06 — PR#10 exact-code acceptance and deployment
+
+Feature5d43ea51234332c8c134c6c62af25fd8c2758d6b, PR#10:
+https://github.com/Wang106/SoftwareLifeCycle/pull/10
+Merged mainc4be1208e655c82c6513c1b6cfaf01cebb8ab5de. PR CI37397600573 and
+exact-merge main CI37398115923 passed all4 checks: backend/PostgreSQL/migrations,
+frontend production build, CI acceptance and Workers. Each complete run passed1612
+backend cases,124 PostgreSQL-module cases plus parametrized PostgreSQL cases, no
+skips; frontend541 tests passed. Single head0019, full SQL and isolated PostgreSQL
+upgrade/downgrade/upgrade passed. Local related regression178 cases passed; final
+principal/contract67 passed. There are90 backend test modules.
+
+New package131 tests:61 SQLite and61 migrated-PostgreSQL signed HTTP/direct guard
+cases, plus9 forced PostgreSQL overlap cases. Database blocking was observed for
+competing status mutations, duplicate UUID/issuer-sub registration and session
+registration versus principal disable in both orders. Audit insertion followed by
+failure rolls back identity/status, all session revocations and inserted evidence.
+Replays after later enable return historical outcomes without disabling again;
+revoked copied browser cookies cannot revive on re-enable. Memberships stay intact.
+
+Preview deploymentf2457754-f1a8-4237-ad46-ec81048d2fb8 succeeded at01:10:04Z
+(09:10:04 China). All5 HTTP/SSR probes passed against
+https://f2457754-softwarelifecycle.whf969.workers.dev at01:11:04Z.
+Main Workers build250db2a1-7bb6-4e61-8562-913103221980 succeeded at01:15:37Z
+(09:15:37 China), versionc7b8a0c8-9cf4-4445-9db4-e428e671ed20. All5 production
+HTTP/SSR probes passed at01:16:47Z. At01:16:11Z API readiness returned200 ready,
+version0.18.32/schema0019; self/admin grant reads401 oidc_not_enabled; empty
+principal registration and random-ID status POSTs403 read_only_mode. Denials use
+private,no-store/Pragma:no-cache/Vary:Authorization. Render provider deploy ID and
+commit metadata were not independently inspected; runtime version/schema and
+rejection behavior are the API evidence. Actual provider/browser/admin acceptance
+remains pending. No provider, secret, role, environment or real account provisioned.
+No Cloudflare policy changed. These are HTTP/SSR checks, not actual browser login.
+
+Earlier pending publication paragraphs are superseded by this exact-code record.
+This final follow-up changes documentation only, including precise early-middleware
+versus route-level Vary semantics. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; seven plans100/100/20/33/40/20/0, delta0.
+Identity-admin remains incomplete pending role creation, global-admin/first-admin
+bootstrap and recovery policy, bilingual management UI and approved-provider/actual
+administrator acceptance. Next role creation, then global-admin/recovery rules and
+UI; controlled provider/target, first3/all14 authenticated submissions/recovery,
+append-only corrections, operations and company migration follow. VIN remains last
+and separately scoped.

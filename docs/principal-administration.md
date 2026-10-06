@@ -11,8 +11,9 @@ current PLATFORM_ADMIN and, when supplied, a valid token-bound X-Browser-Session
 Request bodies forbid additional fields, including client-declared actors and roles.
 Reasons are printable, trimmed and 5–500 characters. event_no is 1–50 ASCII
 letters/digits/dot/underscore/colon/hyphen, starting with a letter or digit.
-Success, denial and validation responses use private,no-store and Vary:Authorization
-and X-Browser-Session. No own-session read-only exception applies to these controls.
+Success, denial and validation responses use private,no-store and Vary:Authorization.
+Responses that reach the route also vary on X-Browser-Session; early middleware
+denials are independent of that optional header. No own-session read-only exception applies to these controls.
 
 | POST route | Required body | Effect |
 | --- | --- | --- |
