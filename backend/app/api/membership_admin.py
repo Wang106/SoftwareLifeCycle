@@ -3,7 +3,7 @@ from typing import Literal
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.actor import resolve_actor
@@ -14,6 +14,7 @@ from app.core.db import get_db
 from app.models.audit import AuditEvent
 from app.models.security import GlobalRoleAssignment, ProjectMembership, SecurityPrincipal, SoftwareMembership
 from app.services.audit import AuditEventError, AuditEventService
+from app.services.admin_lock import admin_write_gate
 
 router = APIRouter(prefix='/api/v1/security/admin/memberships', tags=['membership administration'])
 Scope = Literal['PROJECT', 'SOFTWARE']
@@ -51,8 +52,7 @@ def active_admin(request: Request, db: Session):
         raise HTTPException(401, 'authenticated_principal_required')
     # All administrative writers share this transaction gate before any row lock.
     # It prevents cross-admin actor/recipient cycles and serializes last-admin checks.
-    if db.get_bind().dialect.name == "postgresql":
-        db.execute(text("SELECT pg_advisory_xact_lock(1397506887, 1)"))
+    admin_write_gate(db)
     row = db.scalars(select(SecurityPrincipal).where(SecurityPrincipal.id == principal.id,
         SecurityPrincipal.issuer == principal.issuer, SecurityPrincipal.subject == principal.subject)
         .with_for_update().execution_options(populate_existing=True)).first()

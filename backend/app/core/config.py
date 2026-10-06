@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     required_db_revision: str = "0020_global_role_status"
     read_only_mode: bool = False
     auth_mode: Literal["disabled", "oidc"] = "disabled"
+    admin_operator_enabled: bool = False
     oidc_issuer_url: str | None = None
     oidc_audience: str | None = None
     oidc_jwks_url: str | None = None
