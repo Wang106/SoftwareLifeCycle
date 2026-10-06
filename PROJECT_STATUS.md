@@ -2456,3 +2456,21 @@ role creation, global admin/first-admin recovery policy and bilingual admin UI;
 then approved OIDC/controlled environment and real credential acceptance,
 first3 submissions/recovery, all14 commands, append-only corrections, operations
 and company migration. VIN remains a separately defined last-priority expansion.
+
+## Administrator grant read development — 2026-10-06 (Asia/Shanghai)
+
+Codex continued from main83eec4946fb944873ad2bf98dcde291923869af6.
+API0.18.31 adds current-admin-only GLOBAL/PROJECT/SOFTWARE grant catalogs,
+exact scalar details and owned PROJECT/SOFTWARE status history with SQL counts,
+strict filters/UUID ownership, bounded pages and whitelisted JSON-field projection.
+Effective means the grant row, not overall capability. OIDC required independently
+of public read-only mode. No schema/provider/secret/principal/grant/environment
+write changes or new public UI. Local related SQLite reads/auth/status93 passed.
+Signed SQLite/PostgreSQL regression includes110-row membership/history growth
+and bounded large-payload projection. Remote full CI/rollout pending publication.
+Read-committed statements are not a point-in-time export; history explicitly
+covers only MEMBERSHIP_STATUS_CHANGED. See docs/admin-grant-reads.md.
+ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
+plans100/100/20/33/40/20/0, delta0. Next principal provisioning/disable, role
+creation, global admin/first-admin recovery policy, bilingual admin UI and actual
+provider/browser acceptance; controlled submissions/recovery/corrections/ops follow.

@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.30`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.31`.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 
@@ -1032,3 +1032,24 @@ membership404, stale state/inactive resume recipient/conflicting key409, no
 admin403, auth disabled/missing/invalid token401, read-only403. Responses are
 private,no-store. Status and authenticated audit commit atomically, with exact
 membership row locking; schema remains0019. Provider/browser acceptance pending.
+
+## Private administrator grant reads — API0.18.31
+
+All require OIDC, current ACTIVE PLATFORM_ADMIN and private,no-store. Unlike admin
+mutations, reads may run with READ_ONLY_MODE=true; disabled auth always401.
+
+- GET `/api/v1/security/admin/grants`: required scope GLOBAL/PROJECT/SOFTWARE;
+  optional principal_id, scope_id (non-GLOBAL), exact scope role, status
+  ACTIVE/SUSPENDED (non-GLOBAL), principal_status ACTIVE/DISABLED; limit1–100
+  default50, offset0–100000. Reject extra/invalid filters422. Full filtered SQL
+  total and UUID-ordered page; minimal principal/target projections, no credential
+  fields. GLOBAL status/target null; effective describes that row only.
+- GET `/api/v1/security/admin/grants/{scope}/{grant_id}`: exact scalar grant
+  detail, no children; wrong scope/missing UUID404, extra query422.
+- GET `/api/v1/security/admin/grants/{scope}/{grant_id}/history`: PROJECT/SOFTWARE
+  only, bounded limit/offset; exact parent and owned status events only, newest
+  occurred_at/UUID first. Current state, full total and bounded event fields;
+  SQL reason cap500/truncation flag, no full audit JSON. Explicit limited coverage.
+
+See [read contracts and consistency boundaries](docs/admin-grant-reads.md).
+No schema change; provider/actual browser admin acceptance remains pending.
