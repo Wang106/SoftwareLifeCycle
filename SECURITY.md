@@ -527,3 +527,13 @@ provider bearer revocation and cancellation of in-flight business writes are not
 claimed. Exact actor/request replays and atomic audit rollback are tested.
 See docs/principal-administration.md. Public sample mode remains read-only and
 OIDC-disabled; no real provider identity or grant was provisioned.
+
+## Scoped role registration — API0.18.33
+
+Verified writable OIDC/current PLATFORM_ADMIN can register a suspended exact
+project/software role for an ACTIVE configured-issuer non-admin USER/SERVICE.
+Recipient principal locking serializes with disable/session controls; database
+uniqueness and atomic actor-bound audit protect keyed retries and rollback.
+Old registration replay never suspends a later resumed grant. GLOBAL role writes,
+admin-recipient assignments and actual provider/UI acceptance remain pending.
+See docs/membership-registration.md. Public sample remains read-only.
