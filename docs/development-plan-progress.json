@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.34",
+  "as_of_api": "0.18.35",
   "baseline_commit": "83eec4946fb944873ad2bf98dcde291923869af6",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
@@ -312,7 +312,12 @@
             "backend/alembic/versions/0020_global_role_status.py",
             "backend/tests/test_global_roles.py",
             "backend/tests/test_global_roles_postgres.py",
-            "docs/global-role-lifecycle.md"
+            "docs/global-role-lifecycle.md",
+            "backend/app/admin_operator.py",
+            "backend/app/services/admin_operator.py",
+            "backend/tests/test_admin_operator.py",
+            "backend/tests/test_admin_operator_postgres.py",
+            "docs/admin-operator-runbook.md"
           ],
           "acceptance_pending": [
             "Audited GLOBAL role lifecycle; scoped role creation and local principal lifecycle implemented, actual provider/admin acceptance pending",

@@ -236,3 +236,24 @@ ADMIN_CONTROL_CONTRACTS = {
     ('POST', '/api/v1/security/admin/memberships/{scope}/{membership_id}/status'):
         AdminControlContract('Suspend or resume an existing project/software membership'),
 }
+
+
+@dataclass(frozen=True)
+class OperatorControlContract:
+    operation: str
+    authorization: str = 'EXPLICIT_LOCAL_PROCESS_AND_DATABASE_PRIVILEGES'
+    authentication: str = 'INFRASTRUCTURE_CONTEXT_NOT_OIDC_HUMAN'
+    public_exposure: str = 'NO_HTTP_ROUTE_OR_STARTUP_INVOCATION'
+    audit: str = 'ATOMIC_APPEND'
+    concurrency: str = 'ADMIN_TRANSACTION_GATE_AND_PRINCIPAL_GRANT_ROW_LOCK'
+    idempotency: str = 'EVENT_NO_EXACT_REQUEST_TARGET_AND_OPERATOR'
+    precondition: str = 'OPERATOR_ENABLED_WRITABLE_CONFIGURED_OIDC_ZERO_EFFECTIVE_ADMINS'
+    target_binding: str = 'DATABASE_SCHEMA_ROLE_AND_PROVIDER_FINGERPRINT'
+    approval_reference: str = 'DECLARED_EXTERNAL_APPROVAL_NOT_AUTOMATICALLY_VERIFIED'
+
+
+# Offline operator controls are intentionally outside the exhaustive HTTP inventory.
+OPERATOR_CONTROL_CONTRACTS = {
+    'bootstrap': OperatorControlContract('Create first local USER administrator only without any prior admin assignments'),
+    'recover': OperatorControlContract('Restore an existing local USER administrator only while no effective admin remains'),
+}

@@ -2768,3 +2768,21 @@ ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17; seven development p
 Next first-admin/recovery policy and bilingual admin UI, then approved provider/
 controlled target, first3/all14 authenticated submission/recovery, append-only
 corrections and operations/company migration. VIN remains last and separately scoped.
+
+## 2026-10-06 — Offline administrator bootstrap/recovery implementation
+
+API0.18.35/schema0020 adds a default-disabled local operator CLI, never HTTP/startup.
+Bootstrap creates a new local USER/ACTIVE PLATFORM_ADMIN only without any admin
+assignment history. Recovery restores only an existing configured-issuer USER/admin
+grant while zero effective admins remain, expected states match, and revokes all
+unrevoked target browser sessions atomically. Temporary operator capability, writable
+configured OIDC, approved target/provider fingerprint and explicit request confirmation
+are mandatory. Actor is infrastructure process context, not verified OIDC/human;
+external approval reference is declared and not automatically verified. Same shared
+admin gate, exact-owner/digest replay and atomic audit protect API/operator races.
+No actual accounts/grants/provider/secrets/operator flag configured or operation run.
+See docs/admin-operator-runbook.md. CI/merge/deployment acceptance pending.
+Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0; delta0.
+ROADMAP36/44=82%; identity-admin incomplete pending bilingual UI and approved real
+provider/admin/operator acceptance. Next UI and controlled provider/target, first3/
+all14 submissions/recovery, corrections and operations/company migration; VIN last.

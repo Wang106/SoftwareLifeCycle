@@ -94,3 +94,17 @@ def test_admin_status_contract_is_independently_authenticated_audited_and_read_o
             source = inspect.getsource(route.endpoint)
             assert 'active_admin(' in source and 'resolve_actor(' in source
             assert 'AuditEventService(db).record' in source
+
+
+def test_operator_protocol_is_separate_from_http_and_explicitly_infrastructure_authorized():
+    from pathlib import Path
+    from app.write_contracts import OPERATOR_CONTROL_CONTRACTS
+    assert set(OPERATOR_CONTROL_CONTRACTS)=={'bootstrap','recover'}
+    for contract in OPERATOR_CONTROL_CONTRACTS.values():
+        assert contract.public_exposure=='NO_HTTP_ROUTE_OR_STARTUP_INVOCATION'
+        assert contract.authentication=='INFRASTRUCTURE_CONTEXT_NOT_OIDC_HUMAN'
+        assert contract.audit=='ATOMIC_APPEND'
+        assert contract.approval_reference=='DECLARED_EXTERNAL_APPROVAL_NOT_AUTOMATICALLY_VERIFIED'
+        assert contract.target_binding=='DATABASE_SCHEMA_ROLE_AND_PROVIDER_FINGERPRINT'
+    assert 'admin_operator' not in Path('entrypoint.sh').read_text()
+    assert not any('bootstrap' in path or 'recover' in path or 'operator' in path for _,path in registered_write_routes())
