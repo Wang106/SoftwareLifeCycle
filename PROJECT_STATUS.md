@@ -3,13 +3,13 @@
 - Last reviewed: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Reviewed feature merge: `4a021121ec6db2cb6ba0b2ec9a6ecb2dab1e9e20` — PR#8 audited membership status; exact-merge CI, Workers deployment and five live HTTP/SSR probes passed; full admin/provider/actual browser acceptance pending
+- Reviewed feature merge: `68095d3c76e80fbb43c7a1fd595940adfbdd53ea` — PR#9 private admin grant reads; exact-merge CI, Workers deployment and five live HTTP/SSR probes passed; full admin/provider/actual browser acceptance pending
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
 ## Current phase
 
-API0.18.30 adds audited admin suspension/resumption of existing project/software memberships; the token-bound revocable browser-session registry remains on migration0019; default-disabled OIDC login/callback/session/logout and the bilingual account page use registered v2 cookies. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
+API0.18.31 adds private administrator grant catalogs, exact details and bounded membership status history alongside audited suspension/resumption; the token-bound revocable browser-session registry remains on migration0019; default-disabled OIDC login/callback/session/logout and the bilingual account page use registered v2 cookies. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
 
 **All 64 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
 
@@ -53,7 +53,7 @@ This finer counter does not change ROADMAP acceptance-item accounting or certify
 - Next.js frontend, FastAPI backend, Alembic migrations, PostgreSQL Docker Compose environment, Cloudflare Worker configuration and Render-oriented backend container.
 - Snapshot and Production Batch optional request-ID replay uses the existing business UUID and atomic audit request evidence; conflicting reuse/actor changes return 409. No-key clients keep legacy behavior.
 - PostgreSQL Release locking serializes snapshot numbering; Deployment then shared Authorization locks serialize finite quotas across deployments, refresh ORM state and roll back every failure path.
-- 87 backend test modules are present. Latest complete main CI passed **1403 tests**, with **115 PostgreSQL-module cases** plus additional parametrized PostgreSQL cases, and no skips. Disposable schemas validate migrations, actual blocking, replay/quota/revocation and audit rollback.
+- 88 backend test modules are present. Latest complete main CI passed **1481 tests**, with **115 PostgreSQL-module cases** plus additional parametrized PostgreSQL cases, and no skips. Disposable schemas validate migrations, actual blocking, replay/quota/revocation and audit rollback.
 - Alembic single head is `0019_browser_sessions`; it adds token-digest session metadata and a principal/expiry index. Full PostgreSQL SQL generation and isolated upgrade/downgrade/upgrade passed; no business data was rewritten.
 
 
@@ -2474,3 +2474,41 @@ ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
 plans100/100/20/33/40/20/0, delta0. Next principal provisioning/disable, role
 creation, global admin/first-admin recovery policy, bilingual admin UI and actual
 provider/browser acceptance; controlled submissions/recovery/corrections/ops follow.
+
+## Administrator grant reads rollout acceptance — 2026-10-06 (Asia/Shanghai)
+
+PR#9 feature `950450c5317705fbbdbb4714d1f177a86248e5b7` merged as
+`68095d3c76e80fbb43c7a1fd595940adfbdd53ea`. PR Actions37395387027 and
+exact-merge main Actions37395860033 passed backend, frontend, CI acceptance and
+Workers checks. Each complete run passed1481 backend cases,115 PostgreSQL-module
+cases and no skips; additional parametrized PostgreSQL cases are included in the
+total. Frontend541 passed. Single0019 head, full upgrade/downgrade SQL and isolated
+PostgreSQL round trip passed. New78 signed read regressions include39 SQLite
+and39 actual PostgreSQL cases; local related reads/auth/status93 and contract/
+progress9 passed. Both dialects prove exact scope/history ownership, strict
+filters, SQL trimming, stable tie order, no-read mutations and110-row growth
+with fixed pages/query counts and no ORM grant/history graph.
+
+Preview succeeded at2026-10-06T00:44:11.855Z (08:44:11 China), deployment
+07755b02-b916-4e2a-ad4b-5be48eebf565; all5 HTTP/SSR probes passed against
+https://07755b02-softwarelifecycle.whf969.workers.dev at00:45:28Z.
+Main builda39db01c-babc-4e07-95f4-cb471afcaac1 succeeded at00:50:12Z (08:50:12
+China), Worker versionbaf91d71-3874-4688-be84-18d4af8532d6. Formal five-probe
+HTTP/SSR acceptance passed at00:51:52Z. API readiness returned200 ready,
+version0.18.31/schema0019. All8 no-token catalog/detail/history GET combinations
+returned401 oidc_not_enabled/private,no-store/Vary:Authorization at00:50:40Z.
+A random-ID empty admin-status POST returned403 read_only_mode/private,no-store.
+No principal, role, provider, secret or target row was provisioned. Render provider
+deploy ID/commit metadata was not independently inspected; observed runtime
+version/schema and denials are the live evidence. Actual provider/browser/admin
+or business submission acceptance remains pending. No Cloudflare policy changed.
+
+The earlier pending publication paragraph is superseded by this exact-code record.
+This final follow-up changes docs only. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0. Read
+catalog/detail/history is implemented; full admin acceptance still needs audited
+principal registration/disable, role creation, global-admin/first-admin recovery,
+bilingual management UI and actual administrator acceptance. Next principal
+registration/disable, then role creation/admin lifecycle/UI; approved provider
+and controlled target, first3/all14 submission/recovery, corrections, operations
+and company migration follow. VIN stays a separately defined last priority.

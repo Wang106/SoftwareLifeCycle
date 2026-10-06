@@ -5,9 +5,9 @@
 - Date: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `e6b2ecd6bda4c3d893292253206070696bbe5495`
-- Developed from: `e6b2ecd6bda4c3d893292253206070696bbe5495`
-- Baseline subject: `docs: record frontend access diagnosis rollout acceptance`
+- Verified starting baseline: `83eec4946fb944873ad2bf98dcde291923869af6`
+- Developed from: `83eec4946fb944873ad2bf98dcde291923869af6`
+- Baseline subject: `docs: record membership status rollout and remaining plan acceptance`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -2533,3 +2533,41 @@ ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17;
 plans100/100/20/33/40/20/0, delta0. Next principal provisioning/disable, role
 creation, global admin/first-admin recovery policy, bilingual admin UI and actual
 provider/browser acceptance; controlled submissions/recovery/corrections/ops follow.
+
+## Administrator grant reads rollout acceptance — 2026-10-06 (Asia/Shanghai)
+
+PR#9 feature `950450c5317705fbbdbb4714d1f177a86248e5b7` merged as
+`68095d3c76e80fbb43c7a1fd595940adfbdd53ea`. PR Actions37395387027 and
+exact-merge main Actions37395860033 passed backend, frontend, CI acceptance and
+Workers checks. Each complete run passed1481 backend cases,115 PostgreSQL-module
+cases and no skips; additional parametrized PostgreSQL cases are included in the
+total. Frontend541 passed. Single0019 head, full upgrade/downgrade SQL and isolated
+PostgreSQL round trip passed. New78 signed read regressions include39 SQLite
+and39 actual PostgreSQL cases; local related reads/auth/status93 and contract/
+progress9 passed. Both dialects prove exact scope/history ownership, strict
+filters, SQL trimming, stable tie order, no-read mutations and110-row growth
+with fixed pages/query counts and no ORM grant/history graph.
+
+Preview succeeded at2026-10-06T00:44:11.855Z (08:44:11 China), deployment
+07755b02-b916-4e2a-ad4b-5be48eebf565; all5 HTTP/SSR probes passed against
+https://07755b02-softwarelifecycle.whf969.workers.dev at00:45:28Z.
+Main builda39db01c-babc-4e07-95f4-cb471afcaac1 succeeded at00:50:12Z (08:50:12
+China), Worker versionbaf91d71-3874-4688-be84-18d4af8532d6. Formal five-probe
+HTTP/SSR acceptance passed at00:51:52Z. API readiness returned200 ready,
+version0.18.31/schema0019. All8 no-token catalog/detail/history GET combinations
+returned401 oidc_not_enabled/private,no-store/Vary:Authorization at00:50:40Z.
+A random-ID empty admin-status POST returned403 read_only_mode/private,no-store.
+No principal, role, provider, secret or target row was provisioned. Render provider
+deploy ID/commit metadata was not independently inspected; observed runtime
+version/schema and denials are the live evidence. Actual provider/browser/admin
+or business submission acceptance remains pending. No Cloudflare policy changed.
+
+The earlier pending publication paragraph is superseded by this exact-code record.
+This final follow-up changes docs only. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0. Read
+catalog/detail/history is implemented; full admin acceptance still needs audited
+principal registration/disable, role creation, global-admin/first-admin recovery,
+bilingual management UI and actual administrator acceptance. Next principal
+registration/disable, then role creation/admin lifecycle/UI; approved provider
+and controlled target, first3/all14 submission/recovery, corrections, operations
+and company migration follow. VIN stays a separately defined last priority.
