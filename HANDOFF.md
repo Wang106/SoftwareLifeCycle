@@ -2719,3 +2719,52 @@ Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0; delta0,
 ROADMAP36/44=82%. Next audited first-admin/recovery policy and bilingual admin UI,
 approved provider/controlled target and actual admin/browser acceptance, first3/all14
 submission/recovery, corrections, operations/company migration; VIN last/separate.
+
+## 2026-10-06 — PR#12 global roles exact-code acceptance
+
+PR#12 https://github.com/Wang106/SoftwareLifeCycle/pull/12
+Revised feature head5b604522d17456d2e0cc5a3845302c9e1f035a1e; merged main
+456d41c1d0f7d4559737fc0d0fdc2fef51e4fa2a. Revised PR CI37434734541 and exact-main
+CI37435556865 passed all4 checks. Each passed1901 backend cases,159 PostgreSQL-module
+cases plus parametrized PostgreSQL, no skips; frontend541 tests and production
+Worker build passed. Single head0020, generated SQL and isolated PostgreSQL
+upgrade/downgrade/upgrade passed. Real legacy-grant preservation, suspended-grant
+downgrade rejection, last-admin overlaps and late audit-key rollback are covered.
+
+This package adds100 global-role cases (41 SQLite,41 migrated PostgreSQL and18
+real PostgreSQL concurrency/schema tests), plus1 principal-registration ownership
+regression. Initial full CI37433697691 passed1896 with4 prior race assertions failing;
+all100 new cases passed. Shared admin serialization makes committed keys visible
+at entry, so conflicting admins now receive audit_event_conflict409 before insert.
+Revised principal UUID/subject overlap uses distinct keys to independently prove
+uniqueness, and different-actor same-key ownership is tested. Revised CI resolves
+all4 failures. Local earlier complete non-PostgreSQL run1407 passed, followed by86
+new-case/admin-read checks; no local PostgreSQL run is claimed.94 backend test modules.
+
+Revised Preview174cb2c3-d80e-4b88-bf4f-8cca008fd7bf succeeded08:15:28.846Z,
+https://174cb2c3-softwarelifecycle.whf969.workers.dev; all5 HTTP/SSR checks passed
+08:17:13Z. Exact-main Workers build6b592b94-4188-4e54-a7ad-7b83bf98f7ec succeeded
+08:22:45Z (16:22:45 China), version27877be3-9919-4ad7-87b0-f46fb59c0233.
+Initial formal main frontend check at08:23:31Z had4 passes and/auth/session
+request_failed; the saved report does not establish its cause. Fresh current
+all5 main frontend checks passed 2026-10-06T09:10:14.059734+00:00 (UTC).
+API5 readiness/private-read/new-global-write protections passed08:23:25Z: ready200
+version0.18.34/schema0020, self/admin reads401 oidc_not_enabled, new global-role
+registration/status POSTs403 read_only_mode with private,no-store/Pragma:no-cache/
+Vary:Authorization. Current resumed API recheck initially had a25-second read timeout;
+a retry passed all5 at 2026-10-06T09:11:44.872046+00:00 (UTC). No cause is inferred.
+Render provider deploy ID/commit metadata was not independently inspected; observed
+runtime version/schema and rejection behavior are the API evidence. These checks
+are HTTP/SSR, not actual browser/provider/admin acceptance. No actual identity,
+grant, provider, secret or Cloudflare policy was provisioned/changed by this work.
+
+All earlier pending paragraphs for this package are superseded by this record.
+Global role lifecycle and last-effective-admin protection are complete as a backend
+slice. First-admin bootstrap, audited recovery/operator policy, bilingual management
+UI and approved-provider/actual-admin acceptance remain pending.14 business commands
+and2 own-session controls remain separately inventoried; there are6 admin controls.
+ROADMAP36/44=82%; modules100/100-demo/100-demo/100/89/60/17; seven development plans
+100/100/20/33/40/20/0, delta0. Full identity-admin milestone remains incomplete.
+Next first-admin/recovery policy and bilingual admin UI, then approved provider/
+controlled target, first3/all14 authenticated submission/recovery, append-only
+corrections and operations/company migration. VIN remains last and separately scoped.

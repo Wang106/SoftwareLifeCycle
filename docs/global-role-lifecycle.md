@@ -97,4 +97,14 @@ audit_event_conflict409 without state/audit mutation. Principal duplicate UUID/
 subject overlap now uses distinct audit keys to independently prove uniqueness,
 and an additional different-actor same-key case verifies exact audit ownership.
 Late unrelated audit writers still exercise AuditEventError rollback separately.
-These expected semantic changes are explicitly tested; revised full CI is pending.
+These expected semantic changes are explicitly tested; revised and exact-main full CI passed1901 cases with no skips.
+
+## Accepted deployment
+
+PR#12 merged456d41c1d0f7d4559737fc0d0fdc2fef51e4fa2a. Revised PR CI37434734541
+and exact-main CI37435556865 each passed1901 backend,159 PostgreSQL-module cases
+plus parametrized PostgreSQL, no skips; frontend541 and Worker build passed.
+Current main HTTP/SSR5 checks and API readiness/private-read/new-global-write
+protection5 checks passed; precise timestamps and initial failed probes are retained
+in HANDOFF.md/PROJECT_STATUS.md. Observed runtime0.18.34/schema0020; actual
+provider/browser/admin acceptance and operator recovery remain pending.
