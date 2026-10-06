@@ -5,9 +5,9 @@
 - Date: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
-- Verified starting baseline: `467b2840468b85b98d2644e0c45e7391e8291fc2`
-- Developed from: `467b2840468b85b98d2644e0c45e7391e8291fc2`
-- Baseline subject: `docs: record browser session revocation rollout acceptance`
+- Verified starting baseline: `e6b2ecd6bda4c3d893292253206070696bbe5495`
+- Developed from: `e6b2ecd6bda4c3d893292253206070696bbe5495`
+- Baseline subject: `docs: record frontend access diagnosis rollout acceptance`
 - Source of truth: GitHub `main`, followed by code, migrations, tests and live health checks
 
 Before continuing, fetch `origin/main`, confirm the branch/working tree and read this file together with `PROJECT_STATUS.md`, `ROADMAP.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `SECURITY.md` and `docs/write-contracts.md`. Do not infer completion from a prior chat.
@@ -2478,3 +2478,40 @@ pending. docs/development-plan.md now lists the remaining development sequence,
 external dependencies and completion conditions. Local/remote verification and
 rollout will be recorded after publication. ROADMAP36/44=82%; modules
 100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0.
+
+## Audited membership status rollout acceptance — 2026-10-06 (Asia/Shanghai)
+
+PR#8 feature `1bbc2a76e52e856946d7a9ec7f6ec2de45faacf7` merged as
+`4a021121ec6db2cb6ba0b2ec9a6ecb2dab1e9e20`. PR Actions37391149428 and
+exact-merge main Actions37391634816 passed backend, frontend, CI acceptance and
+Workers checks. Both full runs passed1403 backend cases,115 PostgreSQL-module
+cases and no skips; frontend541 passed. Single head0019, upgrade/downgrade SQL
+and isolated PostgreSQL round trip passed. The71 added cases include62 signed
+SQLite/PostgreSQL status cases,8 actual overlapping-admin/retry lock cases and
+one exhaustive admin contract check. Audit assertions exclude pre-existing
+fixture Snapshot events. Local auth/admin checks75, related retirement/contract/
+plan checks119, and final admin SQLite31 passed.
+
+Final-feature Preview succeeded at2026-10-05T23:56:56.477Z (07:56:56 China),
+deployment26f5bf62-db69-4dea-8a28-b641362f265e; all5 live HTTP/SSR probes passed
+against https://26f5bf62-softwarelifecycle.whf969.workers.dev at23:58:14Z.
+Main build1db78a25-0455-42f7-85d4-ceafbf5f1410 succeeded at2026-10-06T00:02:08Z
+(08:02:08 China), Worker version7f574e94-75ce-481e-9a08-e6c98990db99. Production
+five-probe acceptance passed at00:03:43Z. API readiness returned200 ready,
+version0.18.30/schema0019; both random-ID PROJECT/SOFTWARE management POSTs
+returned403 read_only_mode/private,no-store. No target row, principal, grant,
+provider or secret was created. Initial readiness request timed out; retry
+succeeded. Render provider deployment ID/commit metadata was not independently
+inspected; runtime version/schema are observed evidence. Public authentication
+remains disabled and the sample business/administration environment read-only.
+Real provider/actual browser administrator or business-write acceptance pending.
+
+The prior pending rollout paragraph is superseded. This follow-up changes docs
+only; the verified code baseline is the merge above. ROADMAP36/44=82%; modules
+100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0. Existing
+membership status control is a slice, not complete identity/grant administration.
+Next bounded admin role catalogs/exact detail, principal provisioning/disable,
+role creation, global admin/first-admin recovery policy and bilingual admin UI;
+then approved OIDC/controlled environment and real credential acceptance,
+first3 submissions/recovery, all14 commands, append-only corrections, operations
+and company migration. VIN remains a separately defined last-priority expansion.
