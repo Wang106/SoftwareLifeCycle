@@ -1,3 +1,4 @@
+from app.api.global_roles import router as global_roles_router
 from app.api.admin_grants import router as admin_grants_router
 from app.api.principal_admin import router as principal_admin_router
 from app.api.membership_registration import router as membership_registration_router
@@ -51,7 +52,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.33"
+APP_VERSION = "0.18.34"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -109,6 +110,7 @@ app.include_router(membership_admin_router)
 app.include_router(admin_grants_router)
 app.include_router(principal_admin_router)
 app.include_router(membership_registration_router)
+app.include_router(global_roles_router)
 
 
 @app.middleware("http")

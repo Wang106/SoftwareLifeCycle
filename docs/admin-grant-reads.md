@@ -1,12 +1,12 @@
-# 管理员授权目录、详情与状态历史 — API0.18.31
+# 管理员授权目录、详情与状态历史 — API0.18.34
 
 本包为后续中英文授权管理界面提供私有、有界读取。它不创建或停用身份，
-不新增角色或管理员，不配置提供方，不开启公共写入。schema仍0019。
+不新增角色或管理员，不配置提供方，不开启公共写入。读取与全局状态迁移0020兼容；全局写入契约见global-role-lifecycle.md。
 
 ## 身份与访问
 
 三个GET仅允许OIDC认证成功且当前本地身份为ACTIVE的PLATFORM_ADMIN。
-每次查询在读取事务内复核身份UUID/issuer/subject及管理员分配；AUDITOR、
+每次查询在读取事务内复核身份UUID/issuer/subject及ACTIVE管理员分配；AUDITOR、
 普通项目角色和软件角色不具有管理读取权限。可在READ_ONLY_MODE=true下
 读取，但OIDC禁用态仍返回401 oidc_not_enabled，不回退到演示数据。
 
@@ -25,7 +25,7 @@ Authorization隔离；成功/应用响应也Vary:X-Browser-Session。
 | principal_id | 可选精确身份UUID |
 | scope_id | 可选精确项目/软件UUID；GLOBAL禁止 |
 | role | 可选角色名，必须属于所选scope；空值/错误角色拒绝 |
-| status | 可选ACTIVE/SUSPENDED；GLOBAL没有此状态列，禁止该参数 |
+| status | 可选ACTIVE/SUSPENDED；所有scope均支持 |
 | principal_status | 可选ACTIVE/DISABLED |
 | limit | 默认50，1–100 |
 | offset | 默认0，0–100000 |
@@ -37,8 +37,7 @@ next_offset和items；末页及超出范围next_offset=null，保留准确total�
 
 每个item仅包含id、scope、role、status、created_at、effective、principal、
 target、status_history_supported。principal为id/principal_type/display_name/status；
-target为项目/软件id/code/name，GLOBAL为null；GLOBAL的status为null，不能
-伪造为一个可暂停的状态。effective仅说明该行与目标身份当前是否生效，不
+target为项目/软件id/code/name，GLOBAL为null；所有scope的status为ACTIVE/SUSPENDED。effective仅说明该行与目标身份当前是否生效，不
 等于用户最终综合权限；其其他角色或全局管理员覆盖需单独查看。
 
 查询使用存储的UUID连接，不能将同名对象或客户端文字当作授权关联。
@@ -57,13 +56,13 @@ scope为GLOBAL/PROJECT/SOFTWARE；grant_id是对应分配/成员行UUID。
 
 `GET /api/v1/security/admin/grants/{scope}/{grant_id}/history?limit=50&offset=0`
 
-仅PROJECT/SOFTWARE支持；GLOBAL返回422，因为当前没有全局角色变更接口。
+GLOBAL/PROJECT/SOFTWARE均支持；GLOBAL使用GLOBAL_ROLE及GLOBAL_ROLE_STATUS_CHANGED精确关联。
 只允许limit/offset，与目录相同边界。先核对精确授权行存在，然后使用
 entity_type、entity_id、canonical entity_ref及MEMBERSHIP_STATUS_CHANGED联合
 过滤；复用既有entity_type/entity_ref索引，不混入业务事件或其他对象。
 
 响应scope、grant_id、current_status、coverage、total、分页字段及items。
-coverage固定MEMBERSHIP_STATUS_CHANGED_ONLY；零条记录不证明此授权从未
+PROJECT/SOFTWARE的coverage为MEMBERSHIP_STATUS_CHANGED_ONLY；GLOBAL为GLOBAL_ROLE_STATUS_CHANGED_ONLY；零条记录不证明此授权从未
 由维护SQL建立/更改，也不是完整身份管理历史。只展示此类状态事件。
 
 items包含id/event_no/action/occurred_at、历史actor_principal_id和

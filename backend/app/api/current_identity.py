@@ -48,8 +48,7 @@ def grants(principal_id: uuid.UUID, scope: str):
     elif scope == 'SOFTWARE':
         fields.append(model.software_id.label('scope_id'))
     stmt = select(*fields).where(model.principal_id == principal_id)
-    if scope != 'GLOBAL':
-        stmt = stmt.where(model.status == 'ACTIVE')
+    stmt = stmt.where(model.status == 'ACTIVE')
     return stmt
 
 

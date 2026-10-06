@@ -65,7 +65,7 @@ def test_role_sets_are_disjoint_and_schema_head_is_current():
     assert not (GLOBAL_ROLES & PROJECT_ROLES)
     assert not (SOFTWARE_ROLES & PROJECT_ROLES)
     assert ALL_ROLES == GLOBAL_ROLES | SOFTWARE_ROLES | PROJECT_ROLES
-    assert settings.required_db_revision == "0019_browser_sessions"
+    assert settings.required_db_revision == "0020_global_role_status"
 
 
 def test_user_and_service_principals_accept_scoped_grants_without_credentials():

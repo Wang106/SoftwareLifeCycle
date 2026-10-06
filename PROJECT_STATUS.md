@@ -9,7 +9,7 @@ The current Git `HEAD` is always authoritative; run `git log -1 --oneline` befor
 
 ## Current phase
 
-API0.18.33 adds audited suspended-first project/software role registration alongside local principal lifecycle, session revocation, private administrator reads and membership status changes; the token-bound revocable browser-session registry remains on migration0019; default-disabled OIDC login/callback/session/logout and the bilingual account page use registered v2 cookies. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
+API0.18.34 adds audited global role registration/status, ACTIVE global authorization and last-admin protection on migration0020, alongside project/software registration, principal lifecycle, session revocation and private administrator reads; default-disabled OIDC login/callback/session/logout and the bilingual account page use registered v2 cookies. Approved provider configuration, real browser/revocation acceptance and audited grant administration remain pending.
 
 **All 64 pages support default Chinese and selectable English. All 14 request-preparation forms are implemented; deployment, authorization, distribution and exact delivery revision details use bounded profile/catalog reads; ASR downstream now uses fixed summaries and scoped catalogs. ASR evidence now uses exact Snapshot pagination; Shared release coverage uses SQL aggregates and SSR details and ASR component/baseline declarations use independently paginated collections; ASR frozen policy and exact Snapshot detail now have pinned artifact/rule pages; Snapshot comparison now has pinned SQL summary/difference pages; ASR passport now has paired UUID summary and four bounded histories; current readiness now uses SQL policy/exception summaries and a bounded exception page; release directories and exact legacy resolution now use bounded reads; SCR/Issue directories now use bounded queries/full statistics; SCR detail uses scalar summary, independent collection pages and selected point/plan item pages; SCR coverage now uses full SQL counts, paged collections and exact selected-group evidence; Issue detail/impact now use full counts and paged relations/candidates/judgments/frozen evidence; organization directories/profiles now use scalar summaries/full counts and bounded owned collections; manufacturing directory/detail now use complete scalar summaries and owned bounded line pages; all 17 identified read-consumer groups are migrated; DVP exact profiles now use scalar counts and independent owned relation pages. Approval detail uses scalar summary and independently paged steps/actions; reviewed legacy GET retirements total50; three active scalar compatibility reads have bounded growth evidence. Fixed53-candidate closure is complete. Authenticated submission remains pending; public staging remains read-only.**
 
@@ -2630,3 +2630,18 @@ policy, bilingual management UI and approved-provider/actual-administrator accep
 Next GLOBAL role state/admin protection/recovery, then bilingual administration UI;
 approved provider/controlled target, first3/all14 submissions/recovery, append-only
 corrections, operations/company migration follow. VIN remains last and separately scoped.
+
+## 2026-10-06 — Global role lifecycle implementation (acceptance pending)
+
+API0.18.34/schema0020 adds suspended-first global registration, exact expected-state
+resume/suspend, actor-bound atomic audit/replay, ACTIVE global authorization and
+last effective configured-issuer administrator protection. Six admin controls now
+share a PostgreSQL transaction advisory gate before principal/grant row locks.
+GLOBAL catalog status/filter/history support is explicit. Legacy grants remain
+ACTIVE; downgrade refuses suspended rows to avoid privilege restoration.
+See docs/global-role-lifecycle.md. No provider/account/grant/secret provisioned,
+public read-only/OIDC-disabled. CI/merge/deployment acceptance still pending.
+Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0; delta0,
+ROADMAP36/44=82%. Next audited first-admin/recovery policy and bilingual admin UI,
+approved provider/controlled target and actual admin/browser acceptance, first3/all14
+submission/recovery, corrections, operations/company migration; VIN last/separate.

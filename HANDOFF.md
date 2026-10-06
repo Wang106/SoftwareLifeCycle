@@ -2704,3 +2704,18 @@ policy, bilingual management UI and approved-provider/actual-administrator accep
 Next GLOBAL role state/admin protection/recovery, then bilingual administration UI;
 approved provider/controlled target, first3/all14 submissions/recovery, append-only
 corrections, operations/company migration follow. VIN remains last and separately scoped.
+
+## 2026-10-06 — Global role lifecycle implementation (acceptance pending)
+
+API0.18.34/schema0020 adds suspended-first global registration, exact expected-state
+resume/suspend, actor-bound atomic audit/replay, ACTIVE global authorization and
+last effective configured-issuer administrator protection. Six admin controls now
+share a PostgreSQL transaction advisory gate before principal/grant row locks.
+GLOBAL catalog status/filter/history support is explicit. Legacy grants remain
+ACTIVE; downgrade refuses suspended rows to avoid privilege restoration.
+See docs/global-role-lifecycle.md. No provider/account/grant/secret provisioned,
+public read-only/OIDC-disabled. CI/merge/deployment acceptance still pending.
+Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0; delta0,
+ROADMAP36/44=82%. Next audited first-admin/recovery policy and bilingual admin UI,
+approved provider/controlled target and actual admin/browser acceptance, first3/all14
+submission/recovery, corrections, operations/company migration; VIN last/separate.
