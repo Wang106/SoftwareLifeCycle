@@ -205,7 +205,7 @@ class AdminControlContract:
     actor_binding: str = 'AUTHENTICATED_PRINCIPAL'
     public_exposure: str = 'READ_ONLY_BLOCKED'
     audit: str = 'ATOMIC_APPEND'
-    concurrency: str = 'PRINCIPAL_GRANT_AND_MEMBERSHIP_ROW_LOCK'
+    concurrency: str = 'ADMIN_TRANSACTION_GATE_AND_PRINCIPAL_GRANT_AND_MEMBERSHIP_ROW_LOCK'
     idempotency: str = 'EVENT_NO_EXACT_REQUEST_AND_ADMIN'
     precondition: str = 'EXPECTED_MEMBERSHIP_STATUS'
 
@@ -213,17 +213,25 @@ class AdminControlContract:
 # Authorization administration is separate from the fixed14 domain commands and
 # from own-session metadata. It has no read-only or auth-disabled exception.
 ADMIN_CONTROL_CONTRACTS = {
+    ('POST', '/api/v1/security/admin/global-roles'):
+        AdminControlContract('Register a suspended exact global role',
+            concurrency='ADMIN_TRANSACTION_GATE_AND_RECIPIENT_ROW_LOCK_AND_UNIQUENESS',
+            precondition='ACTIVE_CONFIGURED_ISSUER_RECIPIENT_AND_NEW_GLOBAL_ROLE'),
+    ('POST', '/api/v1/security/admin/global-roles/{grant_id}/status'):
+        AdminControlContract('Suspend or resume a global role with last-admin protection',
+            concurrency='ADMIN_TRANSACTION_GATE_AND_PRINCIPAL_GRANT_ROW_LOCK',
+            precondition='EXPECTED_GLOBAL_ROLE_STATUS_AND_RETAIN_EFFECTIVE_ADMIN'),
     ('POST', '/api/v1/security/admin/memberships/{scope}'):
         AdminControlContract('Register a suspended exact project/software role for a non-admin principal',
-            concurrency='ADMIN_GRANT_AND_RECIPIENT_PRINCIPAL_ROW_LOCK_AND_UNIQUENESS',
+            concurrency='ADMIN_TRANSACTION_GATE_AND_ADMIN_GRANT_AND_RECIPIENT_PRINCIPAL_ROW_LOCK_AND_UNIQUENESS',
             precondition='ACTIVE_CONFIGURED_ISSUER_NON_ADMIN_RECIPIENT_AND_NEW_EXACT_ROLE'),
     ('POST', '/api/v1/security/admin/principals'):
         AdminControlContract('Register a disabled local identity without grants',
-            concurrency='ADMIN_PRINCIPAL_GRANT_LOCK_AND_IDENTITY_UNIQUENESS',
+            concurrency='ADMIN_TRANSACTION_GATE_AND_ADMIN_PRINCIPAL_GRANT_LOCK_AND_IDENTITY_UNIQUENESS',
             precondition='CONFIGURED_ISSUER_AND_NEW_UUID_AND_SUBJECT'),
     ('POST', '/api/v1/security/admin/principals/{principal_id}/status'):
         AdminControlContract('Enable or disable a non-platform-admin local principal',
-            concurrency='ADMIN_GRANT_AND_TARGET_PRINCIPAL_ROW_LOCK',
+            concurrency='ADMIN_TRANSACTION_GATE_AND_ADMIN_GRANT_AND_TARGET_PRINCIPAL_ROW_LOCK',
             precondition='EXPECTED_PRINCIPAL_STATUS_AND_NO_PLATFORM_ADMIN_GRANT'),
     ('POST', '/api/v1/security/admin/memberships/{scope}/{membership_id}/status'):
         AdminControlContract('Suspend or resume an existing project/software membership'),

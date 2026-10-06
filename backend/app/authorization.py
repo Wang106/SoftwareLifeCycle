@@ -37,6 +37,7 @@ def _has_global_admin(db: Session, principal_id: uuid.UUID) -> bool:
         select(GlobalRoleAssignment.id).where(
             GlobalRoleAssignment.principal_id == principal_id,
             GlobalRoleAssignment.role == "PLATFORM_ADMIN",
+            GlobalRoleAssignment.status == "ACTIVE",
         ).limit(1)
     ) is not None
 

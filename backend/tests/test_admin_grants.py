@@ -45,7 +45,7 @@ def test_catalog_reads_all_states_with_exact_identity_and_minimal_fields(identit
     assert set(value) == {'id','scope','role','status','created_at','effective','principal','target','status_history_supported'}
     assert set(value['principal']) == {'id','principal_type','display_name','status'}
     if scope == 'GLOBAL':
-        assert value['target'] is None and value['status'] is None and value['status_history_supported'] is False
+        assert value['target'] is None and value['status'] == 'ACTIVE' and value['status_history_supported'] is True
     else:
         assert set(value['target']) == {'id','code','name'}
         assert value['target']['id'] == str(ids['project' if scope == 'PROJECT' else 'software'])
@@ -109,7 +109,7 @@ def test_exact_detail_has_no_children_and_wrong_scope_never_resolves(identity_cl
 
 @pytest.mark.parametrize('query', ['', 'scope=UNKNOWN','scope=PROJECT&limit=0','scope=PROJECT&limit=101',
  'scope=PROJECT&offset=-1','scope=PROJECT&offset=100001','scope=PROJECT&role=AUDITOR',
- 'scope=GLOBAL&status=ACTIVE','scope=GLOBAL&scope_id='+str(uuid.uuid4()), 'scope=SOFTWARE&role=REVIEWER',
+ 'scope=GLOBAL&status=DISABLED','scope=GLOBAL&scope_id='+str(uuid.uuid4()), 'scope=SOFTWARE&role=REVIEWER',
  'scope=PROJECT&status=DISABLED','scope=PROJECT&principal_status=SUSPENDED',
  'scope=PROJECT&principal_id=bad','scope=PROJECT&scope_id=bad','scope=PROJECT&role=',
  'scope=PROJECT&issuer=untrusted','scope=PROJECT&subject=other','scope=PROJECT&email=private@example.com'])
@@ -181,7 +181,7 @@ def test_status_history_tracks_real_changes_and_excludes_other_scope_or_target(i
     second=client.get(f'{ROOT}/{scope}/{value}/history?limit=1&offset=1',headers=admin(key)).json()
     assert second['items'][0]['action']=='SUSPEND' and second['next_offset'] is None
     assert 'secret-noise' not in response.text and 'payload_json' not in response.text
-    assert client.get(f'{ROOT}/GLOBAL/{value}/history',headers=admin(key)).status_code==422
+    assert client.get(f'{ROOT}/GLOBAL/{value}/history',headers=admin(key)).status_code==404
     assert client.get(f'{ROOT}/{scope}/{uuid.uuid4()}/history',headers=admin(key)).status_code==404
     for query in ['limit=101','offset=-1','event_type=UNRELATED_EVENT','actor_principal_id='+str(ids['other'])]:
         assert client.get(f'{ROOT}/{scope}/{value}/history?'+query,headers=admin(key)).status_code==422

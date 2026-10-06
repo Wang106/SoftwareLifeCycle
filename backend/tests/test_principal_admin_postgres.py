@@ -74,19 +74,21 @@ def test_competing_status_requests_wait_and_recheck_or_replay(pg,monkeypatch,sam
         assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.entity_id == ids[2])) == 1
 
 
-@pytest.mark.parametrize('duplicate',['exact_retry','uuid','subject'])
+@pytest.mark.parametrize('duplicate',['exact_retry','uuid','subject','audit_owner'])
 def test_concurrent_registration_has_one_identity_and_audit(pg,monkeypatch,duplicate):
     engine,_ = pg; _,requests = setup(engine,monkeypatch)
     body = RegisterPrincipal(event_no='P-REGISTER',principal_id=uuid.uuid4(),subject='new-opaque-subject',
         principal_type='USER',display_name='New identity',reason='Register approved reference')
     second = body if duplicate != 'subject' else body.model_copy(update={'principal_id':uuid.uuid4()})
+    if duplicate in {'uuid','subject'}:
+        second = second.model_copy(update={'event_no':'P-REGISTER-OTHER'})
     same_admin = duplicate == 'exact_retry'
     results = overlapping_commands(engine,monkeypatch,
         command(lambda db:register_principal(body,requests[0],db)),
         command(lambda db:register_principal(second,requests[0 if same_admin else 1],db)))
     assert outcome(results[0])['replayed'] is False
     if same_admin: assert outcome(results[1])['replayed'] is True
-    else: assert outcome(results[1]) == 'error:principal_registration_conflict'
+    else: assert outcome(results[1]) == ('error:audit_event_conflict' if duplicate == 'audit_owner' else 'error:principal_registration_conflict')
     with Session(engine) as db:
         assert db.scalar(select(func.count()).select_from(SecurityPrincipal).where(SecurityPrincipal.subject == body.subject)) == 1
         assert db.get(SecurityPrincipal,body.principal_id).status == 'DISABLED'

@@ -56,6 +56,7 @@ class GlobalRoleAssignment(Base):
     __table_args__ = (
         UniqueConstraint("principal_id", "role", name="uq_global_role_assignment"),
         CheckConstraint("role IN ('PLATFORM_ADMIN','AUDITOR')", name="ck_global_role"),
+        CheckConstraint("status IN ('ACTIVE','SUSPENDED')", name="ck_global_role_status"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uid)
@@ -63,6 +64,7 @@ class GlobalRoleAssignment(Base):
         ForeignKey("security_principals.id"), nullable=False, index=True
     )
     role: Mapped[str] = mapped_column(String(40), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="ACTIVE", server_default="ACTIVE")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=now)
 
 

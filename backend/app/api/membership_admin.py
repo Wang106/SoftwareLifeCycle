@@ -3,7 +3,7 @@ from typing import Literal
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.actor import resolve_actor
@@ -49,13 +49,17 @@ def active_admin(request: Request, db: Session):
     principal = getattr(request.state, 'principal', None)
     if not isinstance(principal, AuthenticatedPrincipal):
         raise HTTPException(401, 'authenticated_principal_required')
+    # All administrative writers share this transaction gate before any row lock.
+    # It prevents cross-admin actor/recipient cycles and serializes last-admin checks.
+    if db.get_bind().dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(1397506887, 1)"))
     row = db.scalars(select(SecurityPrincipal).where(SecurityPrincipal.id == principal.id,
         SecurityPrincipal.issuer == principal.issuer, SecurityPrincipal.subject == principal.subject)
-        .with_for_update()).first()
+        .with_for_update().execution_options(populate_existing=True)).first()
     if row is None or row.status != 'ACTIVE':
         raise HTTPException(401, 'inactive_principal')
     grant = db.scalar(select(GlobalRoleAssignment.id).where(GlobalRoleAssignment.principal_id == row.id,
-        GlobalRoleAssignment.role == 'PLATFORM_ADMIN').with_for_update())
+        GlobalRoleAssignment.role == 'PLATFORM_ADMIN', GlobalRoleAssignment.status == 'ACTIVE').with_for_update())
     if grant is None:
         raise HTTPException(403, 'platform_admin_required')
     require_browser_session(request, db, row.id)

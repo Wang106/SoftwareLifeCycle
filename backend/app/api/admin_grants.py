@@ -18,7 +18,6 @@ from app.security_roles import GLOBAL_ROLES, PROJECT_ROLES, SOFTWARE_ROLES
 
 router = APIRouter(prefix='/api/v1/security/admin/grants', tags=['administrator grant reads'])
 Scope = Literal['GLOBAL', 'PROJECT', 'SOFTWARE']
-MembershipScope = Literal['PROJECT', 'SOFTWARE']
 Status = Literal['ACTIVE', 'SUSPENDED']
 
 
@@ -44,8 +43,8 @@ class GrantFilters(Page):
         roles = {'GLOBAL': GLOBAL_ROLES, 'PROJECT': PROJECT_ROLES, 'SOFTWARE': SOFTWARE_ROLES}[self.scope]
         if self.role is not None and self.role not in roles:
             raise ValueError('Role must belong to the selected scope')
-        if self.scope == 'GLOBAL' and (self.scope_id is not None or self.status is not None):
-            raise ValueError('Global grants have no scope_id or membership status')
+        if self.scope == 'GLOBAL' and self.scope_id is not None:
+            raise ValueError('Global grants have no scope_id')
         return self
 
 
@@ -62,21 +61,21 @@ def require_admin_read(request: Request, db: Session):
     if current is None:
         raise HTTPException(401, 'inactive_principal')
     if db.scalar(select(GlobalRoleAssignment.id).where(GlobalRoleAssignment.principal_id == current,
-        GlobalRoleAssignment.role == 'PLATFORM_ADMIN')) is None:
+        GlobalRoleAssignment.role == 'PLATFORM_ADMIN', GlobalRoleAssignment.status == 'ACTIVE')) is None:
         raise HTTPException(403, 'platform_admin_required')
     require_browser_session(request, db, current)
 
 
 def grant_projection(scope):
     model = {'GLOBAL': GlobalRoleAssignment, 'PROJECT': ProjectMembership, 'SOFTWARE': SoftwareMembership}[scope]
-    fields = [model.id, model.role, model.created_at,
+    fields = [model.id, model.role, model.created_at, model.status,
         SecurityPrincipal.id.label('principal_id'), SecurityPrincipal.principal_type,
         SecurityPrincipal.display_name, SecurityPrincipal.status.label('principal_status')]
     if scope != 'GLOBAL':
         target = Project if scope == 'PROJECT' else SoftwareProduct
         target_id = model.project_id if scope == 'PROJECT' else model.software_id
         code = Project.project_code if scope == 'PROJECT' else SoftwareProduct.code
-        fields += [model.status, target_id.label('scope_id'), code.label('scope_code'), target.name.label('scope_name')]
+        fields += [target_id.label('scope_id'), code.label('scope_code'), target.name.label('scope_name')]
     stmt = select(*fields).select_from(model).join(SecurityPrincipal, SecurityPrincipal.id == model.principal_id)
     if scope != 'GLOBAL':
         stmt = stmt.join(target, target.id == target_id)
@@ -87,11 +86,11 @@ def grant_item(row, scope):
     row = dict(row)
     status = row.get('status')
     return {'id': row['id'], 'scope': scope, 'role': row['role'], 'status': status,
-        'created_at': row['created_at'], 'effective': row['principal_status'] == 'ACTIVE' and (scope == 'GLOBAL' or status == 'ACTIVE'),
+        'created_at': row['created_at'], 'effective': row['principal_status'] == 'ACTIVE' and status == 'ACTIVE',
         'principal': {'id': row['principal_id'], 'principal_type': row['principal_type'],
                       'display_name': row['display_name'], 'status': row['principal_status']},
         'target': None if scope == 'GLOBAL' else {'id': row['scope_id'], 'code': row['scope_code'], 'name': row['scope_name']},
-        'status_history_supported': scope != 'GLOBAL'}
+        'status_history_supported': True}
 
 
 def exact_grant(db, scope, grant_id):
@@ -149,16 +148,16 @@ def history_projection(scope, grant_id):
         func.substr(reason, 1, 500).label('reason'),
         case((func.length(reason) > 500, True), else_=False).label('reason_truncated'))\
         .where(AuditEvent.entity_id == grant_id, AuditEvent.entity_ref == str(grant_id),
-               AuditEvent.entity_type == scope+'_MEMBERSHIP',
-               AuditEvent.event_type == 'MEMBERSHIP_STATUS_CHANGED')
+               AuditEvent.entity_type == ('GLOBAL_ROLE' if scope == 'GLOBAL' else scope+'_MEMBERSHIP'),
+               AuditEvent.event_type == ('GLOBAL_ROLE_STATUS_CHANGED' if scope == 'GLOBAL' else 'MEMBERSHIP_STATUS_CHANGED'))
 
 
 @router.get('/{scope}/{grant_id}/history')
-def grant_history(scope: MembershipScope, grant_id: uuid.UUID, request: Request,
+def grant_history(scope: Scope, grant_id: uuid.UUID, request: Request,
                   filters: Annotated[Page, Query()], db: Session = Depends(get_db)):
     require_admin_read(request, db)
     current = exact_grant(db, scope, grant_id)
     result = page_result(db, history_projection(scope, grant_id), [AuditEvent.occurred_at.desc(), AuditEvent.id.desc()], filters)
     result.update({'scope': scope, 'grant_id': grant_id, 'current_status': current['status'],
-                   'coverage': 'MEMBERSHIP_STATUS_CHANGED_ONLY'})
+                   'coverage': 'GLOBAL_ROLE_STATUS_CHANGED_ONLY' if scope == 'GLOBAL' else 'MEMBERSHIP_STATUS_CHANGED_ONLY'})
     return result
