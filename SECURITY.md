@@ -515,3 +515,15 @@ if supplied, must be current and token-bound. History is explicitly limited to
 owned MEMBERSHIP_STATUS_CHANGED events; it is not complete identity history.
 Read-committed statements and in-flight reads are not retroactively revoked.
 See docs/admin-grant-reads.md. Public OIDC remains disabled; no grants were created.
+
+## Local principal registration and disable — API0.18.32
+
+Two separately inventoried admin writes require writable OIDC and current active
+PLATFORM_ADMIN. Registration uses configured issuer, disabled-first exact identity
+and no grants; enable/disable locks the recipient and revokes existing browser
+sessions atomically on disable. All platform-admin identities are protected until
+bootstrap/recovery policy is accepted. Old cookies stay revoked after re-enable;
+provider bearer revocation and cancellation of in-flight business writes are not
+claimed. Exact actor/request replays and atomic audit rollback are tested.
+See docs/principal-administration.md. Public sample mode remains read-only and
+OIDC-disabled; no real provider identity or grant was provisioned.

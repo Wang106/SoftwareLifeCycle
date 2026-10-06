@@ -213,6 +213,14 @@ class AdminControlContract:
 # Authorization administration is separate from the fixed14 domain commands and
 # from own-session metadata. It has no read-only or auth-disabled exception.
 ADMIN_CONTROL_CONTRACTS = {
+    ('POST', '/api/v1/security/admin/principals'):
+        AdminControlContract('Register a disabled local identity without grants',
+            concurrency='ADMIN_PRINCIPAL_GRANT_LOCK_AND_IDENTITY_UNIQUENESS',
+            precondition='CONFIGURED_ISSUER_AND_NEW_UUID_AND_SUBJECT'),
+    ('POST', '/api/v1/security/admin/principals/{principal_id}/status'):
+        AdminControlContract('Enable or disable a non-platform-admin local principal',
+            concurrency='ADMIN_GRANT_AND_TARGET_PRINCIPAL_ROW_LOCK',
+            precondition='EXPECTED_PRINCIPAL_STATUS_AND_NO_PLATFORM_ADMIN_GRANT'),
     ('POST', '/api/v1/security/admin/memberships/{scope}/{membership_id}/status'):
         AdminControlContract('Suspend or resume an existing project/software membership'),
 }
