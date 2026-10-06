@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.core.db import get_db
 from app.models.audit import AuditEvent
 from app.models.security import GlobalRoleAssignment, ProjectMembership, SecurityPrincipal, SoftwareMembership
-from app.services.audit import AuditEventService
+from app.services.audit import AuditEventError, AuditEventService
 
 router = APIRouter(prefix='/api/v1/security/admin/memberships', tags=['membership administration'])
 Scope = Literal['PROJECT', 'SOFTWARE']
@@ -103,7 +103,7 @@ def change_status(scope: Scope, membership_id: uuid.UUID, body: MembershipStatus
         response = result(row, scope, body, False)
         db.commit()
         return response
-    except IntegrityError:
+    except (IntegrityError, AuditEventError):
         db.rollback()
         raise HTTPException(409, 'audit_event_conflict')
     except Exception:

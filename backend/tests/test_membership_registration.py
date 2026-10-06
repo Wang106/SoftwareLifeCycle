@@ -274,3 +274,37 @@ def test_unrelated_global_audit_key_is_conflict_without_role_insert(identity_cli
     response=client.post(ROOT+'/'+scope,json=body,headers=admin(key))
     assert response.status_code==409 and response.json()['detail']=='audit_event_conflict'
     with sessions() as db:assert count(db)==0 and db.get(model_for(scope),uuid.UUID(body['membership_id'])) is None
+
+
+@pytest.mark.parametrize('operation',['role_register','principal_register','principal_status','membership_status'])
+def test_late_audit_service_key_conflict_is_409_and_rolls_back_admin_mutation(identity_client,monkeypatch,operation):
+    from app.services.audit import AuditEventError
+    client,sessions,ids,key,_=identity_client
+    monkeypatch.setattr(main.settings,'read_only_mode',False)
+    identifier=recipient(sessions)
+    body=body_for(ids,identifier)
+    path=ROOT+'/PROJECT'
+    expected='membership_registration_conflict'
+    if operation=='principal_register':
+        body={'principal_id':str(uuid.uuid4()),'subject':'register-late-conflict','principal_type':'USER',
+            'display_name':'New principal','event_no':'LATE-AUDIT','reason':'Register approved local reference'}
+        path='/api/v1/security/admin/principals';expected='principal_registration_conflict'
+    elif operation=='principal_status':
+        body={'event_no':'LATE-AUDIT','expected_status':'ACTIVE','status':'DISABLED','reason':'Disable pending review'}
+        path='/api/v1/security/admin/principals/'+str(identifier)+'/status';expected='audit_event_conflict'
+    elif operation=='membership_status':
+        with sessions() as db:
+            member=ProjectMembership(principal_id=identifier,project_id=ids['project'],role='PROJECT_VIEWER')
+            db.add(member);db.commit();membership_id=member.id
+        body={'event_no':'LATE-AUDIT','expected_status':'ACTIVE','status':'SUSPENDED','reason':'Suspend pending review'}
+        path=ROOT+'/PROJECT/'+str(membership_id)+'/status';expected='audit_event_conflict'
+    def conflict(*_,**__):raise AuditEventError('Audit event number already exists')
+    monkeypatch.setattr(AuditEventService,'record',conflict)
+    response=client.post(path,json=body,headers=admin(key))
+    assert response.status_code==409 and response.json()['detail']==expected,response.text
+    private(response)
+    with sessions() as db:
+        assert count(db)==0 and db.get(SecurityPrincipal,identifier).status=='ACTIVE'
+        if operation=='role_register':assert db.get(ProjectMembership,uuid.UUID(body['membership_id'])) is None
+        elif operation=='principal_register':assert db.get(SecurityPrincipal,uuid.UUID(body['principal_id'])) is None
+        elif operation=='membership_status':assert db.get(ProjectMembership,membership_id).status=='ACTIVE'

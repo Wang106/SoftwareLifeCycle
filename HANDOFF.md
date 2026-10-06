@@ -2650,3 +2650,7 @@ Modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/20/0, delta0;
 ROADMAP36/44=82%. Next GLOBAL roles/admin/bootstrap/recovery policy, bilingual admin
 UI and actual acceptance; approved provider/target, first3/all14 submission/recovery,
 corrections, operations/company migration follow; VIN remains last and separate.
+
+Late audit-service event-key conflicts are now caught by all4 admin controls as
+409 with rollback, including existing principal registration/status and membership
+status. Regression covers the post-entry-check/pre-record committed-key race.

@@ -17,7 +17,7 @@ from app.core.config import settings
 from app.core.db import get_db
 from app.models.audit import AuditEvent
 from app.models.security import BrowserSession, GlobalRoleAssignment, SecurityPrincipal
-from app.services.audit import AuditEventService
+from app.services.audit import AuditEventError, AuditEventService
 
 router = APIRouter(prefix='/api/v1/security/admin/principals', tags=['principal administration'])
 Status = Literal['ACTIVE', 'DISABLED']
@@ -117,7 +117,7 @@ def register_principal(body: RegisterPrincipal, request: Request, db: Session = 
         response = result(row, 'DISABLED', body, False)
         db.commit()
         return response
-    except IntegrityError:
+    except (IntegrityError, AuditEventError):
         db.rollback()
         raise HTTPException(409, 'principal_registration_conflict')
     except Exception:
@@ -178,7 +178,7 @@ def change_principal_status(principal_id: uuid.UUID, body: PrincipalStatusChange
         response = result(row, body.status, body, False, revoked)
         db.commit()
         return response
-    except IntegrityError:
+    except (IntegrityError, AuditEventError):
         db.rollback()
         raise HTTPException(409, 'audit_event_conflict')
     except Exception:

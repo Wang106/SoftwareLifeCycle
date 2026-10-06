@@ -86,3 +86,26 @@ def test_global_audit_key_collision_rolls_back_second_recipient_membership(pg,mo
         assert db.get(model,body.membership_id).status=='SUSPENDED'
         assert db.get(model,second.membership_id) is None
         assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.event_no==body.event_no))==1
+
+
+@pytest.mark.parametrize('scope',['PROJECT','SOFTWARE'])
+def test_other_transaction_commits_audit_key_after_entry_check_before_record(pg,monkeypatch,scope):
+    from app.services.audit import AuditEventService
+    engine,_=pg;ids,requests=setup(engine,monkeypatch);body=body_for(engine,ids[2],scope)
+    original=AuditEventService.record
+    def committed_elsewhere(service,**kwargs):
+        with Session(engine) as other:
+            original(AuditEventService(other),event_no=body.event_no,event_type='UNRELATED',action='READ',
+                entity_type='OTHER',entity_ref='other transaction',actor_name='Historical actor',summary='Other evidence')
+            other.commit()
+        return original(service,**kwargs)
+    monkeypatch.setattr(AuditEventService,'record',committed_elsewhere)
+    with Session(engine) as db:
+        with pytest.raises(HTTPException) as caught:register_membership(scope,body,requests[0],db)
+        assert caught.value.status_code==409 and caught.value.detail=='membership_registration_conflict'
+        assert not db.in_transaction()
+    model=ProjectMembership if scope=='PROJECT' else SoftwareMembership
+    with Session(engine) as db:
+        assert db.get(model,body.membership_id) is None
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(AuditEvent.event_no==body.event_no))==1
+        assert db.scalar(select(AuditEvent.event_type).where(AuditEvent.event_no==body.event_no))=='UNRELATED'

@@ -537,3 +537,7 @@ uniqueness and atomic actor-bound audit protect keyed retries and rollback.
 Old registration replay never suspends a later resumed grant. GLOBAL role writes,
 admin-recipient assignments and actual provider/UI acceptance remain pending.
 See docs/membership-registration.md. Public sample remains read-only.
+
+All4 admin controls now also catch a late AuditEventError when another transaction
+commits the event key after the entry check. They roll back and return409, retaining
+the independent business/session inventories and existing private/read-only guards.

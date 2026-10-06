@@ -16,7 +16,7 @@ from app.models.audit import AuditEvent
 from app.models.core import Project, SoftwareProduct
 from app.models.security import GlobalRoleAssignment, ProjectMembership, SecurityPrincipal, SoftwareMembership
 from app.security_roles import PROJECT_ROLES, SOFTWARE_ROLES
-from app.services.audit import AuditEventService
+from app.services.audit import AuditEventError, AuditEventService
 
 router = APIRouter(prefix='/api/v1/security/admin/memberships', tags=['membership administration'])
 Role = Literal['PROJECT_VIEWER', 'CONTRIBUTOR', 'REVIEWER', 'RELEASE_AUTHORITY',
@@ -102,7 +102,7 @@ def register_membership(scope: Scope, body: RegisterMembership, request: Request
         response = result(row, scope, body, False)
         db.commit()
         return response
-    except IntegrityError:
+    except (IntegrityError, AuditEventError):
         db.rollback()
         raise HTTPException(409, 'membership_registration_conflict')
     except Exception:

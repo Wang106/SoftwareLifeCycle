@@ -58,10 +58,13 @@ The recipient lock is shared with principal enable/disable and own-session contr
 Different admins creating for that recipient serialize; exact original requests
 replay once and other requests recheck uniqueness/identity state after waiting.
 Database UUID and principal/target/role uniqueness provide final protection, including
-cross-recipient UUID collisions. Recipient state check, row insert and audit insert
+cross-recipient UUID collisions. Input/authentication/admin-recipient protection and principal existence checks
+precede replay; replay never bypasses them. Recipient state check, row insert and audit insert
 are in one transaction; any failure rolls back all changes and releases locks.
-A concurrent global audit-key insertion may reject through database uniqueness as
-membership_registration_conflict. Every such conflict leaves no unrecorded grant.
+A concurrent global audit-key insertion may reject through database uniqueness or
+the audit service duplicate check as membership_registration_conflict. Existing
+principal registration/status and membership status controls now also map late
+audit-service duplicate errors to409 after rollback. Every such conflict leaves no unrecorded grant.
 
 Principal disable versus creation has two accepted orders: disable first prevents
 creation with409 recipient_inactive; creation first commits a suspended grant, then

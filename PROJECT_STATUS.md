@@ -2576,3 +2576,7 @@ needed for permission. Replays preserve later role/identity state. GLOBAL role
 creation, administrator lifecycle/recovery and bilingual management UI remain
 pending. Public sample is read-only/OIDC-disabled, schema0019; no actual role
 provisioned. Exact CI/live acceptance will be recorded after validation.
+
+Late audit-service event-key conflicts are now caught by all4 admin controls as
+409 with rollback, including existing principal registration/status and membership
+status. Regression covers the post-entry-check/pre-record committed-key race.
