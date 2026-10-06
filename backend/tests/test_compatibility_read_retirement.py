@@ -104,10 +104,10 @@ def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacemen
     assert ('/api/v1/deployments', 'POST') in paths
     assert ('/api/v1/deployments/{deployment_no}/actual', 'POST') in paths
     assert ('/api/v1/deployments/{deployment_no}/batches', 'POST') in paths
-    from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS
+    from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS
     writes = {(method, path) for path, method in paths if method == 'POST'}
     assert len(WRITE_CONTRACTS) == 14
-    assert writes == set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS)
+    assert writes == set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS)
     schema = app.openapi()
     for path in retired:
         operation = schema['paths'][path]['get']

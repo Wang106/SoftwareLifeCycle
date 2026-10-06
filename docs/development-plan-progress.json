@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.28",
-  "baseline_commit": "df7a5baab6783646bf782bfb077755d25e5cfea1",
+  "as_of_api": "0.18.30",
+  "baseline_commit": "e6b2ecd6bda4c3d893292253206070696bbe5495",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -292,7 +292,18 @@
           "id": "identity-admin",
           "label": "审计身份/授权管理",
           "complete": false,
-          "evidence": []
+          "evidence": [
+            "backend/app/api/membership_admin.py",
+            "backend/tests/test_membership_admin.py",
+            "backend/tests/test_membership_admin_postgres.py",
+            "docs/membership-administration.md"
+          ],
+          "acceptance_pending": [
+            "Audited principal provisioning/disable and role grant creation",
+            "Global admin lifecycle and first-admin recovery policy",
+            "Bounded admin catalogs and bilingual controlled management UI",
+            "Approved provider and actual administrator acceptance"
+          ]
         },
         {
           "id": "identity-real-e2e",

@@ -2,7 +2,7 @@ import inspect
 
 from app.main import app
 from app.security_roles import ALL_ROLES
-from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS
+from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS
 
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -18,7 +18,8 @@ def registered_write_routes():
 
 def test_every_registered_write_route_has_exactly_one_reviewed_contract():
     assert not set(WRITE_CONTRACTS) & set(SESSION_CONTROL_CONTRACTS)
-    assert set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) == registered_write_routes()
+    assert not set(ADMIN_CONTROL_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS))
+    assert set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) == registered_write_routes()
 
 
 def test_current_write_contracts_remain_non_public_and_explicitly_protected():
@@ -70,3 +71,19 @@ def test_session_controls_have_explicit_self_authentication_and_atomic_audit_con
         if any((method, route.path) in SESSION_CONTROL_CONTRACTS for method in getattr(route, 'methods', set())):
             assert 'active_user' in inspect.getsource(route.endpoint)
             assert 'audit(' in inspect.getsource(route.endpoint)
+
+
+def test_admin_status_contract_is_independently_authenticated_audited_and_read_only_blocked():
+    assert len(ADMIN_CONTROL_CONTRACTS) == 1
+    for contract in ADMIN_CONTROL_CONTRACTS.values():
+        assert contract.authentication == 'OIDC_REQUIRED'
+        assert contract.authorization == 'ACTIVE_PLATFORM_ADMIN'
+        assert contract.public_exposure == 'READ_ONLY_BLOCKED'
+        assert contract.audit == 'ATOMIC_APPEND'
+        assert contract.idempotency == 'EVENT_NO_EXACT_REQUEST_AND_ADMIN'
+        assert contract.precondition == 'EXPECTED_MEMBERSHIP_STATUS'
+    for route in app.routes:
+        if any((method, route.path) in ADMIN_CONTROL_CONTRACTS for method in getattr(route, 'methods', set())):
+            source = inspect.getsource(route.endpoint)
+            assert 'active_admin(' in source and 'resolve_actor(' in source
+            assert 'AuditEventService(db).record' in source

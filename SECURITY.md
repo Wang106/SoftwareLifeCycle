@@ -490,3 +490,16 @@ confirmed revocation; outage returns a generic retry result. Session revocation
 leaves the provider bearer token and other sessions valid. Provider-wide logout,
 real-provider/browser acceptance and retention/recovery policy remain pending.
 Full contracts and rollout/rollback boundaries: docs/oidc-browser-auth.md.
+
+## Audited membership status control — API0.18.30
+
+Project/software membership suspension and resumption require active OIDC plus
+an ACTIVE local PLATFORM_ADMIN, rechecked and locked in the mutation transaction.
+They have no auth-disabled or read-only exception. A supplied browser-session
+claim must validate. Event key, request and admin are bound for retries; status
+and append-only audit share one transaction. Existing authorization rows only;
+no global-admin, identity provisioning or role creation endpoint was added.
+Suspension affects subsequent scoped checks, not already-authorized in-flight
+commands, other roles/global-admin overrides or provider tokens. Full audited
+identity/grant administration and real-provider acceptance remain pending.
+See docs/membership-administration.md and its SQLite/PostgreSQL regressions.
