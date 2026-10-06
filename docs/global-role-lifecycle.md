@@ -86,3 +86,15 @@ operator procedure remain pending. No actual bootstrap/recovery is attempted.
 Bilingual management UI and approved-provider/actual-admin browser acceptance remain
 pending. This is another identity-admin slice, not full milestone completion.
 Seven module/plan percentages remain unchanged until their acceptance items pass.
+
+## CI serialization regression
+
+The initial full PostgreSQL run passed all100 new cases but exposed4 prior race
+assertions that assumed concurrent admin transactions passed entry key checks.
+The shared gate now makes the first committed audit visible before the second
+entry check. Cross-recipient same-key requests deterministically reject
+audit_event_conflict409 without state/audit mutation. Principal duplicate UUID/
+subject overlap now uses distinct audit keys to independently prove uniqueness,
+and an additional different-actor same-key case verifies exact audit ownership.
+Late unrelated audit writers still exercise AuditEventError rollback separately.
+These expected semantic changes are explicitly tested; revised full CI is pending.

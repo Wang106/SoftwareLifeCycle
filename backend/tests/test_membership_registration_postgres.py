@@ -80,7 +80,8 @@ def test_global_audit_key_collision_rolls_back_second_recipient_membership(pg,mo
     one,two=overlapping_commands(engine,monkeypatch,
         command(lambda db:register_membership(scope,body,requests[0],db)),
         command(lambda db:register_membership(scope,second,requests[1],db)),hold_after_audit=True)
-    assert one[1]=='created' and two[1]=='error:membership_registration_conflict'
+    # The admin gate makes the committed key visible at the entry replay check.
+    assert one[1]=='created' and two[1]=='error:audit_event_conflict'
     model=ProjectMembership if scope=='PROJECT' else SoftwareMembership
     with Session(engine) as db:
         assert db.get(model,body.membership_id).status=='SUSPENDED'
