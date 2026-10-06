@@ -503,3 +503,15 @@ Suspension affects subsequent scoped checks, not already-authorized in-flight
 commands, other roles/global-admin overrides or provider tokens. Full audited
 identity/grant administration and real-provider acceptance remain pending.
 See docs/membership-administration.md and its SQLite/PostgreSQL regressions.
+
+## Private administrator grant reads — API0.18.31
+
+Catalog/detail/history require ACTIVE local PLATFORM_ADMIN and OIDC on every
+request; AUDITOR and scoped business roles are insufficient. Read-only mode allows
+these authenticated reads but never weakens disabled-mode refusal. Scalar SQL
+projections and private/no-store responses exclude credential/provider/email
+fields, arbitrary audit JSON and unbounded child arrays. Browser-session claims,
+if supplied, must be current and token-bound. History is explicitly limited to
+owned MEMBERSHIP_STATUS_CHANGED events; it is not complete identity history.
+Read-committed statements and in-flight reads are not retroactively revoked.
+See docs/admin-grant-reads.md. Public OIDC remains disabled; no grants were created.
