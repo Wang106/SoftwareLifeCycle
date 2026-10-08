@@ -389,7 +389,7 @@ test('project and software exact histories accept owned targets and nullable leg
  for(const scope of ['PROJECT','SOFTWARE']){
   const detail={...f.row,scope,target:{id,code:'OWNED',name:'Owned target'}};
   const history={scope,grant_id:id,current_status:'ACTIVE',coverage:'MEMBERSHIP_STATUS_CHANGED_ONLY',
-   total:1,limit:10,offset:10,next_offset:null,items:[{...statusEvent(),expected_status:null,status:null,
+   total:11,limit:10,offset:10,next_offset:null,items:[{...statusEvent(),expected_status:null,status:null,
     actor_principal_id:null,actor_display_name:null,reason:null,reason_truncated:false}]};
   const result=await readAdminGrantDetail(f.config.session,f.encrypted,scope,id,10,detailFetcher(f,{scope,detail,history}));
   assert.equal(result.state,'ready');assert.equal(result.grant.target.id,id);assert.equal(result.items[0].reason,null);
