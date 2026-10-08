@@ -1,4 +1,6 @@
 import 'server-only';
+import { projectRegistrationReceipt } from './admin-registration-transport';
+import type { RegistrationReview } from './admin-registration-draft';
 
 // Server-only session helpers; OIDC routes opt in with explicit operator configuration.
 export const SESSION_COOKIE = '__Host-slc_session';
@@ -357,3 +359,35 @@ export async function submitGrantStatus(config: SessionConfig, cookie: string | 
   }
   return unknown;
 }
+
+// Only accepts a canonical server-prepared registration review. Backend remains
+// authoritative for PLATFORM_ADMIN, recipients, uniqueness and atomic audit.
+export async function submitAdminRegistration(config: SessionConfig, cookie: string | undefined,
+  review: RegistrationReview, fetcher: typeof fetch = fetch): Promise<{ status: number; value: unknown }> {
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { status: 401, value: { error: 'session_required' } };
+  if (identity.read_only_mode) return { status: 403, value: { error: 'read_only_mode' } };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const result = await privateRequest(config, review.request.path, envelope.token, fetcher,
+    { method: 'POST', body: JSON.stringify(review.request.body) }, envelope.sid);
+  const unknown = { status: 502, value: { error: 'outcome_unknown' } };
+  if (!result) return unknown;
+  if (result.status === 200) {
+    const receipt = projectRegistrationReceipt(result.value, review, true);
+    return receipt ? { status: 200, value: receipt } : unknown;
+  }
+  const denied: Record<number, string> = { 401: 'session_required', 403: 'submission_forbidden',
+    404: 'registration_target_not_found', 422: 'invalid_request' };
+  if (denied[result.status]) return { status: result.status, value: { error: denied[result.status] } };
+  const detail = result.value && typeof result.value === 'object' ?
+    (result.value as Record<string, unknown>).detail : undefined;
+  if (result.status === 409) {
+    const known = ['audit_event_conflict','principal_registration_conflict','global_role_registration_conflict',
+      'membership_registration_conflict','recipient_inactive','recipient_issuer_mismatch','admin_recipient_protected'];
+    return { status: 409, value: { error: typeof detail === 'string' && known.includes(detail) ? detail : 'submission_conflict' } };
+  }
+  if (result.status === 503 && detail === 'configured_issuer_required')
+    return { status: 503, value: { error: 'configured_issuer_required' } };
+  return unknown;
+}
+
