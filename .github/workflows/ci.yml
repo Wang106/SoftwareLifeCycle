@@ -52,6 +52,8 @@ jobs:
           cache-dependency-path: backend/requirements*.txt
       - name: Install pinned backend requirements
         run: python -m pip install -r requirements-dev.txt
+      - name: Verify development progress ledger
+        run: python ../scripts/report_development_plan_progress.py --check
       - name: Validate migration head, SQL and isolated PostgreSQL round trip
         run: python ../scripts/ci/check_migrations.py
       - name: Run complete backend suite with real PostgreSQL

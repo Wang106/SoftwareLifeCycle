@@ -1726,5 +1726,21 @@
   "Subject must contain 1–500 exact printable characters without surrounding whitespace.": "subject 须包含 1–500 个精确可打印字符，前后不得有空白。",
   "Display name must contain 1–200 exact printable characters without surrounding whitespace.": "显示名称须包含 1–200 个精确可打印字符，前后不得有空白。",
   "Role does not belong to the selected scope.": "角色不属于所选作用域。",
-  "Confirm the exact registration before copying.": "复制前请确认精确新增请求。"
+  "Confirm the exact registration before copying.": "复制前请确认精确新增请求。",
+  "A platform administrator cannot receive project or software membership through this operation.": "此操作不能为平台管理员新增项目或软件成员授权。",
+  "Controlled registration is available. Review and confirm the exact request before sending.": "受控注册已开放。发送前请核对并确认精确请求。",
+  "Identity detail reading is not available yet. Keep the exact principal UUID and receipt.": "身份详情读取尚未开放，请保留精确的身份 UUID 和回执。",
+  "New registration UUID and audit number generated. Review all fields before another operation.": "已生成新的注册 UUID 和审计编号。进行下一次操作前请重新核对全部字段。",
+  "Original registration request copied. Copying does not send another operation.": "已复制原注册请求。复制不会再次发送操作。",
+  "Prepare another registration with new identifiers": "使用新编号准备另一项注册",
+  "Registration does not activate the identity or resume the grant. Activation requires a separate audited operation.": "注册不会激活身份或恢复授权。激活需要另行执行经过审计的操作。",
+  "Registration submission is disabled in this environment.": "此环境未启用注册提交。",
+  "Registration submission result": "注册提交结果",
+  "Retry original registration request": "重试原注册请求",
+  "Send confirmed registration request": "发送已确认的注册请求",
+  "The backend requires an approved configured identity issuer before registration.": "注册前需要后端配置已批准的身份提供方。",
+  "The exact registration recipient or target was not found.": "未找到精确的注册接收人或目标。",
+  "The global grant UUID or recipient and role is already registered.": "全局授权 UUID，或接收人与角色组合已经注册。",
+  "The membership UUID or recipient, target and role is already registered.": "成员授权 UUID，或接收人、目标与角色组合已经注册。",
+  "The principal UUID or configured issuer and subject is already registered.": "身份 UUID，或配置的身份提供方与主体组合已经注册。"
 }
