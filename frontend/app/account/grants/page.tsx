@@ -45,6 +45,7 @@ export default async function AdminGrantsPage({ searchParams }: { searchParams: 
     <Localized>{result.state === 'invalid_filter' && <p role="alert"><Localized>{'Invalid grant filters.'}</Localized></p>}</Localized>
     <Localized>{result.state === 'unavailable' && <p role="alert"><Localized>{'Grant information is unavailable. Please retry.'}</Localized></p>}</Localized>
     <Localized>{result.state === 'ready' && <>
+      <p><Link href="/account/grants/new"><Localized>{'Prepare identity or grant registration'}</Localized></Link></p>
       <p><Localized>{'Total grants'}</Localized><Localized>{': '}</Localized><Localized>{result.total}</Localized></p>
       <Localized>{result.items.length === 0 && <p><Localized>{'No grants match these filters.'}</Localized></p>}</Localized>
       <div style={{ overflowX: 'auto' }}><table><thead><tr>
