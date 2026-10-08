@@ -1,0 +1,100 @@
+name: SoftwareLifeCycle deployment
+on:
+  workflow_run:
+    workflows: ["SoftwareLifeCycle CI"]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: softwarelifecycle-deployment
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      vars.SLC_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: demo
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RENDER_SERVICE_ID: ${{ vars.RENDER_SERVICE_ID }}
+    steps:
+      - name: Ignore superseded main commits
+        id: head
+        shell: bash
+        run: |
+          current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [ "$current" = "$TARGET_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "Superseded commit; no deployment." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        if: steps.head.outputs.current == 'true'
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Require deployment credentials
+        if: steps.head.outputs.current == 'true'
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$RENDER_API_KEY"
+          test -n "$RENDER_SERVICE_ID"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        if: steps.head.outputs.current == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build tested frontend commit
+        if: steps.head.outputs.current == 'true'
+        working-directory: frontend
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          API_BASE_URL: ""
+          NEXT_PUBLIC_API_BASE_URL: ""
+          NEXT_PUBLIC_API_URL: ""
+        run: |
+          npm ci
+          npm run cf:check
+          npm run cf:build
+      - name: Deploy Cloudflare Worker preserving runtime variables
+        if: steps.head.outputs.current == 'true'
+        working-directory: frontend
+        run: npx wrangler deploy --keep-vars
+      - name: Request Render deploy of the tested commit
+        if: steps.head.outputs.current == 'true'
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          service = os.environ["RENDER_SERVICE_ID"]
+          if not service.startswith("srv-") or not all(c.isalnum() or c == "-" for c in service):
+              raise SystemExit("Invalid Render service ID")
+          request = urllib.request.Request(
+              "https://api.render.com/v1/services/" + service + "/deploys",
+              data=json.dumps({"commitId": os.environ["TARGET_SHA"]}).encode(),
+              headers={"Authorization": "Bearer " + os.environ["RENDER_API_KEY"],
+                       "Content-Type": "application/json"}, method="POST")
+          with urllib.request.urlopen(request, timeout=60) as response:
+              result = json.load(response)
+          deploy = result.get("deploy", result)
+          deploy_id = deploy.get("id")
+          if not deploy_id:
+              raise SystemExit("Render response missing deployment ID")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as report:
+              report.write("Tested commit: " + os.environ["TARGET_SHA"] + "\\n")
+              report.write("Render deployment requested: " + deploy_id + "\\n")
+              report.write("Request acceptance does not prove live deployment or health.\\n")
+          PY

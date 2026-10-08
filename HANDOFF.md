@@ -1,5 +1,11 @@
 # SoftwareLifeCycle Development Handoff
 
+## 当前交接入口 — 2026-10-08（Codex）
+先读 [REQUIREMENTS.md](REQUIREMENTS.md)、[DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)、[部署说明](docs/actions-deployment.md)，再查本文件后部最新验收记录。核对main基线57df4a0dc320b363e76969bb7ef2b9dde420ef3e。旧首部API0.18.29/schema0019已被PR#13验收中的0.18.35/schema0020覆盖。
+下一包：双语授权管理UI；随后批准的提供方/受控目标、首批及全部14真实提交/恢复、更正撤销、运营迁移。36/44=82%；七项计划100/100/20/33/40/20/0，增量0。
+本次未检索到SoftwareLifeCycle_12完整原文；需求整理来源与限制写入REQUIREMENTS。新增CI成功后部署配置尚待凭据、启用变量及提供方自动部署切换验收。当前会话执行器是桌面工作区，通过GitHub连接读写；云端Codex开发任务未创建。历史记录全部保留。
+
+
 ## Handoff identity
 
 - Date: 2026-10-06 (Asia/Shanghai)
