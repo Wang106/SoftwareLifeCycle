@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-08（Asia/Shanghai）；模式：Codex。
-本轮起点main：5cf8798fdac12bd23f42b95e7d17b4cc0f5b23e9；该head完整CI37797183654与Cloudflare成功，首批业务双语提交界面本包exact-head验收待核对。
+本轮代码main：759b94d190407b50c6b90f416ebfb953bf7f875f（PR#28）；最终feature完整CI37802955859成功，文档后最新main/提供方须核对。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -291,3 +291,15 @@ Snapshot/实际报告/Batch双语发送、原审计查询和明确原请求重�
 69页面/API代码0.18.36/schema0020不变，后台/schema未改。公共样例只读/OIDC及所有提交默认关闭；未配置实际变量/秘密/身份/授权、不重试被拒绝浏览器访问。真实管理员/浏览器/提供方、内网安装、后台部署/版本未验收；Render工作区未选择、SSO待定、人员用户后续自定、Windows/无Docker/系统架构未确认。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量全部0。模拟界面回归不替代真实身份及恢复验收。14业务、2自身会话、6管理员、离线操作分计。原SoftwareLifeCycle_12全文未取得。
 下一包推进Approval Action/Release Decision的固定提交通道与精确原审计恢复契约，继承冻结请求、未知结果和原子审计边界，公开环境默认关闭；再接双语界面，逐步覆盖其余11业务命令。批准身份/内网真实验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移仍待完成，VIN最后。
+
+
+## PR#28 验收 — 2026-10-08（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/28 已合并，代码main 759b94d190407b50c6b90f416ebfb953bf7f875f，最终feature fffe74f1a437d3fcb18a8d52e896be1a6559c33c；起点 5cf8798fdac12bd23f42b95e7d17b4cc0f5b23e9。
+exact-head完整CI37802955859三个任务成功：2071后端、172 PostgreSQL-module cases（不是全部真实PG总数）、无skip；802前端（原777，新增20组件事件/双语结果回归、4页面能力门禁及1新结果组件本地化覆盖=25）。0020单迁移头、SQL、隔离PostgreSQL升降级往返、进度--check、类型检查、Next/Worker生产构建及中英文禁用认证SSR全部通过。后端113399660155、前端113399660461、acceptance113403554017成功。两条首批路由GET405/POST禁用503、private/no-store。Cloudflare feature Preview成功，build5b808204-972c-46f9-971c-a8f70447431d；无新增测试失败，首次feature完整通过后合并。
+Snapshot/实际报告/Batch双语发送、原审计查询和明确原请求重试已接入 /commands；结果组件显示原子审计确认的原应用值及精确业务/审计链接。页面能力来自独立firstSubmissionConfigured和唯一当前USER会话，只读明确false才可发送；只读切换可查询自己的原记录。门禁默认关闭，没有实际环境配置。
+本轮仅前端及文档变更，无后台/schema变更；69页面/API代码0.18.36/schema0020不变。双击、发送/查询互锁、过期确认/发送、复制锁、目标/查询/能力刷新、unknown后拒绝、只读恢复、原字节重试、精确三类回执/独立新标签链接均有模拟回归。没有自动重试或当前状态/replayed推断。仅confirmed或首次明确rejected可新请求；查询缺失仍unknown。去除query组件key以保留同页已尝试控制器，未发送预览随query变化失效。
+恢复仅当前组件内存；卸载/刷新/跨会话仍会丢失，beforeunload对应用内其他路由不保证提醒，跨会话导入待实现。没有实际提供方/管理员/浏览器/API在线探针或内网安装；公共样例只读、OIDC及所有提交默认关闭，未配置真实变量/身份/授权/秘密，不重试被拒绝的浏览器访问。Render工作区未选择、后台部署/版本未核验；SSO/人员/Windows无Docker/系统架构保持待定。
+代码main的自动CI与Cloudflare在本记录时尚未完成验收；此文档提交后的最新main精确head另核对，不将feature Preview当成main部署。Actions部署独立门控保持关闭；提供方自动构建不证明Actions门禁/凭据已通过。后续最新完整CI/提供方证据优先于历史pending记录。
+执行器Mac部分快照，无完整Node依赖；本地新测试Node语法与进度--check通过，完整套件为Actions，无另启独立云端Codex任务。历史交接完整保留，原SoftwareLifeCycle_12全文未取得。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量全部0。首批真实身份提交/恢复/结果及真实双语端到端验收仍未完成，不用模拟回归提升里程碑。14业务、2自身会话、6管理员和离线操作分计。
+下一包Approval Action/Release Decision固定提交通道与精确原审计恢复契约，然后双语发送/结果界面；继续其余11业务命令、批准身份/内网真实验收、跨会话导入恢复、追加更正撤销、无Docker离线安装与运营迁移，VIN最后。契约docs/first-command-submission.md。
