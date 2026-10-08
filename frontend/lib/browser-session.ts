@@ -312,3 +312,47 @@ export async function readAdminGrantDetail(config: SessionConfig, cookie: string
   return { state: 'ready', grant, current_status: data.current_status as 'ACTIVE' | 'SUSPENDED',
     coverage, total: data.total as number, next_offset: data.next_offset as number | null, items };
 }
+
+
+// Server-only transport for an already validated, exact grant status command.
+// No retries: a missing/invalid receipt after POST means the outcome is unknown.
+export type GrantStatusCommand = Readonly<{ scope: 'GLOBAL' | 'PROJECT' | 'SOFTWARE'; grant_id: string;
+  event_no: string; expected_status: 'ACTIVE' | 'SUSPENDED'; status: 'ACTIVE' | 'SUSPENDED'; reason: string }>;
+export async function submitGrantStatus(config: SessionConfig, cookie: string | undefined,
+  command: GrantStatusCommand, fetcher: typeof fetch = fetch): Promise<{ status: number; value: unknown }> {
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { status: 401, value: { error: 'session_required' } };
+  if (identity.read_only_mode) return { status: 403, value: { error: 'read_only_mode' } };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const path = command.scope === 'GLOBAL' ? '/api/v1/security/admin/global-roles/' + command.grant_id + '/status' :
+    '/api/v1/security/admin/memberships/' + command.scope + '/' + command.grant_id + '/status';
+  const body = { event_no: command.event_no, expected_status: command.expected_status,
+    status: command.status, reason: command.reason };
+  // Backend independently checks PLATFORM_ADMIN, active issuer/actor/session,
+  // expected state, actor-bound replay, last-admin protection and atomic audit.
+  const result = await privateRequest(config, path, envelope.token, fetcher,
+    { method: 'POST', body: JSON.stringify(body) }, envelope.sid);
+  const unknown = { status: 502, value: { error: 'outcome_unknown' } };
+  if (!result) return unknown;
+  if (result.status === 200 && result.value && typeof result.value === 'object') {
+    const data = result.value as Record<string, unknown>;
+    const target = command.scope === 'GLOBAL' ? data.grant_id : data.membership_id;
+    if (typeof target !== 'string' || target.toLowerCase() !== command.grant_id || data.scope !== command.scope ||
+        data.audit_event_no !== command.event_no || data.applied_status !== command.status ||
+        !['ACTIVE', 'SUSPENDED'].includes(data.current_status as string) || typeof data.replayed !== 'boolean') return unknown;
+    return { status: 200, value: { grant_id: command.grant_id, scope: command.scope,
+      audit_event_no: command.event_no, applied_status: data.applied_status, current_status: data.current_status,
+      replayed: data.replayed } };
+  }
+  const denied: Record<number, string> = { 401: 'session_required', 403: 'submission_forbidden',
+    404: 'grant_not_found', 422: 'invalid_request' };
+  if (denied[result.status]) return { status: result.status, value: { error: denied[result.status] } };
+  if (result.status === 409) {
+    const detail = result.value && typeof result.value === 'object' ?
+      (result.value as Record<string, unknown>).detail : undefined;
+    const known = ['audit_event_conflict', 'membership_status_conflict', 'global_role_status_conflict',
+      'recipient_inactive', 'recipient_issuer_mismatch', 'last_active_admin_protected'];
+    return { status: 409, value: { error: typeof detail === 'string' && known.includes(detail) ? detail : 'submission_conflict' } };
+  }
+  return unknown;
+}

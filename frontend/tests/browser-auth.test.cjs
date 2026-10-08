@@ -18,7 +18,7 @@ function load(file) {
   });
   return exports;
 }
-const { handleAuth, authConfig, LOGIN_COOKIE } = load('browser-auth');
+const { handleAuth, handleGrantStatus, authConfig, LOGIN_COOKIE } = load('browser-auth');
 const { SESSION_COOKIE, openCookie, sealCookie } = load('browser-session');
 after(() => fs.rmSync(output, { recursive:true, force:true }));
 const origin = 'https://app.example.test';
@@ -405,4 +405,146 @@ test('history permits a full page of bounded Chinese reasons and rejects oversiz
  assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,detailFetcher(f,{history}))).state,'ready');
  assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,
    detailFetcher(f,{history:{...history,extra:'x'.repeat(32768)}}))).state,'unavailable');
+});
+
+const writeEnv = { ...env, GRANT_STATUS_SUBMISSION_MODE:'enabled',
+ GRANT_STATUS_APPROVED_API_BASE_URL:env.API_BASE_URL, GRANT_STATUS_APPROVED_APP_ORIGIN:origin };
+const command = { scope:'PROJECT', grant_id:id, event_no:'grant-state-001',
+ expected_status:'ACTIVE', status:'SUSPENDED', reason:'Reviewed exact grant' };
+function writeRequest(session, body=command, options={}) {
+ return new Request(origin+'/auth/grant-status',{method:options.method||'POST',
+  headers:{Origin:options.origin||origin,'Sec-Fetch-Site':options.site||'same-origin',
+   'Content-Type':options.contentType||'application/json',...(session?{Cookie:session}:{}),...options.headers},
+  ...(options.method==='GET'?{}:{body:options.raw===undefined?JSON.stringify(body):options.raw})});
+}
+async function writeFixture(options={}) {
+ const flow=await start(),login=await complete(flow,{identity:{...identity,read_only_mode:false},...options});
+ return {flow,login,session:cookie(login.response,SESSION_COOKIE)};
+}
+function receipt(body=command,extras={}) {
+ return {membership_id:body.grant_id,scope:body.scope,applied_status:body.status,
+ current_status:body.status,replayed:false,audit_event_no:body.event_no,...extras};
+}
+test('grant submission requires explicit mode and both approved exact targets, without network',async()=>{
+ let calls=0;const never=async()=>{calls++;throw Error('unexpected');};
+ for(const patch of [{GRANT_STATUS_SUBMISSION_MODE:undefined},{GRANT_STATUS_SUBMISSION_MODE:'disabled'},
+  {GRANT_STATUS_SUBMISSION_MODE:'unknown'},{GRANT_STATUS_APPROVED_API_BASE_URL:undefined},
+  {GRANT_STATUS_APPROVED_API_BASE_URL:env.API_BASE_URL+'/'},{GRANT_STATUS_APPROVED_APP_ORIGIN:'https://other.test'},
+  {BROWSER_OIDC_MODE:'disabled'},{BROWSER_SESSION_KEY:'invalid'}]){
+  const response=await handleGrantStatus(writeRequest(),{...writeEnv,...patch},never);
+  assert.equal(response.status,503);privateResponse(response);assert.deepEqual(await response.json(),{error:'grant_submission_disabled'});
+ }
+ const response=await handleGrantStatus(writeRequest(null,command,{method:'GET'}),writeEnv,never);
+ assert.equal(response.status,405);assert.equal(response.headers.get('allow'),'POST');assert.equal(calls,0);
+});
+test('grant submission rejects foreign origin and same-site requests before session lookup',async()=>{
+ let calls=0;const never=async()=>{calls++;};
+ for(const options of [{origin:'https://evil.test'},{site:'cross-site'},{site:'same-site'}]){
+  const response=await handleGrantStatus(writeRequest(null,command,options),writeEnv,never);
+  assert.equal(response.status,403);privateResponse(response);
+ }
+ assert.equal(calls,0);
+});
+test('grant submission validates exact bounded JSON with no client actor, URL or token',async()=>{
+ let calls=0;const never=async()=>{calls++;};
+ for(const patch of [{scope:'global'},{grant_id:'../other'},{event_no:'bad key'},{event_no:'a'.repeat(51)},
+  {expected_status:'SUSPENDED'},{status:'UNKNOWN'},{reason:'short'.slice(0,4)},{reason:'x'.repeat(501)},
+  {reason:'abcde\u0000'},{reason:'abcde\u007f'},{actor_id:id},{token:'secret'},{api_url:'https://evil.test'}]){
+  const response=await handleGrantStatus(writeRequest(null,{...command,...patch}),writeEnv,never);
+  assert.equal(response.status,400);privateResponse(response);
+ }
+ for(const raw of ['null','[]','{'])assert.equal((await handleGrantStatus(writeRequest(null,command,{raw}),writeEnv,never)).status,400);
+ assert.equal((await handleGrantStatus(writeRequest(null,command,{contentType:'text/plain'}),writeEnv,never)).status,415);
+ assert.equal((await handleGrantStatus(writeRequest(null,command,{raw:'x'.repeat(8193)}),writeEnv,never)).status,413);
+ assert.equal((await handleGrantStatus(writeRequest(null,command,{headers:{'Content-Length':'8193'}}),writeEnv,never)).status,413);
+ assert.equal(calls,0);
+});
+test('grant submission requires current token-bound non-revoked session and unique cookie',async()=>{
+ const {flow,login,session}=await writeFixture();let writes=0;
+ const fetcher=async(url,init)=>{if(init.method==='POST'){writes++;throw Error('unexpected write');}return login.fetcher(url,init);};
+ for(const header of [undefined,session+'; '+session,SESSION_COOKIE+'=invalid']){
+  const response=await handleGrantStatus(writeRequest(header),writeEnv,fetcher);assert.equal(response.status,401);
+ }
+ for(const row of flow.registry.values())row.revoked=true;
+ assert.equal((await handleGrantStatus(writeRequest(session),writeEnv,fetcher)).status,401);assert.equal(writes,0);
+});
+test('grant submission refuses freshly observed read-only identity without POST',async()=>{
+ const {login,session}=await writeFixture({identity});let writes=0;
+ const fetcher=async(url,init)=>{if(init.method==='POST'){writes++;throw Error('unexpected');}return login.fetcher(url,init);};
+ const response=await handleGrantStatus(writeRequest(session),writeEnv,fetcher);
+ assert.equal(response.status,403);assert.deepEqual(await response.json(),{error:'read_only_mode'});assert.equal(writes,0);
+});
+test('grant submission maps all three exact routes with server-only token and session, projects receipt',async()=>{
+ const {login,session}=await writeFixture();let writes=0;
+ for(const scope of ['GLOBAL','PROJECT','SOFTWARE']){
+  const body={...command,scope,grant_id:id.toUpperCase(),reason:'  Reviewed exact grant  '};
+  const fetcher=async(url,init)=>{
+   if(init.method!=='POST')return login.fetcher(url,init);
+   writes++;assert.equal(url,env.API_BASE_URL+(scope==='GLOBAL'?'/api/v1/security/admin/global-roles/':
+    '/api/v1/security/admin/memberships/'+scope+'/')+id+'/status');
+   assert.equal(init.headers.Authorization,'Bearer '+login.access);assert.match(init.headers['X-Browser-Session'],/^[a-f0-9-]{36}$/);
+   assert.equal(init.redirect,'error');assert.equal(init.cache,'no-store');assert.ok(init.signal);
+   assert.deepEqual(JSON.parse(init.body),{event_no:command.event_no,expected_status:'ACTIVE',status:'SUSPENDED',reason:command.reason});
+   return Response.json(receipt({...command,scope},{...(scope==='GLOBAL'?{grant_id:id}:{}),token:login.access,provider:'private'}));
+  };
+  const response=await handleGrantStatus(writeRequest(session,body),writeEnv,fetcher);assert.equal(response.status,200);privateResponse(response);
+  assert.deepEqual(await response.json(),{grant_id:id,scope,audit_event_no:command.event_no,applied_status:'SUSPENDED',current_status:'SUSPENDED',replayed:false});
+ }
+ assert.equal(writes,3);
+});
+test('grant submission backend denial is authoritative regardless of client grant counts',async()=>{
+ const {login,session}=await writeFixture();
+ for(const [status,error] of [[401,'session_required'],[403,'submission_forbidden'],[404,'grant_not_found'],[422,'invalid_request']]){
+  const fetcher=async(url,init)=>init.method==='POST'?Response.json({detail:'private actor/token error'},{status}):login.fetcher(url,init);
+  const response=await handleGrantStatus(writeRequest(session),writeEnv,fetcher);
+  assert.equal(response.status,status);privateResponse(response);assert.deepEqual(await response.json(),{error});
+ }
+});
+test('grant submission returns only allowlisted conflict reasons',async()=>{
+ const {login,session}=await writeFixture();
+ for(const detail of ['audit_event_conflict','membership_status_conflict','global_role_status_conflict',
+  'recipient_inactive','recipient_issuer_mismatch','last_active_admin_protected','secret provider response']){
+  const fetcher=async(url,init)=>init.method==='POST'?Response.json({detail},{status:409}):login.fetcher(url,init);
+  const response=await handleGrantStatus(writeRequest(session),writeEnv,fetcher);assert.equal(response.status,409);
+  assert.deepEqual(await response.json(),{error:detail==='secret provider response'?'submission_conflict':detail});
+ }
+});
+test('grant submission validates receipt target, scope, key, status and replay flag',async()=>{
+ const {login,session}=await writeFixture();
+ for(const extra of [{membership_id:'00000000-0000-0000-0000-000000000000'},{scope:'SOFTWARE'},
+  {audit_event_no:'other'},{applied_status:'ACTIVE'},{current_status:'INVALID'},{replayed:'true'}]){
+  const fetcher=async(url,init)=>init.method==='POST'?Response.json(receipt(command,extra)):login.fetcher(url,init);
+  const response=await handleGrantStatus(writeRequest(session),writeEnv,fetcher);
+  assert.equal(response.status,502);assert.deepEqual(await response.json(),{error:'outcome_unknown'});
+ }
+});
+test('grant submission uncertainty never automatically retries or changes reviewed event/body',async()=>{
+ const {login,session}=await writeFixture();let writes=0;const bodies=[];
+ const fetcher=async(url,init)=>{
+  if(init.method!=='POST')return login.fetcher(url,init);
+  writes++;bodies.push(init.body);if(writes===1)throw Error('response lost after commit');
+  return Response.json(receipt(command,{replayed:true,current_status:'ACTIVE'}));
+ };
+ const first=await handleGrantStatus(writeRequest(session),writeEnv,fetcher);
+ assert.equal(first.status,502);assert.deepEqual(await first.json(),{error:'outcome_unknown'});assert.equal(writes,1);
+ const second=await handleGrantStatus(writeRequest(session),writeEnv,fetcher);
+ assert.equal(second.status,200);assert.deepEqual(await second.json(),{grant_id:id,scope:'PROJECT',audit_event_no:command.event_no,
+  applied_status:'SUSPENDED',current_status:'ACTIVE',replayed:true});
+ assert.equal(writes,2);assert.equal(bodies[0],bodies[1]);
+});
+test('grant submission malformed, oversized, redirected and server-error receipts mean unknown outcome',async()=>{
+ const {login,session}=await writeFixture();
+ for(const reply of [()=>new Response('bad'),()=>new Response('{',{headers:{'Content-Type':'application/json'}}),
+  ()=>Response.json({detail:'secret'},{status:500}),()=>Response.json({detail:'redirect'},{status:302}),
+  ()=>Response.json({padding:'x'.repeat(16385)}),()=>Response.json(receipt(),{headers:{'Content-Length':'16385'}})]){
+  let writes=0;const fetcher=async(url,init)=>{if(init.method!=='POST')return login.fetcher(url,init);writes++;return reply();};
+  const response=await handleGrantStatus(writeRequest(session),writeEnv,fetcher);assert.equal(response.status,502);
+  privateResponse(response);assert.deepEqual(await response.json(),{error:'outcome_unknown'});assert.equal(writes,1);
+ }
+});
+test('grant submission measures printable reason as Unicode code points',async()=>{
+ const {login,session}=await writeFixture();let writes=0;
+ const fetcher=async(url,init)=>{if(init.method!=='POST')return login.fetcher(url,init);writes++;assert.equal(Array.from(JSON.parse(init.body).reason).length,500);return Response.json(receipt());};
+ const response=await handleGrantStatus(writeRequest(session,{...command,reason:'😀'.repeat(500)}),writeEnv,fetcher);
+ assert.equal(response.status,200);assert.equal(writes,1);
 });
