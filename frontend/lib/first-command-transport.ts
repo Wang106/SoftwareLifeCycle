@@ -46,7 +46,8 @@ export function parseFirstCommand(value: unknown): FirstCommand | null {
     const candidate = { operation, target: d.target, body: b } as FirstCommand;
     const review = commandReview(candidate);
     const target = operation === 'snapshot' ? d.target.trim().toLowerCase() : d.target.trim();
-    return Object.freeze({ operation, target, body: review.draft.payload as FirstCommand['body'] });
+    const command = Object.freeze({ operation, target, body: review.draft.payload as FirstCommand['body'] });
+    return new TextEncoder().encode(JSON.stringify(command)).length <= 8192 ? command : null;
   } catch { return null; }
 }
 export function firstCommandPath(command: FirstCommand): string { return commandReview(command).draft.path; }

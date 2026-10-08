@@ -247,7 +247,8 @@ test('lost write then explicit recovery keeps original key/body and later applie
 test('direct server helper validates operation, target, extra fields and mode before any network',async()=>{
  const {executeFirstCommand}=load('browser-session'),config=await authConfig(env);let calls=0;
  for(const input of [{...f.command('actual'),target:'../evil'},{...f.command('actual'),url:'https://evil'},
-  {...f.command('actual'),operation:'approval'}]){
+  {...f.command('actual'),operation:'approval'},
+  {...f.command('batch'),body:{...f.command('batch').body,note:'😀'.repeat(2200)}}]){
   const result=await executeFirstCommand(config.session,undefined,input,'submit',async()=>{calls++;});assert.equal(result.status,400);
  }
  const badMode=await executeFirstCommand(config.session,undefined,f.command('actual'),'wrong',async()=>{calls++;});

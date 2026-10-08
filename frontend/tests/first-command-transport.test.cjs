@@ -137,3 +137,9 @@ test('checking original audit locks out a simultaneous new write and keeps origi
  assert.equal(s.state.phase,'checking');await s.send(true,async()=>{calls++;});await s.recover(true,async()=>{calls++;});assert.equal(calls,1);
  finish(Response.json(f.receipt(c)));await pending;assert.equal(s.state.phase,'confirmed');
 });
+
+test('shared parser bounds encoded Unicode bytes before a direct server helper or controller can send',()=>{
+ const c=f.command('batch');assert.equal(parse({...c,body:{...c.body,note:'😀'.repeat(2200)}}),null);
+ assert.equal(parse({...c,body:{...c.body,note:'x'.repeat(8192)}}),null);
+ assert.ok(parse({...c,body:{...c.body,note:'😀'.repeat(1000)}}));
+});
