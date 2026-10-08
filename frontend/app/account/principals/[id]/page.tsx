@@ -2,7 +2,7 @@ import PrincipalStatusPreparation from '../../../../components/principal-status-
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { Localized } from '../../../../components/localized';
-import { authConfig } from '../../../../lib/browser-auth';
+import { authConfig, principalSubmissionConfigured } from '../../../../lib/browser-auth';
 import { readAdminPrincipalDetail, SESSION_COOKIE } from '../../../../lib/browser-session';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +37,7 @@ export default async function PrincipalDetailPage({ params, searchParams }: {
       <p><Localized>{result.principal.admin_principal_protected ? 'Protected administrator identity' : 'No administrator assignment observed'}</Localized></p>
       <p><Localized>{result.principal.issuer_matches_configuration ? 'Matches configuration' : 'Does not match configuration'}</Localized></p>
       <p className="muted"><Localized>{'Issuer matching and administrator protection are read snapshots, not permission to change an identity.'}</Localized></p>
-      <PrincipalStatusPreparation target={{ id: result.principal.id, principalType: result.principal.principal_type,
+      <PrincipalStatusPreparation submissionEnabled={principalSubmissionConfigured(process.env, config) && result.read_only_mode === false} target={{ id: result.principal.id, principalType: result.principal.principal_type,
         status: result.principal.status, historyStatus: result.current_status,
         protectedAdministrator: result.principal.admin_principal_protected,
         issuerMatchesConfiguration: result.principal.issuer_matches_configuration }} />
@@ -64,3 +64,4 @@ export default async function PrincipalDetailPage({ params, searchParams }: {
     </>}</Localized>
   </section></Localized>;
 }
+
