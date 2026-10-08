@@ -1780,5 +1780,8 @@
   "Issuer mismatch is informational; changing local status does not repair provider configuration.": "签发方不匹配仅为参考信息；修改本地状态不会修复提供方配置。",
   "Review the exact identity, status change, reason and audit number.": "请核对精确身份、状态变更、原因及审计编号。",
   "I reviewed the exact identity, status change, session consequences, reason and audit number.": "我已核对精确身份、状态变更、会话影响、原因及审计编号。",
-  "Copy confirmed identity request": "复制已确认的身份请求"
+  "Copy confirmed identity request": "复制已确认的身份请求",
+  "Identity status submission is disabled in this environment.": "此环境未开放身份状态提交。",
+  "The exact identity was not found.": "未找到该精确身份。",
+  "The identity status changed. Review current detail and history.": "身份状态已变化，请核对当前详情和历史。"
 }

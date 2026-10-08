@@ -1,4 +1,5 @@
 # 身份激活／禁用请求准备 — 2026-10-08
+本文保留PR#24准备切片的记录；当前新增默认关闭的代理及原请求重试控制器见 [principal-status-submission.md](principal-status-submission.md)。准备页面尚未接入发送按钮，真实管理员/提供方验收未完成。
 模式：Codex。此包只实现准备、冻结预览、明确确认和复制，不提供发送路由或传输控制器。身份目录与私有读取契约见 [admin-principal-ui.md](admin-principal-ui.md) 和 [admin-principal-reads.md](admin-principal-reads.md)。
 
 精确 UUID 详情页将本地身份类型、状态、独立 history.current_status、管理员保护与 issuer 匹配布尔投影给客户端，不传递 subject、issuer、token、actor 或会话列表。USER 和 SERVICE 使用相同状态端点，ACTIVE→DISABLED、DISABLED→ACTIVE；详情与历史状态不一致时无准备表单，要求刷新。观察到管理员保护时无准备表单，指向独立恢复流程；任何 PLATFORM_ADMIN 关联（包括 SUSPENDED）在后端均受保护。issuer 不匹配仅提示，不增加后端没有的身份状态约束，也不宣称配置已修复。

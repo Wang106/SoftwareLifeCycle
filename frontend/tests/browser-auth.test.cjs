@@ -19,7 +19,7 @@ function load(file) {
   return exports;
 }
 const { handleAuth, handleGrantStatus, handleAdminRegistration, authConfig, grantSubmissionConfigured,
- registrationSubmissionConfigured, LOGIN_COOKIE } = load('browser-auth');
+ registrationSubmissionConfigured, handlePrincipalStatus, principalSubmissionConfigured, LOGIN_COOKIE } = load('browser-auth');
 const { SESSION_COOKIE, openCookie, sealCookie } = load('browser-session');
 after(() => fs.rmSync(output, { recursive:true, force:true }));
 const origin = 'https://app.example.test';
@@ -727,4 +727,136 @@ test('registration page capability uses current identity read-only projection an
   assert.equal(registrationSubmissionConfigured(writeEnv,config)&&!result.read_only_mode,false);
   assert.ok(!JSON.stringify(result).includes('private'));
  }
+});
+
+const principalEnv={...env,PRINCIPAL_STATUS_SUBMISSION_MODE:'enabled',
+ PRINCIPAL_STATUS_APPROVED_API_BASE_URL:env.API_BASE_URL,PRINCIPAL_STATUS_APPROVED_APP_ORIGIN:origin};
+const statusCommand={principal_id:newId,event_no:'ADM-STATUS-1',expected_status:'ACTIVE',status:'DISABLED',reason:'Controlled identity reason'};
+function principalRequest(session,body=statusCommand,options={}){return new Request(origin+'/auth/principal-status',writeRequest(session,body,options));}
+function principalReceipt(body=statusCommand,extra={}){return {principal_id:body.principal_id.toLowerCase(),audit_event_no:body.event_no,
+ applied_status:body.status,current_status:body.status,replayed:false,revoked_browser_sessions:body.status==='DISABLED'?4:0,...extra};}
+test('identity status independent exact gate is disabled by default and POST only',async()=>{
+ let calls=0;const never=async()=>{calls++;throw Error('unexpected');},config=await authConfig(env);
+ assert.equal(principalSubmissionConfigured(principalEnv,config),true);assert.equal(principalSubmissionConfigured(principalEnv,null),false);
+ for(const patch of [{PRINCIPAL_STATUS_SUBMISSION_MODE:undefined},{PRINCIPAL_STATUS_SUBMISSION_MODE:'disabled'},
+  {PRINCIPAL_STATUS_SUBMISSION_MODE:'unknown'},{PRINCIPAL_STATUS_APPROVED_API_BASE_URL:undefined},
+  {PRINCIPAL_STATUS_APPROVED_API_BASE_URL:env.API_BASE_URL+'/'},{PRINCIPAL_STATUS_APPROVED_APP_ORIGIN:origin+'/'},
+  {PRINCIPAL_STATUS_APPROVED_APP_ORIGIN:'https://other.test'},{BROWSER_OIDC_MODE:'disabled'},{BROWSER_SESSION_KEY:'invalid'}]){
+  const response=await handlePrincipalStatus(principalRequest(),{...principalEnv,...patch},never);
+  assert.equal(response.status,503);privateResponse(response);assert.deepEqual(await response.json(),{error:'principal_submission_disabled'});
+ }
+ for(const existing of [writeEnv,registrationEnv])assert.equal((await handlePrincipalStatus(principalRequest(),existing,never)).status,503);
+ const response=await handlePrincipalStatus(principalRequest(null,statusCommand,{method:'GET'}),principalEnv,never);
+ assert.equal(response.status,405);assert.equal(response.headers.get('allow'),'POST');assert.equal(calls,0);
+});
+test('identity status origin, exact fields, Unicode and size validation precede session lookup',async()=>{
+ let calls=0;const never=async()=>{calls++;throw Error('unexpected');};
+ for(const options of [{origin:'https://evil.test'},{site:'cross-site'},{site:'same-site'},{headers:{Origin:''}}])
+  assert.equal((await handlePrincipalStatus(principalRequest(null,statusCommand,options),principalEnv,never)).status,403);
+ for(const patch of [{principal_id:'../evil'},{event_no:' bad '},{event_no:'a'.repeat(51)},{status:'ACTIVE'},
+  {expected_status:'SUSPENDED'},{reason:'four'},{reason:'😀'.repeat(501)},{reason:'reason\ncontrol'},
+  {actor:id},{token:'secret'},{path:'/evil'},{api_url:'https://evil.test'},{principal_type:'USER'},
+  {admin_principal_protected:false},{issuer_matches_configuration:true}]){
+  assert.equal((await handlePrincipalStatus(principalRequest(null,{...statusCommand,...patch}),principalEnv,never)).status,400);
+ }
+ for(const raw of ['null','[]','{}','{'])assert.equal((await handlePrincipalStatus(principalRequest(null,statusCommand,{raw}),principalEnv,never)).status,400);
+ assert.equal((await handlePrincipalStatus(principalRequest(null,statusCommand,{raw:new Uint8Array([255])}),principalEnv,never)).status,400);
+ assert.equal((await handlePrincipalStatus(principalRequest(null,statusCommand,{contentType:'text/plain'}),principalEnv,never)).status,415);
+ for(const options of [{raw:'x'.repeat(8193)},{headers:{'Content-Length':'8193'}}])
+  assert.equal((await handlePrincipalStatus(principalRequest(null,statusCommand,options),principalEnv,never)).status,413);
+ assert.equal(calls,0);
+});
+test('identity status requires unique current token-bound session and fresh writable identity',async()=>{
+ const f=await writeFixture();let writes=0;
+ const noWrite=async(url,init)=>{if(init.method==='POST'){writes++;throw Error('unexpected');}return f.login.fetcher(url,init);};
+ for(const session of [undefined,f.session+'; '+f.session,SESSION_COOKIE+'=invalid'])
+  assert.equal((await handlePrincipalStatus(principalRequest(session),principalEnv,noWrite)).status,401);
+ for(const row of f.flow.registry.values())row.revoked=true;
+ assert.equal((await handlePrincipalStatus(principalRequest(f.session),principalEnv,noWrite)).status,401);
+ const readOnly=await writeFixture({identity});
+ const response=await handlePrincipalStatus(principalRequest(readOnly.session),principalEnv,async(url,init)=>{
+  if(init.method==='POST'){writes++;throw Error('unexpected');}return readOnly.login.fetcher(url,init);
+ });
+ assert.equal(response.status,403);assert.deepEqual(await response.json(),{error:'read_only_mode'});assert.equal(writes,0);
+});
+for(const status of ['ACTIVE','DISABLED'])test('identity status fixed exact route, original body and projected receipt: '+status,async()=>{
+ const f=await writeFixture(),body={...statusCommand,principal_id:newId.toUpperCase(),
+  expected_status:status==='ACTIVE'?'DISABLED':'ACTIVE',status,reason:'😀'.repeat(500)};let writes=0;
+ const response=await handlePrincipalStatus(principalRequest(f.session,body),principalEnv,async(url,init)=>{
+  if(init.method!=='POST')return f.login.fetcher(url,init);
+  writes++;assert.equal(url,env.API_BASE_URL+'/api/v1/security/admin/principals/'+newId+'/status');
+  assert.equal(init.headers.Authorization,'Bearer '+f.login.access);assert.match(init.headers['X-Browser-Session'],/^[a-f0-9-]{36}$/);
+  assert.equal(init.redirect,'error');assert.equal(init.cache,'no-store');assert.ok(init.signal);
+  assert.deepEqual(JSON.parse(init.body),{event_no:body.event_no,expected_status:body.expected_status,status:body.status,reason:body.reason});
+  return Response.json(principalReceipt(body,{principal_id:newId.toUpperCase(),replayed:true,
+   current_status:body.expected_status,token:'private',subject:'private',issuer:'private'}));
+ });
+ assert.equal(response.status,200);privateResponse(response);
+ assert.deepEqual(await response.json(),principalReceipt(body,{replayed:true,current_status:body.expected_status}));assert.equal(writes,1);
+});
+test('identity status backend denial is authoritative and only known details are disclosed',async()=>{
+ const f=await writeFixture();
+ for(const [status,detail,error] of [[401,'private','session_required'],[403,'private','submission_forbidden'],
+  [404,'principal_not_found','principal_not_found'],[422,'private','invalid_request'],
+  [409,'audit_event_conflict','audit_event_conflict'],[409,'principal_status_conflict','principal_status_conflict'],
+  [409,'admin_principal_protected','admin_principal_protected'],[409,'private','submission_conflict']]){
+  const response=await handlePrincipalStatus(principalRequest(f.session),principalEnv,async(url,init)=>
+   init.method==='POST'?Response.json({detail,token:'private'},{status}):f.login.fetcher(url,init));
+  assert.equal(response.status,status);privateResponse(response);assert.deepEqual(await response.json(),{error});
+ }
+});
+test('identity status unsupported API 404 is unknown rather than a missing UUID',async()=>{
+ const f=await writeFixture();let writes=0;
+ const response=await handlePrincipalStatus(principalRequest(f.session),principalEnv,async(url,init)=>{
+  if(init.method!=='POST')return f.login.fetcher(url,init);writes++;return Response.json({detail:'Not Found'},{status:404});
+ });
+ assert.equal(response.status,502);assert.deepEqual(await response.json(),{error:'outcome_unknown'});assert.equal(writes,1);
+});
+test('identity status validates receipt binding and actual session revocation counts',async()=>{
+ const f=await writeFixture();
+ for(const status of ['ACTIVE','DISABLED']){
+  const body={...statusCommand,expected_status:status==='ACTIVE'?'DISABLED':'ACTIVE',status};
+  for(const extra of [{principal_id:id},{audit_event_no:'OTHER'},{applied_status:body.expected_status},{current_status:'SUSPENDED'},
+   {replayed:1},{revoked_browser_sessions:true},{revoked_browser_sessions:-1},{revoked_browser_sessions:0.5},
+   {revoked_browser_sessions:'4'},{revoked_browser_sessions:Number.MAX_SAFE_INTEGER+1},{revoked_browser_sessions:undefined},
+   ...(status==='ACTIVE'?[{revoked_browser_sessions:1}]:[])]){
+   let writes=0;const response=await handlePrincipalStatus(principalRequest(f.session,body),principalEnv,async(url,init)=>{
+    if(init.method!=='POST')return f.login.fetcher(url,init);writes++;return Response.json(principalReceipt(body,extra));
+   });
+   assert.equal(response.status,502);assert.deepEqual(await response.json(),{error:'outcome_unknown'});assert.equal(writes,1);
+  }
+ }
+});
+test('identity status lost, invalid or oversize response never automatically retries',async()=>{
+ const f=await writeFixture();
+ for(const reply of [()=>{throw Error('lost after commit');},()=>new Response('private'),
+  ()=>new Response('{',{headers:{'Content-Type':'application/json'}}),
+  ()=>new Response(new Uint8Array([255]),{headers:{'Content-Type':'application/json'}}),
+  ()=>Response.json({detail:'private'},{status:500}),()=>Response.json({detail:'private'},{status:302}),
+  ()=>Response.json({detail:'private'},{status:503}),()=>Response.json({padding:'x'.repeat(16385)}),
+  ()=>Response.json(principalReceipt(),{headers:{'Content-Length':'16385'}}),
+  ()=>new Response(new ReadableStream({start(controller){controller.error(Error('interrupted'));}}),{headers:{'Content-Type':'application/json'}})]){
+  let writes=0;const response=await handlePrincipalStatus(principalRequest(f.session),principalEnv,async(url,init)=>{
+   if(init.method!=='POST')return f.login.fetcher(url,init);writes++;return reply();
+  });
+  assert.equal(response.status,502);privateResponse(response);assert.deepEqual(await response.json(),{error:'outcome_unknown'});assert.equal(writes,1);
+ }
+});
+test('identity status explicit replay preserves original key/body and current-status distinction',async()=>{
+ const f=await writeFixture(),bodies=[];
+ const fetcher=async(url,init)=>{
+  if(init.method!=='POST')return f.login.fetcher(url,init);
+  bodies.push(init.body);if(bodies.length===1)throw Error('lost');
+  return Response.json(principalReceipt(statusCommand,{replayed:true,current_status:'ACTIVE'}));
+ };
+ assert.equal((await handlePrincipalStatus(principalRequest(f.session),principalEnv,fetcher)).status,502);assert.equal(bodies.length,1);
+ const response=await handlePrincipalStatus(principalRequest(f.session),principalEnv,fetcher);
+ assert.equal(response.status,200);const body=await response.json();
+ assert.equal(body.applied_status,'DISABLED');assert.equal(body.current_status,'ACTIVE');assert.equal(body.revoked_browser_sessions,4);
+ assert.equal(body.replayed,true);assert.equal(bodies[0],bodies[1]);
+});
+test('identity status direct server helper rejects unvalidated targets before network',async()=>{
+ const {submitPrincipalStatus}=load('browser-session'),config=await authConfig(env);let calls=0;
+ const result=await submitPrincipalStatus(config.session,undefined,{...statusCommand,principal_id:'../evil'},async()=>{calls++;});
+ assert.equal(result.status,400);assert.equal(result.value.error,'invalid_request');assert.equal(calls,0);
 });
