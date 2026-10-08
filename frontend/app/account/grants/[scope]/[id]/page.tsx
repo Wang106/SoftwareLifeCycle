@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import GrantStatusPreparation from '../../../../../components/grant-status-preparation';
 import { cookies } from 'next/headers';
 import { Localized } from '../../../../../components/localized';
 import { authConfig } from '../../../../../lib/browser-auth';
@@ -39,6 +40,10 @@ export default async function GrantDetailPage({ params, searchParams }: {
         <Localized>{result.grant.target.name}</Localized><Localized>{' · '}</Localized><Localized>{result.grant.target.id}</Localized></p>}</Localized>
       <p><Localized>{'Grant status'}</Localized><Localized>{': '}</Localized><Localized>{result.grant.status}</Localized></p>
       <p><Localized>{'Effective grant'}</Localized><Localized>{': '}</Localized><Localized>{result.grant.effective ? 'Effective' : 'Not effective'}</Localized></p>
+      <GrantStatusPreparation key={[result.grant.scope, result.grant.id, result.grant.principal.id,
+        result.grant.role, result.grant.status, result.current_status].join(':')}
+        target={{ id: result.grant.id, scope: result.grant.scope, status: result.grant.status,
+          historyStatus: result.current_status, role: result.grant.role, principalId: result.grant.principal.id }} />
       <h2><Localized>{'Status change history'}</Localized></h2>
       <p><Localized>{'History read status'}</Localized><Localized>{': '}</Localized><Localized>{result.current_status}</Localized></p>
       <p className="muted"><Localized>{'Detail and history are separate reads; concurrent changes may show different statuses.'}</Localized></p>
