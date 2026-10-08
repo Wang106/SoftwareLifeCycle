@@ -3,8 +3,17 @@ const {test,after}=require('node:test'),assert=require('node:assert/strict'),fs=
 const output=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'slc-session-'));
 require('node:child_process').execFileSync(process.execPath,[require.resolve('typescript/bin/tsc'),'lib/browser-session.ts','--target','ES2021','--module','commonjs','--strict','--skipLibCheck','--outDir',output]);
 // Next supplies the server-only bundling guard; this isolated server runtime stubs only that marker.
-const exportsObject={};vm.runInNewContext(fs.readFileSync(path.join(output,'browser-session.js'),'utf8'),{exports:exportsObject,require:name=>{assert.equal(name,'server-only');return {};},crypto:globalThis.crypto,TextEncoder,TextDecoder,Uint8Array,btoa,atob,AbortSignal,fetch,URL});
-const {sessionConfig,establishSession,resolveSession,clearSessionCookie}=exportsObject;
+const modules=new Map();
+function load(file){
+ if(modules.has(file))return modules.get(file);
+ assert.ok(['browser-session','admin-registration-transport','admin-registration-draft'].includes(file));
+ const exports={};modules.set(file,exports);
+ vm.runInNewContext(fs.readFileSync(path.join(output,file+'.js'),'utf8'),{exports,
+  require:name=>name==='server-only'?{}:load(name.replace('./','')),
+  crypto:globalThis.crypto,TextEncoder,TextDecoder,Uint8Array,btoa,atob,AbortSignal,fetch,URL});
+ return exports;
+}
+const {sessionConfig,establishSession,resolveSession,clearSessionCookie}=load('browser-session');
 after(()=>fs.rmSync(output,{recursive:true,force:true}));
 const env={BROWSER_SESSION_MODE:'encrypted',BROWSER_SESSION_KEY:Buffer.alloc(32,7).toString('base64url'),BROWSER_SESSION_ORIGIN:'https://app.example.test',API_BASE_URL:'https://api.example.test'};
 const id='12345678-1234-1234-1234-123456789abc',token='signed-access-token';
@@ -59,3 +68,4 @@ test('identity projection excludes extra secrets; logout clears the identical co
  const a=await issued(backend({...identity,token,principal:{...identity.principal,email:'private@example.test',token}}));assert.ok(a);assert.ok(!JSON.stringify(a.identity).includes(token));assert.ok(!JSON.stringify(a.identity).includes('email'));
  const clear=clearSessionCookie();assert.equal(clear.name,a.cookie.name);assert.equal(clear.path,a.cookie.path);assert.equal(clear.value,'');assert.equal(clear.maxAge,0);
 });
+
