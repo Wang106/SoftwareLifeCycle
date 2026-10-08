@@ -257,3 +257,64 @@ test('legacy cookie requires new login and does not reach backend',async()=>{
  const old=SESSION_COOKIE+'='+await sealCookie(config.session,SESSION_COOKIE,envelope);let calls=0;
  const response=await handleAuth(request('session',{cookie:old}),'session',env,async()=>{calls++;throw Error('unexpected');});assert.equal(response.status,401);assert.equal(calls,0);
 });
+
+const { readAdminGrants } = load('browser-session');
+async function grantFixture() {
+ const flow=await start(), login=await complete(flow), config=await authConfig(env);
+ const encrypted=cookie(login.response,SESSION_COOKIE).split('=')[1];
+ const sid=(await openCookie(config.session,SESSION_COOKIE,encrypted)).sid;
+ const row={id,scope:'GLOBAL',role:'PLATFORM_ADMIN',status:'ACTIVE',effective:true,
+   principal:{id,display_name:'管理员 <script>',status:'ACTIVE',secret:'must-not-render'},
+   target:null,token:'must-not-render'};
+ return {config,encrypted,sid,row,login};
+}
+test('private admin catalog forwards validated session and projects only allowed fields',async()=>{
+ const f=await grantFixture();let seen=0;
+ const fetcher=async(url,init)=>{
+  if(url.includes('/admin/grants?')){
+   seen++;assert.equal(new URL(url).searchParams.get('limit'),'10');
+   assert.equal(init.headers['X-Browser-Session'],f.sid);
+   assert.equal(init.headers.Authorization,'Bearer '+f.login.access);
+   assert.equal(init.cache,'no-store');assert.equal(init.redirect,'error');
+   return Response.json({scope:'GLOBAL',total:11,limit:10,offset:0,next_offset:10,items:[f.row],token:'private'});
+  }return f.login.fetcher(url,init);
+ };
+ const result=await readAdminGrants(f.config.session,f.encrypted,'GLOBAL','ACTIVE',0,fetcher);
+ assert.equal(result.state,'ready');assert.equal(result.total,11);assert.equal(result.next_offset,10);
+ assert.equal(seen,1);assert.ok(!JSON.stringify(result).includes('must-not-render'));
+ assert.equal(result.items[0].principal.display_name,'管理员 <script>');
+});
+test('grant counts cannot override backend administrator denial',async()=>{
+ const f=await grantFixture();
+ for(const [status,state] of [[401,'session_required'],[403,'forbidden'],[500,'unavailable']]){
+  const fetcher=async(url,init)=>url.includes('/admin/grants?')?
+   Response.json({detail:'sensitive denial'},{status}):f.login.fetcher(url,init);
+  assert.equal((await readAdminGrants(f.config.session,f.encrypted,'GLOBAL','',0,fetcher)).state,state);
+ }
+});
+test('invalid filters and absent session do not request the administrator catalog',async()=>{
+ const f=await grantFixture();let calls=0;const never=async()=>{calls++;throw Error('unexpected');};
+ for(const [scope,status,offset] of [['OTHER','',0],['GLOBAL','OTHER',0],['GLOBAL','',-1],['GLOBAL','',100001],['GLOBAL','',0.5]]){
+  assert.equal((await readAdminGrants(f.config.session,f.encrypted,scope,status,offset,never)).state,'invalid_filter');
+ }
+ assert.equal((await readAdminGrants(f.config.session,undefined,'GLOBAL','',0,never)).state,'session_required');
+ assert.equal(calls,0);
+});
+test('revoked browser session prevents administrator reads',async()=>{
+ const f=await grantFixture();let adminCalls=0;
+ const fetcher=async(url,init)=>{if(url.includes('/admin/grants?'))adminCalls++;return f.login.fetcher(url,init);};
+ const session=SESSION_COOKIE+'='+f.encrypted;
+ await handleAuth(request('logout',{cookie:session}),'logout',env,fetcher);
+ assert.equal((await readAdminGrants(f.config.session,f.encrypted,'GLOBAL','',0,fetcher)).state,'session_required');
+ assert.equal(adminCalls,0);
+});
+test('malformed private catalog fails closed without exposing upstream JSON',async()=>{
+ const f=await grantFixture();
+ const good={scope:'GLOBAL',total:1,limit:10,offset:0,next_offset:null,items:[f.row]};
+ for(const body of [{...good,scope:'PROJECT'},{...good,total:-1},{...good,next_offset:2},
+   {...good,items:[{...f.row,target:{id}}]},{...good,items:[{...f.row,principal:{...f.row.principal,status:'UNKNOWN'}}]},
+   {...good,items:[{...f.row,status:'SUSPENDED'}]}, {...good,limit:100}]){
+  const fetcher=async(url,init)=>url.includes('/admin/grants?')?Response.json(body):f.login.fetcher(url,init);
+  assert.equal((await readAdminGrants(f.config.session,f.encrypted,'GLOBAL','ACTIVE',0,fetcher)).state,'unavailable');
+ }
+});

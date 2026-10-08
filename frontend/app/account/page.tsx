@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { Localized } from '../../components/localized';
 import { authConfig } from '../../lib/browser-auth';
@@ -15,6 +16,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       <h1><Localized>{'Account and session'}</Localized></h1>
       <p className="muted"><Localized>{'Use your organization account to sign in.'}</Localized></p>
     </div></div>
+    <p><Link href="/account/grants"><Localized>{'Grant administration'}</Localized></Link></p>
     <section className="panel">
       <Localized>{failed && <p role="alert"><Localized>{'Sign-in failed. Please try again.'}</Localized></p>}</Localized>
       <Localized>{auth === 'logout_failed' && <p role="alert"><Localized>{'Sign-out could not be confirmed. Please retry signing out.'}</Localized></p>}</Localized>
