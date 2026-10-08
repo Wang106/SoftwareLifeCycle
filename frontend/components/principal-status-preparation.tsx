@@ -26,6 +26,8 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
   const previousKey = useRef(targetKey);
   const error = principalPreparationError(target);
   const currentReview = result?.review ?? (review && !error && samePrincipalTarget(review.target, target) ? review : null);
+  const activeReview = useRef(currentReview);
+  activeReview.current = currentReview;
   useEffect(() => {
     if (previousKey.current !== targetKey) {
       previousKey.current = targetKey;
@@ -41,7 +43,7 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
   async function send() {
     if (!currentReview?.confirmed || !capability.current || copyPending.current) return;
     if (!submission.current) {
-      if (currentKey.current !== targetKey || error || !samePrincipalTarget(currentReview.target, target)) return;
+      if (activeReview.current !== currentReview || currentKey.current !== targetKey || error || !samePrincipalTarget(currentReview.target, target)) return;
       submission.current = new PrincipalSubmission(currentReview);
     }
     const controller = submission.current;
@@ -52,16 +54,16 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
   function newRequest() {
     if (copyPending.current || !submission.current ||
       !['confirmed', 'rejected'].includes(submission.current.state.phase)) return;
-    submission.current = null; setResult(null); setReview(null);
+    submission.current = null; activeReview.current = null; setResult(null); setReview(null);
     setEventNo('ADM-' + crypto.randomUUID()); setReason('');
     setMessage('A new audit number was generated. Review current detail and history before preparing another operation.');
   }
   function edit(change: () => void) {
     if (copyPending.current || submission.current) return;
-    change(); setReview(null); setMessage('');
+    change(); activeReview.current = null; setReview(null); setMessage('');
   }
   async function copy() {
-    if (!currentReview?.confirmed || copyPending.current) return;
+    if (!currentReview?.confirmed || copyPending.current || activeReview.current !== currentReview) return;
     const key = targetKey;
     copyPending.current = true; setCopying(true);
     try {
@@ -105,7 +107,7 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
       <Localized>{currentReview && <>
         <pre><code><Localized>{JSON.stringify(currentReview.request, null, 2)}</Localized></code></pre>
         <label><input type="checkbox" checked={currentReview.confirmed} disabled={copying || locked}
-          onChange={event => { if (!copyPending.current && !submission.current && currentKey.current === targetKey) { setReview(confirmPrincipalStatus(currentReview, event.target.checked)); setMessage(''); } }} />
+          onChange={event => { if (!copyPending.current && !submission.current && currentKey.current === targetKey && activeReview.current === currentReview) { setReview(confirmPrincipalStatus(currentReview, event.target.checked)); setMessage(''); } }} />
           <Localized>{'I reviewed the exact identity, status change, session consequences, reason and audit number.'}</Localized></label>
         <button className="btn" type="button" disabled={!currentReview.confirmed || copying} onClick={copy}>
           <Localized>{'Copy confirmed identity request'}</Localized></button>

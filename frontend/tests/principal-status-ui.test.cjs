@@ -195,3 +195,15 @@ test('identity submission errors all have Chinese labels and UI stores no browse
   const source=fs.readFileSync('components/'+file,'utf8');assert.ok(!/localStorage|sessionStorage|Authorization|Bearer|setInterval/.test(source));
  }
 });
+
+test('old send and confirmation handlers cannot revive an edited or newly reviewed request',async()=>{
+ const oldFetch=globalThis.fetch;let calls=0;
+ try{
+  globalThis.fetch=async()=>{calls++;throw Error('unexpected');};
+  const h=harness();h.fill();const click=h.button('Send confirmed identity request').props.onClick;
+  const checkbox=h.nodes().find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange;
+  h.change('reason','A changed controlled reason');await click();checkbox({target:{checked:true}});h.render();
+  assert.equal(h.state(),null);assert.equal(h.button('Copy confirmed identity request'),undefined);
+  h.preview();h.check(true);await click();h.render();assert.equal(calls,0);assert.equal(h.state(),null);
+ }finally{globalThis.fetch=oldFetch;}
+});
