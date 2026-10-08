@@ -1,4 +1,5 @@
 import 'server-only';
+import { parsePrincipalStatusCommand, projectPrincipalStatusReceipt, type PrincipalStatusCommand } from './principal-status-transport';
 import { projectRegistrationReceipt } from './admin-registration-transport';
 import type { RegistrationReview } from './admin-registration-draft';
 
@@ -514,4 +515,38 @@ export async function readAdminPrincipalDetail(config: SessionConfig, cookie: st
   return { state: 'ready', principal, read_only_mode: identity.read_only_mode,
     current_status: data.current_status as 'ACTIVE' | 'DISABLED', total: page.total,
     next_offset: page.next_offset, navigation_limited: page.navigation_limited, items };
+}
+
+// Fixed identity status route; credentials remain in the sealed server-side session.
+export async function submitPrincipalStatus(config: SessionConfig, cookie: string | undefined,
+  input: PrincipalStatusCommand, fetcher: typeof fetch = fetch): Promise<{ status: number; value: unknown }> {
+  const command = parsePrincipalStatusCommand(input);
+  if (!command) return { status: 400, value: { error: 'invalid_request' } };
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { status: 401, value: { error: 'session_required' } };
+  if (identity.read_only_mode) return { status: 403, value: { error: 'read_only_mode' } };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const { principal_id, ...body } = command;
+  // Backend independently verifies current administrator, protected identities,
+  // expected status, actor-bound replay and atomic audit/session revocation.
+  const result = await privateRequest(config, '/api/v1/security/admin/principals/' + principal_id + '/status',
+    envelope.token, fetcher, { method: 'POST', body: JSON.stringify(body) }, envelope.sid);
+  const unknown = { status: 502, value: { error: 'outcome_unknown' } };
+  if (!result) return unknown;
+  if (result.status === 200) {
+    const receipt = projectPrincipalStatusReceipt(result.value, command, true);
+    return receipt ? { status: 200, value: receipt } : unknown;
+  }
+  const denied: Record<number, string> = { 401: 'session_required', 403: 'submission_forbidden', 422: 'invalid_request' };
+  if (denied[result.status]) return { status: result.status, value: { error: denied[result.status] } };
+  const detail = result.value && typeof result.value === 'object' ?
+    (result.value as Record<string, unknown>).detail : undefined;
+  // An unsupported API route is unavailable, not proof that this UUID is absent.
+  if (result.status === 404 && detail === 'principal_not_found')
+    return { status: 404, value: { error: 'principal_not_found' } };
+  if (result.status === 409) {
+    const known = ['audit_event_conflict', 'principal_status_conflict', 'admin_principal_protected'];
+    return { status: 409, value: { error: typeof detail === 'string' && known.includes(detail) ? detail : 'submission_conflict' } };
+  }
+  return unknown;
 }
