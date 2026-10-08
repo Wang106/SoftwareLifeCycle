@@ -277,7 +277,7 @@
   "Each link opens that exact frozen manifest. CURRENT identifies the newest snapshot; it does not establish release approval.": "每个链接打开对应精确冻结清单。CURRENT 标识最新快照，不代表发布审批已通过。",
   "Earlier executions →": "较早执行记录 →",
   "Editing any field discards this review. Preparing a new command generates a new key; preserve the exported request until an uncertain API result has been resolved.": "编辑任何字段都会取消当前审查。准备新命令会生成新键；API 结果未确定前，请保留导出的请求。",
-  "Effective": "生效",
+  "Effective": "有效结果",
   "End-to-end provenance": "端到端来源追溯",
   "Ended": "结束时间",
   "Enter an identifier, name, filename or SHA-256 fragment to search lifecycle records.": "输入标识、名称、文件名或 SHA-256 片段搜索生命周期记录。",
