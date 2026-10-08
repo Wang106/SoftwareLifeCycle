@@ -55,7 +55,7 @@ export default async function AdminGrantsPage({ searchParams }: { searchParams: 
         <td><Localized>{row.principal.display_name}</Localized><br/><Localized>{row.principal.id}</Localized>
           <br/><Localized>{row.principal.status}</Localized></td>
         <td><Localized>{row.target ? row.target.code + ' · ' + row.target.name : 'GLOBAL'}</Localized></td>
-        <td><Localized>{row.role}</Localized><br/><Localized>{row.id}</Localized></td>
+        <td><Localized>{row.role}</Localized><br/><Link href={'/account/grants/' + row.scope + '/' + row.id}><Localized>{row.id}</Localized></Link></td>
         <td><Localized>{row.status}</Localized></td>
         <td><Localized>{row.effective ? 'Effective' : 'Not effective'}</Localized></td>
       </tr>)}</Localized></tbody></table></div>
