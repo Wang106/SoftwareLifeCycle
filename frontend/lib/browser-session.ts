@@ -391,3 +391,127 @@ export async function submitAdminRegistration(config: SessionConfig, cookie: str
   return unknown;
 }
 
+
+export type AdminPrincipal = {
+  id: string; principal_type: 'USER' | 'SERVICE'; display_name: string;
+  status: 'ACTIVE' | 'DISABLED'; created_at: string;
+  issuer_matches_configuration: boolean; admin_principal_protected: boolean;
+};
+export type PrincipalHistoryEvent = Omit<GrantHistoryEvent, 'expected_status' | 'status'> & {
+  expected_status: 'ACTIVE' | 'DISABLED' | null; status: 'ACTIVE' | 'DISABLED' | null;
+};
+type PrincipalReadFailure = { state: 'session_required' | 'forbidden' | 'unavailable' | 'invalid_filter' | 'not_found' };
+type PrincipalPage = { total: number; next_offset: number | null; navigation_limited: boolean };
+export type PrincipalCatalogResult = PrincipalReadFailure |
+  ({ state: 'ready'; read_only_mode: boolean; items: AdminPrincipal[] } & PrincipalPage);
+export type PrincipalDetailResult = PrincipalReadFailure |
+  ({ state: 'ready'; read_only_mode: boolean; principal: AdminPrincipal;
+     current_status: 'ACTIVE' | 'DISABLED'; items: PrincipalHistoryEvent[] } & PrincipalPage);
+
+function principalReadFailure(result: { status: number; value: unknown } | null) {
+  if (result?.status === 404) return result.value && typeof result.value === 'object' &&
+    (result.value as { detail?: unknown }).detail === 'principal_not_found' ? 'not_found' as const : 'unavailable' as const;
+  return adminReadFailure(result);
+}
+function boundedText(value: unknown, max: number): value is string {
+  return typeof value === 'string' && Array.from(value).length <= max;
+}
+function projectPrincipal(value: unknown): AdminPrincipal | null {
+  if (!value || typeof value !== 'object') return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row.id !== 'string' || !uuid.test(row.id) ||
+      !['USER', 'SERVICE'].includes(row.principal_type as string) ||
+      !boundedText(row.display_name, 200) ||
+      !['ACTIVE', 'DISABLED'].includes(row.status as string) ||
+      !boundedText(row.created_at, 64) || !Number.isFinite(Date.parse(row.created_at)) ||
+      typeof row.issuer_matches_configuration !== 'boolean' ||
+      typeof row.admin_principal_protected !== 'boolean' || row.status_history_supported !== true) return null;
+  return { id: row.id.toLowerCase(), principal_type: row.principal_type as 'USER' | 'SERVICE',
+    display_name: row.display_name, status: row.status as 'ACTIVE' | 'DISABLED', created_at: row.created_at,
+    issuer_matches_configuration: row.issuer_matches_configuration,
+    admin_principal_protected: row.admin_principal_protected };
+}
+function principalPage(value: unknown, offset: number): (PrincipalPage & { rows: unknown[] }) | null {
+  if (!value || typeof value !== 'object') return null;
+  const data = value as Record<string, unknown>, total = data.total as number;
+  if (data.limit !== 10 || data.offset !== offset || !Number.isSafeInteger(total) || total < 0 ||
+      !Array.isArray(data.items) || data.items.length !== Math.max(0, Math.min(10, total-offset)) ||
+      data.next_offset !== (offset+10 < total ? offset+10 : null)) return null;
+  // The API may report a next offset beyond its accepted query budget. Keep the last
+  // valid page readable without generating a link that the API will reject.
+  const limited = typeof data.next_offset === 'number' && data.next_offset > 100000;
+  return { total, next_offset: limited ? null : data.next_offset as number | null,
+    navigation_limited: limited, rows: data.items };
+}
+export async function readAdminPrincipals(config: SessionConfig, cookie: string | undefined,
+  principalId: string, kind: string, status: string, offset: number,
+  fetcher: typeof fetch = fetch): Promise<PrincipalCatalogResult> {
+  if ((principalId && !uuid.test(principalId)) || !['', 'USER', 'SERVICE'].includes(kind) ||
+      !['', 'ACTIVE', 'DISABLED'].includes(status) ||
+      !Number.isSafeInteger(offset) || offset < 0 || offset > 100000) return { state: 'invalid_filter' };
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { state: 'session_required' };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const query = new URLSearchParams({ limit: '10', offset: String(offset) });
+  if (principalId) query.set('principal_id', principalId.toLowerCase());
+  if (kind) query.set('principal_type', kind);
+  if (status) query.set('status', status);
+  const result = await privateRequest(config, '/api/v1/security/admin/principals?'+query,
+    envelope.token, fetcher, {}, envelope.sid);
+  if (!result || result.status !== 200) return { state: result?.status === 404 ? 'unavailable' : principalReadFailure(result) };
+  const page = principalPage(result.value, offset);
+  if (!page) return { state: 'unavailable' };
+  const items: AdminPrincipal[] = [], seen = new Set<string>();
+  for (const row of page.rows) {
+    const item = projectPrincipal(row);
+    if (!item || seen.has(item.id) || (principalId && item.id !== principalId.toLowerCase()) ||
+        (kind && item.principal_type !== kind) || (status && item.status !== status)) return { state: 'unavailable' };
+    seen.add(item.id); items.push(item);
+  }
+  return { state: 'ready', read_only_mode: identity.read_only_mode, total: page.total,
+    next_offset: page.next_offset, navigation_limited: page.navigation_limited, items };
+}
+export async function readAdminPrincipalDetail(config: SessionConfig, cookie: string | undefined,
+  id: string, offset: number, fetcher: typeof fetch = fetch): Promise<PrincipalDetailResult> {
+  if (!uuid.test(id) || !Number.isSafeInteger(offset) || offset < 0 || offset > 100000)
+    return { state: 'invalid_filter' };
+  id = id.toLowerCase();
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { state: 'session_required' };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const path = '/api/v1/security/admin/principals/'+id;
+  const detail = await privateRequest(config, path, envelope.token, fetcher, {}, envelope.sid);
+  if (!detail || detail.status !== 200) return { state: principalReadFailure(detail) };
+  const principal = projectPrincipal(detail.value);
+  if (!principal || principal.id !== id) return { state: 'unavailable' };
+  const history = await privateRequest(config, path+'/history?limit=10&offset='+offset,
+    envelope.token, fetcher, {}, envelope.sid, 32768);
+  if (!history || history.status !== 200) return { state: principalReadFailure(history) };
+  const data = history.value as Record<string, unknown> | null;
+  const page = principalPage(data, offset);
+  if (!page || data?.principal_id !== id || data.coverage !== 'PRINCIPAL_STATUS_CHANGED_ONLY' ||
+      !['ACTIVE', 'DISABLED'].includes(data.current_status as string)) return { state: 'unavailable' };
+  const items: PrincipalHistoryEvent[] = [], seen = new Set<string>();
+  for (const value of page.rows) {
+    if (!value || typeof value !== 'object') return { state: 'unavailable' };
+    const row = value as Record<string, unknown>;
+    if (typeof row.id !== 'string' || !uuid.test(row.id) || seen.has(row.id.toLowerCase()) ||
+        !boundedText(row.event_no, 50) || !boundedText(row.action, 100) ||
+        !boundedText(row.occurred_at, 64) || !Number.isFinite(Date.parse(row.occurred_at)) ||
+        !(row.actor_principal_id === null || (typeof row.actor_principal_id === 'string' && uuid.test(row.actor_principal_id))) ||
+        !(row.actor_display_name === null || boundedText(row.actor_display_name, 255)) ||
+        ![null, 'ACTIVE', 'DISABLED'].includes(row.expected_status as string | null) ||
+        ![null, 'ACTIVE', 'DISABLED'].includes(row.status as string | null) ||
+        !(row.reason === null || boundedText(row.reason, 500)) || typeof row.reason_truncated !== 'boolean')
+      return { state: 'unavailable' };
+    seen.add(row.id.toLowerCase());
+    items.push({ id: row.id.toLowerCase(), event_no: row.event_no, action: row.action, occurred_at: row.occurred_at,
+      actor_principal_id: row.actor_principal_id as string | null, actor_display_name: row.actor_display_name as string | null,
+      expected_status: row.expected_status as 'ACTIVE' | 'DISABLED' | null,
+      status: row.status as 'ACTIVE' | 'DISABLED' | null, reason: row.reason as string | null,
+      reason_truncated: row.reason_truncated });
+  }
+  return { state: 'ready', principal, read_only_mode: identity.read_only_mode,
+    current_status: data.current_status as 'ACTIVE' | 'DISABLED', total: page.total,
+    next_offset: page.next_offset, navigation_limited: page.navigation_limited, items };
+}

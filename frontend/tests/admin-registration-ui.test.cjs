@@ -162,7 +162,9 @@ for(const kind of ['PRINCIPAL','GLOBAL','PROJECT','SOFTWARE'])test('bilingual re
   assert.ok(html.includes(locale==='zh'?'回执中观察到的状态':'Status observed in the receipt'));
   assert.ok(html.includes('ADM-UI-ORIGINAL'));assert.ok(html.includes(newId));assert.ok(html.includes(r.initialStatus));
   assert.ok(html.includes(locale==='zh'?'仅在内存中':'only in memory'));
-  if(kind==='PRINCIPAL')assert.ok(html.includes(locale==='zh'?'身份详情读取尚未开放':'Identity detail reading is not available yet'));
+  if(kind==='PRINCIPAL'){assert.ok(html.includes('/account/principals/'+newId+'?offset=0'));
+   assert.ok(html.includes(locale==='zh'?'打开当前身份详情与历史':'Open current identity detail and history'));
+   assert.ok(html.includes('target="_blank"'));assert.ok(html.includes('rel="noopener noreferrer"'));}
   else{assert.ok(html.includes('/account/grants/'+kind+'/'+newId+'?offset=0'));assert.ok(html.includes('target="_blank"'));}
  }
 });

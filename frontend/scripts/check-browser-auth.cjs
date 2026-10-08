@@ -33,6 +33,12 @@ async function main() {
    const registrationHtml=await registration.text();assert.ok(registrationHtml.includes(message));
    assert.ok(!registrationHtml.includes('<form'));assert.ok(!registrationHtml.includes('name="subject"'));
    console.log(`Registration SSR ${language}: 200, private/no-store, unavailable and no identity form`);
+   for(const path of ['/account/principals','/account/principals/12345678-1234-1234-1234-123456789abc']){
+    const privatePage=await fetch(base+path,{headers:{Cookie:`slc_language=${language}`}});
+    assert.equal(privatePage.status,200);assert.ok(privatePage.headers.get('cache-control').includes('no-store'));
+    const privateHtml=await privatePage.text();assert.ok(privateHtml.includes(message));assert.ok(!privateHtml.includes('<form'));
+    console.log(`Identity SSR ${language} ${path}: 200, private/no-store, disabled and no form`);
+   }
   }
   for(const [language,message] of [['zh','登录失败，请重试。'],['en','Sign-in failed. Please try again.']]) {
    const response=await fetch(base+'/account?auth=failed',{headers:{Cookie:`slc_language=${language}`}});assert.equal(response.status,200);assert.ok((await response.text()).includes(message));console.log(`Account error SSR ${language}: translated generic failure`);

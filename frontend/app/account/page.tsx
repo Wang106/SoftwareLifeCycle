@@ -17,6 +17,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       <p className="muted"><Localized>{'Use your organization account to sign in.'}</Localized></p>
     </div></div>
     <p><Link href="/account/grants"><Localized>{'Grant administration'}</Localized></Link></p>
+    <p><Link href="/account/principals"><Localized>{'Identity administration'}</Localized></Link></p>
     <section className="panel">
       <Localized>{failed && <p role="alert"><Localized>{'Sign-in failed. Please try again.'}</Localized></p>}</Localized>
       <Localized>{auth === 'logout_failed' && <p role="alert"><Localized>{'Sign-out could not be confirmed. Please retry signing out.'}</Localized></p>}</Localized>
