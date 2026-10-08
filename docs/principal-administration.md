@@ -98,3 +98,8 @@ The14 domain commands retain their fixed inventory. Two own-session controls and
 three admin controls have separately reviewed inventories. Full identity-admin
 milestone remains open: role creation, global-admin/bootstrap/recovery policy,
 bilingual management UI and approved-provider/actual-administrator acceptance.
+
+
+## API 0.18.36 read foundation
+
+The disabled, ungranted local reference returned by registration can now be looked up by exact UUID in the private administrator principal catalog/detail. Exact status-only history is separately paged; issuer match and administrator protection are advisory snapshots. See [private reads](admin-principal-reads.md). This package adds no status UI, actual account/grant provisioning or live OIDC acceptance.

@@ -1053,3 +1053,8 @@ mutations, reads may run with READ_ONLY_MODE=true; disabled auth always401.
 
 See [read contracts and consistency boundaries](docs/admin-grant-reads.md).
 No schema change; provider/actual browser admin acceptance remains pending.
+
+
+## API 0.18.36 — bounded private administrator principal reads
+
+GET /api/v1/security/admin/principals and exact /{principal_id} / /{principal_id}/history add private SQL projections with current ACTIVE administrator/session checks, strict filters and bounded pagination. Disabled identities without grants are discoverable. No subject/issuer/email/token/raw audit payload is returned. Protection and configured-issuer flags are informational snapshots; status writes retain independent checks. History covers only exact PRINCIPAL_STATUS_CHANGED events and clips reason to500 characters in SQL. See [administrator principal reads](docs/admin-principal-reads.md) for fields, limits and acceptance boundaries. schema0020 unchanged; identity UI/status submission and real environment acceptance remain pending. Code version is not proof of live API deployment.
