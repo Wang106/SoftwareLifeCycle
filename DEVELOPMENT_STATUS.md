@@ -28,7 +28,7 @@
 分母与证据源：ROADMAP.md、docs/development-plan-progress.json。每包运行 python scripts/report_development_plan_progress.py --check。上述比例本轮增量全部为0；文档整合和部署流程配置不能替代真实运营验收。
 
 ## 当前实现快照
-64页面默认中文/可切换英文；14业务请求准备表单完成，真实身份提交未完成。14业务命令有角色、幂等、并发和原子审计基础。另有2会话控制、6管理员写入与2离线管理员操作模式；不能混成“14个总接口”。17/17读取消费者组完成迁移；53固定兼容候选=50退役+3有界保留。
+66页面默认中文/可切换英文；14业务请求准备表单完成，真实身份提交未完成。14业务命令有角色、幂等、并发和原子审计基础。另有2会话控制、6管理员写入与2离线管理员操作模式；不能混成“14个总接口”。17/17读取消费者组完成迁移；53固定兼容候选=50退役+3有界保留。
 
 最新业务代码：PR#13 merge b8b04f778ec1d8a26acb54ada16960cf03db0907；API0.18.35，schema0020_global_role_status。全局/作用域角色生命周期、principal 管理、私有管理员读取、浏览器会话及默认关闭的离线管理员 bootstrap/recovery 已实现。双语授权管理 UI 和真实提供方/管理员/操作员验收尚未完成。
 
@@ -71,3 +71,11 @@ PR CI37724848303完整通过：2021 backend，172 PostgreSQL-module cases，无s
 模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0；36/44=82%，增量0。下一包受控管理操作与真实身份验收；离线打包/内网部署流程还需实现。
 
 用户补充选择Windows或无Docker；具体系统版本/架构待确认。后续按无需Docker离线运行时/依赖及服务脚本规划，不将Linux CI当作Windows运行验收。
+
+## PR#15 验收 — 2026-10-08（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/15 合并为业务main90831dee4f925ffb87994cbf9f6a79432ed29064；feature88d41eddd4f3997a0b83339217f39eef714eb35b。
+PR CI37730215472完整通过：2021后端、172 PostgreSQL-module cases无skip；554前端（新增6行为测试及1页面本地化覆盖）；0020单头、SQL和隔离PG往返，类型检查、生产Worker构建及禁用认证SSR通过。
+main CI37731029374前端通过，后端在本记录生成时仍运行，未宣称exact-main完整CI成功。main Cloudflare check113160310791成功；builde0de8fd1-5d6d-4946-9799-473446acc1ff；Version ID: 01838d87-7301-4d1e-8b4e-ffae3f07a6fc。
+当前66个页面默认中文/English。没有业务API/schema变化、身份提供方/用户/授权配置或管理写入；公共环境保持只读。真实浏览器验收没有执行，本轮没有重新请求上次被拒绝的站点访问。
+docs/internal-browser-acceptance.md记录内网无外网、Windows或无Docker及无需先确认SSO的准备步骤；离线运行时/依赖包与内网部署演练尚未完成。用户需后续确认系统/架构和软件安装条件；角色人员自行分配。
+模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0；36/44=82%，全部增量0。下一包受控管理操作；继续准备无Docker离线部署包及真实内网身份/浏览器验收。
