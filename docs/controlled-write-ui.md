@@ -229,3 +229,6 @@ no-browser-storage descriptions refer to business requests and credentials; the 
 `slc_language` cookie stores only language preference. Switching preserves inputs,
 review/confirmation, request_id and raw exported JSON. No submission capability is
 added. See [interface contract](i18n.md).
+
+## First-command transport foundation — 2026-10-08
+Snapshot/actual/Batch now have independently default-disabled server submission and own-operation atomic-audit recovery proxies, plus a frozen memory controller. The workspace still prepares/copies only; send/recover/result UI is the next package. See [first-command-submission.md](first-command-submission.md). Missing audit remains unknown; recovery never reissues the write. Real identity/target/browser acceptance remains pending.
