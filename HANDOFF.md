@@ -1,7 +1,7 @@
 # SoftwareLifeCycle Development Handoff
 
 ## 当前交接入口 — 2026-10-08（Codex）
-新窗口先读 [AGENTS.md](AGENTS.md)、[START_HERE.md](START_HERE.md)、[REQUIREMENTS.md](REQUIREMENTS.md)、[DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)，再查本文件后部最新验收记录。以 GitHub 最新main为准，本轮代码合并 7f258a1fdcfa9e956cc36818d58ec14407f12213（PR#20）。旧首部API0.18.29/schema0019是历史，目前API0.18.35/schema0020。
+新窗口先读 [AGENTS.md](AGENTS.md)、[START_HERE.md](START_HERE.md)、[REQUIREMENTS.md](REQUIREMENTS.md)、[DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)，再查本文件后部最新验收记录。以 GitHub 最新main为准，本轮代码合并 6ca8987a3ab355f2c51931d6bb76fd736351af4a（PR#21）。旧首部API0.18.29/schema0019是历史，目前API0.18.35/schema0020。
 当前已有双语授权目录/精确详情/状态历史、冻结确认复制和默认关闭的受控发送/原请求重试/内存结果恢复。未知之后的拒绝仍保留未知，状态变化不覆盖冻结请求；跨刷新/跨会话持久恢复与导入未实现。本轮又完成USER/SERVICE及GLOBAL/PROJECT/SOFTWARE新增请求准备，未创建实际对象。默认关闭的注册代理/原请求重试控制器本轮已接入双语页面，发送、回执和页面内存恢复已实现。下一包身份私有读取/精确详情/激活禁用界面，随后批准的独立环境/提供方、首批及全部14真实业务提交、更正撤销、离线部署与运营迁移。
 公共演示只读，OIDC/授权状态提交默认关闭。内部服务器部署尚未开始；SSO待定，人员用户自定，Windows或无Docker的版本/架构待定。离线包、实际身份/浏览器验收未完成。36/44=82%；模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。
 SoftwareLifeCycle_12完整原文未检索到，来源限制见REQUIREMENTS。Actions新部署配置启用/秘密未核验，不能声称覆盖现有提供方自动部署。当前执行器通过GitHub连接服务读写，不等于已创建云端Codex任务。历史记录全部保留。
@@ -2936,3 +2936,12 @@ PR https://github.com/Wang106/SoftwareLifeCycle/pull/20 合并为代码main 7f25
 上一包文档main99ae0ce0完整CI37754787497成功；Cloudflare check113237082561成功，build41d9647e-c7e6-49be-8dcc-4d7e85e4bddd，version438ae4e3-f887-47ba-9ca0-c24e801b10ad；Actions部署37754937731 skipped。本包CI待记录。本轮本地执行器写入/检查未返回结果，未主张本地检查成功；通过GitHub连接服务发布、完整回归和进度 --check 由云端Actions执行，不声称另行创建了云端Codex任务。
 67页面/API0.18.35/schema0020不变；公共只读/OIDC/状态及注册提交默认关闭，未创建实际身份/授权/秘密和未改变配置。内网部署尚未开始，SSO待定、人员用户自定；无实际浏览器/提供方/管理员验收，未绕过先前访问拒绝。36/44=82%；模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。
 下一包身份私有读取/精确详情/激活禁用准备与受控发送；随后批准环境/真实身份验收、首批及全部14业务提交、持久恢复评估、更正撤销、离线安装与运营。
+
+## PR#21 验收 — 2026-10-08（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/21 合并为代码main 6ca8987a3ab355f2c51931d6bb76fd736351af4a；最终feature 2527f40b41894e5d712e4b9f4a8b007e8b82ef29。
+最终head的PR CI37757027774完整成功：2021后端、172 PostgreSQL-module cases，无skip；660前端（新增15组件交互/双语回执回归、1当前只读/配置能力回归、1组件本地化覆盖，共17）；0020单头、SQL与隔离PG往返、类型检查、Worker生产构建、中英文禁用认证SSR通过。云端明确执行 python scripts/report_development_plan_progress.py --check 成功。本地执行器未返回写入/检查结果，未主张本地测试成功。初次CI37756603531的新组件测试遍历器在空节点上递归失败；修正后最终head完整通过。
+代码main CI37758129680前端check113247665536成功；Cloudflare main check113248334699成功，buildfef397a0-17e0-449c-a88e-c6b28c080a1d，versionad570162-7812-4679-9074-ceb783a9ad01。记录时main后端仍运行，未主张exact-main完整CI成功；后续文档提交触发新CI并可能取消旧main检查。上一包文档main99ae0ce0完整CI37754787497成功，Actions部署37754937731 skipped；提供方自动部署不证明新Actions部署门禁/秘密已启用。
+双语身份/三作用域注册发送、精确回执和内存原请求重试已接入；独立注册门禁与当前会话只读投影共用服务器授权边界。确认后冻结原UUID/审计编号/正文、防双击；未知后的拒绝不清除不确定性；成功或首次明确拒绝才可新编号重审。初始DISABLED/SUSPENDED和观察状态/重放分开；注册不自动激活或授予有效权限。复制已尝试请求不声称未写入；授权详情新标签页独立观察，身份读取仍未实现。
+恢复仅在页面内存，beforeunload 提示仅覆盖完整页面离开/刷新，应用内导航或私有页失去访问后卸载仍可能丢失数据；先复制原请求/回执，跨刷新/跨会话恢复/导入未实现。模拟组件事件及SSR不是真实浏览器/提供方/管理员验收；无本轮API实时探针，未绕过先前浏览器拒绝。
+67页面/API0.18.35/schema0020不变。公共只读/OIDC/状态和注册提交保持默认关闭；无实际身份/授权/秘密配置和内网安装。内网部署尚未开始、SSO待定、人员用户自定。36/44=82%；模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0；增量0。
+下一包身份私有读取/精确详情与激活禁用准备/受控发送；之后批准环境/真实身份验收、首批及全部14业务提交、跨会话恢复评估、更正撤销、无Docker离线安装与运营演练。VIN最后另排。

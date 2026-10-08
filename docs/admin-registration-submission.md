@@ -74,3 +74,7 @@ The page shares registrationSubmissionConfigured with POST and cannot use grant-
 settings as registration permission. CI explicitly runs the fixed progress ledger --check.
 Component event-handler tests use an isolated hook runtime, plus real React bilingual SSR;
 these are not actual browser/DOM or provider-backed administrator acceptance.
+
+The beforeunload warning covers full page unload/refresh only. Client-side navigation
+or losing access to the private page may unmount it without that warning. Copy the
+original request/receipt first; durable or cross-session recovery is not implemented.
