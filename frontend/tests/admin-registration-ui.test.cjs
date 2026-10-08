@@ -54,7 +54,7 @@ function harness(enabled=true){
   crypto:globalThis.crypto,window:{addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)},
   navigator:{clipboard:{writeText:async value=>{copies.push(value);}}},Error
  });
- function nodes(node=tree){if(Array.isArray(node))return node.flatMap(nodes);if(!node||typeof node!=='object')return [];
+ function nodes(node){if(arguments.length===0)node=tree;if(Array.isArray(node))return node.flatMap(nodes);if(!node||typeof node!=='object')return [];
   return [node,...nodes(node.props?.children)];}
  function text(node){if(Array.isArray(node))return node.map(text).join('');if(typeof node==='string')return node;
   return node&&typeof node==='object'?text(node.props?.children):'';}
