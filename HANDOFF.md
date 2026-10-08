@@ -2836,3 +2836,11 @@ operations/company migration. VIN remains last with separate scope.
 
 ## 2026-10-08 管理员授权目录切片
 新增 /account/grants；从账户页进入，默认中文/英文、三类范围、授权状态筛选及10条分页。私有服务器会话校验+后端每次管理员判断，失败关闭、上游字段投影；没有管理写入。新增5行为测试，远端CI验证待完成。本地未运行Node/npm测试。下一包精确详情/状态历史及受控管理操作；批准提供方与真实管理员验收仍待。进度36/44=82%；计划100/100/20/33/40/20/0，增量0。见docs/admin-grant-ui.md。
+
+## PR#14 acceptance — 2026-10-08（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/14 已合并，业务main c7e6eaa26bed37638e467baa622848f6d95ebdf2，feature42beb7f644ec4d55bc7e4144e3950bc5545f1fc7。
+PR CI37724848303完整通过：2021 backend，172 PostgreSQL-module cases，无skip；547 frontend（5行为测试与1新增页面本地化覆盖）；迁移0020 SQL/隔离PG往返、类型检查、Worker构建及禁用认证SSR通过。本地JavaScript语法检查通过，未安装项目依赖，未执行本地完整前端套件。
+主线CI37725462179前端通过，后端在记录时仍运行；不能称exact-main完整CI已通过。Cloudflare main check113142934645 success，build81f4dc4a-551e-4cb0-8dd5-c8924ae6c12e，version2752acd1-36f9-4166-9be8-4547a72d110d。Preview077e7ae8-d653-4de7-9fe0-4ca646cc4637成功。
+浏览器预览验收被浏览器安全策略拒绝（该站点访问权限被拒绝），未绕过；未执行真实浏览器/提供方/管理员验收或本轮API实时探针。没有后端业务代码/schema变更，不主张API新增版本部署。
+公司SSO目前不确定；继续默认关闭真实登录/公共只读。Actions新部署流程凭据与启用未核验，已有Cloudflare独立自动部署不能证明受其门禁约束。
+进度36/44=82%，模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0，全部增量0。下一包精确授权详情及状态历史，之后受控管理操作与真实提供方验收。
