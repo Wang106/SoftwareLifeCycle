@@ -27,6 +27,11 @@ async function main() {
    const response=await fetch(base+'/account',{headers:{Cookie:`slc_language=${language}`}});
    assert.equal(response.status,200);assert.ok(response.headers.get('cache-control').includes('no-store'));const html=await response.text();assert.ok(html.includes(message));assert.ok(html.includes(`lang="${htmlLanguage}"`));assert.ok(!html.includes('<form'));
    console.log(`Account SSR ${language}: 200, login unavailable and no login form`);
+   const registration=await fetch(base+'/account/grants/new',{headers:{Cookie:`slc_language=${language}`}});
+   assert.equal(registration.status,200);assert.ok(registration.headers.get('cache-control').includes('no-store'));
+   const registrationHtml=await registration.text();assert.ok(registrationHtml.includes(message));
+   assert.ok(!registrationHtml.includes('<form'));assert.ok(!registrationHtml.includes('name="subject"'));
+   console.log(`Registration SSR ${language}: 200, private/no-store, unavailable and no identity form`);
   }
   for(const [language,message] of [['zh','登录失败，请重试。'],['en','Sign-in failed. Please try again.']]) {
    const response=await fetch(base+'/account?auth=failed',{headers:{Cookie:`slc_language=${language}`}});assert.equal(response.status,200);assert.ok((await response.text()).includes(message));console.log(`Account error SSR ${language}: translated generic failure`);
