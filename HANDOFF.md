@@ -2833,3 +2833,6 @@ Seven modules remain100/100/100/100/89/60/17%; seven development plans remain
 bilingual grant administration UI, then approved target/provider/operator/admin and
 browser acceptance, first3/all14 real submissions/recovery/results, corrections and
 operations/company migration. VIN remains last with separate scope.
+
+## 2026-10-08 管理员授权目录切片
+新增 /account/grants；从账户页进入，默认中文/英文、三类范围、授权状态筛选及10条分页。私有服务器会话校验+后端每次管理员判断，失败关闭、上游字段投影；没有管理写入。新增5行为测试，远端CI验证待完成。本地未运行Node/npm测试。下一包精确详情/状态历史及受控管理操作；批准提供方与真实管理员验收仍待。进度36/44=82%；计划100/100/20/33/40/20/0，增量0。见docs/admin-grant-ui.md。

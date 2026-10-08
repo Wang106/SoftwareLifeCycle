@@ -175,3 +175,62 @@ export async function revokeSession(config: SessionConfig, value: string | undef
   return (result.status === 200 && body.id === envelope.sid && body.status === 'revoked') ||
     (result.status === 404 && body.detail === 'session_not_found');
 }
+
+
+export type AdminGrant = {
+  id: string; scope: 'GLOBAL' | 'PROJECT' | 'SOFTWARE'; role: string;
+  status: 'ACTIVE' | 'SUSPENDED'; effective: boolean;
+  principal: { id: string; display_name: string; status: 'ACTIVE' | 'DISABLED' };
+  target: { id: string; code: string; name: string } | null;
+};
+export type AdminGrantResult =
+  | { state: 'ready'; total: number; next_offset: number | null; items: AdminGrant[] }
+  | { state: 'session_required' | 'forbidden' | 'unavailable' | 'invalid_filter' };
+
+// A global grant count is not authorization. The backend checks PLATFORM_ADMIN
+// for each catalog request, including server-session revocation and exact scope.
+export async function readAdminGrants(config: SessionConfig, cookie: string | undefined,
+  scope: string, status: string, offset: number, fetcher: typeof fetch = fetch): Promise<AdminGrantResult> {
+  if (!['GLOBAL', 'PROJECT', 'SOFTWARE'].includes(scope) ||
+      !['', 'ACTIVE', 'SUSPENDED'].includes(status) ||
+      !Number.isSafeInteger(offset) || offset < 0 || offset > 100000)
+    return { state: 'invalid_filter' };
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { state: 'session_required' };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const query = new URLSearchParams({ scope, limit: '10', offset: String(offset) });
+  if (status) query.set('status', status);
+  const result = await privateRequest(config, '/api/v1/security/admin/grants?' + query,
+    envelope.token, fetcher, {}, envelope.sid);
+  if (!result) return { state: 'unavailable' };
+  if (result.status === 401) return { state: 'session_required' };
+  if (result.status === 403) return { state: 'forbidden' };
+  if (result.status !== 200 || !result.value || typeof result.value !== 'object') return { state: 'unavailable' };
+  const data = result.value as Record<string, unknown>;
+  if (data.scope !== scope || data.limit !== 10 || data.offset !== offset ||
+      !Number.isSafeInteger(data.total) || (data.total as number) < 0 ||
+      !(data.next_offset === null || (Number.isSafeInteger(data.next_offset) &&
+        (data.next_offset as number) === offset + 10 && (data.next_offset as number) <= 100000)) ||
+      !Array.isArray(data.items) || data.items.length > 10 ||
+      data.items.length > (data.total as number)) return { state: 'unavailable' };
+  const items: AdminGrant[] = [];
+  for (const row of data.items) {
+    if (!row || typeof row !== 'object' || typeof row.id !== 'string' || !uuid.test(row.id) ||
+        row.scope !== scope || typeof row.role !== 'string' || row.role.length > 100 ||
+        !['ACTIVE', 'SUSPENDED'].includes(row.status) || (status && row.status !== status) ||
+        typeof row.effective !== 'boolean' || !row.principal ||
+        typeof row.principal.id !== 'string' || !uuid.test(row.principal.id) ||
+        typeof row.principal.display_name !== 'string' ||
+        !['ACTIVE', 'DISABLED'].includes(row.principal.status)) return { state: 'unavailable' };
+    if (scope === 'GLOBAL' ? row.target !== null : (!row.target ||
+        typeof row.target.id !== 'string' || !uuid.test(row.target.id) ||
+        typeof row.target.code !== 'string' || typeof row.target.name !== 'string')) return { state: 'unavailable' };
+    // Explicit projection: never pass a cookie, token or arbitrary backend JSON to React.
+    items.push({ id: row.id, scope: row.scope, role: row.role, status: row.status,
+      effective: row.effective, principal: { id: row.principal.id,
+        display_name: row.principal.display_name, status: row.principal.status },
+      target: row.target === null ? null : { id: row.target.id, code: row.target.code, name: row.target.name } });
+  }
+  return { state: 'ready', total: data.total as number,
+    next_offset: data.next_offset as number | null, items };
+}
