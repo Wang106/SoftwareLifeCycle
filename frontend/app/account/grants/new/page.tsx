@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import AdminRegistrationPreparation from '../../../../components/admin-registration-preparation';
 import { Localized } from '../../../../components/localized';
-import { authConfig } from '../../../../lib/browser-auth';
+import { authConfig, registrationSubmissionConfigured } from '../../../../lib/browser-auth';
 import { readAdminGrants, SESSION_COOKIE } from '../../../../lib/browser-session';
 
 export const dynamic = 'force-dynamic';
@@ -22,6 +22,6 @@ export default async function RegistrationPage() {
     <Localized>{result.state==='forbidden' && <p role="alert"><Localized>{'Administrator permission is required.'}</Localized></p>}</Localized>
     <Localized>{(result.state==='unavailable' || result.state==='invalid_filter') && <p role="alert">
       <Localized>{'Grant information is unavailable. Please retry.'}</Localized></p>}</Localized>
-    <Localized>{result.state==='ready' && <AdminRegistrationPreparation />}</Localized>
+    <Localized>{result.state==='ready' && <AdminRegistrationPreparation submissionEnabled={registrationSubmissionConfigured(process.env,config) && !result.read_only_mode} />}</Localized>
   </section></Localized>;
 }

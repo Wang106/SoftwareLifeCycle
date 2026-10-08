@@ -105,3 +105,25 @@ export class RegistrationSubmission {
     return this.update('unknown', 'outcome_unknown');
   }
 }
+
+export const registrationMessages: Readonly<Record<string,string>> = Object.freeze({
+  registration_submission_disabled: 'Registration submission is disabled in this environment.',
+  cross_origin_request: 'The request origin was rejected.',
+  read_only_mode: 'This environment is read-only.',
+  submission_forbidden: 'Administrator permission is required for this operation.',
+  session_required: 'Sign in again before retrying the original request.',
+  registration_target_not_found: 'The exact registration recipient or target was not found.',
+  invalid_request: 'The submitted request was rejected as invalid.',
+  request_too_large: 'The submitted request is too large.',
+  json_required: 'The server requires a JSON request.',
+  audit_event_conflict: 'The audit number conflicts with an existing operation.',
+  principal_registration_conflict: 'The principal UUID or configured issuer and subject is already registered.',
+  global_role_registration_conflict: 'The global grant UUID or recipient and role is already registered.',
+  membership_registration_conflict: 'The membership UUID or recipient, target and role is already registered.',
+  recipient_inactive: 'The recipient is inactive.',
+  recipient_issuer_mismatch: 'The recipient belongs to a different identity issuer.',
+  admin_recipient_protected: 'A platform administrator cannot receive project or software membership through this operation.',
+  submission_conflict: 'The server reported a submission conflict.',
+  configured_issuer_required: 'The backend requires an approved configured identity issuer before registration.',
+  outcome_unknown: 'The outcome is unknown. Keep the original audit number and exact request.',
+});

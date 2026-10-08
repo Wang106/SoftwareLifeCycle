@@ -186,7 +186,7 @@ export type AdminGrant = {
   target: { id: string; code: string; name: string } | null;
 };
 export type AdminGrantResult =
-  | { state: 'ready'; total: number; next_offset: number | null; items: AdminGrant[] }
+  | { state: 'ready'; read_only_mode: boolean; total: number; next_offset: number | null; items: AdminGrant[] }
   | { state: 'session_required' | 'forbidden' | 'unavailable' | 'invalid_filter' };
 
 // A global grant count is not authorization. The backend checks PLATFORM_ADMIN
@@ -233,7 +233,7 @@ export async function readAdminGrants(config: SessionConfig, cookie: string | un
         display_name: row.principal.display_name, status: row.principal.status },
       target: row.target === null ? null : { id: row.target.id, code: row.target.code, name: row.target.name } });
   }
-  return { state: 'ready', total: data.total as number,
+  return { state: 'ready', read_only_mode: identity.read_only_mode, total: data.total as number,
     next_offset: data.next_offset as number | null, items };
 }
 

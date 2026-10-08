@@ -707,3 +707,24 @@ test('registration explicit replay keeps original body and independent observed 
  const replay=await handleAdminRegistration(registrationRequest(f.session),registrationEnv,fetcher);
  assert.equal(replay.status,200);assert.equal((await replay.json()).applied_status,'DISABLED');assert.equal(bodies[0],bodies[1]);
 });
+
+test('registration page capability uses current identity read-only projection and independent exact gate',async()=>{
+ const config=await authConfig(env);
+ for(const readOnly of [false,true]){
+  const f=await grantFixture();
+  const fetcher=async(url,init)=>{
+   if(url.includes('/admin/grants?'))return Response.json({scope:'GLOBAL',total:0,limit:10,offset:0,
+    next_offset:null,items:[],read_only_mode:!readOnly,token:'private'});
+   const response=await f.login.fetcher(url,init);
+   if(url===env.API_BASE_URL+'/api/v1/security/me'){
+    const data=await response.json();return Response.json({...data,read_only_mode:readOnly});
+   }
+   return response;
+  };
+  const result=await readAdminGrants(f.config.session,f.encrypted,'GLOBAL','',0,fetcher);
+  assert.equal(result.state,'ready');assert.equal(result.read_only_mode,readOnly);
+  assert.equal(registrationSubmissionConfigured(registrationEnv,config)&&!result.read_only_mode,!readOnly);
+  assert.equal(registrationSubmissionConfigured(writeEnv,config)&&!result.read_only_mode,false);
+  assert.ok(!JSON.stringify(result).includes('private'));
+ }
+});

@@ -1,8 +1,9 @@
 # Administrator registration transport
 
-This package adds a default-disabled server proxy and memory-only retry controller.
-The existing bilingual preparation page still only previews, confirms and copies;
-it has no registration send button. UI integration is the next package.
+The default-disabled server proxy and memory-only retry controller are now connected
+to the bilingual registration preparation page. Server-approved configuration and a
+fresh writable identity are required before sending is offered; confirmation is still
+required. The backend separately authorizes administrator access.
 
 ## Independent server gate
 
@@ -54,10 +55,22 @@ retry uses byte-identical original input and audit key. A later rejection or dis
 gate does not erase an earlier uncertain outcome. Recognized pre-commit denials are
 allowlisted; configured_issuer_required is a known backend pre-write 503.
 
-Recovery is only in memory. Page integration, localized result/retry controls,
-cross-refresh/cross-session import and durable recovery remain unimplemented. Tests
+Recovery is only in memory. The page freezes fields and confirmation after the first
+attempt, warns before leaving during sending/unknown outcomes, and permits only explicit
+original-request retries. Unknown outcomes cannot start a new registration. A confirmed
+receipt or authoritative first rejection permits a new UUID/audit key and clears target
+fields for a fresh review. Copying an attempted request does not claim no write occurred.
+Grant details open in a separate tab without replacing the recovery page; principal
+reading is still unavailable. Registration does not activate identities or resume grants.
+Cross-refresh/cross-session import and durable recovery remain unimplemented. Tests
 use simulated identity/session/transport behavior and production disabled-route SSR;
 they do not constitute real provider, browser or administrator acceptance.
 
 API0.18.35/schema0020 unchanged; public sample-only/read-only/OIDC-off boundaries remain.
 No real identities, grants, secrets, internal deployment or accepted SSO are provisioned.
+
+The private catalog projects current identity read_only_mode separately from catalog extras.
+The page shares registrationSubmissionConfigured with POST and cannot use grant-status
+settings as registration permission. CI explicitly runs the fixed progress ledger --check.
+Component event-handler tests use an isolated hook runtime, plus real React bilingual SSR;
+these are not actual browser/DOM or provider-backed administrator acceptance.
