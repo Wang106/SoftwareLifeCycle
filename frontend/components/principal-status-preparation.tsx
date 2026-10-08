@@ -107,7 +107,7 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
       <Localized>{currentReview && <>
         <pre><code><Localized>{JSON.stringify(currentReview.request, null, 2)}</Localized></code></pre>
         <label><input type="checkbox" checked={currentReview.confirmed} disabled={copying || locked}
-          onChange={event => { if (!copyPending.current && !submission.current && currentKey.current === targetKey && activeReview.current === currentReview) { setReview(confirmPrincipalStatus(currentReview, event.target.checked)); setMessage(''); } }} />
+          onChange={event => { if (!copyPending.current && !submission.current && currentKey.current === targetKey && activeReview.current === currentReview) { const next = confirmPrincipalStatus(currentReview, event.target.checked); activeReview.current = next; setReview(next); setMessage(''); } }} />
           <Localized>{'I reviewed the exact identity, status change, session consequences, reason and audit number.'}</Localized></label>
         <button className="btn" type="button" disabled={!currentReview.confirmed || copying} onClick={copy}>
           <Localized>{'Copy confirmed identity request'}</Localized></button>

@@ -169,7 +169,8 @@ test('unknown request remains manually copyable after clipboard denial and targe
 });
 test('bilingual uncertainty retains earlier possible commit through a later allowlisted denial',async()=>{
  const c=new PrincipalSubmission(reviewed());await c.send(true,async()=>{throw Error('lost');});
- await c.send(true,async()=>Response.json({error:'admin_principal_protected'},{status:403}));
+ await c.send(true,async()=>Response.json({error:'admin_principal_protected'},{status:409}));
+ assert.equal(c.state.phase,'unknown');assert.equal(c.state.error,'admin_principal_protected');
  for(const locale of ['zh','en']){
   const html=render(locale,React.createElement(Result,{state:c.state}));
   assert.ok(html.includes(locale==='zh'?'此前结果未知的操作可能已经提交':'earlier uncertain operation may have committed'));
