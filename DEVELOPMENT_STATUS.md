@@ -85,3 +85,10 @@ docs/internal-browser-acceptance.md记录内网无外网、Windows或无Docker�
 授权详情新增三类授权暂停/恢复请求准备、审计编号、原因、冻结预览、确认复制；修改撤销确认，详情/历史状态不一致要求刷新。不发送API、配置身份、创建授权或改变公共只读。见docs/grant-status-preparation.md。内网离线交付尚未实现/演练。
 前一轮最新main fccfebbe 的CI37731248767成功；Actions部署37732030805/37731380870 skipped，不能称新部署门禁已启用。
 本轮CI待验证；无业务API/schema变更。模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0；36/44=82%，全部增量0。
+
+## PR#16 验收 — 2026-10-08（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/16 合并为业务main406ded58fd231a5b684f43e06d598981183bba96；feature9cb4dc4ff1d77dd3028ac9de0e0946b44a05b897。
+PR CI37741947718完整成功：2021后端、172 PostgreSQL-module cases无skip；566前端（新增11项准备/SSR测试及1组件本地化覆盖）；0020单头、SQL和隔离PG往返，类型检查、Worker生产构建和禁用认证SSR通过。本地测试JS语法通过，未执行本地完整依赖套件。
+main前端check113197186248通过；Cloudflare check113197634741成功、build6042f26f-341b-410f-bf12-632ea3e73c11、Version ID: fb0e58fa-37bd-4748-beaf-d89bb51fb4b7。记录时main后端仍运行，未宣称exact-main完整CI成功；后续文档提交可触发新的CI。
+内部服务器部署尚未开始；仅有可用内网位置，服务、数据库、身份配置及内网验收均未完成。本轮没有API/schema改动、管理写入、实际账号/授权或内网部署。公共只读/OIDC默认关闭保持。
+实际服务器端提交/结果恢复、授权与身份新增界面、无需Docker的离线安装包/启动脚本、批准提供方/内网真实验收仍待。模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0；36/44=82%，增量0。
