@@ -1,0 +1,34 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
+const source=fs.readFileSync('app/commands/page.tsx','utf8');
+const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+async function page({configured=true,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
+ let cookieReads=0,sessionReads=0;const Workbench=()=>null,exports={};
+ vm.runInNewContext(compiled,{exports,process:{env:{}},require:name=>name==='next/headers'?{cookies:async()=>{cookieReads++;return{getAll:()=>cookies};}}:
+  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured}:
+  name==='../../lib/browser-session'?{SESSION_COOKIE:'__Host-slc_session',resolveSession:async()=>{sessionReads++;return identity;}}:
+  name==='../../components/command-workbench'?{__esModule:true,default:Workbench}:
+  name==='../../components/localized'?{Localized:({children})=>children}:
+  name==='../../lib/command-draft'?{resourceTypes:['RELEASE']}:require(name)});
+ const tree=await exports.default({searchParams:Promise.resolve(query)});
+ function nodes(n){return Array.isArray(n)?n.flatMap(nodes):n&&typeof n==='object'?[n,...nodes(n.props?.children)]:[];}
+ return {component:nodes(tree).find(n=>n.type===Workbench),cookieReads,sessionReads};
+}
+test('server gate defaults closed without a session or approved first-command configuration',async()=>{
+ const disabled=await page({configured:false});assert.equal(disabled.cookieReads,0);assert.equal(disabled.sessionReads,0);
+ assert.equal(disabled.component.props.submissionEnabled,false);assert.equal(disabled.component.props.recoveryEnabled,false);
+ const missing=await page({identity:null});assert.equal(missing.component.props.submissionEnabled,false);assert.equal(missing.component.props.recoveryEnabled,false);
+});
+test('server current session read-only projection independently gates submit and recovery',async()=>{
+ for(const read_only_mode of [false,true,undefined]){const r=await page({identity:{read_only_mode,token:'private',principal:{id:'private'}}});
+  assert.equal(r.component.props.submissionEnabled,read_only_mode===false);assert.equal(r.component.props.recoveryEnabled,true);
+  assert.equal(r.sessionReads,1);assert.ok(!JSON.stringify(r.component.props).includes('private'));}
+});
+test('missing or duplicate session cookies never resolve a submission capability',async()=>{
+ for(const cookies of [[],[{value:'one'},{value:'two'}]]){const r=await page({cookies});assert.equal(r.sessionReads,0);assert.equal(r.component.props.submissionEnabled,false);assert.equal(r.component.props.recoveryEnabled,false);}
+});
+test('query updates do not force remount and bounded initial context carries no submission authorization',async()=>{
+ const r=await page({configured:false,query:{operation:'batch',target:'DEP-原始',release:'x'.repeat(37),snapshot:['invalid'],line:'line',submissionEnabled:'true'}});
+ assert.equal(r.component.key,null);assert.equal(r.component.props.initialOperation,'batch');assert.equal(r.component.props.initialTarget,'DEP-原始');
+ assert.equal(r.component.props.initialContext.release,'');assert.equal(r.component.props.initialContext.snapshot,'');assert.equal(r.component.props.submissionEnabled,false);
+});
