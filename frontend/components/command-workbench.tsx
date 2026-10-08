@@ -2,7 +2,9 @@
 import { Localized, LocalizedAttributes } from "./localized";
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import FirstCommandResult from './first-command-result';
+import { FirstSubmission, parseFirstCommand, type FirstState } from '../lib/first-command-transport';
 import { blankFields, confirm, exportRequest, Fields, Operation, prepare, Review, resourceTypes, locationKinds } from '../lib/command-draft';
 
 const labels: Record<Operation, string> = {
@@ -12,15 +14,67 @@ const labels: Record<Operation, string> = {
   delivery: 'Create Delivery Package', distribution: 'Record Distribution', authorization: 'Create Production Authorization',
   impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
-export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext }: {
-  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>;
+export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, submissionEnabled = false, recoveryEnabled = false }: {
+  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; submissionEnabled?: boolean; recoveryEnabled?: boolean;
 }) {
   const [operation, setOperation] = useState<Operation>(initialOperation);
   const [fields, setFields] = useState<Fields>({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
   const [review, setReview] = useState<Review | null>(null);
   const [message, setMessage] = useState('');
   const [copying, setCopying] = useState(false);
+  const controller = useRef<FirstSubmission | null>(null);
+  const [result, setResult] = useState<FirstState | null>(null);
+  const copyPending = useRef(false);
+  const capability = useRef({ submit: submissionEnabled, recover: recoveryEnabled });
+  capability.current = { submit: submissionEnabled, recover: recoveryEnabled };
+  const contextKey = JSON.stringify([initialOperation, initialTarget, initialStep, initialContext]);
+  const currentKey = useRef(contextKey); currentKey.current = contextKey;
+  const previousKey = useRef(contextKey);
+  const currentReview = result?.review ?? (previousKey.current === contextKey ? review : null);
+  const activeReview = useRef(currentReview); activeReview.current = currentReview;
+  const preparation = useRef<{ operation: Operation; fields: Fields } | null>({ operation, fields });
+  preparation.current = { operation, fields };
+  const locked = result !== null;
+  const firstOperation = currentReview && ['snapshot', 'actual', 'batch'].includes(currentReview.draft.operation);
+  useEffect(() => {
+    if (previousKey.current === contextKey) return;
+    previousKey.current = contextKey;
+    if (!controller.current) {
+      setOperation(initialOperation); setFields({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
+      setReview(null); setMessage('');
+    }
+  }, [contextKey]);
+  useEffect(() => {
+    if (!result || !['sending', 'checking', 'unknown'].includes(result.phase)) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [result?.phase]);
+  async function send() {
+    if (!currentReview?.confirmed || !capability.current.submit || copyPending.current || activeReview.current !== currentReview ||
+        (controller.current && controller.current.state.review !== currentReview)) return;
+    if (!controller.current) {
+      if (activeReview.current !== currentReview || currentKey.current !== contextKey) return;
+      try { controller.current = new FirstSubmission(currentReview); }
+      catch { setMessage('The business request is invalid.'); return; }
+    }
+    const pending = controller.current.send(capability.current.submit);
+    setResult(controller.current.state); setMessage(''); setResult(await pending);
+  }
+  async function recover() {
+    if (!controller.current || copyPending.current || !capability.current.recover || controller.current.state.review !== currentReview) return;
+    const pending = controller.current.recover(capability.current.recover);
+    setResult(controller.current.state); setMessage(''); setResult(await pending);
+  }
+  function newRequest() {
+    if (activeReview.current !== currentReview || copyPending.current || (controller.current && controller.current.state.review !== currentReview) || (controller.current && !['confirmed', 'rejected'].includes(controller.current.state.phase))) return;
+    if (!controller.current && (activeReview.current !== currentReview || currentKey.current !== contextKey)) return;
+    controller.current = null; activeReview.current = null; setResult(null); setReview(null); setMessage('');
+    setOperation(initialOperation); setFields({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
+  }
   function edit(name: keyof Fields, value: string) {
+    if (copyPending.current || controller.current) return;
+    activeReview.current = null; preparation.current = null;
     setFields(current => ({ ...current, [name]: value }));
     setReview(null); setMessage('');
   }
@@ -29,25 +83,35 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
       maxLength={maxLength} onChange={event => edit(name, event.target.value)} /></label>;
   }
   async function copy() {
-    if (!review || !review.confirmed || copying) return;
-    setCopying(true);
+    if (!currentReview?.confirmed || copyPending.current || activeReview.current !== currentReview) return;
+    const key = contextKey;
+    copyPending.current = true; setCopying(true);
     try {
-      const text = exportRequest(review);
-      await navigator.clipboard.writeText(text);
-      setMessage('Request copied. No API write was sent. Reuse this exact body/key for a retry.');
-    } catch { setMessage('Clipboard unavailable. Select and copy the reviewed request below. No API write was sent.'); }
-    finally { setCopying(false); }
+      await navigator.clipboard.writeText(exportRequest(currentReview));
+      if (controller.current || currentKey.current === key) setMessage(controller.current ?
+        'Original business request copied. Copying does not send another operation.' :
+        'Request copied. No API write was sent. Reuse this exact body/key for a retry.');
+    } catch {
+      if (controller.current || currentKey.current === key) setMessage('Clipboard unavailable. Select and copy the confirmed request below.');
+    } finally { copyPending.current = false; setCopying(false); }
   }
   return <>
     <section className="panel">
-      <p className="notice"><Localized>{"Request preparation only. This page does not submit commands or authenticate an operator. Business requests and credentials are not saved in browser storage; only the language preference is remembered. Keep the same request ID and content when retrying through your controlled API client."}</Localized></p>
+      <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software and batch submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
       <form className="commandform" onSubmit={event => {
         event.preventDefault();
-        try { setReview(prepare(operation, fields, crypto.randomUUID())); setMessage('Review the target and request before copying.'); }
-        catch (error) { setReview(null); setMessage(error instanceof Error ? error.message : 'Unable to prepare request.'); }
+        if (copyPending.current || controller.current || currentKey.current !== contextKey || activeReview.current ||
+            preparation.current?.fields !== fields || preparation.current?.operation !== operation) return;
+        try {
+          const next = prepare(operation, fields, crypto.randomUUID());
+          if (['snapshot', 'actual', 'batch'].includes(operation) && !parseFirstCommand({ operation,
+            target: fields.target, body: next.draft.payload })) throw Error('The business request is invalid.');
+          activeReview.current = next; setReview(next); setMessage('Review the target and request before copying.'); }
+        catch (error) { activeReview.current = null; setReview(null); setMessage(error instanceof Error ? error.message : 'Unable to prepare request.'); }
       }}>
-        <fieldset disabled={copying} className="commandfields">
+        <fieldset disabled={copying || locked} className="commandfields">
         <label><Localized>{"Command"}</Localized><select value={operation} onChange={event => {
+          if (copyPending.current || controller.current) return; activeReview.current = null; preparation.current = null;
           setOperation(event.target.value as Operation); setFields({ ...blankFields }); setReview(null); setMessage('');
         }}><Localized>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}><Localized>{label}</Localized></option>)}</Localized></select></label>
         <Localized>{input('target', operation === 'deployment' ? 'Authorization UUID' : operation === 'test-release' || operation === 'delivery' ? 'Release UUID' : operation === 'distribution' ? 'Delivery package UUID — exact revision' : operation === 'authorization' ? 'Distribution UUID' : operation === 'resource' ? 'Resource object UUID' : operation === 'impact' ? 'Issue number' : operation === 'acceptance' ? 'SCR number' : operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, ['snapshot','resource','delivery','distribution','authorization','test-release','deployment'].includes(operation) ? 36 : 50)}</Localized>
@@ -164,23 +228,32 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
           <Localized>{input('timestamp', 'Optional time — e.g. 2026-10-01T08:00:00Z', false, 35)}</Localized>
           <p className="muted"><Localized>{"Use an explicit timezone. An omitted time stays null in the request; the API generates it once on success."}</Localized></p>
         </>}</Localized>
-        <button type="submit" disabled={Boolean(review) || copying}><Localized>{"Prepare request"}</Localized></button>
+        <button type="submit" disabled={Boolean(currentReview) || copying || locked}><Localized>{"Prepare request"}</Localized></button>
         </fieldset>
       </form>
       <p role="status" aria-live="polite"><Localized>{message}</Localized></p>
     </section>
-    <Localized>{review && <section className="panel">
-      <h2><Localized>{"Review "}</Localized><Localized>{labels[review.draft.operation]}</Localized></h2>
-      <p><Localized>{"POST "}</Localized><code>{review.draft.path}</code></p>
-      <p><Localized>{"Request ID: "}</Localized><code>{review.draft.payload.request_id}</code></p>
-      <p className="muted"><Localized>{"Editing any field discards this review. Preparing a new command generates a new key; preserve the exported request until an uncertain API result has been resolved."}</Localized></p>
-      <label className="commandconfirm"><input type="checkbox" disabled={copying} checked={review.confirmed}
-        onChange={event => { setReview(confirm(review, event.target.checked)); setMessage(''); }} /><Localized>{" I have reviewed the exact target, evidence, declarations and request content."}</Localized></label>
-      <button type="button" disabled={!review.confirmed || copying} onClick={copy}><Localized>{copying ? 'Copying…' : 'Copy confirmed request'}</Localized></button>
-      <pre className="auditpayload">{review.confirmed ? exportRequest(review) : JSON.stringify(review.draft.payload, null, 2)}</pre>
-      <p><Link href={review.draft.trace}><Localized>{"Review business record / history →"}</Localized></Link><Localized>{" · "}</Localized><Link href={review.draft.audit}><Localized>{"Expected audit event after execution →"}</Localized></Link></p>
-      <button type="button" disabled={copying} onClick={() => { setReview(null); setMessage("Start a new command only after resolving any earlier API result. This will generate a new request ID."); }}><Localized>{"Start a new request"}</Localized></button>
+    <Localized>{currentReview && <section className="panel">
+      <h2><Localized>{"Review "}</Localized><Localized>{labels[currentReview.draft.operation]}</Localized></h2>
+      <p><Localized>{"POST "}</Localized><code>{currentReview.draft.path}</code></p>
+      <p><Localized>{"Request ID: "}</Localized><code>{currentReview.draft.payload.request_id}</code></p>
+      <p className="muted"><Localized>{"Before sending, editing discards the review. After an attempt, the original target, request ID and body are locked. Query the original audit or explicitly retry that exact request; an unknown result cannot be replaced."}</Localized></p>
+      <label className="commandconfirm"><input type="checkbox" disabled={copying || locked} checked={currentReview.confirmed}
+        onChange={event => { if (!copyPending.current && !controller.current && activeReview.current === currentReview && currentKey.current === contextKey) { const next = confirm(currentReview, event.target.checked); activeReview.current = next; setReview(next); setMessage(''); } }} /><Localized>{" I have reviewed the exact target, evidence, declarations and request content."}</Localized></label>
+      <button type="button" disabled={!currentReview.confirmed || copying} onClick={copy}><Localized>{copying ? 'Copying…' : 'Copy confirmed request'}</Localized></button>
+      <Localized>{firstOperation && !result && submissionEnabled && <button type="button" disabled={!currentReview.confirmed || copying} onClick={send}>
+        <Localized>{'Send confirmed business request'}</Localized></button>}</Localized>
+      <Localized>{firstOperation && !submissionEnabled && <p className="notice"><Localized>{'Business command submission is disabled in this environment.'}</Localized></p>}</Localized>
+      <Localized>{result && <FirstCommandResult state={result} />}</Localized>
+      <Localized>{result && ['unknown', 'rejected'].includes(result.phase) && <>
+        <button type="button" disabled={!recoveryEnabled || copying} onClick={recover}><Localized>{'Query original audit without resubmitting'}</Localized></button>
+        <button type="button" disabled={!submissionEnabled || copying} onClick={send}><Localized>{'Retry original business request'}</Localized></button>
+      </>}</Localized>
+      <pre className="auditpayload">{currentReview.confirmed ? exportRequest(currentReview) : JSON.stringify(currentReview.draft.payload, null, 2)}</pre>
+      <p><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={currentReview.draft.trace}><Localized>{"Review business record / history →"}</Localized></Link><Localized>{" · "}</Localized><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={currentReview.draft.audit}><Localized>{"Expected audit event after execution →"}</Localized></Link></p>
+      <Localized>{(!result || ['confirmed', 'rejected'].includes(result.phase)) && <button type="button" disabled={copying} onClick={newRequest}><Localized>{"Start a new request"}</Localized></button>}</Localized>
       <p className="muted"><Localized>{"These links show existing records. A prepared or copied request is not a successful business write. After execution, use the API result identifiers to verify the exact new record and audit event."}</Localized></p>
     </section>}</Localized>
   </>;
 }
+
