@@ -99,7 +99,7 @@ const denials: Readonly<Record<number, readonly FirstError[]>> = {
 };
 export type FirstState = Readonly<{ phase: 'idle' | 'sending' | 'checking' | 'unknown' | 'rejected' | 'confirmed';
   review: Review; command: FirstCommand; error: FirstError | null; receipt: FirstReceipt | null }>;
-async function readResponse(response: Response): Promise<unknown> {
+export async function readCommandResponse(response: Response): Promise<unknown> {
   if (response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json' ||
       Number(response.headers.get('content-length') || '0') > 16384) {
     await response.body?.cancel(); throw Error('invalid_response');
@@ -148,7 +148,7 @@ export class FirstSubmission {
       const response = await fetcher(mode === 'submit' ? '/auth/first-command' : '/auth/first-command-receipt', {
         method: 'POST', body: this.body, headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'same-origin', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(15000) });
-      const value = await readResponse(response);
+      const value = await readCommandResponse(response);
       const receipt = response.status === 200 ? projectFirstReceipt(value, this.current.command) : null;
       if (receipt) { this.uncertain = false; return this.update('confirmed', null, receipt); }
       const error = record(value)?.error;
@@ -158,3 +158,4 @@ export class FirstSubmission {
     this.uncertain = true; return this.update('unknown', 'outcome_unknown');
   }
 }
+
