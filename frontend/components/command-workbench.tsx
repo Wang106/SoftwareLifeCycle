@@ -3,6 +3,8 @@ import { Localized, LocalizedAttributes } from "./localized";
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import GovernanceCommandResult from './governance-command-result';
+import { GovernanceSubmission, parseGovernanceCommand, type GovernanceState } from '../lib/governance-command-transport';
 import FirstCommandResult from './first-command-result';
 import { FirstSubmission, parseFirstCommand, type FirstState } from '../lib/first-command-transport';
 import { blankFields, confirm, exportRequest, Fields, Operation, prepare, Review, resourceTypes, locationKinds } from '../lib/command-draft';
@@ -14,19 +16,19 @@ const labels: Record<Operation, string> = {
   delivery: 'Create Delivery Package', distribution: 'Record Distribution', authorization: 'Create Production Authorization',
   impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
-export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, submissionEnabled = false, recoveryEnabled = false }: {
-  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; submissionEnabled?: boolean; recoveryEnabled?: boolean;
+export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, submissionEnabled = false, recoveryEnabled = false, governanceSubmissionEnabled = false, governanceRecoveryEnabled = false }: {
+  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; submissionEnabled?: boolean; recoveryEnabled?: boolean; governanceSubmissionEnabled?: boolean; governanceRecoveryEnabled?: boolean;
 }) {
   const [operation, setOperation] = useState<Operation>(initialOperation);
   const [fields, setFields] = useState<Fields>({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
   const [review, setReview] = useState<Review | null>(null);
   const [message, setMessage] = useState('');
   const [copying, setCopying] = useState(false);
-  const controller = useRef<FirstSubmission | null>(null);
-  const [result, setResult] = useState<FirstState | null>(null);
+  const controller = useRef<FirstSubmission | GovernanceSubmission | null>(null);
+  const [result, setResult] = useState<FirstState | GovernanceState | null>(null);
   const copyPending = useRef(false);
-  const capability = useRef({ submit: submissionEnabled, recover: recoveryEnabled });
-  capability.current = { submit: submissionEnabled, recover: recoveryEnabled };
+  const capability = useRef({ submit: submissionEnabled, recover: recoveryEnabled, governanceSubmit: governanceSubmissionEnabled, governanceRecover: governanceRecoveryEnabled });
+  capability.current = { submit: submissionEnabled, recover: recoveryEnabled, governanceSubmit: governanceSubmissionEnabled, governanceRecover: governanceRecoveryEnabled };
   const contextKey = JSON.stringify([initialOperation, initialTarget, initialStep, initialContext]);
   const currentKey = useRef(contextKey); currentKey.current = contextKey;
   const previousKey = useRef(contextKey);
@@ -36,6 +38,12 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   preparation.current = { operation, fields };
   const locked = result !== null;
   const firstOperation = currentReview && ['snapshot', 'actual', 'batch'].includes(currentReview.draft.operation);
+  const governanceOperation = currentReview && ['approval', 'decision'].includes(currentReview.draft.operation);
+  const supportedOperation = firstOperation || governanceOperation;
+  const canSubmit = governanceOperation ? governanceSubmissionEnabled : submissionEnabled;
+  const canRecover = governanceOperation ? governanceRecoveryEnabled : recoveryEnabled;
+  const submitCapability = () => governanceOperation ? capability.current.governanceSubmit : capability.current.submit;
+  const recoverCapability = () => governanceOperation ? capability.current.governanceRecover : capability.current.recover;
   useEffect(() => {
     if (previousKey.current === contextKey) return;
     previousKey.current = contextKey;
@@ -51,19 +59,19 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
     return () => window.removeEventListener('beforeunload', warn);
   }, [result?.phase]);
   async function send() {
-    if (!currentReview?.confirmed || !capability.current.submit || copyPending.current || activeReview.current !== currentReview ||
+    if (!currentReview?.confirmed || !submitCapability() || copyPending.current || activeReview.current !== currentReview ||
         (controller.current && controller.current.state.review !== currentReview)) return;
     if (!controller.current) {
       if (activeReview.current !== currentReview || currentKey.current !== contextKey) return;
-      try { controller.current = new FirstSubmission(currentReview); }
+      try { controller.current = governanceOperation ? new GovernanceSubmission(currentReview) : new FirstSubmission(currentReview); }
       catch { setMessage('The business request is invalid.'); return; }
     }
-    const pending = controller.current.send(capability.current.submit);
+    const pending = controller.current.send(submitCapability());
     setResult(controller.current.state); setMessage(''); setResult(await pending);
   }
   async function recover() {
-    if (!controller.current || copyPending.current || !capability.current.recover || controller.current.state.review !== currentReview) return;
-    const pending = controller.current.recover(capability.current.recover);
+    if (!controller.current || copyPending.current || !recoverCapability() || controller.current.state.review !== currentReview) return;
+    const pending = controller.current.recover(recoverCapability());
     setResult(controller.current.state); setMessage(''); setResult(await pending);
   }
   function newRequest() {
@@ -97,7 +105,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   }
   return <>
     <section className="panel">
-      <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software and batch submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
+      <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software, batch, approval action and release decision submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
       <form className="commandform" onSubmit={event => {
         event.preventDefault();
         if (copyPending.current || controller.current || currentKey.current !== contextKey || activeReview.current ||
@@ -105,6 +113,8 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
         try {
           const next = prepare(operation, fields, crypto.randomUUID());
           if (['snapshot', 'actual', 'batch'].includes(operation) && !parseFirstCommand({ operation,
+            target: fields.target, body: next.draft.payload })) throw Error('The business request is invalid.');
+          if (['approval', 'decision'].includes(operation) && !parseGovernanceCommand({ operation,
             target: fields.target, body: next.draft.payload })) throw Error('The business request is invalid.');
           activeReview.current = next; setReview(next); setMessage('Review the target and request before copying.'); }
         catch (error) { activeReview.current = null; setReview(null); setMessage(error instanceof Error ? error.message : 'Unable to prepare request.'); }
@@ -241,13 +251,13 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
       <label className="commandconfirm"><input type="checkbox" disabled={copying || locked} checked={currentReview.confirmed}
         onChange={event => { if (!copyPending.current && !controller.current && activeReview.current === currentReview && currentKey.current === contextKey) { const next = confirm(currentReview, event.target.checked); activeReview.current = next; setReview(next); setMessage(''); } }} /><Localized>{" I have reviewed the exact target, evidence, declarations and request content."}</Localized></label>
       <button type="button" disabled={!currentReview.confirmed || copying} onClick={copy}><Localized>{copying ? 'Copying…' : 'Copy confirmed request'}</Localized></button>
-      <Localized>{firstOperation && !result && submissionEnabled && <button type="button" disabled={!currentReview.confirmed || copying} onClick={send}>
+      <Localized>{supportedOperation && !result && canSubmit && <button type="button" disabled={!currentReview.confirmed || copying} onClick={send}>
         <Localized>{'Send confirmed business request'}</Localized></button>}</Localized>
-      <Localized>{firstOperation && !submissionEnabled && <p className="notice"><Localized>{'Business command submission is disabled in this environment.'}</Localized></p>}</Localized>
-      <Localized>{result && <FirstCommandResult state={result} />}</Localized>
+      <Localized>{supportedOperation && !canSubmit && <p className="notice"><Localized>{'Business command submission is disabled in this environment.'}</Localized></p>}</Localized>
+      <Localized>{result && (('approval' === result.command.operation || 'decision' === result.command.operation) ? <GovernanceCommandResult state={result as GovernanceState} /> : <FirstCommandResult state={result as FirstState} />)}</Localized>
       <Localized>{result && ['unknown', 'rejected'].includes(result.phase) && <>
-        <button type="button" disabled={!recoveryEnabled || copying} onClick={recover}><Localized>{'Query original audit without resubmitting'}</Localized></button>
-        <button type="button" disabled={!submissionEnabled || copying} onClick={send}><Localized>{'Retry original business request'}</Localized></button>
+        <button type="button" disabled={!canRecover || copying} onClick={recover}><Localized>{'Query original audit without resubmitting'}</Localized></button>
+        <button type="button" disabled={!canSubmit || copying} onClick={send}><Localized>{'Retry original business request'}</Localized></button>
       </>}</Localized>
       <pre className="auditpayload">{currentReview.confirmed ? exportRequest(currentReview) : JSON.stringify(currentReview.draft.payload, null, 2)}</pre>
       <p><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={currentReview.draft.trace}><Localized>{"Review business record / history →"}</Localized></Link><Localized>{" · "}</Localized><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={currentReview.draft.audit}><Localized>{"Expected audit event after execution →"}</Localized></Link></p>

@@ -1,11 +1,11 @@
 # SoftwareLifeCycle Development Handoff
 
 ## 当前交接入口 — 2026-10-09（Codex）
-PR#29已合并，代码main 9a14fee6d813d8ba30a34e08bb47e59058e6b36f，最终feature 5ae64e225fea1cb4bc5d5a2c2e806f6bbe24c874；完整CI37815054121三个任务成功（2071后端、172 PostgreSQL-module cases/no skips、834前端），迁移/类型/Worker/生产禁用认证SSR/进度检查通过。Cloudflare feature Preview成功；代码main和文档后最新head须独立核对CI/provider，不能复用旧pending或Preview结果。
-审批动作/发布决策独立默认关闭的提交与原审计恢复代理、严格正文解析、actor/步骤/声明绑定原审计投影及GovernanceSubmission冻结请求控制器已实现。审批保留原动作与原流程状态，APPROVED动作可仍为PENDING；决策保留原声明及精确快照证据，不推断当前状态、replayed或就绪计算。页面按钮/双语结果下一包；既有三类首批提交界面不重复实现。
-下一包将Approval Action/Release Decision的既有确认准备接入双语发送、明确原审计查询/原请求重试和精确结果，采用独立governanceSubmissionConfigured与当前USER只读投影；未知原操作不能被编辑/上下文/能力刷新或其他命令覆盖。之后继续其余9业务提交通道及界面、真实身份/内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
-69页面/API代码0.18.36/schema0020；36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，全部增量0。公共样例只读/OIDC与全部提交默认关闭；内网未安装、SSO/人员/Windows无Docker/系统架构待定，无实际变量/身份/授权/秘密或真实浏览器/管理员/提供方验收，不重试此前被拒绝浏览器访问。仅内存恢复，跨会话导入待实现。
-Mac部分快照/GitHub连接服务固定main分支发布，完整测试来自Actions，无独立云端Codex任务。Render工作区/后台部署版本未核验；原SoftwareLifeCycle_12全文未取得。全部历史保留，最新验收见末尾。
+起点main 572fe8754d789ad7f19b364f75f3953595cc775c，完整CI37816326386/Cloudflare成功，Actions部署skipped、开放PR0；本包提交后另核对新精确head。
+审批动作/发布决策的双语确认发送、原审计查询、明确原请求重试和精确结果已接入 /commands；两类门控与首批三类互相独立，服务器唯一当前USER只向页面投影四个布尔能力。未知原请求跨编辑/上下文/能力/命令切换保持冻结。APPROVED步骤可仍为PENDING审批；决策/Readiness只展示原声明和精确冻结快照，不推断当前状态、replayed或授权下游。仅内存，不支持跨卸载/刷新/会话导入恢复。
+下一包实现Delivery Package/Distribution/Production Authorization三类独立默认关闭的提交与原审计恢复契约、严格解析/精确原回执和冻结控制器，随后接入双语界面；剩余9业务通道还包括Test Release/Deployment/Changeover及Impact/Acceptance/Resource。之后真实身份及内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
+69页面/API代码0.18.36/schema0020，36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量0。公共样例只读/OIDC及全部提交默认关闭；内网未安装、SSO/人员/Windows无Docker/系统架构未定。无实际变量/秘密/身份/授权或真实管理员/浏览器/提供方验收，不重试被拒绝浏览器访问。仅内存恢复，跨会话导入待实现。
+Mac部分快照/GitHub连接服务发布，完整套件来自Actions，无另启独立云端Codex任务。Render工作区/后台部署版本未核验；原SoftwareLifeCycle_12全文未取得。完整历史保留，最新记录见末尾。
 
 ## Handoff identity
 
@@ -3107,4 +3107,15 @@ HANDOFF当前入口的undefined生成错误已修复，全部历史完整保留�
 代码main自动CI及Cloudflare在本记录时尚未完成验收；此文档提交后的最新main精确head另核对，不把feature Preview当成main部署。Actions独立部署门控保持关闭，提供方自动构建不证明Actions门禁/凭据已启用。后续最新完整CI/provider证据覆盖历史pending记录。
 Mac部分快照，无完整Node依赖；本地Node新测试语法及进度--check通过，完整套件为Actions；无另启独立云端Codex任务。原SoftwareLifeCycle_12全文未取得。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量全部0。14业务、2自身会话、6管理员和离线操作分计。下一包将Approval Action/Release Decision的既有确认准备接入双语发送、明确原审计查询/原请求重试和精确结果，采用独立governanceSubmissionConfigured与当前USER只读投影；未知原操作不能被编辑/上下文/能力刷新或其他命令覆盖。之后继续其余9业务提交通道及界面、真实身份/内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
+契约docs/governance-command-submission.md。
+
+
+## 2026-10-09 本轮开发：审批与发布决策双语提交界面（Codex）
+起点main 572fe8754d789ad7f19b364f75f3953595cc775c，完整CI37816326386三个任务成功，Cloudflare成功，Actions部署skipped，开放PR0；本包精确head CI/provider验收待核对。
+审批动作/发布决策的双语确认发送、原审计查询、明确原请求重试和精确结果已接入 /commands；两类门控与首批三类互相独立，服务器唯一当前USER只向页面投影四个布尔能力。未知原请求跨编辑/上下文/能力/命令切换保持冻结。APPROVED步骤可仍为PENDING审批；决策/Readiness只展示原声明和精确冻结快照，不推断当前状态、replayed或授权下游。仅内存，不支持跨卸载/刷新/会话导入恢复。
+新增实际编译组件处理器/中英文SSR回归，覆盖两类原字节发送和新UUID、同步双击/查询重试互锁、unknown不可替换、复制锁/手动复制、过时处理器、只读恢复、关闭能力及另一类开放开关不越权、精确审批/审计/快照链接及声明边界；服务器回归交叉核对独立门控/只读投影/单次会话复核、不暴露凭据。旧首批三类测试保留。
+本地Node新测试语法和进度--check通过；Mac部分快照无完整Node依赖，完整测试/类型/Next/Worker/实际禁用认证SSR待Actions，不称本地全套通过。无后台/schema改动，69页面/API代码0.18.36/schema0020不变。
+公共样例只读、OIDC及所有提交默认关闭，无实际环境变量/秘密/身份/授权配置或真实管理员/浏览器/提供方/内网验收，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/系统架构待定。Render工作区未选择、后台部署版本未核验。原SoftwareLifeCycle_12全文未取得，无另启独立云端Codex任务。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量全部0。14业务、2自身会话、6管理员及离线操作分计。
+下一包实现Delivery Package/Distribution/Production Authorization三类独立默认关闭的提交与原审计恢复契约、严格解析/精确原回执和冻结控制器，随后接入双语界面；剩余9业务通道还包括Test Release/Deployment/Changeover及Impact/Acceptance/Resource。之后真实身份及内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
 契约docs/governance-command-submission.md。
