@@ -25,8 +25,9 @@ export default function AdminRegistrationResult({ state }: { state: Registration
     </>}</Localized>
     <p className="muted"><Localized>{'Copy the original request and receipt before leaving. This page keeps recovery data only in memory.'}</Localized></p>
     <p className="muted"><Localized>{'Registration does not activate the identity or resume the grant. Activation requires a separate audited operation.'}</Localized></p>
-    <Localized>{kind === 'PRINCIPAL' ? <p className="muted"><Localized>{
-      'Identity detail reading is not available yet. Keep the exact principal UUID and receipt.'}</Localized></p> :
+    <Localized>{kind === 'PRINCIPAL' ? <Link target="_blank" rel="noopener noreferrer" prefetch={false} href={'/account/principals/'+id+'?offset=0'}>
+        <Localized>{'Open current identity detail and history'}</Localized>
+      </Link> :
       <Link target="_blank" rel="noopener noreferrer" prefetch={false} href={'/account/grants/'+kind+'/'+id+'?offset=0'}>
         <Localized>{'Open current grant detail and history'}</Localized>
       </Link>}</Localized>
