@@ -2,10 +2,10 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const source=fs.readFileSync('app/commands/page.tsx','utf8');
 const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-async function page({configured=true,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
+async function page({configured=true,governanceConfigured=false,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
  let cookieReads=0,sessionReads=0;const Workbench=()=>null,exports={};
  vm.runInNewContext(compiled,{exports,process:{env:{}},require:name=>name==='next/headers'?{cookies:async()=>{cookieReads++;return{getAll:()=>cookies};}}:
-  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured}:
+  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured,governanceSubmissionConfigured:()=>governanceConfigured}:
   name==='../../lib/browser-session'?{SESSION_COOKIE:'__Host-slc_session',resolveSession:async()=>{sessionReads++;return identity;}}:
   name==='../../components/command-workbench'?{__esModule:true,default:Workbench}:
   name==='../../components/localized'?{Localized:({children})=>children}:
@@ -31,4 +31,21 @@ test('query updates do not force remount and bounded initial context carries no 
  const r=await page({configured:false,query:{operation:'batch',target:'DEP-原始',release:'x'.repeat(37),snapshot:['invalid'],line:'line',submissionEnabled:'true'}});
  assert.equal(r.component.key,null);assert.equal(r.component.props.initialOperation,'batch');assert.equal(r.component.props.initialTarget,'DEP-原始');
  assert.equal(r.component.props.initialContext.release,'');assert.equal(r.component.props.initialContext.snapshot,'');assert.equal(r.component.props.submissionEnabled,false);
+});
+
+test('first and governance capabilities use independent approved gates and one private session projection',async()=>{
+ for(const configured of [false,true])for(const governanceConfigured of [false,true])for(const read_only_mode of [false,true,undefined]){
+  const r=await page({configured,governanceConfigured,identity:{read_only_mode,token:'private'}});
+  assert.equal(r.cookieReads,configured||governanceConfigured?1:0);assert.equal(r.sessionReads,configured||governanceConfigured?1:0);
+  assert.equal(r.component.props.submissionEnabled,configured&&read_only_mode===false);
+  assert.equal(r.component.props.governanceSubmissionEnabled,governanceConfigured&&read_only_mode===false);
+  assert.equal(r.component.props.recoveryEnabled,configured);assert.equal(r.component.props.governanceRecoveryEnabled,governanceConfigured);
+  assert.ok(!JSON.stringify(r.component.props).includes('private'));
+ }
+});
+test('governance missing identity and duplicate cookies cannot enable submit or recovery',async()=>{
+ for(const options of [{identity:null},{cookies:[]},{cookies:[{value:'one'},{value:'two'}]}]){
+  const r=await page({configured:false,governanceConfigured:true,...options});
+  assert.equal(r.component.props.governanceSubmissionEnabled,false);assert.equal(r.component.props.governanceRecoveryEnabled,false);
+ }
 });
