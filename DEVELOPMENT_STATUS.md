@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-本轮代码main：1441e26714179b670c29cf02444aa7812fab043c（PR#30）；feature完整CI37818867838成功，文档后最新精确main CI/provider另核对。
+本轮代码main：c438d7f55ed5cc03367d39e22f4daae850bc35d5（PR#31）；PR#30治理界面及#31决策链接补正均完整CI成功，文档后最新精确main CI/provider另核对。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -30,7 +30,7 @@
 ## 当前实现快照
 69页面默认中文/可切换英文；14业务请求准备表单完成，真实身份提交未完成。14业务命令有角色、幂等、并发和原子审计基础。另有2会话控制、6管理员写入与2离线管理员操作模式；不能混成“14个总接口”。17/17读取消费者组完成迁移；53固定兼容候选=50退役+3有界保留。
 
-最新代码：PR#30 merge 1441e26714179b670c29cf02444aa7812fab043c；69页面/API代码0.18.36/schema0020。默认关闭的身份状态代理/精确回执校验/原请求重试控制器新实现；私有身份目录/UUID详情/history与冻结准备/确认复制已有。默认关闭的授权状态、注册发送/结果/内存恢复已有。身份状态双语发送按钮/精确结果组件/页面内存恢复已接入、独立门禁默认关闭，跨会话恢复及真实提供方/管理员验收仍未完成。后台线上部署/版本未独立核验。
+最新代码：PR#31 merge c438d7f55ed5cc03367d39e22f4daae850bc35d5；69页面/API代码0.18.36/schema0020。默认关闭的身份状态代理/精确回执校验/原请求重试控制器新实现；私有身份目录/UUID详情/history与冻结准备/确认复制已有。默认关闭的授权状态、注册发送/结果/内存恢复已有。身份状态双语发送按钮/精确结果组件/页面内存恢复已接入、独立门禁默认关闭，跨会话恢复及真实提供方/管理员验收仍未完成。后台线上部署/版本未独立核验。
 首批Snapshot/实际报告/Batch独立默认关闭的提交代理与原操作回执恢复代理、严格三字段/操作正文解析、actor/body绑定原子审计投影及FirstSubmission冻结原请求控制器已实现。recover后台只GET原审计，不能再次写入；只读切换仍可查询自己的已提交记录，缺失或不匹配保留unknown。提交须正确HTTP后精确审计确认，原应用结果与后来状态独立。Snapshot/实际报告/Batch双语发送、原审计查询和明确原请求重试已接入 /commands；结果组件显示原子审计确认的原应用值及精确业务/审计链接。页面能力来自独立firstSubmissionConfigured和唯一当前USER会话，只读明确false才可发送；只读切换可查询自己的原记录。门禁默认关闭，没有实际环境配置。
 
 审批动作/发布决策独立默认关闭的提交与原审计恢复代理、严格正文解析、actor/步骤/声明绑定原审计投影及GovernanceSubmission冻结请求控制器已实现。审批保留原动作与原流程状态，APPROVED动作可仍为PENDING；决策保留原声明及精确快照证据，不推断当前状态、replayed或就绪计算。页面按钮/双语结果已接入，本轮变更见下方。
@@ -347,3 +347,14 @@ Mac部分快照，无完整Node依赖；本地Node新测试语法和进度--chec
 36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量全部0。14业务、2自身会话、6管理员及离线操作分计。
 下一包实现Delivery Package/Distribution/Production Authorization三类独立默认关闭的提交与原审计恢复契约、严格解析/精确原回执和冻结控制器，随后接入双语界面；剩余9业务通道还包括Test Release/Deployment/Changeover及Impact/Acceptance/Resource。之后真实身份及内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
 契约docs/governance-command-submission.md。
+
+
+## PR#31 精确结果链接补正验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/31 已合并，代码main c438d7f55ed5cc03367d39e22f4daae850bc35d5，feature 4ead005dc7d4ed2d2a28ac05b09a3c5f19471e54，起点main 4a96dc4147e72bbd749d311085ed65a626636717。
+复核原准备契约发现PR#30发布决策结果详情按钮指向审批详情，现已改为原decision_no对应/release-decisions/{decision_no}；unknown使用冻结Review的原决策链接。审批仍指向精确审批详情，原审计/冻结快照链接保留。回归分别检查中英文审批/决策详情和未知决策链接；未改业务传输/门控/后台/schema。
+feature精确CI37820812727三个任务全部成功：2071后端（373.00秒）、172 PostgreSQL-module cases/no skips，855前端0fail/0skip；0020单迁移头、SQL、隔离PG升降级往返、类型/Next/Worker、中英文禁用认证SSR、进度--check成功。后端113461072132、前端113461072406、acceptance113464143585成功。Cloudflare feature Preview builde1f9eeaa-7356-4bd8-85f2-4f9dc950db72成功。
+前一主线 4a96dc4147e72bbd749d311085ed65a626636717 完整CI37820146266三个任务成功（2071后端431.15秒/172 PostgreSQL-module cases/no skips/855前端），Cloudflare生产build10b8226e-e9d5-4b18-abfe-890e2a4c8555/version63538fca-02d6-456c-bc91-06b44f4e6252成功；Actions37820285226部署skipped。最终此文档后最新精确head CI/provider须独立核对，不能用旧主线或Preview当作最终生产证据。无新增未修复测试失败，原邮件后端失败在后续完整回归中未重现。
+审批动作/发布决策的双语确认发送、原审计查询、明确原请求重试和精确结果已接入 /commands；两类门控与首批三类互相独立，服务器唯一当前USER只向页面投影四个布尔能力。未知原请求跨编辑/上下文/能力/命令切换保持冻结。APPROVED步骤可仍为PENDING审批；决策/Readiness只展示原声明和精确冻结快照，不推断当前状态、replayed或授权下游。仅内存，不支持跨卸载/刷新/会话导入恢复。
+69页面/API代码0.18.36/schema0020，36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量0。14业务/2自身会话/6管理员/离线操作分计，五类默认关闭提交通道有界面，九类仍只准备；不等于真实身份或14类全提交验收。
+公共样例只读/OIDC及所有提交默认关闭；未配置实际变量/秘密/身份/授权，无真实浏览器/管理员/提供方/API在线探针/内网安装，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/系统架构待定。Render工作区/后台部署版本未核验，原SoftwareLifeCycle_12全文未取得。Mac部分快照/GitHub连接服务发布，完整套件来自Actions，无独立云端Codex任务；本地Node补正测试语法通过，进度账本未改、--check通过，全部交接历史保留。
+下一包实现Delivery Package/Distribution/Production Authorization三类独立默认关闭的提交与原审计恢复契约、严格解析/精确原回执和冻结控制器，随后接入双语界面；剩余9业务通道还包括Test Release/Deployment/Changeover及Impact/Acceptance/Resource。之后真实身份及内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
