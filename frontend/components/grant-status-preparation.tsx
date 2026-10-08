@@ -22,7 +22,6 @@ export default function GrantStatusPreparation({ target }: { target: GrantTarget
   return <Localized><section className="panel">
     <h2><Localized>{'Prepare grant status change'}</Localized></h2>
     <p className="notice"><Localized>{'Preparation only. This form does not change permissions or send an API request.'}</Localized></p>
-    <p className="muted"><Localized>{'Internal server deployment has not started. Authenticated submission and real administrator acceptance remain pending.'}</Localized></p>
     <p><Localized>{'Expected status'}</Localized><Localized>{': '}</Localized><Localized>{target.status}</Localized>
       <Localized>{' · '}</Localized><Localized>{'Requested status'}</Localized><Localized>{': '}</Localized>
       <Localized>{target.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE'}</Localized></p>

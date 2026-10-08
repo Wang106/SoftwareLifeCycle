@@ -60,7 +60,7 @@ test('preparation renders Chinese/English without credentials, submission or bro
   const render = locale => renderToStaticMarkup(React.createElement(LanguageProvider, { initialLocale: locale }, React.createElement(Component, { target })));
   assert.ok(render('zh').includes('准备授权状态变更'));
   assert.ok(render('en').includes('Prepare grant status change'));
-  assert.ok(render('zh').includes('内部服务器尚未开始部署'));
+  assert.ok(render('zh').includes('本表单不会修改权限'));
   const source = fs.readFileSync('components/grant-status-preparation.tsx', 'utf8');
   assert.ok(!/fetch\(|localStorage|sessionStorage|Authorization|Bearer/.test(source));
   assert.ok(source.includes('setReview(null)')); // Editing invalidates preview and its confirmation.
