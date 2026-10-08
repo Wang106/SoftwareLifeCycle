@@ -28,11 +28,10 @@ API代码0.18.36/schema0020；身份私有目录/UUID详情/有界状态历史�
 内网只有可用部署位置，尚未开始安装；离线安装包/无Docker启动脚本尚未实现和演练。系统与CPU信息可稍后提供，不阻塞服务器端代码与模拟测试。
 
 ## 下一包
-Approval Action/Release Decision的固定提交通道与精确原审计恢复契约，继承冻结请求、未知结果和原子审计边界，公开环境默认关闭；再接双语界面，逐步覆盖其余11业务命令。批准身份/内网真实验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移仍待完成，VIN最后。
+下一包将Approval Action/Release Decision的既有确认准备接入双语发送、明确原审计查询/原请求重试和精确结果，采用独立governanceSubmissionConfigured与当前USER只读投影；未知原操作不能被编辑/上下文/能力刷新或其他命令覆盖。之后继续其余9业务提交通道及界面、真实身份/内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
 
-Snapshot/实际报告/Batch双语发送、原审计查询和明确原请求重试已接入 /commands；结果组件显示原子审计确认的原应用值及精确业务/审计链接。页面能力来自独立firstSubmissionConfigured和唯一当前USER会话，只读明确false才可发送；只读切换可查询自己的原记录。门禁默认关闭，没有实际环境配置。
-最新起点main5cf8798fdac12bd23f42b95e7d17b4cc0f5b23e9完整CI37797183654/Cloudflare成功，Actions skipped；本包提交后须核对精确head的新CI/provider。未知原请求仅组件内存，不跨卸载/刷新/会话。
-
+审批动作/发布决策独立默认关闭的提交与原审计恢复代理、严格正文解析、actor/步骤/声明绑定原审计投影及GovernanceSubmission冻结请求控制器已实现。审批保留原动作与原流程状态，APPROVED动作可仍为PENDING；决策保留原声明及精确快照证据，不推断当前状态、replayed或就绪计算。页面按钮/双语结果下一包；既有三类首批提交界面不重复实现。
+本包提交后核对最新head的CI/provider。此前最新main完整CI37804274307/Cloudflare成功，Actions skipped。
 
 ## PR#28 验收 — 2026-10-08（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/28 已合并，代码main 759b94d190407b50c6b90f416ebfb953bf7f875f，最终feature fffe74f1a437d3fcb18a8d52e896be1a6559c33c；起点 5cf8798fdac12bd23f42b95e7d17b4cc0f5b23e9。
@@ -44,3 +43,14 @@ Snapshot/实际报告/Batch双语发送、原审计查询和明确原请求重�
 执行器Mac部分快照，无完整Node依赖；本地新测试Node语法与进度--check通过，完整套件为Actions，无另启独立云端Codex任务。历史交接完整保留，原SoftwareLifeCycle_12全文未取得。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量全部0。首批真实身份提交/恢复/结果及真实双语端到端验收仍未完成，不用模拟回归提升里程碑。14业务、2自身会话、6管理员和离线操作分计。
 下一包Approval Action/Release Decision固定提交通道与精确原审计恢复契约，然后双语发送/结果界面；继续其余11业务命令、批准身份/内网真实验收、跨会话导入恢复、追加更正撤销、无Docker离线安装与运营迁移，VIN最后。契约docs/first-command-submission.md。
+
+
+## 2026-10-09 审批与发布决策提交、原审计恢复基础（Codex）
+起点main fa61b2a2f4fa8b585839eff18c64d2a6f2ccd7a2：完整CI37804274307三个任务成功，2071后端/172 PostgreSQL-module cases/no skips、802前端、迁移/类型/Worker/生产禁用认证SSR/进度检查全部成功；Cloudflare build e25b5414-f2eb-403d-86b0-cd85b69a195d/version c56fb318-1e57-4eed-8252-f798c09f276a成功，Actions37805260870/37804410128 skipped。无开放PR，覆盖PR#28历史pending记录。
+审批动作/发布决策独立默认关闭的提交与原审计恢复代理、严格正文解析、actor/步骤/声明绑定原审计投影及GovernanceSubmission冻结请求控制器已实现。审批保留原动作与原流程状态，APPROVED动作可仍为PENDING；决策保留原声明及精确快照证据，不推断当前状态、replayed或就绪计算。页面按钮/双语结果下一包；既有三类首批提交界面不重复实现。
+独立三项GOVERNANCE_COMMAND服务器变量，精确批准HTTPS API/应用、有效OIDC/加密会话、唯一当前token-bound USER和/me复核；提交要求当前非只读，查询可在只读切换后读本人原记录。固定两类POST及原审计GET，凭据仅服务器；同源/有界UTF-8 JSON，严格字段/UUID/步骤/原声明/空值校验，不受首批或管理员/NEXT_PUBLIC门控启用。
+审计精确核对原actor、target、全请求指纹、动作/步骤及原结果。审批entity UUID是审批对象、action UUID才是key；decision entity UUID就是key并绑定原审批/快照。POST正确HTTP后仍须原子审计确认；recover只GET原审计、不POST、不用当前对象推断原结果。同步发送/查询锁、confirmed终态、原字节明确重试，unknown后拒绝或关闭仍unknown。仅内存、无自动重试、持久化或凭据传入UI。页面发送/查询/结果未接入，不能把代理存在当作真实界面已开放。
+新增传输/解析/原审计/回执/锁定与实际OIDC模拟代理回归，生产Next两条禁用路由检查；本地Node语法/进度--check通过，exact-head完整CI待核验。Mac工作区仍部分快照，无完整Node依赖，完整套件来自Actions，无另启独立云端Codex任务。修复上一包HANDOFF当前入口生成错误undefined，完整历史保留，后续用明确当前入口文本生成。
+69页面/API代码0.18.36/schema0020不变，无后台/schema变化。公共样例只读/OIDC及所有提交默认关闭；无实际变量/秘密/身份/授权配置，无真实浏览器/管理员/提供方/API在线探针或内网安装，不重试被拒绝浏览器访问。Render工作区未选择，后台部署/版本未核验。内网未部署、SSO待定、人员用户后续自定、Windows/无Docker/系统架构未确认。原SoftwareLifeCycle_12全文未取得。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，全部增量0。14业务、2自身会话、6管理员和离线操作分计。下一包将Approval Action/Release Decision的既有确认准备接入双语发送、明确原审计查询/原请求重试和精确结果，采用独立governanceSubmissionConfigured与当前USER只读投影；未知原操作不能被编辑/上下文/能力刷新或其他命令覆盖。之后继续其余9业务提交通道及界面、真实身份/内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
+契约docs/governance-command-submission.md。
