@@ -2,7 +2,7 @@ import Link from 'next/link';
 import GrantStatusPreparation from '../../../../../components/grant-status-preparation';
 import { cookies } from 'next/headers';
 import { Localized } from '../../../../../components/localized';
-import { authConfig } from '../../../../../lib/browser-auth';
+import { authConfig, grantSubmissionConfigured } from '../../../../../lib/browser-auth';
 import { readAdminGrantDetail, SESSION_COOKIE } from '../../../../../lib/browser-session';
 
 export const dynamic = 'force-dynamic';
@@ -41,7 +41,8 @@ export default async function GrantDetailPage({ params, searchParams }: {
       <p><Localized>{'Grant status'}</Localized><Localized>{': '}</Localized><Localized>{result.grant.status}</Localized></p>
       <p><Localized>{'Effective grant'}</Localized><Localized>{': '}</Localized><Localized>{result.grant.effective ? 'Effective' : 'Not effective'}</Localized></p>
       <GrantStatusPreparation key={[result.grant.scope, result.grant.id, result.grant.principal.id,
-        result.grant.role, result.grant.status, result.current_status].join(':')}
+        result.grant.role].join(':')}
+        submissionEnabled={grantSubmissionConfigured(process.env, config) && !result.read_only_mode}
         target={{ id: result.grant.id, scope: result.grant.scope, status: result.grant.status,
           historyStatus: result.current_status, role: result.grant.role, principalId: result.grant.principal.id }} />
       <h2><Localized>{'Status change history'}</Localized></h2>

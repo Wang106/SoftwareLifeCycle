@@ -18,7 +18,7 @@ function load(file) {
   });
   return exports;
 }
-const { handleAuth, handleGrantStatus, authConfig, LOGIN_COOKIE } = load('browser-auth');
+const { handleAuth, handleGrantStatus, authConfig, grantSubmissionConfigured, LOGIN_COOKIE } = load('browser-auth');
 const { SESSION_COOKIE, openCookie, sealCookie } = load('browser-session');
 after(() => fs.rmSync(output, { recursive:true, force:true }));
 const origin = 'https://app.example.test';
@@ -547,4 +547,29 @@ test('grant submission measures printable reason as Unicode code points',async()
  const fetcher=async(url,init)=>{if(init.method!=='POST')return login.fetcher(url,init);writes++;assert.equal(Array.from(JSON.parse(init.body).reason).length,500);return Response.json(receipt());};
  const response=await handleGrantStatus(writeRequest(session,{...command,reason:'😀'.repeat(500)}),writeEnv,fetcher);
  assert.equal(response.status,200);assert.equal(writes,1);
+});
+
+test('UI capability and POST gate share exact approved server configuration',async()=>{
+ const config=await authConfig(env);
+ assert.equal(grantSubmissionConfigured(writeEnv,config),true);
+ assert.equal(grantSubmissionConfigured(writeEnv,null),false);
+ for(const patch of [{GRANT_STATUS_SUBMISSION_MODE:undefined},{GRANT_STATUS_SUBMISSION_MODE:'disabled'},
+  {GRANT_STATUS_APPROVED_API_BASE_URL:undefined},{GRANT_STATUS_APPROVED_API_BASE_URL:env.API_BASE_URL+'/'},
+  {GRANT_STATUS_APPROVED_APP_ORIGIN:'https://different.test'}])
+  assert.equal(grantSubmissionConfigured({...writeEnv,...patch},config),false);
+});
+test('exact detail projects current identity read-only flag rather than trusting grant extras',async()=>{
+ for(const readOnly of [false,true]){
+  const f=await grantFixture(),mock=detailFetcher(f,{detail:{...f.row,read_only_mode:!readOnly}});
+  const fetcher=async(url,init)=>{
+   const response=await mock(url,init);
+   if(url===env.API_BASE_URL+'/api/v1/security/me'){
+    const body=await response.json();return Response.json({...body,read_only_mode:readOnly,token:'private'});
+   }
+   return response;
+  };
+  const result=await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,fetcher);
+  assert.equal(result.state,'ready');assert.equal(result.read_only_mode,readOnly);
+  assert.equal(result.grant.read_only_mode,undefined);assert.ok(!JSON.stringify(result).includes('private'));
+ }
 });
