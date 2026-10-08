@@ -18,7 +18,8 @@ function load(file) {
   });
   return exports;
 }
-const { handleAuth, handleGrantStatus, authConfig, grantSubmissionConfigured, LOGIN_COOKIE } = load('browser-auth');
+const { handleAuth, handleGrantStatus, handleAdminRegistration, authConfig, grantSubmissionConfigured,
+ registrationSubmissionConfigured, LOGIN_COOKIE } = load('browser-auth');
 const { SESSION_COOKIE, openCookie, sealCookie } = load('browser-session');
 after(() => fs.rmSync(output, { recursive:true, force:true }));
 const origin = 'https://app.example.test';
@@ -572,4 +573,137 @@ test('exact detail projects current identity read-only flag rather than trusting
   assert.equal(result.state,'ready');assert.equal(result.read_only_mode,readOnly);
   assert.equal(result.grant.read_only_mode,undefined);assert.ok(!JSON.stringify(result).includes('private'));
  }
+});
+
+const registrationEnv={...env,ADMIN_REGISTRATION_SUBMISSION_MODE:'enabled',
+ ADMIN_REGISTRATION_APPROVED_API_BASE_URL:env.API_BASE_URL,ADMIN_REGISTRATION_APPROVED_APP_ORIGIN:origin};
+const newId='34567890-1234-1234-1234-123456789abc',scopeId='45678901-1234-1234-1234-123456789abc';
+function registration(kind='PRINCIPAL') {
+ const common={kind,newId,eventNo:'ADM-REGISTER-1',reason:'Controlled registration'};
+ return kind==='PRINCIPAL'?{...common,principalType:'USER',subject:'Opaque:Case/😀',displayName:'测试人'}:
+  {...common,principalId:id,role:kind==='GLOBAL'?'AUDITOR':kind==='PROJECT'?'PROJECT_VIEWER':'SOFTWARE_VIEWER',
+   ...(kind==='GLOBAL'?{}:{scopeId})};
+}
+function registrationRequest(session,body=registration(),options={}) {
+ const req=writeRequest(session,body,options);
+ return new Request(origin+'/auth/admin-registration',req);
+}
+function registrationReceipt(kind='PRINCIPAL',extra={}) {
+ const input=registration(kind),common={audit_event_no:input.eventNo,
+  applied_status:kind==='PRINCIPAL'?'DISABLED':'SUSPENDED',current_status:kind==='PRINCIPAL'?'DISABLED':'SUSPENDED',replayed:false};
+ return {...common,...(kind==='PRINCIPAL'?{principal_id:newId,revoked_browser_sessions:0}:
+  {[kind==='GLOBAL'?'grant_id':'membership_id']:newId,scope:kind,principal_id:id,role:input.role,
+   ...(kind==='GLOBAL'?{}:{scope_id:scopeId})}),...extra};
+}
+test('registration uses independent default-disabled exact server gate and POST only',async()=>{
+ let calls=0;const never=async()=>{calls++;throw Error('unexpected');},config=await authConfig(env);
+ assert.equal(registrationSubmissionConfigured(registrationEnv,config),true);
+ assert.equal(registrationSubmissionConfigured(registrationEnv,null),false);
+ for(const patch of [{ADMIN_REGISTRATION_SUBMISSION_MODE:undefined},{ADMIN_REGISTRATION_SUBMISSION_MODE:'disabled'},
+  {ADMIN_REGISTRATION_SUBMISSION_MODE:'unknown'},{ADMIN_REGISTRATION_APPROVED_API_BASE_URL:undefined},
+  {ADMIN_REGISTRATION_APPROVED_API_BASE_URL:env.API_BASE_URL+'/'},{ADMIN_REGISTRATION_APPROVED_APP_ORIGIN:'https://other.test'},
+  {BROWSER_OIDC_MODE:'disabled'},{BROWSER_SESSION_KEY:'invalid'}]){
+  const response=await handleAdminRegistration(registrationRequest(),{...registrationEnv,...patch},never);
+  assert.equal(response.status,503);privateResponse(response);assert.deepEqual(await response.json(),{error:'registration_submission_disabled'});
+ }
+ assert.equal((await handleAdminRegistration(registrationRequest(),writeEnv,never)).status,503);
+ const response=await handleAdminRegistration(registrationRequest(null,registration(),{method:'GET'}),registrationEnv,never);
+ assert.equal(response.status,405);assert.equal(response.headers.get('allow'),'POST');assert.equal(calls,0);
+});
+test('registration origin, exact fields, encoding and size rejected before session lookup',async()=>{
+ let calls=0;const never=async()=>{calls++;throw Error('unexpected');};
+ for(const options of [{origin:'https://evil.test'},{site:'cross-site'},{site:'same-site'},{headers:{Origin:''}}]){
+  assert.equal((await handleAdminRegistration(registrationRequest(null,registration(),options),registrationEnv,never)).status,403);
+ }
+ for(const patch of [{kind:'evil'},{path:'/api/evil'},{issuer:'https://evil.test'},{actor:id},{token:'secret'},
+  {status:'ACTIVE'},{role:'PLATFORM_ADMIN'},{newId:'../evil'},{subject:' trim '},{displayName:'a\u0000'},
+  {eventNo:'bad key'},{reason:'tiny'}]){
+  assert.equal((await handleAdminRegistration(registrationRequest(null,{...registration(),...patch}),registrationEnv,never)).status,400);
+ }
+ for(const raw of ['null','[]','{'])assert.equal((await handleAdminRegistration(registrationRequest(null,registration(),{raw}),registrationEnv,never)).status,400);
+ assert.equal((await handleAdminRegistration(registrationRequest(null,registration(),{raw:new Uint8Array([255])}),registrationEnv,never)).status,400);
+ assert.equal((await handleAdminRegistration(registrationRequest(null,registration(),{contentType:'text/plain'}),registrationEnv,never)).status,415);
+ for(const options of [{raw:'x'.repeat(8193)},{headers:{'Content-Length':'8193'}}])
+  assert.equal((await handleAdminRegistration(registrationRequest(null,registration(),options),registrationEnv,never)).status,413);
+ assert.equal(calls,0);
+});
+test('registration requires current writable unique token-bound session',async()=>{
+ const f=await writeFixture();let writes=0;
+ const fetcher=async(url,init)=>{if(init.method==='POST'){writes++;throw Error('unexpected');}return f.login.fetcher(url,init);};
+ for(const session of [undefined,f.session+'; '+f.session,SESSION_COOKIE+'=invalid'])
+  assert.equal((await handleAdminRegistration(registrationRequest(session),registrationEnv,fetcher)).status,401);
+ for(const row of f.flow.registry.values())row.revoked=true;
+ assert.equal((await handleAdminRegistration(registrationRequest(f.session),registrationEnv,fetcher)).status,401);
+ const readOnly=await writeFixture({identity});
+ const response=await handleAdminRegistration(registrationRequest(readOnly.session),registrationEnv,async(url,init)=>{
+  if(init.method==='POST'){writes++;throw Error('unexpected');}return readOnly.login.fetcher(url,init);
+ });
+ assert.equal(response.status,403);assert.deepEqual(await response.json(),{error:'read_only_mode'});assert.equal(writes,0);
+});
+for(const kind of ['PRINCIPAL','GLOBAL','PROJECT','SOFTWARE'])test('registration fixed route and projected exact receipt: '+kind,async()=>{
+ const f=await writeFixture(),input=registration(kind);let writes=0;
+ const response=await handleAdminRegistration(registrationRequest(f.session,input),registrationEnv,async(url,init)=>{
+  if(init.method!=='POST')return f.login.fetcher(url,init);
+  writes++;assert.equal(url,env.API_BASE_URL+'/api/v1/security/admin/'+(kind==='PRINCIPAL'?'principals':kind==='GLOBAL'?'global-roles':'memberships/'+kind));
+  assert.equal(init.headers.Authorization,'Bearer '+f.login.access);assert.match(init.headers['X-Browser-Session'],/^[a-f0-9-]{36}$/);
+  assert.equal(init.cache,'no-store');assert.equal(init.redirect,'error');assert.ok(init.signal);
+  const b=JSON.parse(init.body);assert.equal(b.event_no,input.eventNo);
+  for(const key of ['issuer','actor','status','token','kind'])assert.equal(b[key],undefined);
+  if(kind==='PRINCIPAL'){assert.equal(b.subject,input.subject);assert.equal(b.display_name,input.displayName);}
+  return Response.json(registrationReceipt(kind,{replayed:true,current_status:'ACTIVE',token:'private',subject:'private'}));
+ });
+ assert.equal(response.status,200);privateResponse(response);const b=await response.json();
+ assert.equal(b.kind,kind);assert.equal(b.id,newId);assert.equal(b.replayed,true);assert.equal(b.current_status,'ACTIVE');
+ assert.equal(b.applied_status,kind==='PRINCIPAL'?'DISABLED':'SUSPENDED');assert.equal(b.token,undefined);assert.equal(b.subject,undefined);assert.equal(writes,1);
+});
+test('registration known backend denials and configured issuer error disclose no arbitrary details',async()=>{
+ const f=await writeFixture();
+ for(const [status,detail,error] of [[401,'private','session_required'],[403,'private','submission_forbidden'],
+  [404,'principal_not_found','registration_target_not_found'],[422,'role_scope_mismatch','invalid_request'],
+  [409,'audit_event_conflict','audit_event_conflict'],[409,'principal_registration_conflict','principal_registration_conflict'],
+  [409,'global_role_registration_conflict','global_role_registration_conflict'],[409,'membership_registration_conflict','membership_registration_conflict'],
+  [409,'admin_recipient_protected','admin_recipient_protected'],[409,'recipient_inactive','recipient_inactive'],
+  [409,'recipient_issuer_mismatch','recipient_issuer_mismatch'],[409,'private','submission_conflict'],
+  [503,'configured_issuer_required','configured_issuer_required']]){
+  const response=await handleAdminRegistration(registrationRequest(f.session),registrationEnv,async(url,init)=>
+   init.method==='POST'?Response.json({detail},{status}):f.login.fetcher(url,init));
+  assert.equal(response.status,status);assert.deepEqual(await response.json(),{error});privateResponse(response);
+ }
+});
+test('registration invalid or lost receipts remain unknown and never automatically retry',async()=>{
+ const f=await writeFixture();
+ for(const kind of ['PRINCIPAL','GLOBAL','PROJECT','SOFTWARE']){
+  const changes=[{audit_event_no:'OTHER'},{applied_status:'ACTIVE'},{current_status:'INVALID'},{replayed:1},
+   {[kind==='PRINCIPAL'?'principal_id':kind==='GLOBAL'?'grant_id':'membership_id']:id},
+   ...(kind==='PRINCIPAL'?[{revoked_browser_sessions:1}]:[{scope:'OTHER'},{principal_id:newId},{role:'OTHER'},
+    ...(kind==='GLOBAL'?[]:[{scope_id:id}])])];
+  for(const extra of changes){
+   let writes=0;
+   const response=await handleAdminRegistration(registrationRequest(f.session,registration(kind)),registrationEnv,async(url,init)=>{
+    if(init.method!=='POST')return f.login.fetcher(url,init);writes++;return Response.json(registrationReceipt(kind,extra));
+   });
+   assert.equal(response.status,502);assert.deepEqual(await response.json(),{error:'outcome_unknown'});assert.equal(writes,1);
+  }
+ }
+ for(const reply of [()=>{throw Error('lost after commit');},()=>new Response('private'),()=>new Response('{',{headers:{'Content-Type':'application/json'}}),
+  ()=>Response.json({detail:'private'},{status:500}),()=>Response.json({detail:'private'},{status:302}),
+  ()=>Response.json({detail:'private'},{status:503}),()=>Response.json({padding:'x'.repeat(16385)}),
+  ()=>Response.json(registrationReceipt(),{headers:{'Content-Length':'16385'}})]){
+  let writes=0;const response=await handleAdminRegistration(registrationRequest(f.session),registrationEnv,async(url,init)=>{
+   if(init.method!=='POST')return f.login.fetcher(url,init);writes++;return reply();
+  });
+  assert.equal(response.status,502);assert.deepEqual(await response.json(),{error:'outcome_unknown'});assert.equal(writes,1);
+ }
+});
+test('registration explicit replay keeps original body and independent observed status',async()=>{
+ const f=await writeFixture(),bodies=[];
+ const fetcher=async(url,init)=>{
+  if(init.method!=='POST')return f.login.fetcher(url,init);
+  bodies.push(init.body);if(bodies.length===1)throw Error('lost');
+  return Response.json(registrationReceipt('PRINCIPAL',{replayed:true,current_status:'ACTIVE'}));
+ };
+ assert.equal((await handleAdminRegistration(registrationRequest(f.session),registrationEnv,fetcher)).status,502);
+ assert.equal(bodies.length,1);
+ const replay=await handleAdminRegistration(registrationRequest(f.session),registrationEnv,fetcher);
+ assert.equal(replay.status,200);assert.equal((await replay.json()).applied_status,'DISABLED');assert.equal(bodies[0],bodies[1]);
 });
