@@ -86,7 +86,7 @@ function parseIdentity(value: unknown): Identity | null {
       SOFTWARE: data.active_grant_counts.SOFTWARE } };
 }
 async function privateRequest(config: SessionConfig, path: string, token: string, fetcher: typeof fetch,
-  options: RequestInit = {}, sessionId?: string): Promise<{ status: number; value: unknown } | null> {
+  options: RequestInit = {}, sessionId?: string, responseLimit = 16384): Promise<{ status: number; value: unknown } | null> {
   try {
     const response = await fetcher(`${config.apiBase}${path}`, { ...options,
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json',
@@ -96,7 +96,7 @@ async function privateRequest(config: SessionConfig, path: string, token: string
     });
     if (!response.headers.get('content-type')?.includes('application/json')) { await response.body?.cancel(); return null; }
     // Bound both declared and streamed size; never parse arbitrary provider bodies.
-    if (Number(response.headers.get('content-length') || '0') > 16384) { await response.body?.cancel(); return null; }
+    if (Number(response.headers.get('content-length') || '0') > responseLimit) { await response.body?.cancel(); return null; }
     const reader = response.body?.getReader();
     if (!reader) return null;
     const chunks: Uint8Array[] = []; let size = 0;
@@ -105,7 +105,7 @@ async function privateRequest(config: SessionConfig, path: string, token: string
         const { done, value } = await reader.read();
         if (done) break;
         size += value.length;
-        if (size > 16384) { await reader.cancel(); return null; }
+        if (size > responseLimit) { await reader.cancel(); return null; }
         chunks.push(value);
       }
     } finally { reader.releaseLock(); }
@@ -280,7 +280,7 @@ export async function readAdminGrantDetail(config: SessionConfig, cookie: string
   const grant = projectExactGrant(detail.value, scope, id);
   if (!grant) return { state: 'unavailable' };
   const result = await privateRequest(config, path + '/history?limit=10&offset=' + offset,
-    envelope.token, fetcher, {}, envelope.sid);
+    envelope.token, fetcher, {}, envelope.sid, 32768);
   if (!result || result.status !== 200) return { state: adminReadFailure(result) };
   if (!result.value || typeof result.value !== 'object') return { state: 'unavailable' };
   const data = result.value as Record<string, unknown>;

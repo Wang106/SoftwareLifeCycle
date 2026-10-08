@@ -395,3 +395,14 @@ test('project and software exact histories accept owned targets and nullable leg
   assert.equal(result.state,'ready');assert.equal(result.grant.target.id,id);assert.equal(result.items[0].reason,null);
  }
 });
+
+test('history permits a full page of bounded Chinese reasons and rejects oversized upstream bodies',async()=>{
+ const f=await grantFixture(),history={scope:'GLOBAL',grant_id:id,current_status:'ACTIVE',
+  coverage:'GLOBAL_ROLE_STATUS_CHANGED_ONLY',total:10,limit:10,offset:0,next_offset:null,
+  items:Array.from({length:10},(_,n)=>({...statusEvent(),id:'12345678-1234-1234-1234-'+String(n).padStart(12,'0'),
+   reason:'测'.repeat(500),actor_display_name:'人'.repeat(255)}))};
+ assert.ok(Buffer.byteLength(JSON.stringify(history))>16384);
+ assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,detailFetcher(f,{history}))).state,'ready');
+ assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,
+   detailFetcher(f,{history:{...history,extra:'x'.repeat(32768)}}))).state,'unavailable');
+});
