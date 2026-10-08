@@ -18,7 +18,7 @@ export const governanceCommandMessages: Record<GovernanceError, string> = {
 export default function GovernanceCommandResult({ state }: { state: GovernanceState }) {
   if (state.phase === 'idle') return null;
   const receipt = state.receipt;
-  const detail = '/approvals/' + encodeURIComponent(state.command.target);
+  const detail = receipt?.operation === 'decision' ? '/release-decisions/' + encodeURIComponent(String(receipt.result.decision_no)) : state.review.draft.trace;
   return <Localized><section aria-live="polite" aria-busy={state.phase === 'sending' || state.phase === 'checking'}>
     <h3><Localized>{'Business command result'}</Localized></h3>
     <Localized>{state.phase === 'sending' && <p><Localized>{'Sending the frozen request. Do not submit another operation.'}</Localized></p>}</Localized>
