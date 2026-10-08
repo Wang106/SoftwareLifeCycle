@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.35",
+  "as_of_api": "0.18.36",
   "baseline_commit": "83eec4946fb944873ad2bf98dcde291923869af6",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
