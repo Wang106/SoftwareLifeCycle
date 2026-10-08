@@ -33,6 +33,8 @@ def history_event(db, identifier, **overrides):
 
 def test_catalog_detail_minimal_private_and_no_read_audit(identity_client):
     client, sessions, ids, key, _ = identity_client
+    with sessions() as db:
+        baseline_events = db.scalar(select(func.count()).select_from(AuditEvent))
     response = client.get(ROOT, headers=admin(key))
     assert response.status_code == 200, response.text
     private(response)
@@ -51,13 +53,15 @@ def test_catalog_detail_minimal_private_and_no_read_audit(identity_client):
     for secret in ['private@example.com', 'user-123', main.settings.oidc_issuer_url, admin(key)['Authorization']]:
         assert secret not in response.text
     with sessions() as db:
-        assert db.scalar(select(func.count()).select_from(AuditEvent)) == 0
+        assert db.scalar(select(func.count()).select_from(AuditEvent)) == baseline_events
 
 
 @pytest.mark.parametrize('kind', ['USER', 'SERVICE'])
 def test_new_disabled_ungranted_identity_is_discoverable(identity_client, monkeypatch, kind):
     client, sessions, _, key, _ = identity_client
     monkeypatch.setattr(main.settings, 'read_only_mode', False)
+    with sessions() as db:
+        baseline_events = db.scalar(select(func.count()).select_from(AuditEvent))
     body = registration(principal_type=kind)
     assert client.post(ROOT, json=body, headers=admin(key)).status_code == 200
     monkeypatch.setattr(main.settings, 'read_only_mode', True)
@@ -74,7 +78,7 @@ def test_new_disabled_ungranted_identity_is_discoverable(identity_client, monkey
     assert history.json()['current_status'] == 'DISABLED'
     assert history.json()['coverage'] == 'PRINCIPAL_STATUS_CHANGED_ONLY'
     with sessions() as db:
-        assert db.scalar(select(func.count()).select_from(AuditEvent)) == 1
+        assert db.scalar(select(func.count()).select_from(AuditEvent)) == baseline_events+1
         assert db.scalar(select(func.count()).select_from(GlobalRoleAssignment).where(
             GlobalRoleAssignment.principal_id == uuid.UUID(body['principal_id']))) == 0
 
@@ -223,6 +227,8 @@ def test_history_sql_projection_truncation_ties_and_malformed_unused_payload(ide
 
 def test_growth_has_fixed_queries_and_no_orm_history_or_grants(identity_client):
     client, sessions, ids, key, engine = identity_client
+    with sessions() as db:
+        baseline_events = db.scalar(select(func.count()).select_from(AuditEvent))
     queries = []
     def capture(_connection, _cursor, statement, _parameters, _context, _executemany):
         queries.append(statement)
@@ -252,7 +258,7 @@ def test_growth_has_fixed_queries_and_no_orm_history_or_grants(identity_client):
         assert len(catalog['items']) == len(history['items']) == 1
         assert initial_count == grown_count == 15
         with sessions() as db:
-            assert db.scalar(select(func.count()).select_from(AuditEvent)) == 110
+            assert db.scalar(select(func.count()).select_from(AuditEvent)) == baseline_events+110
     finally:
         event.remove(engine, 'before_cursor_execute', capture)
         for model in [GlobalRoleAssignment, AuditEvent]:
