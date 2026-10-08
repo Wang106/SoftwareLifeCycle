@@ -203,8 +203,13 @@ export async function handleAuth(request: Request, operation: AuthOperation, env
 }
 
 
-// Default-disabled browser proxy. UI remains preparation/copy only until a
-// controlled environment and actual administrator/browser acceptance exist.
+export function grantSubmissionConfigured(env: Environment, config: AuthConfig | null): boolean {
+  return env.GRANT_STATUS_SUBMISSION_MODE === 'enabled' && !!config &&
+    env.GRANT_STATUS_APPROVED_API_BASE_URL === config.session.apiBase &&
+    env.GRANT_STATUS_APPROVED_APP_ORIGIN === config.session.origin;
+}
+
+// Default-disabled proxy; the controlled UI uses the same configuration gate.
 export async function handleGrantStatus(request: Request, env: Environment, fetcher: typeof fetch = fetch): Promise<Response> {
   if (request.method !== 'POST') {
     const response = json('method_not_allowed', 405); response.headers.set('Allow', 'POST'); return response;
@@ -212,8 +217,7 @@ export async function handleGrantStatus(request: Request, env: Environment, fetc
   if (env.GRANT_STATUS_SUBMISSION_MODE !== 'enabled') return json('grant_submission_disabled', 503);
   let config: AuthConfig | null;
   try { config = await authConfig(env); } catch { return json('grant_submission_disabled', 503); }
-  if (!config || env.GRANT_STATUS_APPROVED_API_BASE_URL !== config.session.apiBase ||
-      env.GRANT_STATUS_APPROVED_APP_ORIGIN !== config.session.origin) return json('grant_submission_disabled', 503);
+  if (!config || !grantSubmissionConfigured(env, config)) return json('grant_submission_disabled', 503);
   if (!sameOrigin(request, config)) return json('cross_origin_request', 403);
   if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json')
     return json('json_required', 415);

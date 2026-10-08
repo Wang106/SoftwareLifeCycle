@@ -243,7 +243,7 @@ export type GrantHistoryEvent = {
   reason: string | null; reason_truncated: boolean;
 };
 export type GrantDetailResult =
-  | { state: 'ready'; grant: AdminGrant; current_status: 'ACTIVE' | 'SUSPENDED';
+  | { state: 'ready'; grant: AdminGrant; read_only_mode: boolean; current_status: 'ACTIVE' | 'SUSPENDED';
       coverage: string; total: number; next_offset: number | null; items: GrantHistoryEvent[] }
   | { state: 'session_required' | 'forbidden' | 'unavailable' | 'invalid_filter' | 'not_found' };
 function adminReadFailure(result: { status: number; value: unknown } | null) {
@@ -272,7 +272,8 @@ export async function readAdminGrantDetail(config: SessionConfig, cookie: string
       !Number.isSafeInteger(offset) || offset < 0 || offset > 100000) return { state: 'invalid_filter' };
   // UUID paths are canonical, not version/name based; response identity must match.
   id = id.toLowerCase();
-  if (!await resolveSession(config, cookie, fetcher)) return { state: 'session_required' };
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { state: 'session_required' };
   const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
   const path = '/api/v1/security/admin/grants/' + scope + '/' + id;
   const detail = await privateRequest(config, path, envelope.token, fetcher, {}, envelope.sid);
@@ -309,7 +310,7 @@ export async function readAdminGrantDetail(config: SessionConfig, cookie: string
       reason_truncated: row.reason_truncated });
   }
   // Detail and history are independent READ COMMITTED snapshots; retain both statuses.
-  return { state: 'ready', grant, current_status: data.current_status as 'ACTIVE' | 'SUSPENDED',
+  return { state: 'ready', grant, read_only_mode: identity.read_only_mode, current_status: data.current_status as 'ACTIVE' | 'SUSPENDED',
     coverage, total: data.total as number, next_offset: data.next_offset as number | null, items };
 }
 

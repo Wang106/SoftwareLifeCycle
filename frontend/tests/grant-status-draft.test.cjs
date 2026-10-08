@@ -66,3 +66,12 @@ test('preparation renders Chinese/English without credentials, submission or bro
   assert.ok(source.includes('setReview(null)')); // Editing invalidates preview and its confirmation.
   assert.ok(source.includes('disabled={!review.confirmed || copying}'));
 });
+
+test('controlled form SSR separates preparation from explicitly enabled submission',()=>{
+ const render=(locale,submissionEnabled)=>renderToStaticMarkup(React.createElement(LanguageProvider,{initialLocale:locale},
+  React.createElement(Component,{target,submissionEnabled})));
+ assert.ok(render('zh',true).includes('此环境可进行受控提交'));
+ assert.ok(render('en',true).includes('Controlled submission is available'));
+ for(const enabled of [false,true])assert.ok(!render('en',enabled).includes('Send confirmed grant request'));
+ // No request is reviewed/confirmed in the initial render, even with the server capability.
+});
