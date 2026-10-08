@@ -86,7 +86,7 @@ function parseIdentity(value: unknown): Identity | null {
       SOFTWARE: data.active_grant_counts.SOFTWARE } };
 }
 async function privateRequest(config: SessionConfig, path: string, token: string, fetcher: typeof fetch,
-  options: RequestInit = {}, sessionId?: string): Promise<{ status: number; value: unknown } | null> {
+  options: RequestInit = {}, sessionId?: string, responseLimit = 16384): Promise<{ status: number; value: unknown } | null> {
   try {
     const response = await fetcher(`${config.apiBase}${path}`, { ...options,
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json',
@@ -96,7 +96,7 @@ async function privateRequest(config: SessionConfig, path: string, token: string
     });
     if (!response.headers.get('content-type')?.includes('application/json')) { await response.body?.cancel(); return null; }
     // Bound both declared and streamed size; never parse arbitrary provider bodies.
-    if (Number(response.headers.get('content-length') || '0') > 16384) { await response.body?.cancel(); return null; }
+    if (Number(response.headers.get('content-length') || '0') > responseLimit) { await response.body?.cancel(); return null; }
     const reader = response.body?.getReader();
     if (!reader) return null;
     const chunks: Uint8Array[] = []; let size = 0;
@@ -105,7 +105,7 @@ async function privateRequest(config: SessionConfig, path: string, token: string
         const { done, value } = await reader.read();
         if (done) break;
         size += value.length;
-        if (size > 16384) { await reader.cancel(); return null; }
+        if (size > responseLimit) { await reader.cancel(); return null; }
         chunks.push(value);
       }
     } finally { reader.releaseLock(); }
@@ -233,4 +233,82 @@ export async function readAdminGrants(config: SessionConfig, cookie: string | un
   }
   return { state: 'ready', total: data.total as number,
     next_offset: data.next_offset as number | null, items };
+}
+
+
+export type GrantHistoryEvent = {
+  id: string; event_no: string; action: string; occurred_at: string;
+  actor_principal_id: string | null; actor_display_name: string | null;
+  expected_status: 'ACTIVE' | 'SUSPENDED' | null; status: 'ACTIVE' | 'SUSPENDED' | null;
+  reason: string | null; reason_truncated: boolean;
+};
+export type GrantDetailResult =
+  | { state: 'ready'; grant: AdminGrant; current_status: 'ACTIVE' | 'SUSPENDED';
+      coverage: string; total: number; next_offset: number | null; items: GrantHistoryEvent[] }
+  | { state: 'session_required' | 'forbidden' | 'unavailable' | 'invalid_filter' | 'not_found' };
+function adminReadFailure(result: { status: number; value: unknown } | null) {
+  return result?.status === 401 ? 'session_required' as const :
+    result?.status === 403 ? 'forbidden' as const :
+    result?.status === 404 ? 'not_found' as const : 'unavailable' as const;
+}
+function projectExactGrant(value: unknown, scope: string, id: string): AdminGrant | null {
+  if (!value || typeof value !== 'object') return null;
+  const row = value as AdminGrant;
+  if (row.id !== id || row.scope !== scope || typeof row.role !== 'string' || row.role.length > 100 ||
+      !['ACTIVE', 'SUSPENDED'].includes(row.status) || typeof row.effective !== 'boolean' ||
+      !row.principal || typeof row.principal.id !== 'string' || !uuid.test(row.principal.id) ||
+      typeof row.principal.display_name !== 'string' ||
+      !['ACTIVE', 'DISABLED'].includes(row.principal.status)) return null;
+  if (scope === 'GLOBAL' ? row.target !== null : (!row.target ||
+      typeof row.target.id !== 'string' || !uuid.test(row.target.id) ||
+      typeof row.target.code !== 'string' || typeof row.target.name !== 'string')) return null;
+  return { id: row.id, scope: row.scope, role: row.role, status: row.status, effective: row.effective,
+    principal: { id: row.principal.id, display_name: row.principal.display_name, status: row.principal.status },
+    target: row.target === null ? null : { id: row.target.id, code: row.target.code, name: row.target.name } };
+}
+export async function readAdminGrantDetail(config: SessionConfig, cookie: string | undefined,
+  scope: string, id: string, offset: number, fetcher: typeof fetch = fetch): Promise<GrantDetailResult> {
+  if (!['GLOBAL', 'PROJECT', 'SOFTWARE'].includes(scope) || !uuid.test(id) ||
+      !Number.isSafeInteger(offset) || offset < 0 || offset > 100000) return { state: 'invalid_filter' };
+  // UUID paths are canonical, not version/name based; response identity must match.
+  id = id.toLowerCase();
+  if (!await resolveSession(config, cookie, fetcher)) return { state: 'session_required' };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const path = '/api/v1/security/admin/grants/' + scope + '/' + id;
+  const detail = await privateRequest(config, path, envelope.token, fetcher, {}, envelope.sid);
+  if (!detail || detail.status !== 200) return { state: adminReadFailure(detail) };
+  const grant = projectExactGrant(detail.value, scope, id);
+  if (!grant) return { state: 'unavailable' };
+  const result = await privateRequest(config, path + '/history?limit=10&offset=' + offset,
+    envelope.token, fetcher, {}, envelope.sid, 32768);
+  if (!result || result.status !== 200) return { state: adminReadFailure(result) };
+  if (!result.value || typeof result.value !== 'object') return { state: 'unavailable' };
+  const data = result.value as Record<string, unknown>;
+  const coverage = scope === 'GLOBAL' ? 'GLOBAL_ROLE_STATUS_CHANGED_ONLY' : 'MEMBERSHIP_STATUS_CHANGED_ONLY';
+  if (data.scope !== scope || data.grant_id !== id || data.coverage !== coverage ||
+      !['ACTIVE', 'SUSPENDED'].includes(data.current_status as string) ||
+      data.limit !== 10 || data.offset !== offset || !Number.isSafeInteger(data.total) ||
+      (data.total as number) < 0 || !Array.isArray(data.items) || data.items.length > 10 ||
+      data.items.length > (data.total as number) ||
+      !(data.next_offset === null || (data.next_offset === offset + 10 && offset + 10 <= 100000)))
+    return { state: 'unavailable' };
+  const items: GrantHistoryEvent[] = [];
+  for (const row of data.items) {
+    if (!row || typeof row !== 'object' || typeof row.id !== 'string' || !uuid.test(row.id) ||
+        typeof row.event_no !== 'string' || typeof row.action !== 'string' ||
+        typeof row.occurred_at !== 'string' || !Number.isFinite(Date.parse(row.occurred_at)) ||
+        !(row.actor_principal_id === null || (typeof row.actor_principal_id === 'string' && uuid.test(row.actor_principal_id))) ||
+        !(row.actor_display_name === null || typeof row.actor_display_name === 'string') ||
+        ![null, 'ACTIVE', 'SUSPENDED'].includes(row.expected_status) ||
+        ![null, 'ACTIVE', 'SUSPENDED'].includes(row.status) ||
+        !(row.reason === null || (typeof row.reason === 'string' && row.reason.length <= 500)) ||
+        typeof row.reason_truncated !== 'boolean') return { state: 'unavailable' };
+    items.push({ id: row.id, event_no: row.event_no, action: row.action, occurred_at: row.occurred_at,
+      actor_principal_id: row.actor_principal_id, actor_display_name: row.actor_display_name,
+      expected_status: row.expected_status, status: row.status, reason: row.reason,
+      reason_truncated: row.reason_truncated });
+  }
+  // Detail and history are independent READ COMMITTED snapshots; retain both statuses.
+  return { state: 'ready', grant, current_status: data.current_status as 'ACTIVE' | 'SUSPENDED',
+    coverage, total: data.total as number, next_offset: data.next_offset as number | null, items };
 }

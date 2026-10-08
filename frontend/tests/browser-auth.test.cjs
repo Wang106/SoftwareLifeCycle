@@ -318,3 +318,91 @@ test('malformed private catalog fails closed without exposing upstream JSON',asy
   assert.equal((await readAdminGrants(f.config.session,f.encrypted,'GLOBAL','ACTIVE',0,fetcher)).state,'unavailable');
  }
 });
+
+const { readAdminGrantDetail } = load('browser-session');
+function statusEvent() {
+ return {id,event_no:'EVT-ADMIN-01',action:'SUSPEND',occurred_at:'2026-10-08T04:00:00Z',
+  actor_principal_id:id,actor_display_name:'操作人 <script>',expected_status:'ACTIVE',
+  status:'SUSPENDED',reason:'测试原因 <script>',reason_truncated:false,payload_json:{secret:'private'}};
+}
+function detailFetcher(f,options={}) {
+ const detailPath=env.API_BASE_URL+'/api/v1/security/admin/grants/'+(options.scope||'GLOBAL')+'/'+id;
+ return async(url,init)=>{
+  if(url===detailPath){
+   assert.equal(init.headers['X-Browser-Session'],f.sid);assert.equal(init.cache,'no-store');
+   return Response.json(options.detail||f.row,{status:options.detailStatus||200});
+  }
+  if(url.startsWith(detailPath+'/history?')){
+   assert.equal(new URL(url).searchParams.get('limit'),'10');
+   assert.equal(init.headers.Authorization,'Bearer '+f.login.access);
+   return Response.json(options.history||{scope:'GLOBAL',grant_id:id,current_status:'SUSPENDED',
+    coverage:'GLOBAL_ROLE_STATUS_CHANGED_ONLY',total:11,limit:10,offset:0,next_offset:10,items:[statusEvent()]},
+    {status:options.historyStatus||200});
+  }
+  return f.login.fetcher(url,init);
+ };
+}
+test('exact grant detail and history preserve independent status snapshots without secrets',async()=>{
+ const f=await grantFixture();
+ const result=await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id.toUpperCase(),0,detailFetcher(f));
+ assert.equal(result.state,'ready');assert.equal(result.grant.id,id);
+ assert.equal(result.grant.status,'ACTIVE');assert.equal(result.current_status,'SUSPENDED');
+ assert.equal(result.total,11);assert.equal(result.next_offset,10);
+ assert.equal(result.items[0].reason,'测试原因 <script>');
+ assert.ok(!JSON.stringify(result).includes('private'));assert.ok(!JSON.stringify(result).includes('must-not-render'));
+});
+test('each exact read enforces backend denials; detail failure does not fetch history',async()=>{
+ const f=await grantFixture();
+ for(const [status,state] of [[401,'session_required'],[403,'forbidden'],[404,'not_found'],[503,'unavailable']]){
+  for(const at of ['detail','history']){
+   let histories=0;const fetcher=detailFetcher(f,{[at+'Status']:status});
+   const wrapped=async(url,init)=>{if(url.includes('/history?'))histories++;return fetcher(url,init);};
+   assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,wrapped)).state,state);
+   if(at==='detail')assert.equal(histories,0);
+  }
+ }
+});
+test('exact history rejects wrong identity, coverage, pagination and malformed events',async()=>{
+ const f=await grantFixture(), base={scope:'GLOBAL',grant_id:id,current_status:'ACTIVE',
+  coverage:'GLOBAL_ROLE_STATUS_CHANGED_ONLY',total:1,limit:10,offset:0,next_offset:null,items:[statusEvent()]};
+ for(const history of [{...base,grant_id:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'},
+  {...base,scope:'PROJECT'},{...base,coverage:'MEMBERSHIP_STATUS_CHANGED_ONLY'},
+  {...base,next_offset:3},{...base,total:-1},{...base,items:[{...statusEvent(),reason:'x'.repeat(501)}]},
+  {...base,items:[{...statusEvent(),occurred_at:'not-a-date'}]},
+  {...base,items:[{...statusEvent(),status:'DISABLED'}]}]){
+  assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,detailFetcher(f,{history}))).state,'unavailable');
+ }
+ assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,
+  detailFetcher(f,{detail:{...f.row,id:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'}}))).state,'unavailable');
+});
+test('exact grant paths validate filters and revoked sessions before private reads',async()=>{
+ const f=await grantFixture();let calls=0;const never=async()=>{calls++;throw Error('unexpected');};
+ for(const [scope,grantId,offset] of [['OTHER',id,0],['GLOBAL','../secrets',0],['GLOBAL',id,-1],['GLOBAL',id,100001]]){
+  assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,scope,grantId,offset,never)).state,'invalid_filter');
+ }
+ assert.equal(calls,0);
+ await handleAuth(request('logout',{cookie:SESSION_COOKIE+'='+f.encrypted}),'logout',env,f.login.fetcher);
+ assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,f.login.fetcher)).state,'session_required');
+});
+test('project and software exact histories accept owned targets and nullable legacy values',async()=>{
+ const f=await grantFixture();
+ for(const scope of ['PROJECT','SOFTWARE']){
+  const detail={...f.row,scope,target:{id,code:'OWNED',name:'Owned target'}};
+  const history={scope,grant_id:id,current_status:'ACTIVE',coverage:'MEMBERSHIP_STATUS_CHANGED_ONLY',
+   total:11,limit:10,offset:10,next_offset:null,items:[{...statusEvent(),expected_status:null,status:null,
+    actor_principal_id:null,actor_display_name:null,reason:null,reason_truncated:false}]};
+  const result=await readAdminGrantDetail(f.config.session,f.encrypted,scope,id,10,detailFetcher(f,{scope,detail,history}));
+  assert.equal(result.state,'ready');assert.equal(result.grant.target.id,id);assert.equal(result.items[0].reason,null);
+ }
+});
+
+test('history permits a full page of bounded Chinese reasons and rejects oversized upstream bodies',async()=>{
+ const f=await grantFixture(),history={scope:'GLOBAL',grant_id:id,current_status:'ACTIVE',
+  coverage:'GLOBAL_ROLE_STATUS_CHANGED_ONLY',total:10,limit:10,offset:0,next_offset:null,
+  items:Array.from({length:10},(_,n)=>({...statusEvent(),id:'12345678-1234-1234-1234-'+String(n).padStart(12,'0'),
+   reason:'测'.repeat(500),actor_display_name:'人'.repeat(255)}))};
+ assert.ok(Buffer.byteLength(JSON.stringify(history))>16384);
+ assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,detailFetcher(f,{history}))).state,'ready');
+ assert.equal((await readAdminGrantDetail(f.config.session,f.encrypted,'GLOBAL',id,0,
+   detailFetcher(f,{history:{...history,extra:'x'.repeat(32768)}}))).state,'unavailable');
+});

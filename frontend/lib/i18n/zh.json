@@ -1625,5 +1625,17 @@
   "SOFTWARE": "软件",
   "Principal": "身份",
   "Role": "角色",
-  "Previous page": "上一页"
+  "Previous page": "上一页",
+  "Grant detail and status history": "授权详情与状态历史",
+  "Grant not found.": "授权不存在。",
+  "Status change history": "状态变更历史",
+  "History read status": "历史读取时的状态",
+  "Detail and history are separate reads; concurrent changes may show different statuses.": "详情和历史是分别读取的；并发变更时可能显示不同状态。",
+  "Total status events": "状态事件总数",
+  "Only recorded grant status changes are shown. Empty history does not prove that this grant was never changed.": "仅显示已记录的授权状态变更；历史为空不证明该授权从未变更。",
+  "No status events on this page.": "本页没有状态事件。",
+  "Reason truncated": "原因已截断",
+  "Event": "事件",
+  "Before": "变更前",
+  "After": "变更后"
 }
