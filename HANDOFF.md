@@ -1,10 +1,11 @@
 # SoftwareLifeCycle Development Handoff
 
 ## 当前交接入口 — 2026-10-08（Codex）
-新窗口先读 [AGENTS.md](AGENTS.md)、[START_HERE.md](START_HERE.md)、[REQUIREMENTS.md](REQUIREMENTS.md)、[DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)，再查本文件后部最新验收记录。以 GitHub 最新main为准，本轮代码合并 6ca8987a3ab355f2c51931d6bb76fd736351af4a（PR#21）。旧首部API0.18.29/schema0019是历史，本包API代码0.18.36/schema0020；在线API版本未独立验证。
-当前已有双语授权目录/精确详情/状态历史、冻结确认复制和默认关闭的受控发送/原请求重试/内存结果恢复。未知之后的拒绝仍保留未知，状态变化不覆盖冻结请求；跨刷新/跨会话持久恢复与导入未实现。本轮又完成USER/SERVICE及GLOBAL/PROJECT/SOFTWARE新增请求准备，未创建实际对象。默认关闭的注册代理/原请求重试控制器本轮已接入双语页面，发送、回执和页面内存恢复已实现。本包增加身份私有目录/精确详情/有界状态历史读取API，下一包接入双语身份管理与激活禁用界面，随后批准的独立环境/提供方、首批及全部14真实业务提交、更正撤销、离线部署与运营迁移。
-公共演示只读，OIDC/授权状态提交默认关闭。内部服务器部署尚未开始；SSO待定，人员用户自定，Windows或无Docker的版本/架构待定。离线包、实际身份/浏览器验收未完成。36/44=82%；模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。
-SoftwareLifeCycle_12完整原文未检索到，来源限制见REQUIREMENTS。Actions新部署配置启用/秘密未核验，不能声称覆盖现有提供方自动部署。当前执行器通过GitHub连接服务读写，不等于已创建云端Codex任务。历史记录全部保留。
+新窗口先读 [AGENTS.md](AGENTS.md)、[START_HERE.md](START_HERE.md)、[REQUIREMENTS.md](REQUIREMENTS.md)、[DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)，再查本文件末尾最新验收。以GitHub最新main为准：代码merge dd88672fb64e2d3856b6c19c0f87074d22f8704e（PR#22），exact-head bdb1e3c1e38acccf2b516a7f6257149fe06e92e7 的CI37761779402完整通过。旧首部API/schema为历史；本包API代码0.18.36/schema0020，线上API版本/后端提供方部署未独立核验。
+前端67双语页面；授权目录/详情/历史与默认关闭的授权状态、USER/SERVICE和三作用域注册发送/精确回执/原请求重试/内存恢复已有。新后端提供身份私有目录、UUID精确详情和有界状态历史；新注册DISABLED、无授权身份也可查。目录不返回原始issuer/subject/邮箱/凭据，管理员保护及issuer匹配是读取快照，不能替代写入授权。身份管理页面、激活禁用准备和独立受控发送下一包；注册/授权准备与发送不重复开发。
+公共演示只读，OIDC及提交通道默认关闭。内部服务器尚未部署；SSO待定，人员用户后续自定，Windows或无Docker的版本/架构待确认。跨刷新/跨会话恢复、真实管理员/提供方/浏览器、离线安装与运营验收未完成。浏览器此前拒绝访问，不绕过或重试。
+代码main前端CI/Cloudflare部署成功，完整main后端CI记录时运行；最新文档提交后的CI须重新核对。Render未选择工作区：My Workspace存在但尚未经用户确认，未自行选择；健康查询工具本轮无法访问API，不判断服务故障或声称0.18.36在线。Actions部署门禁启用/秘密未核验，不能声称覆盖独立提供方自动部署。
+本轮执行器为云端Linux工作区，GitHub连接服务读写；没有另外启动独立Codex任务。本地仅Python语法及进度检查，完整测试证据来自CI。36/44=82%；模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。14业务命令、2自身会话控制、6管理员命令及离线操作分别计数。SoftwareLifeCycle_12完整原文未检索到，见REQUIREMENTS。历史记录全部保留。
 
 ## Handoff identity
 
@@ -2952,3 +2953,13 @@ PR https://github.com/Wang106/SoftwareLifeCycle/pull/21 合并为代码main 6ca8
 新增管理员身份目录、UUID精确详情和有界状态历史；不依赖授权行，新注册DISABLED身份可查。当前管理员/会话独立校验，最小字段SQL投影与count/limit/offset，历史精确type/id/ref/event匹配、原因500字符截断；保护标记包含暂停的管理员授权，仅供读取参考。API代码0.18.36/schema0020；67前端页面未改动。前端身份目录/详情和激活禁用准备/发送下一包。
 新增SQLite/真实PG回归，提交后exact-head CI待验证。本地仅语法及进度校验；不主张本地完整依赖测试、真实浏览器/管理员/OIDC验收或API线上0.18.36已部署。公共只读/OIDC关闭；内部部署尚未开始，不创建实际身份/授权/秘密。
 当前执行器为云端Linux工作区，GitHub连接服务读写；没有另行启动独立Codex任务。36/44=82%；模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，全部增量0。详细契约见docs/admin-principal-reads.md。
+
+
+## PR#22 验收 — 2026-10-08（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/22 已合并；代码main dd88672fb64e2d3856b6c19c0f87074d22f8704e，修正后feature bdb1e3c1e38acccf2b516a7f6257149fe06e92e7。起点ebd9e67c40cb9319d223ae7ca6f34560c8395954。
+exact-head CI37761779402完整成功：2071后端（新增50项，SQLite/真实PG参数化）、172 PostgreSQL-module cases（不是全部真实PG总数）、无skip；660前端；0020单头/SQL/隔离PG升级降级往返、进度ledger --check、类型检查、Worker构建、中英文禁用认证SSR及认证/注册/授权状态禁用路由检查通过。CI acceptance113261960963成功。
+首次head aa2da119 的CI37760543828有4项新增PG测试计数失败，2067通过：PG夹具创建Snapshot时已有一条审计，空表假设不成立。修正为比较操作前后审计增量，保留“读取不写审计”断言；没有放宽接口或安全检查。完整重跑后全部通过。云端工作区仅运行Python语法及进度校验；未安装pytest/SQLAlchemy/FastAPI/JWT，未宣称本地完整测试通过。
+代码main CI37762657305前端113262608321成功，后端113262608098在本记录时运行；不宣称exact-main完整CI已完成。Cloudflare main check113263220882 success，build42193ba7-bdd5-403b-9405-0455d3be0e5d，version451f3493-7051-4b8d-901a-8198f6ffb88c。后续文档提交会触发新CI/部署，须核对最新main。
+API代码0.18.36/schema0020；前端仍67页面。本轮增加私有身份目录/UUID详情/精确状态历史读取，默认关闭的公共认证与写入开关未改变。Render连接器未选择工作区；list_workspaces返回My Workspace，但连接器要求用户确认工作区，未自行选择或访问服务。健康接口查询工具本轮无法访问，因此后端提供方commit部署和线上API版本/ready状态未独立核验；Cloudflare前端成功不证明API0.18.36在线。Actions独立部署门禁启用/凭据未核验，现有提供方独立自动部署不证明受其门禁。
+本轮没有浏览器访问重试、真实管理员/OIDC验收、账号/授权/秘密配置或内部服务器部署；内网安装尚未开始，系统/架构及无Docker条件待确认。原SoftwareLifeCycle_12完整原文仍未获得。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，全部增量0。下一包接入双语身份目录、精确详情和有界历史，再做激活/禁用冻结请求准备与默认关闭的独立受控发送/回执/原请求重试。管理员保护、实际会话撤销和expected_status检查仍由后端独立执行；issuer匹配仅信息，不代表可操作。之后批准身份/内网真实验收、首批及全部14真实提交、跨会话恢复、更正撤销、离线安装包与运营迁移。
