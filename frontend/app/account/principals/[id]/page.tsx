@@ -1,3 +1,4 @@
+import PrincipalStatusPreparation from '../../../../components/principal-status-preparation';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { Localized } from '../../../../components/localized';
@@ -36,7 +37,10 @@ export default async function PrincipalDetailPage({ params, searchParams }: {
       <p><Localized>{result.principal.admin_principal_protected ? 'Protected administrator identity' : 'No administrator assignment observed'}</Localized></p>
       <p><Localized>{result.principal.issuer_matches_configuration ? 'Matches configuration' : 'Does not match configuration'}</Localized></p>
       <p className="muted"><Localized>{'Issuer matching and administrator protection are read snapshots, not permission to change an identity.'}</Localized></p>
-      <p className="muted"><Localized>{'Identity activation and disabling controls are not available on this page yet.'}</Localized></p>
+      <PrincipalStatusPreparation target={{ id: result.principal.id, principalType: result.principal.principal_type,
+        status: result.principal.status, historyStatus: result.current_status,
+        protectedAdministrator: result.principal.admin_principal_protected,
+        issuerMatchesConfiguration: result.principal.issuer_matches_configuration }} />
       <h2><Localized>{'Status change history'}</Localized></h2>
       <p><Localized>{'History read status'}</Localized><Localized>{': '}</Localized><Localized>{result.current_status}</Localized></p>
       <p className="muted"><Localized>{'Detail and history are separate reads; concurrent changes may show different statuses.'}</Localized></p>

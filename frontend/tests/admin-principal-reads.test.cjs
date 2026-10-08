@@ -171,7 +171,7 @@ test('catalog SSR is bilingual, escapes stored text and retains exact links/filt
  assert.ok(en.includes('principal_type=USER'));assert.ok(en.includes('offset=10'));
  assert.ok(!en.includes(token));assert.ok(!en.includes('method="post"'));
 });
-test('detail SSR keeps both statuses, translates evidence coverage and renders no write controls',async()=>{
+test('detail SSR keeps both statuses, translates evidence coverage and blocks preparation when read snapshots differ',async()=>{
  const result={state:'ready',principal,items:[audit],current_status:'ACTIVE',total:1,next_offset:null,
   read_only_mode:true,navigation_limited:false};
  const {node}=await pageNode('detail',result);
@@ -206,4 +206,17 @@ test('unsupported API route 404 is unavailable rather than a missing identity',a
  for(const at of ['detail','history'])
   assert.equal((await session.readAdminPrincipalDetail(f.config,f.cookie,id,0,
    f.mock({[at+'Status']:404,[at]:{detail:'Not Found'}}))).state,'unavailable');
+});
+
+test('exact detail integrates preparation only on matching unprotected snapshots',async()=>{
+ const ready={state:'ready',principal,items:[],current_status:'DISABLED',total:0,next_offset:null,
+  read_only_mode:true,navigation_limited:false};
+ for(const locale of ['zh','en']){
+  const html=render(locale,(await pageNode('detail',ready)).node);
+  assert.ok(html.includes('<form'));assert.ok(html.includes(locale==='zh'?'准备身份状态变更':'Prepare identity status change'));
+  assert.ok(!html.includes('method="post"'));assert.ok(!html.includes('type="checkbox"'));
+  assert.ok(!html.includes('name="principal_id"'));assert.ok(!html.includes(token));
+  const protectedHtml=render(locale,(await pageNode('detail',{...ready,principal:{...principal,admin_principal_protected:true}})).node);
+  assert.ok(!protectedHtml.includes('<form'));
+ }
 });

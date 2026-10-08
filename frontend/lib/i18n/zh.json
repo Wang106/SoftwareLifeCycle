@@ -1767,5 +1767,18 @@
   "Created at": "创建时间",
   "Identity activation and disabling controls are not available on this page yet.": "本页暂未提供身份激活或禁用操作。",
   "Only recorded identity status changes are shown. Registration and provider history are not included.": "仅显示已记录的身份状态变更，不包含注册和身份提供方历史。",
-  "Open current identity detail and history": "打开当前身份详情与历史"
+  "Open current identity detail and history": "打开当前身份详情与历史",
+  "Invalid identity target.": "身份目标无效。",
+  "Protected administrator identities require the separate recovery procedure.": "受保护的管理员身份需要使用独立恢复流程。",
+  "Refresh identity detail and history before preparing a status change.": "请刷新身份详情和历史后再准备状态变更。",
+  "Confirm the exact identity and status change before copying.": "请先确认精确身份和状态变更，再复制请求。",
+  "Identity request copied. No identity change was sent.": "身份请求已复制，未发送身份变更。",
+  "Prepare identity status change": "准备身份状态变更",
+  "Preparation only. This form does not change identities or send an API request.": "仅供请求准备，本表单不会修改身份或发送 API 请求。",
+  "Disabling revokes existing browser sessions. Enabling does not restore old sessions, grant roles or create a provider account.": "禁用将撤销现有浏览器会话。启用不会恢复旧会话、授予角色或创建提供方账号。",
+  "The API must independently verify administrator permission, protection and expected status. This preview is not authorization.": "API 必须独立核验管理员权限、保护规则及预期状态。此预览不代表操作授权。",
+  "Issuer mismatch is informational; changing local status does not repair provider configuration.": "签发方不匹配仅为参考信息；修改本地状态不会修复提供方配置。",
+  "Review the exact identity, status change, reason and audit number.": "请核对精确身份、状态变更、原因及审计编号。",
+  "I reviewed the exact identity, status change, session consequences, reason and audit number.": "我已核对精确身份、状态变更、会话影响、原因及审计编号。",
+  "Copy confirmed identity request": "复制已确认的身份请求"
 }
