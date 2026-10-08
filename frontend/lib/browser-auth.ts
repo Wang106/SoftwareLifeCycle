@@ -1,7 +1,7 @@
 import 'server-only';
 import { createLocalJWKSet, jwtVerify, type JSONWebKeySet } from 'jose';
 import { SESSION_COOKIE, sessionConfig, sessionCookie, clearSessionCookie, sealCookie,
-  openCookie, establishSession, resolveSession, revokeSession, type SessionConfig } from './browser-session';
+  openCookie, establishSession, resolveSession, revokeSession, submitGrantStatus, type GrantStatusCommand, type SessionConfig } from './browser-session';
 
 export const LOGIN_COOKIE = '__Host-slc_login';
 const LOGIN_AGE = 300;
@@ -200,4 +200,52 @@ export async function handleAuth(request: Request, operation: AuthOperation, env
   // Authorization code one-use is enforced by the provider; no refresh tokens are retained.
   if (operation === 'callback') setCookie(response, loginCookie());
   return response;
+}
+
+
+// Default-disabled browser proxy. UI remains preparation/copy only until a
+// controlled environment and actual administrator/browser acceptance exist.
+export async function handleGrantStatus(request: Request, env: Environment, fetcher: typeof fetch = fetch): Promise<Response> {
+  if (request.method !== 'POST') {
+    const response = json('method_not_allowed', 405); response.headers.set('Allow', 'POST'); return response;
+  }
+  if (env.GRANT_STATUS_SUBMISSION_MODE !== 'enabled') return json('grant_submission_disabled', 503);
+  let config: AuthConfig | null;
+  try { config = await authConfig(env); } catch { return json('grant_submission_disabled', 503); }
+  if (!config || env.GRANT_STATUS_APPROVED_API_BASE_URL !== config.session.apiBase ||
+      env.GRANT_STATUS_APPROVED_APP_ORIGIN !== config.session.origin) return json('grant_submission_disabled', 503);
+  if (!sameOrigin(request, config)) return json('cross_origin_request', 403);
+  if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json')
+    return json('json_required', 415);
+  if (Number(request.headers.get('content-length') || '0') > 8192) return json('request_too_large', 413);
+  let value: unknown;
+  const reader = request.body?.getReader();
+  if (!reader) return json('invalid_request', 400);
+  try {
+    const chunks: Uint8Array[] = []; let size = 0;
+    for (;;) {
+      const part = await reader.read(); if (part.done) break;
+      size += part.value.length;
+      if (size > 8192) { await reader.cancel(); return json('request_too_large', 413); }
+      chunks.push(part.value);
+    }
+    const bytes = new Uint8Array(size); let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+    value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+  } catch { return json('invalid_request', 400); } finally { reader.releaseLock(); }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return json('invalid_request', 400);
+  const data = value as Record<string, unknown>;
+  const fields = ['scope', 'grant_id', 'event_no', 'expected_status', 'status', 'reason'];
+  if (Object.keys(data).length !== fields.length || !fields.every(key => Object.prototype.hasOwnProperty.call(data, key)) ||
+      !['GLOBAL', 'PROJECT', 'SOFTWARE'].includes(data.scope as string) ||
+      typeof data.grant_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.grant_id) ||
+      typeof data.event_no !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,49}$/.test(data.event_no) ||
+      !['ACTIVE', 'SUSPENDED'].includes(data.expected_status as string) ||
+      !['ACTIVE', 'SUSPENDED'].includes(data.status as string) || data.status === data.expected_status ||
+      typeof data.reason !== 'string' || Array.from(data.reason.trim()).length < 5 ||
+      Array.from(data.reason.trim()).length > 500 || /[\u0000-\u001f\u007f]/.test(data.reason))
+    return json('invalid_request', 400);
+  const command = { ...data, grant_id: data.grant_id.toLowerCase(), reason: data.reason.trim() } as GrantStatusCommand;
+  const result = await submitGrantStatus(config.session, readCookie(request, SESSION_COOKIE), command, fetcher);
+  return Response.json(result.value, { status: result.status, headers: privateHeaders });
 }
