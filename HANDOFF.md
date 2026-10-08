@@ -1,8 +1,8 @@
 # SoftwareLifeCycle Development Handoff
 
 ## 当前交接入口 — 2026-10-08（Codex）
-新窗口先读 [AGENTS.md](AGENTS.md)、[START_HERE.md](START_HERE.md)、[REQUIREMENTS.md](REQUIREMENTS.md)、[DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)，再查本文件后部最新验收记录。以 GitHub 最新main为准，本轮代码合并 5b0e797891bb0cb9b90ce4e16cd5e607bfb3b30f（PR#18）。旧首部API0.18.29/schema0019是历史，目前API0.18.35/schema0020。
-当前已有双语授权目录/精确详情/状态历史、冻结确认复制和默认关闭的受控发送/原请求重试/内存结果恢复。未知之后的拒绝仍保留未知，状态变化不覆盖冻结请求；跨刷新/跨会话持久恢复与导入未实现。下一包身份/授权新增界面，随后批准的独立环境/提供方、首批及全部14真实业务提交、更正撤销、离线部署与运营迁移。
+新窗口先读 [AGENTS.md](AGENTS.md)、[START_HERE.md](START_HERE.md)、[REQUIREMENTS.md](REQUIREMENTS.md)、[DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)，再查本文件后部最新验收记录。以 GitHub 最新main为准，本轮代码合并 20f12dcc95e66961be5195841f199a4485c790dc（PR#19）。旧首部API0.18.29/schema0019是历史，目前API0.18.35/schema0020。
+当前已有双语授权目录/精确详情/状态历史、冻结确认复制和默认关闭的受控发送/原请求重试/内存结果恢复。未知之后的拒绝仍保留未知，状态变化不覆盖冻结请求；跨刷新/跨会话持久恢复与导入未实现。本轮又完成USER/SERVICE及GLOBAL/PROJECT/SOFTWARE新增请求准备，未创建实际对象。下一包默认关闭的注册代理/受控发送和身份私有读取/激活禁用界面，随后批准的独立环境/提供方、首批及全部14真实业务提交、更正撤销、离线部署与运营迁移。
 公共演示只读，OIDC/授权状态提交默认关闭。内部服务器部署尚未开始；SSO待定，人员用户自定，Windows或无Docker的版本/架构待定。离线包、实际身份/浏览器验收未完成。36/44=82%；模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。
 SoftwareLifeCycle_12完整原文未检索到，来源限制见REQUIREMENTS。Actions新部署配置启用/秘密未核验，不能声称覆盖现有提供方自动部署。当前桌面执行器通过GitHub连接服务读写，不等于已创建云端Codex任务。历史记录全部保留。
 
@@ -2907,3 +2907,11 @@ PR CI37747961707完整成功：2021后端、172 PostgreSQL-module cases，无ski
 新增 /account/grants/new 私有管理准备页，复用后端管理员读取复核；提供 USER/SERVICE 本地身份、GLOBAL/PROJECT/SOFTWARE 新授权的精确字段、角色作用域、UUID/审计编号/Unicode校验、冻结预览、确认复制。issuer不来自客户端；身份初始DISABLED、授权初始SUSPENDED均由后端设置，正文不含状态/actor/凭据。页面不发送API、不创建实际身份或授权；编辑撤销确认。
 新增操作仍是准备切片；注册服务器代理/受控发送、身份读取与激活/禁用界面、真实提供方/管理员验收未完成。原授权状态发送与内存恢复已通过PR#18，跨会话恢复仍待。公共只读/OIDC及写入默认关闭；内网尚未部署、SSO待定、人员用户自定。
 API0.18.35/schema0020不变；页面增加为67。CI待记录；36/44=82%，模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。
+
+## PR#19 验收 — 2026-10-08（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/19 合并为代码main 20f12dcc95e66961be5195841f199a4485c790dc；feature 2adf8c1779d6617f696c7d8f9659949abbb7e56a。
+PR CI37750056142完整成功：2021后端、172 PostgreSQL-module cases，无skip；621前端（新增21准备/契约/SSR行为回归与2页面/组件本地化覆盖）；0020单迁移头、SQL和隔离PG往返、类型检查、Worker生产构建及禁用认证SSR通过。新页zh/en实测SSR为200/private-no-store、登录未配置且无身份表单。本地JS语法与进度报告 --check 通过；完整依赖套件由云端CI执行。
+代码main CI37751013810前端check113223952603成功；Cloudflare main check113224547149成功，build6f2bbd31-de16-4b01-8602-f9ea685e2831，version6b289f97-e2fb-471a-848f-5d8524dd1bf6。记录时main后端仍运行，未主张exact-main完整CI成功；随后文档提交会触发新CI。上一轮文档main34bb8989的CI37749055266成功，Actions部署37749947749/37749098065 skipped，不能称新Actions部署门禁已启用。
+67页面默认中文/English。本地身份USER/SERVICE、全局2角色/项目7角色/软件2角色新增准备已实现，前端角色表与实际后端常量回归对账；精确subject及显示名Unicode/空白、UUID/审计/原因、未知额外字段/跨作用域拒绝、冻结确认复制已验证。issuer/actor/status/凭据不可通过请求输入声明；身份初始DISABLED、授权SUSPENDED仍由后端契约决定。
+本包不发送注册API，不创建真实账号/授权/秘密、不激活提供方或开启公共写入。原PR#18授权状态发送/内存恢复保持默认关闭；跨会话恢复仍未完成。API0.18.35/schema0020不变；无本轮API实时探针、真实浏览器/提供方/管理员验收或内网部署，也未绕过先前浏览器拒绝。
+下一包默认关闭的注册提交代理/受控发送及身份私有读取/激活禁用界面；之后批准环境/实际身份验收、首批及全部14业务提交、更正撤销、离线安装/部署和运营。内网部署尚未开始，SSO待定、人员用户自定、系统版本/架构待确认。36/44=82%；模块100/100-demo/100-demo/100/89/60/17；七计划100/100/20/33/40/20/0；增量0。
