@@ -1,8 +1,8 @@
 # SoftwareLifeCycle Development Handoff
 
 ## 当前交接入口 — 2026-10-08（Codex）
-新窗口先读AGENTS.md、START_HERE.md、REQUIREMENTS.md、DEVELOPMENT_STATUS.md、ROADMAP.md、docs/development-plan-progress.json，再查本文件末尾最新验收。GitHub最新main为事实源；PR#25代码merge ff45bc52ec36e90793c700edadc7d44f2b76ad06、feature 9af0006cb748c906457210a79ca3ab8739ac8ea6 的完整CI37781503558全部成功：2071后端、172 PostgreSQL-module cases无skip、721前端、迁移/构建/禁用认证SSR/进度--check。代码main前端CI及Cloudflare成功，后端在最新记录时运行；后续文档main的新CI/部署须核对，后来的确切证据优先。
-69双语页面；身份私有目录/UUID精确详情/history、授权私有读取、默认关闭的授权状态和注册发送/回执/原请求重试已完成。身份激活禁用准备/冻结确认复制已有；本包又完成独立默认关闭的身份状态代理、精确回执校验及PrincipalSubmission同步发送锁/明确原请求重试/未知结果保留控制器。页面发送按钮、结果组件和内存恢复交互尚未接入，下一包实现，不重复开发代理或冻结准备。详情/history只可独立观察，不代表原请求回执；实际会话撤销数来自精确回执，启用不恢复旧cookie或授予角色/创建提供方账号，管理员保护与expected_status由后端独立核验。
+新窗口先读AGENTS.md、START_HERE.md、REQUIREMENTS.md、DEVELOPMENT_STATUS.md、ROADMAP.md、docs/development-plan-progress.json，再查本文件末尾最新验收。GitHub最新main为事实源；PR#25代码merge ff45bc52ec36e90793c700edadc7d44f2b76ad06、feature 9af0006cb748c906457210a79ca3ab8739ac8ea6 的完整CI37781503558全部成功：2071后端、172 PostgreSQL-module cases无skip、721前端、迁移/构建/禁用认证SSR/进度--check。后续文档main c4933706c7b8a3b642ff8f2eb72d902a59fd582e 的CI37783451803全部成功、Cloudflare成功；后续文档main的新CI/部署须核对，后来的确切证据优先。
+69双语页面；身份私有目录/UUID精确详情/history、授权私有读取、默认关闭的授权状态和注册发送/回执/原请求重试已完成。身份激活禁用准备/冻结确认复制已有；本包又完成独立默认关闭的身份状态代理、精确回执校验及PrincipalSubmission同步发送锁/明确原请求重试/未知结果保留控制器。本包已接入双语发送按钮、精确结果组件和页面内存恢复，分支CI待验证；下一包首批业务默认关闭提交通道，不重复现有管理员代理或UI。详情/history只可独立观察，不代表原请求回执；实际会话撤销数来自精确回执，启用不恢复旧cookie或授予角色/创建提供方账号，管理员保护与expected_status由后端独立核验。
 API代码0.18.36/schema0020不变；后台提供方部署/线上版本未核验。公共样例只读，OIDC及所有提交默认关闭，无实际变量/秘密/身份/授权配置。Render工作区未明确选择，未代选；不阻断模拟开发。内部服务器未部署，SSO待定、人员用户后续自定、Windows/无Docker及系统/架构条件未确认。真实浏览器/管理员/提供方、跨会话恢复、离线安装和运营未验收；此前浏览器拒绝访问，不绕过或重试。
 旧失败邮件CI37760543828已修复PG夹具基线审计增量断言，修正后37761779402通过再合并PR#22；后续多次完整CI通过，起点最新main37769795022三个任务成功，本包完整CI再成功。初版分支CI被更新head替代cancelled，不是新的未修复故障。Actions独立部署起点仍skipped，提供方独立自动部署分别核对，不证明新部署门禁/凭据已验收。
 当前执行器Mac桌面工作区，根目录无git checkout或完整Node依赖；GitHub连接服务固定main建树、独立分支/PR发布，本地仅Node语法与进度--check，完整套件来自Actions，无另外启动的独立Codex任务。新窗口需访问GitHub仓库，不能把旧桌面部分快照当当前main。
@@ -3021,3 +3021,12 @@ PrincipalSubmission只接受明确布尔确认和可重构的冻结预览；固�
 页面仍只有身份准备/确认复制；发送按钮、精确结果组件与页面内存恢复交互尚未接入，下一包实现。公开样例只读/OIDC及所有实际提交通道关闭，没有配置实际变量/秘密/身份/授权，没有浏览器访问重试、真实管理员/提供方验收、API实时探针或内网安装。内网尚未开始部署、SSO待定、人员用户后续自定、Windows/无Docker条件未确认；Render工作区未明确选择，后端提供方部署/线上API版本未独立核验。
 69页面/API代码0.18.36/schema0020不变。执行器Mac桌面，根目录非git checkout且缺完整Node依赖；GitHub连接服务固定main建树、独立分支/PR发布。本地新测试Node语法及进度--check通过，完整依赖套件来自Actions；无另外启动的独立Codex任务。全部历史交接保留，原SoftwareLifeCycle_12全文仍未检索。契约docs/principal-status-submission.md。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，全部增量0。下一包双语身份状态发送按钮、精确回执展示、明确原请求重试及页面内存恢复；之后真实身份/内网、首批与全部14业务提交、跨会话导入恢复、更正撤销、无Docker离线安装及运营迁移；VIN最后。14业务、2自身会话、6管理员与离线操作分别计数。
+
+
+## 2026-10-08 身份状态双语发送与页面内存恢复（Codex）
+起点main c4933706c7b8a3b642ff8f2eb72d902a59fd582e，最新main CI37783451803三个任务成功，Cloudflare成功，独立Actions部署skipped；没有开放PR。旧失败邮件已修复，当前无需重复修复。
+身份详情接入独立默认关闭的发送按钮、精确结果组件和明确原请求重试。页面能力使用principalSubmissionConfigured并要求当前read_only_mode明确false；不配置实际环境变量、身份、授权或秘密。双语回执区分应用与当前状态、重放及实际撤销会话数；冻结UUID新标签独立详情不代替回执。
+同步控制器/复制锁防重复点击、编辑和过期事件；发送/unknown有离页提醒。目标、history/保护快照或能力刷新不覆盖已尝试原目标/key/body；后续拒绝仍保留之前未知事实。只有confirmed或首次明确rejected可新编号、新预览；未知请求不能被新操作替代，剪贴板失败可手动复制。恢复仅内存，不跨刷新/会话。
+新增组件事件/双语SSR、精确详情门禁和本地化覆盖回归。exact-head完整CI待验证。本地Node语法与进度--check通过；Mac工作区非完整checkout、没有完整Node依赖，完整测试以Actions为准，既有快照保留，无独立云端Codex任务。
+69页面/API代码0.18.36/schema0020不变；公共样例只读/OIDC及所有提交默认关闭。真实浏览器/管理员/提供方、后台部署版本、内网安装未验收。Render工作区未选择，不重试被拒绝浏览器访问。内网尚未部署、SSO待定、人员由用户后续自定、Windows/无Docker及系统/架构未确认。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，全部增量0。下一包推进Snapshot/实际报告/Batch首批业务命令默认关闭的提交通道与恢复契约，采用独立批准门禁，先完成服务器边界及模拟回归；真实身份提交和端到端验收需批准环境。之后全部14业务提交、跨会话导入恢复、追加更正撤销、无Docker离线安装和运营迁移；VIN最后。14业务、2自身会话、6管理员与离线操作分计；原SoftwareLifeCycle_12全文未取得。

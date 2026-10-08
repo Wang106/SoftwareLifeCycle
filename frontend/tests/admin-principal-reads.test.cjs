@@ -145,14 +145,14 @@ test('full history permits 500 Unicode code points and bounded large body',async
   catalog:{...page([principal]),private:'x'.repeat(16384)}}))).state,'unavailable');
 });
 function render(locale,node){return renderToStaticMarkup(React.createElement(localized.LanguageProvider,{initialLocale:locale},node));}
-async function pageNode(which,result,{query={},config=true}={}){
+async function pageNode(which,result,{query={},config=true,approved=false}={}){
  const file=which==='catalog'?'app/account/principals/page.tsx':'app/account/principals/[id]/page.tsx';
  const depth=which==='catalog'?'../../../':'../../../../';
  let calls=0,args;
  const mod=load(file,{
   'next/link':({children,...props})=>React.createElement('a',props,children),
   'next/headers':{cookies:async()=>({get:()=>({value:'encrypted'})})},
-  [depth+'lib/browser-auth']:{authConfig:async()=>config?{session:{}}:null},
+  [depth+'lib/browser-auth']:{authConfig:async()=>config?{session:{}}:null,principalSubmissionConfigured:()=>approved},
   [depth+'lib/browser-session']:{SESSION_COOKIE:session.SESSION_COOKIE,
    readAdminPrincipals:async(...value)=>{calls++;args=value;return result;},
    readAdminPrincipalDetail:async(...value)=>{calls++;args=value;return result;}
@@ -218,5 +218,20 @@ test('exact detail integrates preparation only on matching unprotected snapshots
   assert.ok(!html.includes('name="principal_id"'));assert.ok(!html.includes(token));
   const protectedHtml=render(locale,(await pageNode('detail',{...ready,principal:{...principal,admin_principal_protected:true}})).node);
   assert.ok(!protectedHtml.includes('<form'));
+ }
+});
+
+
+// Page capability is server-derived; an enabled environment never defeats current read-only state.
+test('detail passes independent approved capability only for an explicitly writable current identity',async()=>{
+ const ready={state:'ready',principal,items:[],current_status:'DISABLED',total:0,next_offset:null,navigation_limited:false};
+ for(const approved of [false,true])for(const read_only_mode of [true,false,undefined]){
+  const {node}=await pageNode('detail',{...ready,read_only_mode},{approved});
+  for(const locale of ['zh','en']){
+   const html=render(locale,node),enabled=approved&&read_only_mode===false;
+   assert.ok(html.includes(enabled?(locale==='zh'?'此环境可进行受控提交':'Controlled submission is available'):
+    (locale==='zh'?'本表单不会修改身份':'Preparation only.')));
+   assert.ok(!html.includes('发送已确认的身份请求'));assert.ok(!html.includes('Send confirmed identity request'));
+  }
  }
 });
