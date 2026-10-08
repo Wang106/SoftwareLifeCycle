@@ -1,4 +1,6 @@
 import 'server-only';
+import { parseFirstCommand, firstCommandPath, firstCommandEvent, type FirstCommand } from './first-command-transport';
+import { projectFirstAudit } from './first-command-audit';
 import { parsePrincipalStatusCommand, projectPrincipalStatusReceipt, type PrincipalStatusCommand } from './principal-status-transport';
 import { projectRegistrationReceipt } from './admin-registration-transport';
 import type { RegistrationReview } from './admin-registration-draft';
@@ -549,4 +551,41 @@ export async function submitPrincipalStatus(config: SessionConfig, cookie: strin
     return { status: 409, value: { error: typeof detail === 'string' && known.includes(detail) ? detail : 'submission_conflict' } };
   }
   return unknown;
+}
+
+
+// Three fixed business command paths. Recovery only reads the original atomic audit.
+export async function executeFirstCommand(config: SessionConfig, cookie: string | undefined,
+  input: FirstCommand, mode: 'submit' | 'recover', fetcher: typeof fetch = fetch): Promise<{ status: number; value: unknown }> {
+  const command = parseFirstCommand(input);
+  if (!command || !['submit', 'recover'].includes(mode)) return { status: 400, value: { error: 'invalid_request' } };
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { status: 401, value: { error: 'session_required' } };
+  // A read-only switch does not erase an already committed own-operation receipt.
+  if (mode === 'submit' && identity.read_only_mode) return { status: 403, value: { error: 'read_only_mode' } };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const unknown = { status: 502, value: { error: 'outcome_unknown' } };
+  if (mode === 'submit') {
+    const result = await privateRequest(config, firstCommandPath(command), envelope.token, fetcher,
+      { method: 'POST', body: JSON.stringify(command.body) }, envelope.sid);
+    if (!result) return unknown;
+    const expectedStatus = command.operation === 'actual' ? 200 : 201;
+    if (result.status !== expectedStatus) {
+      const denied: Record<number, string> = { 401: 'session_required', 403: 'submission_forbidden', 422: 'invalid_request' };
+      if (denied[result.status]) return { status: result.status, value: { error: denied[result.status] } };
+      if (result.status === 409) {
+        const detail = result.value && typeof result.value === 'object' ? (result.value as Record<string, unknown>).detail : null;
+        const error = typeof detail === 'string' && /^request_id (already used|or business number already exists)/.test(detail) ? 'request_conflict' :
+          typeof detail === 'string' && /^actual_version conflict: expected [0-9]+, current [0-9]+$/.test(detail) ? 'version_conflict' : 'submission_conflict';
+        return { status: 409, value: { error } };
+      }
+      return unknown;
+    }
+  }
+  // No query of current object status can prove this original command's result.
+  const audit = await privateRequest(config, '/api/v1/activity/' + firstCommandEvent(command),
+    envelope.token, fetcher, {}, envelope.sid);
+  if (!audit || audit.status !== 200) return unknown;
+  const receipt = projectFirstAudit(audit.value, command, identity.principal.id);
+  return receipt ? { status: 200, value: receipt } : unknown;
 }

@@ -6,7 +6,7 @@ require('node:child_process').execFileSync(process.execPath,[require.resolve('ty
 const modules=new Map();
 function load(file){
  if(modules.has(file))return modules.get(file);
- assert.ok(['browser-session','admin-registration-transport','admin-registration-draft','principal-status-transport','principal-status-draft'].includes(file));
+ assert.ok(['browser-session','admin-registration-transport','admin-registration-draft','principal-status-transport','principal-status-draft','first-command-transport','first-command-audit','command-draft'].includes(file));
  const exports={};modules.set(file,exports);
  vm.runInNewContext(fs.readFileSync(path.join(output,file+'.js'),'utf8'),{exports,
   require:name=>name==='server-only'?{}:load(name.replace('./','')),
@@ -68,4 +68,5 @@ test('identity projection excludes extra secrets; logout clears the identical co
  const a=await issued(backend({...identity,token,principal:{...identity.principal,email:'private@example.test',token}}));assert.ok(a);assert.ok(!JSON.stringify(a.identity).includes(token));assert.ok(!JSON.stringify(a.identity).includes('email'));
  const clear=clearSessionCookie();assert.equal(clear.name,a.cookie.name);assert.equal(clear.path,a.cookie.path);assert.equal(clear.value,'');assert.equal(clear.maxAge,0);
 });
+
 
