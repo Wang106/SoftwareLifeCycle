@@ -142,13 +142,13 @@ test('all operation receipts and uncertain result messages render bilingually wi
  for(const operation of ['approval','decision']){
   const c=new GovernanceSubmission(governanceReview(f.command(operation)));await c.send(true,async()=>Response.json(f.receipt(c.state.command)));
   for(const locale of ['zh','en']){const html=render(locale,React.createElement(Result,{state:c.state}));assert.ok(html.includes(locale==='zh'?'匹配的原子审计已确认原操作':'matching atomic audit'));
-   assert.ok(html.includes('/activity/'+f.eventNo(c.state.command)));assert.ok(html.includes('/approvals/'+encodeURIComponent('APR-原始')));
+   assert.ok(html.includes('/activity/'+f.eventNo(c.state.command)));assert.ok(html.includes(operation==='approval'?'/approvals/'+encodeURIComponent('APR-原始'):'/release-decisions/'+encodeURIComponent('RD-原始')));
    if(operation==='approval'){assert.ok(html.includes('PENDING'));assert.ok(html.includes('APPROVED'));assert.ok(html.includes(locale==='zh'?'原审批流程仍处于待审批':'original approval pending'));}
    else {assert.ok(html.includes('/snapshots/SNAP-0001-'+f.release.slice(0,8)));assert.ok(html.includes(locale==='zh'?'决策和就绪状态是记录的声明':'recorded declarations'));}
    assert.ok(html.includes('target="_blank"'));assert.ok(html.includes('rel="noopener noreferrer"'));assert.ok(html.includes(locale==='zh'?'原操作应用的值':'original applied values'));}
  }
  const c=new GovernanceSubmission(governanceReview(f.command('decision')));await c.send(true,async()=>{throw Error('lost');});await c.send(true,async()=>Response.json({error:'step_conflict'},{status:409}));
- for(const locale of ['zh','en']){const html=render(locale,React.createElement(Result,{state:c.state}));assert.ok(html.includes(locale==='zh'?'此前结果未知的操作可能已经提交':'earlier uncertain operation may have committed'));assert.ok(html.includes(locale==='zh'?'重新加载后丢失':'lost on reload'));}
+ for(const locale of ['zh','en']){const html=render(locale,React.createElement(Result,{state:c.state}));assert.ok(html.includes(locale==='zh'?'此前结果未知的操作可能已经提交':'earlier uncertain operation may have committed'));assert.ok(html.includes(locale==='zh'?'重新加载后丢失':'lost on reload'));assert.ok(html.includes('/release-decisions/'+encodeURIComponent('RD-原始')));}
  assert.ok(!render('en',React.createElement(Result,{state:{...c.state,error:'private provider text'}})).includes('private provider text'));
  for(const message of Object.values(governanceCommandMessages))assert.match(dictionary[message],/[\u4e00-\u9fff]/,message);
 });
