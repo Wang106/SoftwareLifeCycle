@@ -28,8 +28,8 @@ API代码0.18.36/schema0020；身份私有目录/UUID详情/有界状态历史�
 内网只有可用部署位置，尚未开始安装；离线安装包/无Docker启动脚本尚未实现和演练。系统与CPU信息可稍后提供，不阻塞服务器端代码与模拟测试。
 
 ## 下一包
-实现Test Release/Deployment/Changeover独立默认关闭提交通道、原审计恢复及冻结控制器，然后接双语UI；再完成Impact/Acceptance/Resource、真实身份/内网验收、跨会话导入恢复、更正撤销及运营迁移，VIN最后。
-本轮起点main22ede3fa完整CI37864590056及Cloudflare生产成功；PR#33已合并至061c6ce8，精确feature CI37882061097及Preview成功，本验收文档后最新main另核对。详见HANDOFF和DEVELOPMENT_STATUS。
+Test Release/Deployment/Changeover已有独立默认关闭提交/原审计恢复代理和冻结控制器，接入双语发送/查询/明确重试/精确结果。之后做Impact/Acceptance/Resource代理/UI、真实身份/内网验收、跨会话恢复、更正撤销及运营迁移，VIN最后。
+十一类代理/控制器、八类UI；代码0.18.36/schema0020，最新验收看HANDOFF和DEVELOPMENT_STATUS末尾。
 
 ## PR#28 验收 — 2026-10-08（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/28 已合并，代码main 759b94d190407b50c6b90f416ebfb953bf7f875f，最终feature fffe74f1a437d3fcb18a8d52e896be1a6559c33c；起点 5cf8798fdac12bd23f42b95e7d17b4cc0f5b23e9。
