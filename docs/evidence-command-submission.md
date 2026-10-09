@@ -91,3 +91,7 @@ No schema migration (0020). Public sample environment remains read-only; OIDC an
 all submission gates stay disabled. Real provider/browser/admin/internal acceptance
 has not occurred. Internal installation has not begun; SSO, personnel and offline
 Windows/no-Docker/CPU constraints are undecided. Do not retry denied browser access.
+
+
+## Manual cross-session audit-only recovery — 2026-10-09
+All fourteen business commands can explicitly export canonical, versioned recovery text and import it on the same origin in a later session. Import stages uncertainty without network activity, permits only explicit original-audit queries and has no write/retry method. Missing or denied audit stays unknown; existing in-page exact retries are unchanged. No automatic browser storage or credential export. Manually saved business text may include private references. See [business-request-recovery.md](business-request-recovery.md); real provider/browser/internal acceptance remains pending.

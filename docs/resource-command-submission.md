@@ -80,3 +80,7 @@ Public samples stay read-only; all submission and OIDC gates remain disabled.
 Real provider/browser/admin/internal-server acceptance is pending. Internal server
 installation has not begun; SSO, personnel, OS/CPU and no-Docker constraints are
 undecided. Existing browser access denial is not retried or bypassed.
+
+
+## Manual cross-session audit-only recovery — 2026-10-09
+All fourteen business commands can explicitly export canonical, versioned recovery text and import it on the same origin in a later session. Import stages uncertainty without network activity, permits only explicit original-audit queries and has no write/retry method. Missing or denied audit stays unknown; existing in-page exact retries are unchanged. No automatic browser storage or credential export. Manually saved business text may include private references. See [business-request-recovery.md](business-request-recovery.md); real provider/browser/internal acceptance remains pending.

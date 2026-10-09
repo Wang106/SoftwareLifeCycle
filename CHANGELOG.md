@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-09 — Manual cross-session original-request recovery
+- Add canonical versioned export and strict same-origin import for all 14 business commands.
+- Imported requests remain unknown until matching original actor-bound audit confirms them; import performs no network activity and offers no write or retry path.
+- Add bilingual copy/manual-copy/import controls and private business-text warnings, with no credentials or automatic browser storage.
+- Backend/schema, public read-only and disabled OIDC/write gates unchanged; real-provider acceptance and broader correction/revocation remain pending.
+
 ## 2026-10-09 — Impact / Acceptance / Resource bilingual submission UI
 - Connect three independent default-disabled submit/query/retry/result interfaces; all 14 business commands now have bilingual UI.
 - Resolve one private USER session for six command groups; preserve unknown original requests across context and independent capability changes.
