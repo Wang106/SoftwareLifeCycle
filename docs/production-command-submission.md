@@ -25,5 +25,5 @@ Changeover：EVT-CO-{无横线UUID}；原request精确deployment_no/changeover_n
 ## 冻结控制器及限制
 ProductionSubmission仅接受布尔确认及可重构的原path/trace/audit/body。两个UUID目标从正文取值，Changeover从既有固定路径恢复原Deployment编号；构造后验证全部链接及正文。
 同步发送/查询互锁、confirmed终态、冻结原ID/target/JSON字节，无自动重试。明确查询只GET原审计，明确重试才重复原字节业务写入。丢失回复、未知HTTP、缺失/拒绝/不匹配审计保持unknown；后续门禁或业务拒绝不能抹除先前未知事实。
-本包实现代理、严格解析/原回执及控制器；三个准备表单的双语发送/查询/结果按钮下一包接入。仅页面内存，不支持跨卸载/刷新/会话导入恢复。十一类代理/控制器、八类UI已有；剩余Impact/Acceptance/Resource代理和六类UI。
+代理、严格解析/原回执及控制器和三类双语确认发送/原审计查询/明确重试/精确结果已接入 /commands。页面productionSubmissionConfigured独立门控和唯一当前USER会话只投影两个布尔能力；凭据不传客户端。其他命令门控不能开放本通道或覆盖未知原请求。原请求在表单、命令、上下文和能力刷新后冻结；只有confirmed或首次明确rejected允许重新准备。复制/发送/查询同步互锁，业务详情与原审计链接独立新标签读取，测试发布附原冻结Snapshot链接。结果保留原DRAFT/PENDING/COMPLETED与六位UTC微秒，不以当前详情推断原操作结果。仅页面内存，不支持跨卸载/刷新/会话导入恢复；beforeunload不能保证应用内路由提醒。十一类代理/控制器及十一类UI已有；剩余Impact/Acceptance/Resource代理及三类UI。
 公共样例保持只读；OIDC及全部提交默认关闭，真实提供方/浏览器/管理员/内网验收未完成，内部服务器尚未安装，不重试被拒绝浏览器访问。SSO、人员、Windows无Docker及CPU架构仍待确认。

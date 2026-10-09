@@ -2,10 +2,10 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const source=fs.readFileSync('app/commands/page.tsx','utf8');
 const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-async function page({configured=true,governanceConfigured=false,distributionConfigured=false,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
+async function page({configured=true,governanceConfigured=false,distributionConfigured=false,productionConfigured=false,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
  let cookieReads=0,sessionReads=0;const Workbench=()=>null,exports={};
  vm.runInNewContext(compiled,{exports,process:{env:{}},require:name=>name==='next/headers'?{cookies:async()=>{cookieReads++;return{getAll:()=>cookies};}}:
-  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured,governanceSubmissionConfigured:()=>governanceConfigured,distributionSubmissionConfigured:()=>distributionConfigured}:
+  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured,governanceSubmissionConfigured:()=>governanceConfigured,distributionSubmissionConfigured:()=>distributionConfigured,productionSubmissionConfigured:()=>productionConfigured}:
   name==='../../lib/browser-session'?{SESSION_COOKIE:'__Host-slc_session',resolveSession:async()=>{sessionReads++;return identity;}}:
   name==='../../components/command-workbench'?{__esModule:true,default:Workbench}:
   name==='../../components/localized'?{Localized:({children})=>children}:
@@ -65,5 +65,23 @@ test('distribution missing session or ambiguous cookies fail closed',async()=>{
  for(const options of [{identity:null},{cookies:[]},{cookies:[{value:'one'},{value:'two'}]}]){
   const r=await page({configured:false,distributionConfigured:true,...options});
   assert.equal(r.component.props.distributionSubmissionEnabled,false);assert.equal(r.component.props.distributionRecoveryEnabled,false);
+ }
+});
+
+test('four independent approved command gates project eight booleans through one current session',async()=>{
+ for(const configured of [false,true])for(const governanceConfigured of [false,true])for(const distributionConfigured of [false,true])for(const productionConfigured of [false,true])for(const read_only_mode of [false,true,undefined]){
+  const r=await page({configured,governanceConfigured,distributionConfigured,productionConfigured,identity:{read_only_mode,token:'private',principal:{id:'private'}}});
+  const enabled=configured||governanceConfigured||distributionConfigured||productionConfigured;
+  assert.equal(r.cookieReads,enabled?1:0);assert.equal(r.sessionReads,enabled?1:0);
+  for(const [gate,submit,recover] of [[configured,'submissionEnabled','recoveryEnabled'],[governanceConfigured,'governanceSubmissionEnabled','governanceRecoveryEnabled'],[distributionConfigured,'distributionSubmissionEnabled','distributionRecoveryEnabled'],[productionConfigured,'productionSubmissionEnabled','productionRecoveryEnabled']]){
+   assert.equal(r.component.props[submit],gate&&read_only_mode===false);assert.equal(r.component.props[recover],gate);
+  }
+  assert.ok(!JSON.stringify(r.component.props).includes('private'));
+ }
+});
+test('production capabilities fail closed for missing identity and ambiguous cookies',async()=>{
+ for(const options of [{identity:null},{cookies:[]},{cookies:[{value:'one'},{value:'two'}]}]){
+  const r=await page({configured:false,productionConfigured:true,...options});
+  assert.equal(r.component.props.productionSubmissionEnabled,false);assert.equal(r.component.props.productionRecoveryEnabled,false);
  }
 });
