@@ -1821,5 +1821,10 @@
   "The expected approval step is stale. Review the exact approval detail.": "预期审批步骤已过时，请核对精确审批详情。",
   "An approved step may leave the original approval pending. This receipt does not approve another step or authorize release.": "已批准的步骤可能使原审批流程仍处于待审批。本回执不会批准其他步骤或授予发布权限。",
   "Decision and readiness are recorded declarations. This receipt does not calculate readiness or authorize distribution.": "决策和就绪状态是记录的声明。本回执不会计算就绪状态或授予分发权限。",
-  "Open original frozen snapshot": "打开原冻结快照"
+  "Open original frozen snapshot": "打开原冻结快照",
+  "READY confirms the original package revision and frozen artifact set. It does not send files or authorize production.": "READY 确认原交付包修订和冻结文件集合，不代表发送文件或授予生产权限。",
+  "READY confirms the original distribution record and recipient. It does not send files or acknowledge receipt.": "READY 确认原分发记录及接收方，不代表发送文件或确认签收。",
+  "DRAFT confirms the original authorization scope. It does not approve deployment, production or physical flashing.": "DRAFT 确认原生产授权范围，不代表批准部署、量产或实际刷写。",
+  "Fourteen commands can be prepared. Snapshot, actual software, batch, approval action, release decision, delivery package, distribution and production authorization submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved.": "可准备十四类命令。快照、实际软件、批次、审批动作、发布决策、交付包、分发与生产授权提交需要已批准环境及当前登录会话。请求仅保存在页面内存中；结果未知时请保留原请求 ID 和精确正文。",
+  "Prepare fourteen lifecycle commands. Approved signed-in environments can submit Snapshot, actual software, batch, approval action, release decision, delivery package, distribution and production authorization requests and query their original audit receipts.": "准备十四类生命周期命令。已批准且登录的环境可提交快照、实际软件、批次、审批动作、发布决策、交付包、分发与生产授权请求，并查询其原审计回执。"
 }

@@ -1325,3 +1325,15 @@ All64 page entrypoints have localization coverage. ROADMAP36/44=82%; modules
 Session ledger now records partial implementation evidence and remaining acceptance.
 Next: approved provider/controlled target, real browser and revocation acceptance,
 then controlled submission/recovery, all14 commands, corrections and operations.
+
+
+## 2026-10-09 交付、分发及生产授权双语提交界面（Codex）
+起点 main 22ede3fa59794a35e4766ec8d655d10c18919720；精确 CI37864590056 后端、前端、acceptance 均成功，Cloudflare生产 build6faf172b-0f53-4cd6-81a6-962670a04462/version2ab583a4-b024-4c11-be83-ca73e4e53607 成功，Actions独立deploy跳过，开放PR0。
+本轮接入Delivery Package/Distribution/Production Authorization双语确认发送、查询原审计、原请求明确重试及精确回执。三组独立默认关闭门禁通过唯一当前USER会话投影六个布尔值；凭据不传客户端。未知原请求跨表单/命令/上下文/能力刷新保持冻结，查询不重发业务写入，显式重试保持原ID和原字节，同步发送/查询/复制互锁。
+结果保留原READY交付精确修订及冻结artifact集合、原READY分发及接收方、原DRAFT生产授权的customer/project/site/line/purpose、finite/null批次范围及原限制。精确业务详情/原审计链接独立新标签读取，交付附原snapshot链接；不推断发送文件、签收、量产批准、当前状态或replayed。
+本地完整前端922通过/0fail/0skip（原895新增24组件事件/双语结果、2服务器门禁及1本地化覆盖，共27）；TypeScript --noEmit及进度--check通过。新增门禁测试先验证旧代码缺能力投影失败；实现后修正初次新UI测试使用同一target而未触发context变更的测试数据，未放宽断言。本地Next/OpenNext Cloudflare Worker构建及中英文禁用认证SSR成功；两条distribution路由GET405/POST503、private/no-store。保留既有autoprefixer mixed support警告，未修改无关CSS。本包精确head Actions/provider结果另记录；不复用旧main或Preview。
+69页面/API代码0.18.36/schema0020不变；没有后台或迁移修改。八类代理/控制器及八类双语UI完成，剩余六类代理/UI（Test Release/Deployment/Changeover、Impact/Acceptance/Resource）；全部14类真实身份验收仍未完成。
+仅页面内存，卸载/刷新/跨会话恢复导入待实现；beforeunload不保证应用内其他路由提醒。公共样例只读，OIDC及全部提交默认关闭，未配置实际身份/授权/秘密，真实浏览器/管理员/提供方/内网验收未进行。内网未安装，SSO/人员/Windows无Docker/系统架构待定。Render后台部署/版本未核验。原SoftwareLifeCycle_17全文检索服务报错，本轮按仓库最新交接继续；不是已经读取其全文。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0；双语提交UI由5/14增至8/14。执行器为云端Linux完整checkout，Codex直接编写并运行本地前端测试；完整后端/真实PG回归由Actions验收。Git CLI没有推送凭据，通过已连接GitHub发布。
+下一包实现Test Release/Deployment/Changeover独立默认关闭提交通道、原审计恢复、严格精确回执和冻结控制器，然后接入双语UI；再完成Impact/Acceptance/Resource、真实身份及内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装与运营迁移，VIN最后。
+契约docs/distribution-command-submission.md。
