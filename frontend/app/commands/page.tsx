@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured } from '../../lib/browser-auth';
+import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured } from '../../lib/browser-auth';
 import { resolveSession, SESSION_COOKIE } from '../../lib/browser-session';
 
 import { Localized, LocalizedAttributes } from "../../components/localized";
@@ -21,16 +21,19 @@ export default async function Page({ searchParams }: {
   try { config = await authConfig(process.env); } catch { /* Do not expose configuration details. */ }
   const configured = firstSubmissionConfigured(process.env, config);
   const governanceConfigured = governanceSubmissionConfigured(process.env, config);
-  const values = configured || governanceConfigured ? (await cookies()).getAll(SESSION_COOKIE) : [];
-  const identity = (configured || governanceConfigured) && config && values.length === 1 ? await resolveSession(config.session, values[0].value) : null;
+  const distributionConfigured = distributionSubmissionConfigured(process.env, config);
+  const values = configured || governanceConfigured || distributionConfigured ? (await cookies()).getAll(SESSION_COOKIE) : [];
+  const identity = (configured || governanceConfigured || distributionConfigured) && config && values.length === 1 ? await resolveSession(config.session, values[0].value) : null;
   const recoveryEnabled = configured && identity !== null;
   const submissionEnabled = recoveryEnabled && identity?.read_only_mode === false;
   const governanceRecoveryEnabled = governanceConfigured && identity !== null;
   const governanceSubmissionEnabled = governanceRecoveryEnabled && identity?.read_only_mode === false;
+  const distributionRecoveryEnabled = distributionConfigured && identity !== null;
+  const distributionSubmissionEnabled = distributionRecoveryEnabled && identity?.read_only_mode === false;
   return <>
     <div className="top"><div><div className="eyebrow"><Localized>{"CONTROLLED COMMANDS"}</Localized></div><h1><Localized>{"Prepare a lifecycle request"}</Localized></h1>
-      <p className="muted"><Localized>{"Prepare fourteen lifecycle commands. Approved signed-in environments can submit Snapshot, actual software, batch, approval action and release decision requests and query their original audit receipts."}</Localized></p></div></div>
-    <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} />
+      <p className="muted"><Localized>{"Prepare fourteen lifecycle commands. Approved signed-in environments can submit Snapshot, actual software, batch, approval action, release decision, delivery package, distribution and production authorization requests and query their original audit receipts."}</Localized></p></div></div>
+    <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} />
   </>;
 }
 

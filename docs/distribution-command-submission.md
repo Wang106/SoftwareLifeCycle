@@ -23,4 +23,4 @@ DISTRIBUTION_COMMAND_SUBMISSION_MODE=disabled、DISTRIBUTION_COMMAND_APPROVED_AP
 ## 不确定性、明确重试与下一步
 DistributionSubmission接受布尔确认且path/trace/audit/正文可重构的Review，固定浏览器代理路径。同步sending/checking互锁，confirmed终态。丢失回复、错误HTTP、缺失/拒绝/不匹配原审计均unknown，无自动重试或POST恢复回退；后续拒绝或门禁关闭不抹除早先未知事实。
 明确恢复仅GET原审计；明确重试保持原key/target/body。大备注/文件列表使原审计超限时保持unknown，不表示未提交，需要受控诊断，不自动扩大读取范围或重复写入。
-本包是服务器通道/严格解析/原回执投影和冻结控制器基础。现有三类表单仍只有准备/确认复制，双语发送、查询、重试及精确结果界面下一包接入。仅内存、跨卸载/刷新/会话导入未实现。公共样例只读，真实身份/管理员/提供方/浏览器和内网验收未执行；内网未部署，SSO及系统架构待定，不重试已被拒绝的浏览器访问。
+三类表单已接入双语确认发送、查询原审计、原请求明确重试及精确结果。页面使用独立distributionSubmissionConfigured与唯一当前USER只读投影，只有六个布尔能力传客户端；其他通道开关不能启用本通道。已尝试原请求不能被编辑、命令或上下文刷新替换；未知结果不允许新建请求。confirmed或首次明确rejected可重新复核并生成新UUID。原READY/DRAFT、修订、接收方与有限/null范围如实展示，业务详情、原审计及交付原Snapshot链接独立观察。仅内存、跨卸载/刷新/会话导入未实现。公共样例只读，真实身份/管理员/提供方/浏览器和内网验收未执行；内网未部署，SSO及系统架构待定，不重试已被拒绝的浏览器访问。

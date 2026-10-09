@@ -232,3 +232,6 @@ added. See [interface contract](i18n.md).
 
 ## First-command transport foundation — 2026-10-08
 Snapshot/actual/Batch now have independently default-disabled server submission and own-operation atomic-audit recovery proxies, plus a frozen memory controller. The workspace still prepares/copies only; send/recover/result UI is the next package. See [first-command-submission.md](first-command-submission.md). Missing audit remains unknown; recovery never reissues the write. Real identity/target/browser acceptance remains pending.
+
+## Distribution command UI — 2026-10-09
+Delivery/Distribution/Production Authorization now join the existing five submit/recover/result interfaces. All three use their own default-disabled server gate and current USER read-only projection. Unknown requests remain frozen across command/context/capability changes; recovery reads the original audit, and explicit retries preserve original bytes. READY/DRAFT and exact revision/recipient/scope never imply file delivery, acknowledgment or production approval. Six remaining commands still prepare/copy only. See [distribution-command-submission.md](distribution-command-submission.md). Real-provider acceptance and cross-session import remain pending.
