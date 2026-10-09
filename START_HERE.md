@@ -125,3 +125,12 @@ Mac部分快照/GitHub连接服务发布，本地Node测试语法及进度--chec
 36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量全部0。14业务/2自身会话/6管理员/离线操作分计；八类代理/控制器、五类UI，尚有九类UI及六类代理，不称14类真实提交验收完成。
 下一包把Delivery Package/Distribution/Production Authorization既有准备接入双语确认发送、原审计查询、明确原请求重试和精确结果，采用独立distributionSubmissionConfigured及唯一当前USER只读投影，未知原请求跨命令/上下文/能力刷新不被覆盖。之后实现其余6业务通道及界面（Test Release/Deployment/Changeover、Impact/Acceptance/Resource），真实身份与内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
 契约docs/distribution-command-submission.md。
+
+
+## PR#34 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/34 已合并；代码main96ed9baf2f668254bb4fba44b9c39fcd08cd4b73，精确feature5a76488b1424a1f9838b901db1a26f10b7a29dfc，起点main80772cd6cc2ac36b76f53e3da517ac3f2a7db8bb。
+完整feature CI37886860882三任务成功：2071后端（536.02秒、11417既有warnings），172 PostgreSQL-module cases/no skips；965前端/0fail/0skip（原922新增26传输及17代理回归）。后端113678703521、前端113678698538、acceptance113681136900全部成功。0020单迁移头、SQL、隔离真实PG往返、进度账本、类型检查、Next/OpenNext Worker及双语禁用认证SSR通过；production两条路由GET405/POST503、private/no-store。Cloudflare feature Preview build9ca59067-5b1b-4d20-b5e2-abfb81c35f89成功，不是main生产部署证据。本记录后的最新main精确CI和生产构建须独立核对；Actions独立deploy仍门控跳过，不能声称已启用。
+Test Release/Deployment/Changeover独立默认关闭的提交、原审计恢复、严格目标/正文绑定、精确原回执及冻结控制器完成。Test Release原审计无request，按实际原字段/声明/原因校验；HTTP200/201均需审计，不推断replayed。Deployment原PENDING仅期望，Changeover原COMPLETED仅记录，原from/to和audit.occurred_at的六位UTC微秒保留，不推断测试通过、物理刷写或actual报告。未知请求查询只GET，明确重试原字节/ID不变，同步互锁，后续拒绝不抹除unknown。
+十一类代理/控制器（11/14，79%）、八类双语UI（8/14）；本包三类UI尚未接入，Impact/Acceptance/Resource代理和UI尚待实现。本地965前端、54定向、TypeScript、进度--check、Worker构建及双语禁用SSR通过；旧session测试加载器加入两个明确新增模块后通过，未放宽业务断言。代码69页面/API0.18.36/schema0020不变，没有后端或schema变更。
+执行模式为云端Linux完整checkout，Codex直接编写，本地前端及Actions完整后端/真实PG验收；Git CLI无推送凭据，使用GitHub连接发布。公共样例只读，OIDC及所有提交默认关闭；无实际身份/权限/秘密配置，真实浏览器/管理员/提供方/内网验收未进行，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台部署版本未核验。仅内存，跨卸载/刷新/会话恢复导入待完成。SoftwareLifeCycle_17全文检索此前两次服务报错，依据仓库交接承接，不称已读全文。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0；验收增量全部0，代理覆盖8→11/14。下一包接三类双语确认发送/原审计查询/明确原请求重试/精确结果，再做Impact/Acceptance/Resource、真实身份和内网验收、跨会话恢复、更正撤销、无Docker离线安装及运营迁移，VIN最后。契约docs/production-command-submission.md。
