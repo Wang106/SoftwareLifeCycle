@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.18.37 — 2026-10-09
+- Resource审计新增版本化规范请求SHA256摘要，保留活动位置/描述隐私，业务与审计原子写入。
+- 增加默认关闭Resource提交/原审计恢复代理及冻结控制器；旧无摘要审计保持unknown。
+- Resource双语UI、Impact/Acceptance代理/UI及真实身份验收尚未完成。
+
 ## 2026-10-09 — Production command bilingual submission UI
 - Connect Test Release, Deployment and Changeover confirmed send, original-audit query and exact-byte retry through the independently disabled production gate.
 - Project only current signed-in session booleans, freeze uncertain requests across context/capability changes and show original DRAFT/PENDING/COMPLETED receipts with independent evidence links.

@@ -1,6 +1,8 @@
 """Validate references without fetching URLs, opening files or granting distribution rights."""
 import re
 import uuid
+import hashlib
+import json
 from typing import Literal
 from urllib.parse import quote, urlsplit, unquote
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -24,6 +26,18 @@ TARGETS = {
     'ISSUE': (Issue, 'issue_no', '/issues/'), 'DVP_ITEM': (DvpItem, 'item_no', '/testing/dvp/'),
     'TEST_RELEASE': (TestRelease, 'test_release_no', '/testing/releases/'),
     'DVP_EXECUTION': (DvpExecution, 'execution_no', '/testing/dvp/')}
+
+# Versioned, ordered normalized request digest. Keep resource locations/descriptions
+# out of general activity history while allowing exact own-operation recovery.
+REQUEST_DIGEST_FIELDS = ('request_id','entity_type','entity_id','title','location_kind',
+                         'location','description','actor_name','reason')
+
+
+def request_digest(data):
+    values = data.model_dump(mode='json')
+    encoded = json.dumps([values[k] for k in REQUEST_DIGEST_FIELDS],
+                         ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    return hashlib.sha256(encoded).hexdigest()
 
 
 class ResourceInput(BaseModel):
@@ -107,5 +121,6 @@ def register_link(
         summary=f'Registered resource: {row.title}'[:240],detail=row.reason,
         payload={'target_type':row.entity_type,'target_id':str(row.entity_id),
             'target_ref':row.entity_ref,'location_kind':row.location_kind,
+            'request_digest_version':1,'request_sha256':request_digest(data),
             'actor_source':resolved_actor.source})
     return row, True
