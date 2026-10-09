@@ -28,7 +28,7 @@ API代码0.18.36/schema0020；身份私有目录/UUID详情/有界状态历史�
 内网只有可用部署位置，尚未开始安装；离线安装包/无Docker启动脚本尚未实现和演练。系统与CPU信息可稍后提供，不阻塞服务器端代码与模拟测试。
 
 ## 下一包
-Test Release/Deployment/Changeover双语发送/查询/明确重试/精确结果已接入。下一包实现Impact/Acceptance/Resource独立默认关闭提交及原审计恢复基础，再接双语UI；之后真实身份/内网验收、跨会话恢复、更正撤销及运营迁移，VIN最后。
+Test Release/Deployment/Changeover双语发送/查询/明确重试/精确结果已接入。Resource独立提交与原审计恢复基础已完成；下一包实现Impact/Acceptance独立默认关闭提交及原审计恢复基础，再补齐三类双语UI；之后真实身份/内网验收、跨会话恢复、更正撤销及运营迁移，VIN最后。
 十一类代理/控制器及十一类UI；代码0.18.36/schema0020，最新验收看HANDOFF和DEVELOPMENT_STATUS末尾。
 
 ## PR#28 验收 — 2026-10-08（Codex）

@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-09 Resource 原请求摘要、提交与原审计恢复基础（Codex）
+起点main ba49d2a0cc00bf68b1bc58008a74b79bd8eb3ec4；该main CI37894940845后端/前端/acceptance全部成功，Cloudflare production build a52c824d-9677-44b0-aa9d-bff4123674ad/version add85864-7529-41cc-94e1-b32eea642fdd成功；Actions独立deploy跳过，开放PR0。
+本包Resource独立默认关闭提交/原审计查询代理、严格请求/目标绑定、摘要绑定精确回执与冻结控制器完成。旧审计不含完整标题/位置/描述，新增v1规范UTF-8请求SHA256摘要，不在活动payload保存位置或描述；与业务行/审计同事务，旧记录不补写。原审计缺摘要保持unknown，不以当前对象/POST结果伪造确认。HTTP201/200均须原审计，恢复只GET；仅证明资源登记，不证明存在/内容/分发权限。API代码0.18.37/schema0020，无迁移；线上API部署版本尚未核验，前端构建不替代后台部署。
+十二类代理/控制器（11→12/14，86%），十一类双语UI不变；Resource UI及Impact/Acceptance代理/UI仍待完成。本地完整前端1015通过/0fail/0skip（原993新增22），Resource后端47、授权/审计定向合计76通过；新增2隔离真实PG摘要/原子回滚测试由Actions验收，本地无PG服务，不能声称已通过。新增摘要回归先验证旧实现缺request_sha256失败，补强后通过；TypeScript、Worker配置和进度--check通过；生产构建/禁用认证SSR结果和精确head CI/provider另记录。
+本次SoftwareLifeCycle_20全文检索服务报错，未取得原文，依据仓库最新main交接继续。云端Linux完整checkout的Codex直接编写；未另启动独立Codex云任务。公共样例只读，OIDC及全部提交默认关闭；未配置真实身份/授权/秘密，无真实提供方/浏览器/管理员/内网验收，内网未安装，SSO/人员/Windows无Docker/CPU待定。仅内存，跨刷新/卸载/会话恢复待完成，不重试已拒绝浏览器访问。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0；代理覆盖+1，UI增量0。下一包Impact/Acceptance独立提交及原审计恢复，随后补齐三类双语UI；再做跨会话恢复、更正撤销、真实身份/内网验收及离线运营迁移，VIN最后。契约docs/resource-command-submission.md。
+
+
 ## PR#35 验收 — 2026-10-09（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/35 已合并；代码main49a87c996427dff5b5a7a8bdde5815d767d4a55f，精确feature0fa20b9d14ad4c080d7baf371ea0b8034c9d44cd，起点mainc96199aa3e09197a02d5eb7d4705b68d4866e443。
 完整feature CI37894297853三任务成功：2071后端（314.79秒、11417既有warnings）、172 PostgreSQL-module cases/no skips；993前端/0fail/0skip（原965新增25组件事件/双语结果、2页面门控、1新结果本地化=28）。后端113701992909、前端113701992645、acceptance113703679919全部成功。0020单迁移头、SQL、隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker、中英文禁用认证SSR通过；production两条路由GET405/POST503，private/no-store。Cloudflare feature Preview build48ade30b-a53c-4391-8dc3-099f12e7a61f成功；不是main生产部署证据。本记录后的最新main精确CI/provider另核对，不能复用旧main或Preview。Actions独立deploy默认门控跳过，不能声称已启用。

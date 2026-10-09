@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-PR#35已合并至49a87c9；精确feature CI全部成功（2071后端/172真实PG/no skips，993前端）。十一类UI已接入；最新main CI/生产构建另核对。
+Resource提交/原审计恢复基础完成：十二类代理/控制器、十一类UI；API代码0.18.37/schema0020。本包精确CI和provider结果另记录。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -43,6 +43,7 @@ PR CI37443955445 与业务 merge 的 CI37486596969：2021 backend，172 PostgreS
 本次未进行实时生产探针，不能把上述日期的结果当成当前线上状态。
 
 ## 下一步与估算
+当前下一包：Impact/Acceptance提交与原审计恢复，随后Resource/Impact/Acceptance三类双语UI。以下旧估算保留作历史。
 下一包将Test Release/Deployment/Changeover的既有准备接入双语发送、原审计查询、原请求明确重试及精确结果；独立productionSubmissionConfigured和唯一当前USER只读投影，未知原请求保持冻结。然后实现Impact/Acceptance/Resource代理/UI、真实身份与内网验收、跨会话恢复、更正撤销及离线运营迁移，VIN最后。
 十一类代理/控制器已有，八类UI已有；43项新增定向回归通过，完整验收记录在末尾。总里程碑不按模拟回归提高。
 
@@ -443,3 +444,10 @@ Test Release/Deployment/Changeover双语确认发送、原审计查询、原请�
 本地993前端、TypeScript、Worker配置/构建、双语禁用认证SSR及进度--check通过。新增门控测试先验证旧代码缺能力投影失败；初次组件夹具误把textarea当命名input，改用真实textarea事件后完整通过，未放宽断言。本PR首次云端完整CI成功。执行为云端Linux完整checkout的Codex直接编写；Git CLI无推送凭据，通过GitHub连接发布，没有另启独立云端Codex任务。
 69页面/API0.18.36/schema0020不变，无后台/schema改动。公共样例只读，OIDC及全部提交默认关闭；无实际身份/权限/秘密配置，真实浏览器/管理员/提供方/内网验收未进行，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台版本/部署未核验。仅页面内存，刷新/卸载/跨会话导入恢复待完成，beforeunload不保证应用内路由提醒。SoftwareLifeCycle_17全文此前两次检索服务报错，依据仓库最新交接承接。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，双语UI+3。下一包实现Impact/Acceptance/Resource独立默认关闭提交与原审计恢复基础，再接双语UI；之后真实身份/内网验收、跨会话恢复、更正撤销、无Docker离线安装及运营迁移，VIN最后。契约docs/production-command-submission.md。
+
+## 2026-10-09 Resource 原请求摘要、提交与原审计恢复基础（Codex）
+起点main ba49d2a0cc00bf68b1bc58008a74b79bd8eb3ec4；该main CI37894940845后端/前端/acceptance全部成功，Cloudflare production build a52c824d-9677-44b0-aa9d-bff4123674ad/version add85864-7529-41cc-94e1-b32eea642fdd成功；Actions独立deploy跳过，开放PR0。
+本包Resource独立默认关闭提交/原审计查询代理、严格请求/目标绑定、摘要绑定精确回执与冻结控制器完成。旧审计不含完整标题/位置/描述，新增v1规范UTF-8请求SHA256摘要，不在活动payload保存位置或描述；与业务行/审计同事务，旧记录不补写。原审计缺摘要保持unknown，不以当前对象/POST结果伪造确认。HTTP201/200均须原审计，恢复只GET；仅证明资源登记，不证明存在/内容/分发权限。API代码0.18.37/schema0020，无迁移；线上API部署版本尚未核验，前端构建不替代后台部署。
+十二类代理/控制器（11→12/14，86%），十一类双语UI不变；Resource UI及Impact/Acceptance代理/UI仍待完成。本地完整前端1015通过/0fail/0skip（原993新增22），Resource后端47、授权/审计定向合计76通过；新增2隔离真实PG摘要/原子回滚测试由Actions验收，本地无PG服务，不能声称已通过。新增摘要回归先验证旧实现缺request_sha256失败，补强后通过；TypeScript、Worker配置和进度--check通过；生产构建/禁用认证SSR结果和精确head CI/provider另记录。
+本次SoftwareLifeCycle_20全文检索服务报错，未取得原文，依据仓库最新main交接继续。云端Linux完整checkout的Codex直接编写；未另启动独立Codex云任务。公共样例只读，OIDC及全部提交默认关闭；未配置真实身份/授权/秘密，无真实提供方/浏览器/管理员/内网验收，内网未安装，SSO/人员/Windows无Docker/CPU待定。仅内存，跨刷新/卸载/会话恢复待完成，不重试已拒绝浏览器访问。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0；代理覆盖+1，UI增量0。下一包Impact/Acceptance独立提交及原审计恢复，随后补齐三类双语UI；再做跨会话恢复、更正撤销、真实身份/内网验收及离线运营迁移，VIN最后。契约docs/resource-command-submission.md。

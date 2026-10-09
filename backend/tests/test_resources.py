@@ -120,3 +120,30 @@ def test_all_target_routes(coverage_context):
         row=create_resource(data(target,entity_type=kind),Response(),db)
         assert row['entity_href']==href
     assert catalog(db)['total']==10 and len(db.scalars(select(AuditEvent)).all())==10
+
+
+def test_original_resource_audit_has_complete_private_request_digest(context):
+    import hashlib
+    import json
+    db, _, release, *_ = context
+    request = data(release, title=' 中文标题 ', location='https://example.com/证据?q=1', description='说明')
+    create_resource(request, Response(), db)
+    event = db.scalars(select(AuditEvent)).one()
+    fields = ['request_id','entity_type','entity_id','title','location_kind','location','description','actor_name','reason']
+    values = request.model_dump(mode='json')
+    expected = hashlib.sha256(json.dumps([values[k] for k in fields], ensure_ascii=False, separators=(',', ':')).encode('utf-8')).hexdigest()
+    assert event.payload_json['request_sha256'] == expected
+    assert event.payload_json['request_digest_version'] == 1
+    assert 'location' not in event.payload_json and 'description' not in event.payload_json
+    assert 'request' not in event.payload_json
+    original = dict(event.payload_json)
+    release.version = 'RENAMED'; db.commit()
+    create_resource(request, Response(), db)
+    assert event.payload_json == original
+
+
+@pytest.mark.parametrize('field', ['title','location','description','actor_name','reason'])
+def test_resource_rejects_unpaired_surrogate_before_digest(context, field):
+    _, _, release, *_ = context
+    with pytest.raises(ValidationError):
+        data(release, **{field: '\ud800'})
