@@ -6,7 +6,7 @@ require('node:child_process').execFileSync(process.execPath,[require.resolve('ty
 const modules=new Map();
 function load(file){
  if(modules.has(file))return modules.get(file);
- assert.ok(['browser-session','admin-registration-transport','admin-registration-draft','principal-status-transport','principal-status-draft','first-command-transport','first-command-audit','governance-command-transport','governance-command-audit','distribution-command-transport','distribution-command-audit','production-command-transport','production-command-audit','resource-command-transport','resource-command-audit','command-draft'].includes(file));
+ assert.ok(['browser-session','admin-registration-transport','admin-registration-draft','principal-status-transport','principal-status-draft','first-command-transport','first-command-audit','governance-command-transport','governance-command-audit','distribution-command-transport','distribution-command-audit','production-command-transport','production-command-audit','resource-command-transport','resource-command-audit','evidence-command-transport','evidence-command-audit','command-draft'].includes(file));
  const exports={};modules.set(file,exports);
  vm.runInNewContext(fs.readFileSync(path.join(output,file+'.js'),'utf8'),{exports,
   require:name=>name==='server-only'?{}:load(name.replace('./','')),

@@ -137,3 +137,22 @@ def test_audit_summary_respects_storage_limit(context):
     issue.issue_no = 'I'*50; release.version = 'V'*100; snapshot.snapshot_no = 'S'*80; db.commit()
     create_assessment(issue.issue_no, data(release, snapshot), Response(), db)
     assert len(db.scalars(select(AuditEvent)).one().summary) == 240
+
+
+@pytest.mark.parametrize('reference', [None, '  //server/share/原始证据.pdf  '])
+def test_original_impact_audit_binds_evidence_reference_without_exposing_it(context, reference):
+    import hashlib
+    import json
+    db, issue, release, snapshot, _ = context
+    request = data(release, snapshot, evidence_ref=reference)
+    create_assessment(issue.issue_no, request, Response(), db)
+    event = db.scalars(select(AuditEvent)).one()
+    expected = hashlib.sha256(json.dumps(request.evidence_ref, ensure_ascii=False,
+        separators=(',', ':')).encode('utf-8')).hexdigest()
+    assert event.payload_json['evidence_ref_digest_version'] == 1
+    assert event.payload_json['evidence_ref_sha256'] == expected
+    assert 'evidence_ref' not in event.payload_json
+    original = dict(event.payload_json)
+    create_assessment(issue.issue_no, request, Response(), db)
+    assert event.payload_json == original
+    assert len(db.scalars(select(AuditEvent)).all()) == 1

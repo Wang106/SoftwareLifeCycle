@@ -1,5 +1,7 @@
 """Atomic, idempotent writer; transaction ownership stays with the route."""
 import uuid
+import hashlib
+import json
 from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
@@ -38,6 +40,12 @@ class AssessmentInput(BaseModel):
 
 class AssessmentError(ValueError):
     pass
+
+
+def evidence_reference_digest(reference: str | None) -> str:
+    """Version-1 normalized nullable reference digest; no reference in activity payload."""
+    encoded = json.dumps(reference, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def record_assessment(
@@ -84,5 +92,7 @@ def record_assessment(
         summary=f'{issue.issue_no}: {release.version} / {snapshot.snapshot_no} → {data.decision}'[:240],
         detail=data.reason, payload={'assessment_id': str(assessment.id), 'release_id': str(release.id),
             'snapshot_id': str(snapshot.id), 'snapshot_no': snapshot.snapshot_no,
+            'evidence_ref_digest_version': 1,
+            'evidence_ref_sha256': evidence_reference_digest(data.evidence_ref),
             'decision': data.decision, 'actor_source': resolved_actor.source})
     return assessment, True

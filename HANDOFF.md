@@ -1,5 +1,14 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-09 Impact、Acceptance 提交与原审计恢复基础（Codex）
+起点main 68e7491513b0e6676323652f14ac32f7d88ef590；精确CI37897837744后端/前端/acceptance全部成功（2079后端、174 PG模块无skip、1015前端），Cloudflare生产build965910f1-7e36-427e-87b3-71680f5e9ec4/version1f803cdf-9f4e-4926-8a42-a933068d92b1成功；Actions独立deploy跳过、开放PR0。
+两类独立默认关闭提交/原审计恢复代理、严格正文/目标绑定、原回执与EvidenceSubmission冻结控制器已实现。Impact新增v1规范UTF-8 nullable evidence_ref SHA256摘要，引用不放入活动payload；缺摘要的旧审计包括原null仍unknown，不补写、不查询当前对象。Acceptance实际旧审计已完整，按原assignment/criterion/DVP、声明/原因/实体校验，不伪造历史指纹。两类HTTP201/200都需原审计确认，recover只GET，unknown后拒绝不抹除未知，明确重试原ID/字节不变。原Issue/SCR UUID与assessment/assignment UUID分开；原Snapshot标签来自审计而非请求，不推断当前状态、测试通过、验收完成或下游许可。
+代理/控制器12→14/14（100%）；双语UI仍11/14，Impact/Acceptance/Resource三类UI下一包。69页面；API代码0.18.38/schema0020，无迁移，在线Render后台版本/部署未核验。资源独立门控不变；EVIDENCE_COMMAND三变量门控独立且默认关闭，唯一token-bound USER复核、非只读才提交、只读可查询本人原审计、凭据不传客户端。
+本地完整前端1055通过/0fail/0skip（原1015新增40），Impact/Acceptance/actor/授权定向46与审计/账本27项通过；TypeScript、Worker配置及Next/OpenNext构建/双语禁用认证SSR通过；新两路由GET405/POST503、private/no-store。精确head CI/provider另记录。新增4隔离真实PG原actor/原证据/重放不改审计/原子回滚测试由Actions核验，本地无PG服务。新增Impact摘要测试先证明旧审计缺字段失败，补强后通过；初次前端定向误把服务器原审计snapshot_no当作请求字段，改为非法空标签校验并新增原标签保留回归，最终40通过。
+云端Linux完整checkout由Codex直接编写，未另启独立Codex任务；Git CLI无推送凭据，使用GitHub连接发布。公共样例只读、OIDC和全部提交默认关闭，未配置真实身份/授权/秘密，无实际提供方/浏览器/管理员/内网验收，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定。仅页面内存，刷新/卸载/跨会话导入恢复待完成。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0；代理覆盖+2，UI增量0。下一包补齐Impact/Acceptance/Resource独立门控及三类双语确认发送/原审计查询/原请求明确重试/精确结果；随后跨会话恢复、更正撤销、真实身份/内网验收、离线运营迁移，VIN最后。契约docs/evidence-command-submission.md。
+
+
 ## PR#36 验收 — 2026-10-09（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/36 已合并；代码main b812e82d76b1c9ff7e70c67172a4a4d0c9f66e05，精确feature 581207d06ee25ea02cbf76a2ef7762876058d9ee，起点main ba49d2a0cc00bf68b1bc58008a74b79bd8eb3ec4。
 feature CI37896920738三任务成功：2079后端（423.86秒、11443既有warnings），174 PostgreSQL-module cases/no skips；1015前端/0fail/0skip。后端113710265173、前端113710265441、acceptance113712567433成功；0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker、中英文禁用认证SSR均通过。Resource两路由GET405/POST503、private/no-store。Cloudflare feature Preview build ed8dedc0-e873-400d-9884-e819a37f8c6f成功；不是main生产部署证据。本记录后的最新main精确CI/provider须另核对；Actions独立deploy仍默认跳过，不能声称已启用。

@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-PR#36已合并至b812e82；精确feature CI全成功（2079后端/174 PG模块无skip、1015前端）。十二类代理/控制器、十一类UI；API代码0.18.37/schema0020。最新main CI/生产构建另核对。
+Impact/Acceptance独立提交与原审计恢复基础完成：14/14代理/控制器，11/14双语UI；API代码0.18.38/schema0020。精确head CI/provider验收另记录。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -43,7 +43,7 @@ PR CI37443955445 与业务 merge 的 CI37486596969：2021 backend，172 PostgreS
 本次未进行实时生产探针，不能把上述日期的结果当成当前线上状态。
 
 ## 下一步与估算
-当前下一包：Impact/Acceptance提交与原审计恢复，随后Resource/Impact/Acceptance三类双语UI。以下旧估算保留作历史。
+当前下一包：补齐Resource/Impact/Acceptance三类双语UI，独立门控和原未知请求跨上下文冻结。以下旧估算保留作历史。
 下一包将Test Release/Deployment/Changeover的既有准备接入双语发送、原审计查询、原请求明确重试及精确结果；独立productionSubmissionConfigured和唯一当前USER只读投影，未知原请求保持冻结。然后实现Impact/Acceptance/Resource代理/UI、真实身份与内网验收、跨会话恢复、更正撤销及离线运营迁移，VIN最后。
 十一类代理/控制器已有，八类UI已有；43项新增定向回归通过，完整验收记录在末尾。总里程碑不按模拟回归提高。
 
@@ -459,3 +459,11 @@ Resource请求v1 SHA256摘要与原子审计、独立默认关闭提交/只读�
 代理/控制器11→12/14（86%）、双语UI仍11/14；Impact/Acceptance基础以及Resource/Impact/Acceptance三类UI待完成。本地完整前端1015、后端定向76、TypeScript、Worker配置/构建及禁用认证SSR通过；真实PG新2项由本PR Actions验收。本地无PG服务，不称本地PG已通过。新增摘要测试先证明旧实现缺request_sha256失败，补强后通过；没有新增未修复失败。云端Linux完整checkout的Codex直接编写；Git CLI无推送凭据，经GitHub连接发布并校验21文件blob SHA与本地一致，无另启独立Codex任务。
 SoftwareLifeCycle_20原文检索服务报错，未取得全文，按main交接承接。公共样例只读、OIDC及所有提交默认关闭，未配置实际身份/授权/秘密；真实提供方/浏览器/管理员/内网验收未进行，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定。恢复仅内存，刷新/卸载/跨会话导入仍待完成。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，代理覆盖+1，UI增量0。下一包Impact/Acceptance独立提交与原审计恢复，随后三类双语UI；再做跨会话恢复、更正撤销、真实身份/内网验收及离线运营迁移，VIN最后。契约docs/resource-command-submission.md。
+
+## 2026-10-09 Impact、Acceptance 提交与原审计恢复基础（Codex）
+起点main 68e7491513b0e6676323652f14ac32f7d88ef590；精确CI37897837744后端/前端/acceptance全部成功（2079后端、174 PG模块无skip、1015前端），Cloudflare生产build965910f1-7e36-427e-87b3-71680f5e9ec4/version1f803cdf-9f4e-4926-8a42-a933068d92b1成功；Actions独立deploy跳过、开放PR0。
+两类独立默认关闭提交/原审计恢复代理、严格正文/目标绑定、原回执与EvidenceSubmission冻结控制器已实现。Impact新增v1规范UTF-8 nullable evidence_ref SHA256摘要，引用不放入活动payload；缺摘要的旧审计包括原null仍unknown，不补写、不查询当前对象。Acceptance实际旧审计已完整，按原assignment/criterion/DVP、声明/原因/实体校验，不伪造历史指纹。两类HTTP201/200都需原审计确认，recover只GET，unknown后拒绝不抹除未知，明确重试原ID/字节不变。原Issue/SCR UUID与assessment/assignment UUID分开；原Snapshot标签来自审计而非请求，不推断当前状态、测试通过、验收完成或下游许可。
+代理/控制器12→14/14（100%）；双语UI仍11/14，Impact/Acceptance/Resource三类UI下一包。69页面；API代码0.18.38/schema0020，无迁移，在线Render后台版本/部署未核验。资源独立门控不变；EVIDENCE_COMMAND三变量门控独立且默认关闭，唯一token-bound USER复核、非只读才提交、只读可查询本人原审计、凭据不传客户端。
+本地完整前端1055通过/0fail/0skip（原1015新增40），Impact/Acceptance/actor/授权定向46与审计/账本27项通过；TypeScript、Worker配置及Next/OpenNext构建/双语禁用认证SSR通过；新两路由GET405/POST503、private/no-store。精确head CI/provider另记录。新增4隔离真实PG原actor/原证据/重放不改审计/原子回滚测试由Actions核验，本地无PG服务。新增Impact摘要测试先证明旧审计缺字段失败，补强后通过；初次前端定向误把服务器原审计snapshot_no当作请求字段，改为非法空标签校验并新增原标签保留回归，最终40通过。
+云端Linux完整checkout由Codex直接编写，未另启独立Codex任务；Git CLI无推送凭据，使用GitHub连接发布。公共样例只读、OIDC和全部提交默认关闭，未配置真实身份/授权/秘密，无实际提供方/浏览器/管理员/内网验收，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定。仅页面内存，刷新/卸载/跨会话导入恢复待完成。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0；代理覆盖+2，UI增量0。下一包补齐Impact/Acceptance/Resource独立门控及三类双语确认发送/原审计查询/原请求明确重试/精确结果；随后跨会话恢复、更正撤销、真实身份/内网验收、离线运营迁移，VIN最后。契约docs/evidence-command-submission.md。
