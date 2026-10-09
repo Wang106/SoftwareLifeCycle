@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-Impact原判断绑定的追加式替代/0021保护及双语只读历史已通过PR#40与main757655d完整CI（2132后端、190 PostgreSQL无skip、1143前端）及Cloudflare生产构建。另补SUPERSEDE审计动作中文，原动作码/JSON不改；本地前端1144通过，本包精确head CI/provider另核对。69页面/API代码0.18.39/schema0021；完整更正/撤销UI和真实环境验收仍未完成，Render线上API/schema/部署未核验。
+Impact原判断绑定追加式替代/0021保护和双语只读历史已完成；PR#41补齐SUPERSEDE中文而不改原动作码/JSON。精确feature CI37923596146通过（2132后端、190 PostgreSQL无skip、1144前端）；最新main CI/provider另核对。69页面/API代码0.18.39/schema0021，完整更正/撤销UI和真实环境验收仍待完成，Render线上API/schema/部署未核验。PR#41合并后本地执行环境未返回同步结果，最新本地checkout状态未确认，以核验过的GitHub main为准。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -526,3 +526,11 @@ Impact同Issue/Release/冻结Snapshot的原判断ID绑定追加式替代、完�
 最终复核发现新SUPERSEDE审计动作码缺中文显示；先新增翻译/实际双语SSR/原始JSON保留回归证明旧显示失败，再补字典“替代”。英文/原始action值/JSON证据不改，后端/路由/契约/API0.18.39/schema0021不变；不新增提交能力或身份授权。
 本地完整前端1144通过/0fail/0skip（新增1审计动作本地化回归），Next/OpenNext生产构建通过；单独类型/禁用认证SSR通过。本包精确head CI/provider另核对。Impact替代基础及只读历史已验收，Acceptance–DVP关系替代/撤销、更正提交/恢复和完整撤销仍未完成。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量全部0。公共样例只读、OIDC及所有提交默认关闭，无实际身份/授权/秘密配置；真实提供方/浏览器/管理员/跨会话/内网验收未做，不重试拒绝浏览器访问。内网未部署，SSO/人员/系统与CPU/Windows无Docker待定。下一包仍为Acceptance–DVP历史关系替代/撤销，再做更正UI/原审计恢复、Impact撤销和评审/下游政策，随后真实环境验收、离线运营迁移，VIN最后。
+
+## PR#41 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/41 已合并；代码main e3d4f5ca16f0bfe12f9dd7136e6ead901bf9a393，精确feature 2ff793c751bb576af390faaff22e1d212e3362c8，起点main 757655d16c92659308d09a9405f26693fb399b66。
+feature CI37923596146全部成功：2132后端（477.95秒、11636 warnings）、190 PostgreSQL-module cases无skip、1144前端/0fail/0skip。后端113797161030、前端113797161365、acceptance113800078966成功。0021单迁移头/SQL/隔离真实PG往返、进度账本、类型/Next/OpenNext/双语禁用认证SSR通过。Cloudflare feature Preview builda1e33a40-0a38-4973-8bf3-517deb559304成功，不替代main生产证据；本记录后的最新main精确CI/provider另核对，Actions独立deploy仍跳过。
+补齐SUPERSEDE审计动作中文“替代”，英文和原始action/JSON证据保持不变；先新增实际双语SSR/JSON保留回归证明旧译文失败，修补后本地1144完整前端/类型/构建/禁用认证SSR通过。后端/API0.18.39/schema0021不变；PR#40的Impact原判断绑定追加式替代、原子审计/Issue锁/唯一同上下文前驱/有界有效读取及降级保护已完成，不称完整更正撤销完成。
+PR#41合并后本地执行环境的同步及只读状态命令未返回结果；中止等待，不重复合并或覆盖文件。已通过原GitHub连接确认main/merge及三个文档基准内容，后续验收记录从核验过的远端内容追加。最新本地checkout状态未确认；下一窗口先核对工作区与远端main、保护未提交改动后同步，不把旧本地head当成最新事实。
+69页面，14业务/2自身会话/6管理员/离线操作分计不变；公共样例只读、OIDC/所有提交默认关闭，无真实身份/授权/秘密配置。Render线上API/schema/部署未核验，前端构建不等于API迁移部署；真实提供方/浏览器/跨会话/管理员/内网验收未做，不重试拒绝访问。内网未安装，SSO/人员/系统与CPU/Windows无Docker待定。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。下一包Acceptance–DVP历史关系替代/撤销，再做受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；随后真实身份/内网验收、离线运营迁移，VIN最后。
