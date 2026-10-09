@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-Resource提交/原审计恢复基础完成：十二类代理/控制器、十一类UI；API代码0.18.37/schema0020。本包精确CI和provider结果另记录。
+PR#36已合并至b812e82；精确feature CI全成功（2079后端/174 PG模块无skip、1015前端）。十二类代理/控制器、十一类UI；API代码0.18.37/schema0020。最新main CI/生产构建另核对。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -451,3 +451,11 @@ Test Release/Deployment/Changeover双语确认发送、原审计查询、原请�
 十二类代理/控制器（11→12/14，86%），十一类双语UI不变；Resource UI及Impact/Acceptance代理/UI仍待完成。本地完整前端1015通过/0fail/0skip（原993新增22），Resource后端47、授权/审计定向合计76通过；新增2隔离真实PG摘要/原子回滚测试由Actions验收，本地无PG服务，不能声称已通过。新增摘要回归先验证旧实现缺request_sha256失败，补强后通过；TypeScript、Worker配置和进度--check通过；生产构建/禁用认证SSR结果和精确head CI/provider另记录。
 本次SoftwareLifeCycle_20全文检索服务报错，未取得原文，依据仓库最新main交接继续。云端Linux完整checkout的Codex直接编写；未另启动独立Codex云任务。公共样例只读，OIDC及全部提交默认关闭；未配置真实身份/授权/秘密，无真实提供方/浏览器/管理员/内网验收，内网未安装，SSO/人员/Windows无Docker/CPU待定。仅内存，跨刷新/卸载/会话恢复待完成，不重试已拒绝浏览器访问。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0；代理覆盖+1，UI增量0。下一包Impact/Acceptance独立提交及原审计恢复，随后补齐三类双语UI；再做跨会话恢复、更正撤销、真实身份/内网验收及离线运营迁移，VIN最后。契约docs/resource-command-submission.md。
+
+## PR#36 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/36 已合并；代码main b812e82d76b1c9ff7e70c67172a4a4d0c9f66e05，精确feature 581207d06ee25ea02cbf76a2ef7762876058d9ee，起点main ba49d2a0cc00bf68b1bc58008a74b79bd8eb3ec4。
+feature CI37896920738三任务成功：2079后端（423.86秒、11443既有warnings），174 PostgreSQL-module cases/no skips；1015前端/0fail/0skip。后端113710265173、前端113710265441、acceptance113712567433成功；0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker、中英文禁用认证SSR均通过。Resource两路由GET405/POST503、private/no-store。Cloudflare feature Preview build ed8dedc0-e873-400d-9884-e819a37f8c6f成功；不是main生产部署证据。本记录后的最新main精确CI/provider须另核对；Actions独立deploy仍默认跳过，不能声称已启用。
+Resource请求v1 SHA256摘要与原子审计、独立默认关闭提交/只读原审计恢复、严格回执及冻结控制器完成。旧审计不含摘要保持unknown，不补写历史，不以当前资源详情或POST回执替代原请求证据。活动payload不保存位置/描述；原登记不证明文件存在、内容验证或分发权限。代码API0.18.37/schema0020，新增后台审计字段无迁移，在线Render后台部署/版本未核验，前端构建不能替代API部署。
+代理/控制器11→12/14（86%）、双语UI仍11/14；Impact/Acceptance基础以及Resource/Impact/Acceptance三类UI待完成。本地完整前端1015、后端定向76、TypeScript、Worker配置/构建及禁用认证SSR通过；真实PG新2项由本PR Actions验收。本地无PG服务，不称本地PG已通过。新增摘要测试先证明旧实现缺request_sha256失败，补强后通过；没有新增未修复失败。云端Linux完整checkout的Codex直接编写；Git CLI无推送凭据，经GitHub连接发布并校验21文件blob SHA与本地一致，无另启独立Codex任务。
+SoftwareLifeCycle_20原文检索服务报错，未取得全文，按main交接承接。公共样例只读、OIDC及所有提交默认关闭，未配置实际身份/授权/秘密；真实提供方/浏览器/管理员/内网验收未进行，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定。恢复仅内存，刷新/卸载/跨会话导入仍待完成。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，代理覆盖+1，UI增量0。下一包Impact/Acceptance独立提交与原审计恢复，随后三类双语UI；再做跨会话恢复、更正撤销、真实身份/内网验收及离线运营迁移，VIN最后。契约docs/resource-command-submission.md。

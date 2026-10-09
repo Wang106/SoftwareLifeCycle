@@ -1,5 +1,14 @@
 # SoftwareLifeCycle Development Handoff
 
+## PR#36 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/36 已合并；代码main b812e82d76b1c9ff7e70c67172a4a4d0c9f66e05，精确feature 581207d06ee25ea02cbf76a2ef7762876058d9ee，起点main ba49d2a0cc00bf68b1bc58008a74b79bd8eb3ec4。
+feature CI37896920738三任务成功：2079后端（423.86秒、11443既有warnings），174 PostgreSQL-module cases/no skips；1015前端/0fail/0skip。后端113710265173、前端113710265441、acceptance113712567433成功；0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker、中英文禁用认证SSR均通过。Resource两路由GET405/POST503、private/no-store。Cloudflare feature Preview build ed8dedc0-e873-400d-9884-e819a37f8c6f成功；不是main生产部署证据。本记录后的最新main精确CI/provider须另核对；Actions独立deploy仍默认跳过，不能声称已启用。
+Resource请求v1 SHA256摘要与原子审计、独立默认关闭提交/只读原审计恢复、严格回执及冻结控制器完成。旧审计不含摘要保持unknown，不补写历史，不以当前资源详情或POST回执替代原请求证据。活动payload不保存位置/描述；原登记不证明文件存在、内容验证或分发权限。代码API0.18.37/schema0020，新增后台审计字段无迁移，在线Render后台部署/版本未核验，前端构建不能替代API部署。
+代理/控制器11→12/14（86%）、双语UI仍11/14；Impact/Acceptance基础以及Resource/Impact/Acceptance三类UI待完成。本地完整前端1015、后端定向76、TypeScript、Worker配置/构建及禁用认证SSR通过；真实PG新2项由本PR Actions验收。本地无PG服务，不称本地PG已通过。新增摘要测试先证明旧实现缺request_sha256失败，补强后通过；没有新增未修复失败。云端Linux完整checkout的Codex直接编写；Git CLI无推送凭据，经GitHub连接发布并校验21文件blob SHA与本地一致，无另启独立Codex任务。
+SoftwareLifeCycle_20原文检索服务报错，未取得全文，按main交接承接。公共样例只读、OIDC及所有提交默认关闭，未配置实际身份/授权/秘密；真实提供方/浏览器/管理员/内网验收未进行，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定。恢复仅内存，刷新/卸载/跨会话导入仍待完成。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，代理覆盖+1，UI增量0。下一包Impact/Acceptance独立提交与原审计恢复，随后三类双语UI；再做跨会话恢复、更正撤销、真实身份/内网验收及离线运营迁移，VIN最后。契约docs/resource-command-submission.md。
+
+
 ## 2026-10-09 Resource 原请求摘要、提交与原审计恢复基础（Codex）
 起点main ba49d2a0cc00bf68b1bc58008a74b79bd8eb3ec4；该main CI37894940845后端/前端/acceptance全部成功，Cloudflare production build a52c824d-9677-44b0-aa9d-bff4123674ad/version add85864-7529-41cc-94e1-b32eea642fdd成功；Actions独立deploy跳过，开放PR0。
 本包Resource独立默认关闭提交/原审计查询代理、严格请求/目标绑定、摘要绑定精确回执与冻结控制器完成。旧审计不含完整标题/位置/描述，新增v1规范UTF-8请求SHA256摘要，不在活动payload保存位置或描述；与业务行/审计同事务，旧记录不补写。原审计缺摘要保持unknown，不以当前对象/POST结果伪造确认。HTTP201/200均须原审计，恢复只GET；仅证明资源登记，不证明存在/内容/分发权限。API代码0.18.37/schema0020，无迁移；线上API部署版本尚未核验，前端构建不替代后台部署。
