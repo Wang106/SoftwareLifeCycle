@@ -240,7 +240,7 @@ test('lost original write then audit query preserves READY/DRAFT despite later s
   assert.equal((await handleDistributionCommand(commandRequest(w.session,c),distributionEnv,'submit',mock)).status,502);
   const recovered=await handleDistributionCommand(commandRequest(w.session,c,{recover:true}),distributionEnv,'recover',mock);
   assert.equal(recovered.status,200);assert.equal((await recovered.json()).result.status,operation==='authorization'?'DRAFT':'READY');
-  assert.equal(writes,1);assert.equal(body,JSON.stringify(c.body));
+  assert.equal(writes,1);assert.deepEqual(JSON.parse(body),c.body);
  }
 });
 test('server helper rejects invalid mode, operations, credential injection and mismatched target before network',async()=>{

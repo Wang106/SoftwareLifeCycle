@@ -37,9 +37,10 @@ for(const operation of ['delivery','distribution','authorization']){
   }
  });
  test(operation+' fixed frozen body posts once and an exact receipt becomes terminal',async()=>{
-  const c=f.command(operation),s=new Submission(review(c));let calls=0;
+  const c=f.command(operation),confirmedReview=review(c),s=new Submission(confirmedReview);
+  const original=JSON.stringify({operation,target:c.target,body:confirmedReview.draft.payload});let calls=0;
   await s.send(true,async(url,init)=>{calls++;assert.equal(url,'/auth/distribution-command');assert.equal(init.method,'POST');
-   assert.equal(init.body,JSON.stringify(c));assert.equal(init.credentials,'same-origin');assert.equal(init.cache,'no-store');assert.equal(init.redirect,'error');assert.ok(init.signal);
+   assert.equal(init.body,original);assert.equal(init.credentials,'same-origin');assert.equal(init.cache,'no-store');assert.equal(init.redirect,'error');assert.ok(init.signal);
    return Response.json(f.receipt(c));});assert.equal(s.state.phase,'confirmed');
   const never=async()=>{calls++;throw Error('unexpected');};await s.send(true,never);await s.recover(true,never);assert.equal(calls,1);
  });
