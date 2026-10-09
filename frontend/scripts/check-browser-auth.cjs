@@ -53,6 +53,8 @@ async function main() {
     assert.equal(response.status,200);assert.ok(response.headers.get('cache-control').includes('no-store'));
     const html=await response.text();assert.ok(html.includes(title));assert.ok(!html.includes(sendLabel));
     assert.ok(html.includes('name="target"'));assert.ok(html.includes(language==='zh'?'资源引用':'resource reference'));
+    assert.ok(html.includes('name="recoveryText"'));assert.ok(html.includes(language==='zh'?'恢复原业务请求':'Restore an original business request'));
+    assert.ok(html.includes(language==='zh'?'不会自动发送或查询':'never sends or queries automatically'));
     console.log(`Command SSR ${language} ${operation}: 200, no-store, preparation without send capability`);
    }
   }

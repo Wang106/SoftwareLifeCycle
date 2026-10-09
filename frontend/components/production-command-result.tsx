@@ -40,6 +40,6 @@ export default function ProductionCommandResult({ state }: { state: ProductionSt
     <p><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={detail}><Localized>{'Open exact business detail'}</Localized></Link>
       <Localized>{' · '}</Localized><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={state.review.draft.audit}><Localized>{'Open original audit event'}</Localized></Link></p>
     <p className="muted"><Localized>{'Current detail and history are independent observations; they do not prove the result of the original request.'}</Localized></p>
-    <p className="muted"><Localized>{'Copy the original request and receipt before leaving. Recovery is kept only in this page memory and is lost on reload.'}</Localized></p>
+    <p className="muted"><Localized>{'In-memory recovery is lost on reload. Export original recovery text to restore an audit-only query in a later session.'}</Localized></p>
   </section></Localized>;
 }

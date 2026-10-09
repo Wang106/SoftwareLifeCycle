@@ -1837,5 +1837,16 @@
   "This confirms the original impact judgment, frozen snapshot and declared evidence reference. It does not prove test success, current impact or release permission.": "此结果确认原影响判断、冻结快照和声明的证据引用，不代表测试通过、当前影响状态或发布许可。",
   "This confirms the original acceptance-criterion-to-DVP assignment. It does not prove test success or acceptance completion.": "此结果确认原验收标准与 DVP 的关联，不代表测试通过或验收完成。",
   "This confirms the original resource registration and reference text. It does not prove file availability, verified content or distribution rights. The location is not opened or fetched.": "此结果确认原资源登记和引用文本，不代表文件可用、内容已验证或拥有分发权限。不会打开或获取该位置。",
-  "Open assigned DVP item": "打开原关联 DVP 项"
+  "Open assigned DVP item": "打开原关联 DVP 项",
+  "Recovery text copied. It contains business data, not proof of execution. Store it securely.": "恢复文本已复制，包含业务数据，不是执行证明，请妥善保管。",
+  "Recovery text is invalid, noncanonical or belongs to another site. Nothing was sent.": "恢复文本无效、格式不规范或属于其他站点。没有发送任何请求。",
+  "Restore an original business request": "恢复原业务请求",
+  "Paste recovery text exported by this site. Import only stages an uncertain original request; it never sends or queries automatically. Imported requests can only query their original audit, not retry a write.": "粘贴本站导出的恢复文本。导入仅暂存结果未知的原请求，不会自动发送或查询。导入的请求只能查询原审计，不能重试写入。",
+  "Original recovery text": "原请求恢复文本",
+  "Stage original request for audit query only": "导入原请求，仅供审计查询",
+  "Recovery text contains business details and possibly private reference paths. No credentials are exported. Keep it securely; it is not proof of execution or authorization.": "恢复文本包含业务详情，可能包括私有引用路径，不导出凭据。请妥善保管；它不是执行或授权证明。",
+  "Copy original recovery text": "复制原请求恢复文本",
+  "Original recovery text — manual copy": "原请求恢复文本 — 手动复制",
+  "Imported recovery is query-only. No business write can be retried from this imported text.": "导入恢复仅可查询，不能通过导入文本重试任何业务写入。",
+  "In-memory recovery is lost on reload. Export original recovery text to restore an audit-only query in a later session.": "内存中的恢复状态会在重新加载后丢失。请导出原请求恢复文本，以便后续会话恢复仅审计查询。"
 }

@@ -1,5 +1,14 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-09 十四类原请求导出及跨会话审计恢复（Codex）
+起点main e1ef9b285eb05ea34a575c0a8222e36843c7d32f；精确CI37904011706全部成功（2085后端、178 PostgreSQL-module cases无skip、1087前端），Cloudflare生产build6c5f8a76-9752-48e5-93c7-619256cbcdf2/version42eb9584-20fe-4569-94b4-8bd1a13a08ec成功，Actions独立deploy默认跳过、开放PR0。
+新增slc-business-recovery/v1规范恢复文本，精确origin/operation/target/原body，支持全14类业务请求。确认后明确复制或手动复制，后续同站点会话粘贴并显式暂存，暂存零网络且初态unknown/outcome_unknown。导入控制器只有recover无send，UI隐藏重试，门控后来开放也不能写；仅原页面控制器仍有原字节明确重试。显式查询经独立组门控/当前USER/本人原审计确认，只读可查；缺失/拒绝不证明未提交，旧unknown不能被导入替换。确认可开始独立新请求。复制/导入/编辑/发送/查询同步互锁、过期上下文及处理函数失效。
+只接受规范紧凑/两空格JSON（外围空白可有），固定版本和字段、精确同origin；原正文不得经trim/大小写/日期/字段排序改写。拒绝重复键/额外凭据URL回执/不支持命令/UTF8超限/孤立代理字符；总文本32768字节、原命令仍8192字节。原null、ID、时间、声明和artifact集合不变。不是签名/执行证明，仍由后台原actor审计验证；不从文件信任身份或授权，不查询资源路径。HTTPS及显式loopback开发origin；不证明该origin的后台未改变。手动文本包含业务详情/私有路径，须安全保存，不导出凭据，不自动读剪贴板/写浏览器存储/下载上传/联网。旧method/path/body复制并非恢复格式；未导出的内存状态仍会丢失。
+本地完整前端1136通过/0fail/0skip（原1087新增30协议/控制器+19实际编译UI行为和双语=49），49定向通过；Worker配置/Next/OpenNext构建及禁用认证SSR通过。新增SSR检查6个中英文命令页存在只读恢复入口。第一次并行TypeScript与构建争用.next生成目录报TS6053，构建结束后单独重跑TypeScript通过，不放宽类型/业务断言。本包精确head CI/backend/真实PG/provider另核对，本地无PG服务。69页面/API0.18.38/schema0020不变，无后台或迁移修改。
+云端Linux完整checkout由Codex直接开发，未另启独立任务；Git CLI无推送凭据，GitHub连接发布。公共样例只读、OIDC/全部提交默认关闭，无真实身份/授权/秘密配置；真实提供方/浏览器/管理员/内网及跨会话验收未进行，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定；Render线上后台版本/部署未核验。SoftwareLifeCycle_20全文此前检索服务报错，按仓库交接承接。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。14/14代理与14/14双语UI已有；本轮跨会话审计恢复实现覆盖14/14，不代表实际环境验收。下一包追加式更正撤销，优先影响判断/验收-DVP关联历史替代契约；随后真实身份/跨会话/内网验收、离线部署和运营迁移，VIN最后。契约docs/business-request-recovery.md。
+
+
 ## PR#38 验收 — 2026-10-09（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/38 已合并；代码main d5bdee2f4e56173df3ce4fc5a019b199a5c76d1d，精确feature b60e7a0e93a765d5d01819bd5123287ef4602a4a，起点main a34d09da5e331188c96655f6b607dc372e5a496a。
 feature CI37902904446全部成功：2085后端（419.51秒、11469 warnings）、178 PostgreSQL-module cases/no skips、1087前端/0fail/0skip。后端113729384952、前端113729385124、acceptance113731913021成功。0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker及中英文禁用认证SSR通过；新增6实际Next命令中英文SSR无发送能力，evidence/resource四路由GET405/POST503、private/no-store。Cloudflare feature Preview buildaf7458b8-ed06-47b7-b161-58ed271e82a9成功，不能替代main生产证据。本记录后的最新main精确CI/provider另核对；Actions独立deploy仍默认跳过。

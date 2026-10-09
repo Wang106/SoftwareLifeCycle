@@ -3,16 +3,17 @@
 This is an implementation plan for the existing 14 command APIs, not authorization
 to enable public writes. The current `/commands` workspace prepares all fourteen
 requests and exposes independently default-disabled bilingual submit/query/retry/result
-interfaces. Real provider/browser acceptance and cross-session import remain pending.
+interfaces, plus explicit manual cross-session audit-only recovery. Real provider/browser
+acceptance remains pending; unsaved page state is not automatically persisted.
 Dated sections below retain historical preparation-only states.
 
 | Priority | Commands | UI status | Remaining submission work |
 | --- | --- | --- | --- |
-| First | Snapshot, actual-software report/correction, Batch | Default-disabled bilingual prepare/submit/query/retry/result UI | Approved identity/target, real browser acceptance and cross-session recovery |
-| Next | Approval Action, Release Decision | Default-disabled bilingual prepare/submit/query/retry/result UI; exact step UUID | Permission-aware pickers, real-provider acceptance and cross-session recovery |
-| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Default-disabled bilingual prepare/submit/query/retry/result UI | Permission-aware context pickers, real-provider acceptance and cross-session recovery |
-| Next | Delivery, Distribution, Authorization | Default-disabled bilingual prepare/submit/query/retry/result UI | Artifact policy/recipient/scope pickers, real-provider acceptance and cross-session recovery |
-| Next | Test Release, Deployment, Changeover | Default-disabled bilingual prepare/submit/query/retry/result UI | Real-provider acceptance, cross-session recovery and activation/revocation contracts where absent |
+| First | Snapshot, actual-software report/correction, Batch | Default-disabled bilingual prepare/submit/query/retry/result UI | Approved identity/target, real browser acceptance and real cross-session acceptance |
+| Next | Approval Action, Release Decision | Default-disabled bilingual prepare/submit/query/retry/result UI; exact step UUID | Permission-aware pickers, real-provider acceptance and real cross-session acceptance |
+| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Default-disabled bilingual prepare/submit/query/retry/result UI | Permission-aware context pickers, real-provider acceptance and real cross-session acceptance |
+| Next | Delivery, Distribution, Authorization | Default-disabled bilingual prepare/submit/query/retry/result UI | Artifact policy/recipient/scope pickers, real-provider acceptance and real cross-session acceptance |
+| Next | Test Release, Deployment, Changeover | Default-disabled bilingual prepare/submit/query/retry/result UI | Real-provider acceptance, real cross-session acceptance and activation/revocation contracts where absent |
 
 ## Implemented workspace
 
@@ -250,3 +251,7 @@ Test Release/Deployment/Changeover now have their own default-disabled submissio
 
 ## Impact / Acceptance / Resource 双语提交界面 — 2026-10-09
 三类已有代理和控制器接入独立 evidence/resource 默认关闭能力、确认发送、原审计查询、原字节明确重试及精确结果。现在14/14代理/控制器及14/14双语UI已实现，尚非真实身份/环境验收完成。六组门控只解析一次当前USER会话，仅投影12个布尔能力，不传凭据；只读仍可查本人原审计。unknown跨命令/上下文/门控刷新冻结，不借用另一组能力。Impact保留原nullable evidence_ref/判断/冻结Snapshot，Acceptance保留原criterion/DVP关联，Resource保留原target_ref/标题/位置/描述；位置不成为可点击链接。原结果不推断测试通过、当前影响、验收完成、文件存在或分发权限。新标签中的详情/history与原审计为独立观察。刷新/卸载/跨会话导入及实际提供方/浏览器/内网验收待完成。
+
+
+## Manual cross-session audit-only recovery — 2026-10-09
+All fourteen business commands can explicitly export canonical, versioned recovery text and import it on the same origin in a later session. Import stages uncertainty without network activity, permits only explicit original-audit queries and has no write/retry method. Missing or denied audit stays unknown; existing in-page exact retries are unchanged. No automatic browser storage or credential export. Manually saved business text may include private references. See [business-request-recovery.md](business-request-recovery.md); real provider/browser/internal acceptance remains pending.

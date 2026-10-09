@@ -3,6 +3,7 @@ import { Localized, LocalizedAttributes } from "./localized";
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { exportBusinessRecovery, importBusinessRecovery, recoveryTextLimit, type ImportedBusinessRecovery } from '../lib/business-recovery';
 import EvidenceResourceCommandResult from './evidence-resource-command-result';
 import { EvidenceSubmission, parseEvidenceCommand, type EvidenceState } from '../lib/evidence-command-transport';
 import { ResourceSubmission, parseResourceCommand, type ResourceState } from '../lib/resource-command-transport';
@@ -31,7 +32,10 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   const [review, setReview] = useState<Review | null>(null);
   const [message, setMessage] = useState('');
   const [copying, setCopying] = useState(false);
-  const controller = useRef<FirstSubmission | GovernanceSubmission | DistributionSubmission | ProductionSubmission | EvidenceSubmission | ResourceSubmission | null>(null);
+  const [importText, setImportText] = useState('');
+  const importSource = useRef('');
+  const imported = useRef(false);
+  const controller = useRef<FirstSubmission | GovernanceSubmission | DistributionSubmission | ProductionSubmission | EvidenceSubmission | ResourceSubmission | ImportedBusinessRecovery | null>(null);
   const [result, setResult] = useState<FirstState | GovernanceState | DistributionState | ProductionState | EvidenceState | ResourceState | null>(null);
   const copyPending = useRef(false);
   const capability = useRef({ submit: submissionEnabled, recover: recoveryEnabled, governanceSubmit: governanceSubmissionEnabled, governanceRecover: governanceRecoveryEnabled, distributionSubmit: distributionSubmissionEnabled, distributionRecover: distributionRecoveryEnabled, productionSubmit: productionSubmissionEnabled, productionRecover: productionRecoveryEnabled, evidenceSubmit: evidenceSubmissionEnabled, evidenceRecover: evidenceRecoveryEnabled, resourceSubmit: resourceSubmissionEnabled, resourceRecover: resourceRecoveryEnabled });
@@ -70,13 +74,14 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
     return () => window.removeEventListener('beforeunload', warn);
   }, [result?.phase]);
   async function send() {
-    if (!currentReview?.confirmed || !submitCapability() || copyPending.current || activeReview.current !== currentReview ||
+    if (imported.current || !currentReview?.confirmed || !submitCapability() || copyPending.current || activeReview.current !== currentReview ||
         (controller.current && controller.current.state.review !== currentReview)) return;
     if (!controller.current) {
       if (activeReview.current !== currentReview || currentKey.current !== contextKey) return;
       try { controller.current = resourceOperation ? new ResourceSubmission(currentReview) : evidenceOperation ? new EvidenceSubmission(currentReview) : productionOperation ? new ProductionSubmission(currentReview) : distributionOperation ? new DistributionSubmission(currentReview) : governanceOperation ? new GovernanceSubmission(currentReview) : new FirstSubmission(currentReview); }
       catch { setMessage('The business request is invalid.'); return; }
     }
+    if (!('send' in controller.current)) return;
     const pending = controller.current.send(submitCapability());
     setResult(controller.current.state); setMessage(''); setResult(await pending);
   }
@@ -88,7 +93,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   function newRequest() {
     if (activeReview.current !== currentReview || copyPending.current || (controller.current && controller.current.state.review !== currentReview) || (controller.current && !['confirmed', 'rejected'].includes(controller.current.state.phase))) return;
     if (!controller.current && (activeReview.current !== currentReview || currentKey.current !== contextKey)) return;
-    controller.current = null; activeReview.current = null; setResult(null); setReview(null); setMessage('');
+    controller.current = null; imported.current = false; importSource.current = ''; setImportText(''); activeReview.current = null; setResult(null); setReview(null); setMessage('');
     setOperation(initialOperation); setFields({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
   }
   function edit(name: keyof Fields, value: string) {
@@ -101,23 +106,34 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
     return <label><Localized>{label}</Localized><input name={name} value={fields[name]} required={required}
       maxLength={maxLength} onChange={event => edit(name, event.target.value)} /></label>;
   }
-  async function copy() {
+  async function copy(recovery = false) {
     if (!currentReview?.confirmed || copyPending.current || activeReview.current !== currentReview) return;
     const key = contextKey;
     copyPending.current = true; setCopying(true);
     try {
-      await navigator.clipboard.writeText(exportRequest(currentReview));
-      if (controller.current || currentKey.current === key) setMessage(controller.current ?
+      await navigator.clipboard.writeText(recovery ? exportBusinessRecovery(currentReview, window.location.origin) : exportRequest(currentReview));
+      if (controller.current || currentKey.current === key) setMessage(recovery ? 'Recovery text copied. It contains business data, not proof of execution. Store it securely.' : controller.current ?
         'Original business request copied. Copying does not send another operation.' :
         'Request copied. No API write was sent. Reuse this exact body/key for a retry.');
     } catch {
       if (controller.current || currentKey.current === key) setMessage('Clipboard unavailable. Select and copy the confirmed request below.');
     } finally { copyPending.current = false; setCopying(false); }
   }
+  function stageRecovery() {
+    if (copyPending.current || controller.current || activeReview.current || currentKey.current !== contextKey || importSource.current !== importText) return;
+    try {
+      const restored = importBusinessRecovery(importText, window.location.origin);
+      controller.current = restored; imported.current = true; activeReview.current = restored.state.review;
+      setReview(restored.state.review); setResult(restored.state); setImportText(''); importSource.current = ''; setMessage('');
+    } catch { setMessage('Recovery text is invalid, noncanonical or belongs to another site. Nothing was sent.'); }
+  }
+  let recoveryText = '';
+  try { if (currentReview?.confirmed && typeof window !== 'undefined' && window.location?.origin) recoveryText = exportBusinessRecovery(currentReview, window.location.origin); }
+  catch { /* Invalid recovery data must not crash the preparation interface. */ }
   return <>
     <section className="panel">
       <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software, batch, approval action, release decision, delivery package, distribution, production authorization, test release, deployment, changeover, impact assessment, acceptance-to-DVP and resource reference submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
-      <form className="commandform" onSubmit={event => {
+      <form className="commandform" hidden={imported.current} onSubmit={event => {
         event.preventDefault();
         if (copyPending.current || controller.current || currentKey.current !== contextKey || activeReview.current ||
             preparation.current?.fields !== fields || preparation.current?.operation !== operation) return;
@@ -269,20 +285,34 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
       <p className="muted"><Localized>{"Before sending, editing discards the review. After an attempt, the original target, request ID and body are locked. Query the original audit or explicitly retry that exact request; an unknown result cannot be replaced."}</Localized></p>
       <label className="commandconfirm"><input type="checkbox" disabled={copying || locked} checked={currentReview.confirmed}
         onChange={event => { if (!copyPending.current && !controller.current && activeReview.current === currentReview && currentKey.current === contextKey) { const next = confirm(currentReview, event.target.checked); activeReview.current = next; setReview(next); setMessage(''); } }} /><Localized>{" I have reviewed the exact target, evidence, declarations and request content."}</Localized></label>
-      <button type="button" disabled={!currentReview.confirmed || copying} onClick={copy}><Localized>{copying ? 'Copying…' : 'Copy confirmed request'}</Localized></button>
+      <button type="button" disabled={!currentReview.confirmed || copying} onClick={() => copy()}><Localized>{copying ? 'Copying…' : 'Copy confirmed request'}</Localized></button>
+      <button type="button" disabled={!recoveryText || copying} onClick={() => copy(true)}><Localized>{'Copy original recovery text'}</Localized></button>
+      <Localized>{recoveryText && <details><summary><Localized>{'Original recovery text — manual copy'}</Localized></summary><pre className="auditpayload">{recoveryText}</pre></details>}</Localized>
+      <Localized>{imported.current && <p className="notice"><Localized>{'Imported recovery is query-only. No business write can be retried from this imported text.'}</Localized></p>}</Localized>
       <Localized>{supportedOperation && !result && canSubmit && <button type="button" disabled={!currentReview.confirmed || copying} onClick={send}>
         <Localized>{'Send confirmed business request'}</Localized></button>}</Localized>
       <Localized>{supportedOperation && !canSubmit && <p className="notice"><Localized>{'Business command submission is disabled in this environment.'}</Localized></p>}</Localized>
       <Localized>{result && (['impact', 'acceptance', 'resource'].includes(result.command.operation) ? <EvidenceResourceCommandResult state={result as EvidenceState | ResourceState} /> : ['test-release', 'deployment', 'changeover'].includes(result.command.operation) ? <ProductionCommandResult state={result as ProductionState} /> : ['delivery', 'distribution', 'authorization'].includes(result.command.operation) ? <DistributionCommandResult state={result as DistributionState} /> : ('approval' === result.command.operation || 'decision' === result.command.operation) ? <GovernanceCommandResult state={result as GovernanceState} /> : <FirstCommandResult state={result as FirstState} />)}</Localized>
       <Localized>{result && ['unknown', 'rejected'].includes(result.phase) && <>
         <button type="button" disabled={!canRecover || copying} onClick={recover}><Localized>{'Query original audit without resubmitting'}</Localized></button>
-        <button type="button" disabled={!canSubmit || copying} onClick={send}><Localized>{'Retry original business request'}</Localized></button>
+        <Localized>{!imported.current && <button type="button" disabled={!canSubmit || copying} onClick={send}><Localized>{'Retry original business request'}</Localized></button>}</Localized>
       </>}</Localized>
       <pre className="auditpayload">{currentReview.confirmed ? exportRequest(currentReview) : JSON.stringify(currentReview.draft.payload, null, 2)}</pre>
       <p><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={currentReview.draft.trace}><Localized>{"Review business record / history →"}</Localized></Link><Localized>{" · "}</Localized><Link target="_blank" rel="noopener noreferrer" prefetch={false} href={currentReview.draft.audit}><Localized>{"Expected audit event after execution →"}</Localized></Link></p>
       <Localized>{(!result || ['confirmed', 'rejected'].includes(result.phase)) && <button type="button" disabled={copying} onClick={newRequest}><Localized>{"Start a new request"}</Localized></button>}</Localized>
       <p className="muted"><Localized>{"These links show existing records. A prepared or copied request is not a successful business write. After execution, use the API result identifiers to verify the exact new record and audit event."}</Localized></p>
     </section>}</Localized>
+    <section className="panel">
+      <h2><Localized>{'Restore an original business request'}</Localized></h2>
+      <p className="muted"><Localized>{'Paste recovery text exported by this site. Import only stages an uncertain original request; it never sends or queries automatically. Imported requests can only query their original audit, not retry a write.'}</Localized></p>
+      <label><Localized>{'Original recovery text'}</Localized><textarea name="recoveryText" maxLength={recoveryTextLimit} value={importText}
+        disabled={copying || locked || Boolean(currentReview)} onChange={event => {
+          if (copyPending.current || controller.current || activeReview.current) return;
+          importSource.current = event.target.value; setImportText(event.target.value);
+        }} /></label>
+      <button type="button" disabled={copying || locked || Boolean(currentReview) || !importText} onClick={stageRecovery}><Localized>{'Stage original request for audit query only'}</Localized></button>
+      <p className="muted"><Localized>{'Recovery text contains business details and possibly private reference paths. No credentials are exported. Keep it securely; it is not proof of execution or authorization.'}</Localized></p>
+    </section>
   </>;
 }
 
