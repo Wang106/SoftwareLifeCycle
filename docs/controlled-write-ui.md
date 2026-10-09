@@ -238,3 +238,7 @@ Delivery/Distribution/Production Authorization now join the existing five submit
 
 ## Test/production command transport — 2026-10-09
 Test Release/Deployment/Changeover now have their own default-disabled submission and own original-audit recovery channel, exact original receipts and a frozen memory controller. Existing three forms still prepare/copy; bilingual send/query/results are next. Test Release HTTP200 replay or HTTP201 create requires the original DRAFT audit; PENDING deployment and COMPLETED changeover do not prove flashing or an actual report. See [production-command-submission.md](production-command-submission.md). Eleven transport/controller operations and eight UI operations are implemented; approved-provider acceptance remains pending.
+
+
+## Test Release / Deployment / Changeover 双语提交界面 — 2026-10-09
+三类现有准备接入独立production能力、确认发送、原审计查询、原请求明确重试及精确回执，public/OIDC/提交仍默认关闭。八类UI增至十一类（11/14，79%），代理已有11/14；剩余Impact/Acceptance/Resource。未知原请求跨上下文/命令/能力刷新保持冻结，不借其他门控发送；原DRAFT/PENDING/COMPLETED不证明测试通过、实际软件或物理刷写。仅页面内存；真实身份及内网验收和跨会话导入仍待完成。契约docs/production-command-submission.md。

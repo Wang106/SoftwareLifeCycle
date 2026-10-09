@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-09 — Production command bilingual submission UI
+- Connect Test Release, Deployment and Changeover confirmed send, original-audit query and exact-byte retry through the independently disabled production gate.
+- Project only current signed-in session booleans, freeze uncertain requests across context/capability changes and show original DRAFT/PENDING/COMPLETED receipts with independent evidence links.
+- Preserve UTC audit microseconds; no inference of test success, installation, actual software or physical flashing. Public sample remains read-only; real identity/internal acceptance and cross-session import are pending.
+
 ## 2026-10-05 — Authenticated self identity and scoped-grant pages (0.18.28)
 
 Added private current-identity and paginated own-active-grant GETs, reusing OIDC authentication and exact ACTIVE principal resolution. Strict filters, complete counts, suspended/other-user exclusion and no-store responses prevent anonymous or cross-user identity fallback. SQLite/PostgreSQL regressions cover signed tokens, identity changes and growing grant collections. No browser session, selected provider, admin mutation, schema or public-write change.

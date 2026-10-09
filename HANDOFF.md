@@ -1,5 +1,14 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-09 Test Release、Deployment、Changeover 双语提交界面（Codex）
+起点mainc96199aa3e09197a02d5eb7d4705b68d4866e443；精确CI37887811663三任务成功（2071后端/172 PostgreSQL-module cases/no skips、965前端），Cloudflare生产buildabac9292-38ab-43fe-a7de-2b7a31c382f8/version3cd22f99-fbf7-4e90-a5f5-4a610794699b成功，Actions两次独立deploy跳过，开放PR0。
+三类现有准备已接入双语确认发送、原审计查询、原请求明确重试和精确结果。独立productionSubmissionConfigured和唯一当前USER会话投影两个布尔能力；四组门控只复核一次会话，凭据不传客户端。只读明确false才能发送，只读仍可查原审计。未知原请求跨表单/命令/上下文/能力刷新保持原ID和正文冻结，不借其他门控发送；复制/发送/查询同步互锁，无自动重试。
+结果保留原DRAFT测试目的、声明原因及冻结Snapshot；原PENDING预期Release/Snapshot和生产线；原COMPLETED更换from/to、note/null及原六位UTC微秒。独立详情/原审计链接新标签读取；不推断测试通过、激活、实际安装、物理刷写或actual报告。十一类代理及十一类UI（8→11/14，79%），其余Impact/Acceptance/Resource仍准备/复制，下一包实现其独立默认关闭提交基础，再接双语UI。
+本地完整前端993通过/0fail/0skip（原965新增25组件事件/双语结果、2页面门控和1新结果本地化，共28）；TypeScript --noEmit、Worker配置及进度--check通过。新增页面测试先证明旧代码缺production能力投影；初次定向测试夹具误把reason textarea当作命名input，修正真实textarea事件后完整通过，未放宽业务断言。本地Next/OpenNext Worker构建及中英文禁用认证SSR成功；production两条路由GET405/POST503、private/no-store。本包精确head Actions/provider待核对，不复用旧main。
+69页面/API代码0.18.36/schema0020不变，没有后台/schema修改。仅页面内存，卸载/刷新/跨会话导入恢复未实现；beforeunload不保证应用内路由提醒。公共样例只读，OIDC及全部提交默认关闭；未配置实际身份/授权/秘密，真实浏览器/管理员/提供方/内网验收未进行，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台部署版本未核验。原SoftwareLifeCycle_17全文此前两次检索服务报错，本轮按仓库最新交接承接。
+执行模式云端Linux完整checkout，Codex直接编写，本地前端及Actions完整后台/真实PG核验；Git CLI无推送凭据，通过GitHub连接发布。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0；验收增量全部0，双语UI覆盖+3。之后Impact/Acceptance/Resource、真实身份和内网验收、跨会话恢复、更正撤销、无Docker离线安装及运营迁移，VIN最后。契约docs/production-command-submission.md。
+
+
 ## PR#34 验收 — 2026-10-09（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/34 已合并；代码main96ed9baf2f668254bb4fba44b9c39fcd08cd4b73，精确feature5a76488b1424a1f9838b901db1a26f10b7a29dfc，起点main80772cd6cc2ac36b76f53e3da517ac3f2a7db8bb。
 完整feature CI37886860882三任务成功：2071后端（536.02秒、11417既有warnings），172 PostgreSQL-module cases/no skips；965前端/0fail/0skip（原922新增26传输及17代理回归）。后端113678703521、前端113678698538、acceptance113681136900全部成功。0020单迁移头、SQL、隔离真实PG往返、进度账本、类型检查、Next/OpenNext Worker及双语禁用认证SSR通过；production两条路由GET405/POST503、private/no-store。Cloudflare feature Preview build9ca59067-5b1b-4d20-b5e2-abfb81c35f89成功，不是main生产部署证据。本记录后的最新main精确CI和生产构建须独立核对；Actions独立deploy仍门控跳过，不能声称已启用。
@@ -3218,3 +3227,12 @@ Test Release/Deployment/Changeover独立默认关闭的提交、原审计恢复�
 十一类代理/控制器（11/14，79%）、八类双语UI（8/14）；本包三类UI尚未接入，Impact/Acceptance/Resource代理和UI尚待实现。本地965前端、54定向、TypeScript、进度--check、Worker构建及双语禁用SSR通过；旧session测试加载器加入两个明确新增模块后通过，未放宽业务断言。代码69页面/API0.18.36/schema0020不变，没有后端或schema变更。
 执行模式为云端Linux完整checkout，Codex直接编写，本地前端及Actions完整后端/真实PG验收；Git CLI无推送凭据，使用GitHub连接发布。公共样例只读，OIDC及所有提交默认关闭；无实际身份/权限/秘密配置，真实浏览器/管理员/提供方/内网验收未进行，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台部署版本未核验。仅内存，跨卸载/刷新/会话恢复导入待完成。SoftwareLifeCycle_17全文检索此前两次服务报错，依据仓库交接承接，不称已读全文。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0；验收增量全部0，代理覆盖8→11/14。下一包接三类双语确认发送/原审计查询/明确原请求重试/精确结果，再做Impact/Acceptance/Resource、真实身份和内网验收、跨会话恢复、更正撤销、无Docker离线安装及运营迁移，VIN最后。契约docs/production-command-submission.md。
+
+
+## 2026-10-09 Test Release、Deployment、Changeover 双语提交界面（Codex）
+起点mainc96199aa3e09197a02d5eb7d4705b68d4866e443；精确CI37887811663三任务成功（2071后端/172 PostgreSQL-module cases/no skips、965前端），Cloudflare生产buildabac9292-38ab-43fe-a7de-2b7a31c382f8/version3cd22f99-fbf7-4e90-a5f5-4a610794699b成功，Actions两次独立deploy跳过，开放PR0。
+三类现有准备已接入双语确认发送、原审计查询、原请求明确重试和精确结果。独立productionSubmissionConfigured和唯一当前USER会话投影两个布尔能力；四组门控只复核一次会话，凭据不传客户端。只读明确false才能发送，只读仍可查原审计。未知原请求跨表单/命令/上下文/能力刷新保持原ID和正文冻结，不借其他门控发送；复制/发送/查询同步互锁，无自动重试。
+结果保留原DRAFT测试目的、声明原因及冻结Snapshot；原PENDING预期Release/Snapshot和生产线；原COMPLETED更换from/to、note/null及原六位UTC微秒。独立详情/原审计链接新标签读取；不推断测试通过、激活、实际安装、物理刷写或actual报告。十一类代理及十一类UI（8→11/14，79%），其余Impact/Acceptance/Resource仍准备/复制，下一包实现其独立默认关闭提交基础，再接双语UI。
+本地完整前端993通过/0fail/0skip（原965新增25组件事件/双语结果、2页面门控和1新结果本地化，共28）；TypeScript --noEmit、Worker配置及进度--check通过。新增页面测试先证明旧代码缺production能力投影；初次定向测试夹具误把reason textarea当作命名input，修正真实textarea事件后完整通过，未放宽业务断言。本地Next/OpenNext Worker构建及中英文禁用认证SSR成功；production两条路由GET405/POST503、private/no-store。本包精确head Actions/provider待核对，不复用旧main。
+69页面/API代码0.18.36/schema0020不变，没有后台/schema修改。仅页面内存，卸载/刷新/跨会话导入恢复未实现；beforeunload不保证应用内路由提醒。公共样例只读，OIDC及全部提交默认关闭；未配置实际身份/授权/秘密，真实浏览器/管理员/提供方/内网验收未进行，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台部署版本未核验。原SoftwareLifeCycle_17全文此前两次检索服务报错，本轮按仓库最新交接承接。
+执行模式云端Linux完整checkout，Codex直接编写，本地前端及Actions完整后台/真实PG核验；Git CLI无推送凭据，通过GitHub连接发布。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0；验收增量全部0，双语UI覆盖+3。之后Impact/Acceptance/Resource、真实身份和内网验收、跨会话恢复、更正撤销、无Docker离线安装及运营迁移，VIN最后。契约docs/production-command-submission.md。
