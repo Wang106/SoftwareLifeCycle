@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-十四类业务请求已接入严格版本化恢复文本导出和同站点跨刷新/卸载/会话导入，只允许显式查询本人原审计，无导入写入重试。14/14代理/控制器、14/14双语UI；69页面/API代码0.18.38/schema0020，无后台/迁移修改。本包精确head CI/provider另记录。
+十四类业务请求已接入严格版本化恢复文本导出和同站点跨刷新/卸载/会话导入，只允许显式查询本人原审计，无导入写入重试。14/14代理/控制器、14/14双语UI；69页面/API代码0.18.38/schema0020，无后台/迁移修改。PR#39已合并，精确feature CI37916281195通过（2085后端、178 PostgreSQL无skip、1136前端）；最新main CI/provider另核对。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -497,3 +497,9 @@ Impact/Acceptance/Resource独立evidence/resource能力投影、确认发送、�
 本地完整前端1136通过/0fail/0skip（原1087新增30协议/控制器+19实际编译UI行为和双语=49），49定向通过；Worker配置/Next/OpenNext构建及禁用认证SSR通过。新增SSR检查6个中英文命令页存在只读恢复入口。第一次并行TypeScript与构建争用.next生成目录报TS6053，构建结束后单独重跑TypeScript通过，不放宽类型/业务断言。本包精确head CI/backend/真实PG/provider另核对，本地无PG服务。69页面/API0.18.38/schema0020不变，无后台或迁移修改。
 云端Linux完整checkout由Codex直接开发，未另启独立任务；Git CLI无推送凭据，GitHub连接发布。公共样例只读、OIDC/全部提交默认关闭，无真实身份/授权/秘密配置；真实提供方/浏览器/管理员/内网及跨会话验收未进行，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定；Render线上后台版本/部署未核验。SoftwareLifeCycle_20全文此前检索服务报错，按仓库交接承接。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。14/14代理与14/14双语UI已有；本轮跨会话审计恢复实现覆盖14/14，不代表实际环境验收。下一包追加式更正撤销，优先影响判断/验收-DVP关联历史替代契约；随后真实身份/跨会话/内网验收、离线部署和运营迁移，VIN最后。契约docs/business-request-recovery.md。
+
+## PR#39 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/39 已合并；代码main dc7d8c77e67eda020aa2e8c4ba6595cf9f717526，精确feature acc4bac21fdb7a9e860c410fd4b7da28a67753ae，起点main e1ef9b285eb05ea34a575c0a8222e36843c7d32f。
+feature CI37916281195全部成功：2085后端（417.73秒、11469既有warnings）、178 PostgreSQL-module cases无skip、1136前端/0fail/0skip。后端113773140847、前端113773141114、acceptance113775748687成功。0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker及中英文禁用认证SSR通过，6实际Next命令页均有只读恢复入口，无发送能力。Cloudflare feature Preview builde6bd6ac5-4315-4e55-83ca-d89859108545成功，不替代main生产证据。本记录后的最新main精确CI/provider另核对；Actions独立deploy仍默认跳过，Render线上API版本/部署未核验。
+十四类原请求手动导出及规范同站点跨会话导入完成，导入零网络/无send/无重试；显式查询原actor原审计，缺失/拒绝仍unknown。恢复文本不是签名或执行证明，业务详情/私有路径须安全保存；不自动保存浏览器数据或读剪贴板。49新增协议/编译UI行为测试通过，实际身份/浏览器/跨会话验收未进行。69页面/API0.18.38/schema0020不变。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。公共样例只读、OIDC与所有提交默认关闭，无真实身份/授权/秘密配置。下一包追加式更正撤销，优先影响判断与验收-DVP关联的历史替代契约；随后真实身份/跨会话/内网验收、离线部署和运营迁移，VIN最后。

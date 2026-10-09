@@ -1,5 +1,11 @@
 # SoftwareLifeCycle Development Handoff
 
+## PR#39 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/39 已合并；代码main dc7d8c77e67eda020aa2e8c4ba6595cf9f717526，精确feature acc4bac21fdb7a9e860c410fd4b7da28a67753ae，起点main e1ef9b285eb05ea34a575c0a8222e36843c7d32f。
+feature CI37916281195全部成功：2085后端（417.73秒、11469既有warnings）、178 PostgreSQL-module cases无skip、1136前端/0fail/0skip。后端113773140847、前端113773141114、acceptance113775748687成功。0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker及中英文禁用认证SSR通过，6实际Next命令页均有只读恢复入口，无发送能力。Cloudflare feature Preview builde6bd6ac5-4315-4e55-83ca-d89859108545成功，不替代main生产证据。本记录后的最新main精确CI/provider另核对；Actions独立deploy仍默认跳过，Render线上API版本/部署未核验。
+十四类原请求手动导出及规范同站点跨会话导入完成，导入零网络/无send/无重试；显式查询原actor原审计，缺失/拒绝仍unknown。恢复文本不是签名或执行证明，业务详情/私有路径须安全保存；不自动保存浏览器数据或读剪贴板。49新增协议/编译UI行为测试通过，实际身份/浏览器/跨会话验收未进行。69页面/API0.18.38/schema0020不变。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。公共样例只读、OIDC与所有提交默认关闭，无真实身份/授权/秘密配置。下一包追加式更正撤销，优先影响判断与验收-DVP关联的历史替代契约；随后真实身份/跨会话/内网验收、离线部署和运营迁移，VIN最后。
+
 ## 2026-10-09 十四类原请求导出及跨会话审计恢复（Codex）
 起点main e1ef9b285eb05ea34a575c0a8222e36843c7d32f；精确CI37904011706全部成功（2085后端、178 PostgreSQL-module cases无skip、1087前端），Cloudflare生产build6c5f8a76-9752-48e5-93c7-619256cbcdf2/version42eb9584-20fe-4569-94b4-8bd1a13a08ec成功，Actions独立deploy默认跳过、开放PR0。
 新增slc-business-recovery/v1规范恢复文本，精确origin/operation/target/原body，支持全14类业务请求。确认后明确复制或手动复制，后续同站点会话粘贴并显式暂存，暂存零网络且初态unknown/outcome_unknown。导入控制器只有recover无send，UI隐藏重试，门控后来开放也不能写；仅原页面控制器仍有原字节明确重试。显式查询经独立组门控/当前USER/本人原审计确认，只读可查；缺失/拒绝不证明未提交，旧unknown不能被导入替换。确认可开始独立新请求。复制/导入/编辑/发送/查询同步互锁、过期上下文及处理函数失效。
