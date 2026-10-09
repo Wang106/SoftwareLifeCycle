@@ -11,6 +11,7 @@ from app.models.core import ApplicationReleaseDetail, Customer, Project, Release
 from app.models.production import Deployment, ProductionBatch
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.impact import IssueImpactAssessment
+from app.services.impact_history import effective, successor_id
 from app.models.testing import IssueDvpItem, DvpItem, DvpExecution
 
 router = APIRouter(prefix='/api/v1/issue-views', tags=['issue views'])
@@ -52,7 +53,7 @@ def relations(identifier):
 def candidates(identifier):
     r = Release; s = SoftwareProduct; a = ApplicationReleaseDetail; f = ReleaseSnapshot; j = IssueImpactAssessment
     frozen = select(f.id).where(f.release_id == r.id,f.status == 'FROZEN').order_by(f.snapshot_number.desc()).limit(1).correlate(r).scalar_subquery()
-    judgment = select(j.id).where(j.issue_id == identifier,j.release_id == r.id,j.snapshot_id == f.id).order_by(j.created_at.desc(),j.id.desc()).limit(1).correlate(r,f).scalar_subquery()
+    judgment = select(j.id).where(j.issue_id == identifier,j.release_id == r.id,j.snapshot_id == f.id,effective()).order_by(j.created_at.desc(),j.id.desc()).limit(1).correlate(r,f).scalar_subquery()
     deployment_count = select(func.count()).select_from(Deployment).where(Deployment.actual_release_id == r.id).correlate(r).scalar_subquery()
     batch_count = select(func.count()).select_from(ProductionBatch).where(ProductionBatch.release_id == r.id).correlate(r).scalar_subquery()
     # Legacy directory displays only releases with real product metadata. Candidate
@@ -107,6 +108,7 @@ def candidates_page(issue_no: str, filters: Annotated[Pages,Query()], db: Sessio
 def judgments(identifier):
     j = IssueImpactAssessment; s = ReleaseSnapshot; r = Release
     return select(j.id,j.release_id,j.snapshot_id,j.decision,j.reason,j.evidence_ref,j.actor_name,j.created_at,
+        j.supersedes_id,j.correction_reason,successor_id().label('superseded_by_id'),
         r.version.label('release_version'),r.release_type,s.snapshot_no).outerjoin(r,r.id == j.release_id).outerjoin(s,s.id == j.snapshot_id).where(j.issue_id == identifier)
 
 
@@ -161,7 +163,7 @@ def evidence_summary(issue_no: str, release_id: uuid.UUID, filters: Annotated[Sn
     assessment = None
     if snapshot:
         j = IssueImpactAssessment
-        assessment = db.execute(judgments(row['id']).where(j.release_id == release_id,j.snapshot_id == uuid.UUID(snapshot['id'])).order_by(j.created_at.desc(),j.id.desc()).limit(1)).mappings().first()
+        assessment = db.execute(judgments(row['id']).where(j.release_id == release_id,j.snapshot_id == uuid.UUID(snapshot['id']),effective()).order_by(j.created_at.desc(),j.id.desc()).limit(1)).mappings().first()
     return {**pins(row),**evidence_pins(release_id,snapshot),'release':{k:release[k] for k in ['id','type','version']},'snapshot':snapshot,
         'assessment':serialize(assessment) if assessment else None,'component_count':count(db,components(snapshot)),
         'verification_count':count(db,verification(row['id'],release_id,snapshot))}

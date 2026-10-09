@@ -4,6 +4,15 @@ require('node:child_process').execFileSync(process.execPath,[require.resolve('ty
 const {parseEvidenceCommand:parse,evidenceReview:review,evidencePath:fixedPath,evidenceReferenceDigest:digest,projectEvidenceReceipt:project,EvidenceSubmission:Submission}=require(path.join(output,'evidence-command-transport.js'));
 const {projectEvidenceAudit:audit}=require(path.join(output,'evidence-command-audit.js'));
 const f=require('./fixtures/evidence-command.cjs'),copy=v=>JSON.parse(JSON.stringify(v));
+test('correction body is not silently treated as an ordinary original impact request',()=>{
+ const c=f.command('impact');
+ assert.equal(parse({...c,body:{...c.body,supersedes_id:f.entity,correction_reason:'Approved correction'}}),null);
+});
+test('replacement audit cannot confirm the ordinary ASSESS receipt protocol',async()=>{
+ const c=parse(f.command('impact')),event=f.audit(c);
+ event.action='SUPERSEDE';event.payload.supersedes_id=f.entity;event.payload.correction_reason='Approved correction';
+ assert.equal(await audit(event,c,f.principal),null);
+});
 after(()=>fs.rmSync(output,{recursive:true,force:true}));
 for(const operation of ['impact','acceptance']) {
  test(operation+' canonical exact fields, existing fixed path and request UUID remain frozen',()=>{const c=parse(f.command(operation));assert.deepEqual(c,f.command(operation));assert.ok(Object.isFrozen(c.body));assert.equal(fixedPath(c),'/api/v1/'+(operation==='impact'?'issues/':'changes/')+encodeURIComponent(c.target)+(operation==='impact'?'/impact-assessments':'/acceptance-dvp-links'));assert.equal(review(c).draft.audit,'/activity/'+f.eventNo(c));});

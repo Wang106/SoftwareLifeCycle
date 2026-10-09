@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-09 Impact 原判断绑定的追加式替代（Codex）
+起点main 9f3b158c9492ec2ba4c846049f90b03a6a2449d0；精确main CI37917324331全部成功（2085后端、178 PostgreSQL-module cases无skip、1136前端），Cloudflare生产buildf24c43b8-7723-4d2f-a948-85995a307524/version63f10325-e4c7-4db6-ac26-b9ea559da3b4成功；Actions独立deploy门控跳过，无开放PR。
+既有Impact POST增加paired supersedes_id/correction_reason，新request_id、同Issue/Release/冻结Snapshot、当前有效原判断ID前置条件；原判断和ASSESS审计不修改。Issue锁串行化原写入/替代/重试，同ID不同正文或actor冲突，精确重试在后来替代后仍返回原应用事实、不恢复当前效力。SUPERSEDE原子审计绑定原ID/原decision/新decision/更正原因、精确actor和证据引用摘要，更正重试须完整匹配原审计。身份/权限正反例保留精确REVIEWER项目角色或PLATFORM_ADMIN例外。
+0021迁移增加nullable前驱/原因，不回填旧行；复合同上下文自外键、前驱唯一、非自引用和paired非空长度约束，原append-only触发器保留。存在替代记录禁止丢失关系的降级，不删除历史强行回退。API代码0.18.39/schema0021；Render线上API/schema/部署未核验，代码构建不替代API迁移部署。
+当前有界候选/冻结证据SQL先排除显式被替代判断再按既有时间/UUID选择剩余叶节点；独立旧判断不追认更正，不向新Snapshot继承判断。历史保留所有记录和前后ID/更正原因，有界SQL关联后继（可在另一页），摘要计历史总数，增长固定查询形状/标量读取。双语只读UI显示前后UUID和独立审计，不开放更正提交、撤销或把测试PASS等同影响/发布许可；现有普通ASSESS准备/恢复拒绝更正字段或SUPERSEDE审计，原回执仍只证明原操作。
+先新增回归证明旧实现缺supersedes_id失败，再实现。最终本地定向71通过/1真实PG deselected；最终较大范围1539通过/593 deselected（139.79秒，无PG服务）；完整后端/PG由精确CI核验。完整前端1143通过/0fail/0skip（原1136新增4历史/双语UI、2普通协议隔离和1组件本地化=7）；类型/Worker配置/Next/OpenNext构建/禁用认证中英文SSR、0021单迁移头及升降级SQL、进度--check通过。35新增单元/处理器回归及12新增隔离真实PG测试，共47后端新增；2132 tests collect通过，精确head完整CI及PG另核验。
+本包仅先交付影响判断替代，不称完整更正撤销完成；评审决策历史替代、Acceptance-DVP替代/撤销、Impact撤销和受控更正提交/恢复UI尚未完成。69页面、14业务/2自身会话/6管理员/离线操作分计不变。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，账本只追加未完成里程碑的实现证据。
+云端Linux完整checkout由Codex直接开发，无另启独立任务；GitHub连接发布，不创建身份/授权/秘密，不开启OIDC或任何提交。公共样例只读，内网未安装，SSO/人员/系统与CPU/Windows无Docker待定。真实提供方/浏览器/跨会话/管理员/内网验收未做，不重试被拒绝浏览器访问。SoftwareLifeCycle_20全文此前检索服务报错，按仓库交接承接。
+下一包Acceptance–DVP历史关系替代/撤销，再补受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；随后真实身份/内网验收、离线运营迁移，VIN最后。契约docs/impact-judgment-corrections.md。
+
 ## PR#39 验收 — 2026-10-09（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/39 已合并；代码main dc7d8c77e67eda020aa2e8c4ba6595cf9f717526，精确feature acc4bac21fdb7a9e860c410fd4b7da28a67753ae，起点main e1ef9b285eb05ea34a575c0a8222e36843c7d32f。
 feature CI37916281195全部成功：2085后端（417.73秒、11469既有warnings）、178 PostgreSQL-module cases无skip、1136前端/0fail/0skip。后端113773140847、前端113773141114、acceptance113775748687成功。0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker及中英文禁用认证SSR通过，6实际Next命令页均有只读恢复入口，无发送能力。Cloudflare feature Preview builde6bd6ac5-4315-4e55-83ca-d89859108545成功，不替代main生产证据。本记录后的最新main精确CI/provider另核对；Actions独立deploy仍默认跳过，Render线上API版本/部署未核验。

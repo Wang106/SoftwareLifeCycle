@@ -2,6 +2,13 @@
 
 Updated: 2026-10-09 (Asia/Shanghai), Codex.
 
+API0.18.39 separately adds explicit Impact supersession to the existing backend
+route. This ordinary ASSESS transport/parser deliberately does not accept
+`supersedes_id`/`correction_reason` or recover SUPERSEDE events; a controlled correction
+submission/recovery UI is pending. Original ASSESS receipts remain valid historical
+facts after supersession, not current-impact claims. See
+[impact historical replacement](impact-judgment-corrections.md).
+
 All fourteen business command transports/controllers are now implemented. Eleven
 bilingual submission UIs exist; Impact, Acceptance and Resource UI wiring remains
 pending. These counts exclude two own-session controls, six administrator commands

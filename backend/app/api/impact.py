@@ -14,6 +14,7 @@ from app.models.core import ApplicationReleaseDetail, Customer, Project, Release
 from app.models.production import Deployment, ProductionBatch
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.impact import IssueImpactAssessment
+from app.services.impact_history import effective, successor_id
 from app.models.testing import IssueDvpItem, DvpItem, DvpExecution
 from app.services.impact_assessment import AssessmentError, AssessmentInput, record_assessment
 from app.authorization import authorize_issue_assessment
@@ -22,10 +23,13 @@ from app.actor import resolve_actor
 router = APIRouter(prefix="/api/v1/issues", tags=["impact"])
 
 
-def _assessment(row):
+def _assessment(row, superseded_by_id=None):
     return {'id': str(row.id), 'release_id': str(row.release_id), 'snapshot_id': str(row.snapshot_id),
             'decision': row.decision, 'reason': row.reason, 'evidence_ref': row.evidence_ref,
-            'actor_name': row.actor_name, 'created_at': row.created_at}
+            'actor_name': row.actor_name, 'created_at': row.created_at,
+            'supersedes_id': str(row.supersedes_id) if row.supersedes_id else None,
+            'correction_reason': row.correction_reason,
+            'superseded_by_id': str(superseded_by_id) if superseded_by_id else None}
 
 
 def _contexts(db, issue_id, releases):
@@ -39,7 +43,7 @@ def _contexts(db, issue_id, releases):
     artifacts = db.scalars(select(SnapshotArtifact).where(SnapshotArtifact.snapshot_id.in_(snapshot_ids))
         .order_by(SnapshotArtifact.component_code, SnapshotArtifact.filename)).all() if snapshot_ids else []
     assessments = db.scalars(select(IssueImpactAssessment).where(IssueImpactAssessment.issue_id == issue_id,
-        IssueImpactAssessment.release_id.in_(ids), IssueImpactAssessment.snapshot_id.in_(snapshot_ids))
+        IssueImpactAssessment.release_id.in_(ids), IssueImpactAssessment.snapshot_id.in_(snapshot_ids), effective())
         .order_by(IssueImpactAssessment.created_at.desc(), IssueImpactAssessment.id.desc())).all() if snapshot_ids else []
     reviews = {}
     for row in assessments:
@@ -150,11 +154,13 @@ def assessment_history(issue_no: str, limit: int = Query(50, ge=1, le=200), db: 
     rows = db.scalars(select(IssueImpactAssessment).where(IssueImpactAssessment.issue_id == issue.id)
         .order_by(IssueImpactAssessment.created_at.desc(), IssueImpactAssessment.id.desc()).limit(limit + 1)).all()
     page = rows[:limit]
+    successors = dict(db.execute(select(IssueImpactAssessment.supersedes_id, IssueImpactAssessment.id).where(
+        IssueImpactAssessment.supersedes_id.in_([r.id for r in page]))).all()) if page else {}
     snapshots = {s.id: s for s in db.scalars(select(ReleaseSnapshot).where(
         ReleaseSnapshot.id.in_([r.snapshot_id for r in page]))).all()} if page else {}
     releases = {r.id: r for r in db.scalars(select(Release).where(
         Release.id.in_([r.release_id for r in page]))).all()} if page else {}
-    return {'items': [{**_assessment(row), 'snapshot_no': snapshots[row.snapshot_id].snapshot_no,
+    return {'items': [{**_assessment(row, successors.get(row.id)), 'snapshot_no': snapshots[row.snapshot_id].snapshot_no,
                       'release_version': releases[row.release_id].version} for row in page],
             'truncated': len(rows) > limit}
 
@@ -174,7 +180,7 @@ def create_assessment(
         db.commit()
         db.refresh(row)
         response.status_code = 201 if created else 200
-        return _assessment(row)
+        return _assessment(row, db.scalar(select(successor_id()).where(IssueImpactAssessment.id == row.id)))
     except AssessmentError as exc:
         db.rollback()
         raise HTTPException(status_code=409, detail=str(exc)) from exc

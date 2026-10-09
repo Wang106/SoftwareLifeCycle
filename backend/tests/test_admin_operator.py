@@ -29,7 +29,7 @@ def operator_db(monkeypatch,request):
         Base.metadata.create_all(engine,tables=[m.__table__ for m in [SecurityPrincipal,GlobalRoleAssignment,BrowserSession,AuditEvent]])
         with engine.begin() as db:
             db.execute(text('CREATE TABLE alembic_version (version_num VARCHAR(32))'))
-            db.execute(text("INSERT INTO alembic_version VALUES ('0020_global_role_status')"))
+            db.execute(text('INSERT INTO alembic_version VALUES (:revision)'), {'revision': settings.required_db_revision})
     monkeypatch.setattr(settings,'admin_operator_enabled',True)
     monkeypatch.setattr(settings,'read_only_mode',False)
     monkeypatch.setattr(settings,'auth_mode','oidc')
