@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-本轮起点main：22ede3fa59794a35e4766ec8d655d10c18919720；三类双语UI已实现，本包精确CI/合并/部署待记录。
+本轮代码main：061c6ce8e0f8ddbdea2dd0d3205038fc4f8fdd17（PR#33）；精确feature CI37882061097全部成功；本验收文档后的最新main CI/provider另核对。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -397,3 +397,13 @@ Mac部分快照/GitHub连接服务发布，本地Node测试语法及进度--chec
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0；双语提交UI由5/14增至8/14。执行器为云端Linux完整checkout，Codex直接编写并运行本地前端测试；完整后端/真实PG回归由Actions验收。Git CLI没有推送凭据，通过已连接GitHub发布。
 下一包实现Test Release/Deployment/Changeover独立默认关闭提交通道、原审计恢复、严格精确回执和冻结控制器，然后接入双语UI；再完成Impact/Acceptance/Resource、真实身份及内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装与运营迁移，VIN最后。
 契约docs/distribution-command-submission.md。
+
+
+## PR#33 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/33 已合并；代码main 061c6ce8e0f8ddbdea2dd0d3205038fc4f8fdd17，精确feature e3aa442d9f2da5ff62a7fa713c0b72de41261f03，起点main22ede3fa59794a35e4766ec8d655d10c18919720。
+feature完整CI37882061097三任务成功：2071后端（344.53秒，11417既有warnings），172 PostgreSQL-module cases/no skips；922前端/0fail/0skip（原895新增27）。0020单迁移头/SQL/隔离PG往返、进度--check、类型检查、Next/OpenNext Worker构建、中英文禁用认证SSR成功；两条distribution路由GET405/POST503、private/no-store。后端113663709326、前端113663709375、acceptance113665279770成功。Cloudflare feature Preview builde9ec67f1-6af4-4383-bba7-8e89eddbdcb0成功；不是main生产部署证据。首轮新增门禁测试证明旧代码缺能力投影，开发中修正缺失能力声明和未实际改变target的测试数据后通过，本PR云端首次完整CI即成功。
+三类双语确认发送、原审计查询、原请求明确重试、精确回执已接入。六个布尔能力通过三组独立默认关闭门控和唯一当前USER投影，不传凭据；unknown跨命令/上下文/能力刷新冻结，只有confirmed或首次明确rejected允许新UUID。精确原READY/DRAFT、交付修订/冻结artifact集合、分发接收方及生产授权finite/null范围原文保留，不推断current/replayed/发送文件/签收/量产批准。八类代理及八类UI完成，六类仍准备/复制；仅内存，跨卸载/刷新/会话导入待完成。
+本轮云端Linux完整checkout直接用Codex编写；本地922前端、TypeScript、进度、Next/Worker构建及禁用认证SSR成功，最终新组件24项单独通过。Git CLI无推送凭据，使用已连接GitHub发布。SoftwareLifeCycle_17全文检索两次均服务报错，按最新仓库交接承接；不称已读取全文。
+69页面/API代码0.18.36/schema0020不变，没有后台/schema改动。公共样例只读，OIDC及全部提交默认关闭；实际身份/授权/秘密未配置，真实浏览器/管理员/提供方/内网验收未进行。内网未安装、SSO/人员/Windows无Docker/系统架构待定，Render后台部署/版本未核验。
+本记录后的最新main精确head CI及Cloudflare生产另核对，不能用旧main或Preview代替；GitHub Actions独立deploy仍门控跳过。36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0；验收增量0，提交UI覆盖5/14→8/14。
+下一包实现Test Release/Deployment/Changeover独立默认关闭提交与原审计恢复、严格原回执和冻结控制器，随后双语UI；再完成Impact/Acceptance/Resource、真实身份与内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装与运营迁移，VIN最后。
