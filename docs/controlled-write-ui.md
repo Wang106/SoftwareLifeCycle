@@ -1,22 +1,27 @@
 # Controlled write UI plan and request preparation
 
 This is an implementation plan for the existing 14 command APIs, not authorization
-to enable public writes. The current `/commands` workspace prepares requests only.
+to enable public writes. The current `/commands` workspace prepares all fourteen
+requests and exposes independently default-disabled bilingual submit/query/retry/result
+interfaces. Real provider/browser acceptance and cross-session import remain pending.
+Dated sections below retain historical preparation-only states.
 
 | Priority | Commands | UI status | Remaining submission work |
 | --- | --- | --- | --- |
-| First | Snapshot, actual-software report/correction, Batch | Request preparation implemented | Approved target, login/session, authenticated submission and uncertain-result recovery |
-| Next | Approval Action, Release Decision | Request preparation implemented; exact step UUID visible in approval detail | Permission-aware pickers, authenticated submission and outcome verification |
-| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Request preparation implemented | Permission-aware context pickers, authenticated submission and outcome verification |
-| Next | Delivery, Distribution, Authorization | Request preparation implemented | Artifact policy/recipient/scope pickers and complete chain confirmation |
-| Next | Test Release, Deployment, Changeover | Request preparation implemented | Purpose/location/source pickers; activation/revocation contracts where absent |
+| First | Snapshot, actual-software report/correction, Batch | Default-disabled bilingual prepare/submit/query/retry/result UI | Approved identity/target, real browser acceptance and cross-session recovery |
+| Next | Approval Action, Release Decision | Default-disabled bilingual prepare/submit/query/retry/result UI; exact step UUID | Permission-aware pickers, real-provider acceptance and cross-session recovery |
+| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Default-disabled bilingual prepare/submit/query/retry/result UI | Permission-aware context pickers, real-provider acceptance and cross-session recovery |
+| Next | Delivery, Distribution, Authorization | Default-disabled bilingual prepare/submit/query/retry/result UI | Artifact policy/recipient/scope pickers, real-provider acceptance and cross-session recovery |
+| Next | Test Release, Deployment, Changeover | Default-disabled bilingual prepare/submit/query/retry/result UI | Real-provider acceptance, cross-session recovery and activation/revocation contracts where absent |
 
 ## Implemented workspace
 
 Entry points are `/create`, exact SSR/ASR release profiles and deployment detail.
 Release links prefill its UUID for Snapshot. Deployment links prefill the exact
-business number for actual/Batch preparation. Switching query targets remounts the
-form; changing any field or operation invalidates the reviewed request. Deployment
+business number for actual/Batch preparation. Query changes invalidate unsent reviews
+without remounting the component. After an attempt, the original review/controller
+stays frozen across query, command and capability changes. Before sending, changing
+any field or operation invalidates the reviewed request. Deployment
 detail displays actual_version; missing versions are shown as unavailable, never zero.
 
 The Snapshot/actual/Batch forms validate UUIDs, bounded business numbers without path separators/dot segments, exact version integer,
@@ -242,3 +247,6 @@ Test Release/Deployment/Changeover now have their own default-disabled submissio
 
 ## Test Release / Deployment / Changeover 双语提交界面 — 2026-10-09
 三类现有准备接入独立production能力、确认发送、原审计查询、原请求明确重试及精确回执，public/OIDC/提交仍默认关闭。八类UI增至十一类（11/14，79%），代理已有11/14；剩余Impact/Acceptance/Resource。未知原请求跨上下文/命令/能力刷新保持冻结，不借其他门控发送；原DRAFT/PENDING/COMPLETED不证明测试通过、实际软件或物理刷写。仅页面内存；真实身份及内网验收和跨会话导入仍待完成。契约docs/production-command-submission.md。
+
+## Impact / Acceptance / Resource 双语提交界面 — 2026-10-09
+三类已有代理和控制器接入独立 evidence/resource 默认关闭能力、确认发送、原审计查询、原字节明确重试及精确结果。现在14/14代理/控制器及14/14双语UI已实现，尚非真实身份/环境验收完成。六组门控只解析一次当前USER会话，仅投影12个布尔能力，不传凭据；只读仍可查本人原审计。unknown跨命令/上下文/门控刷新冻结，不借用另一组能力。Impact保留原nullable evidence_ref/判断/冻结Snapshot，Acceptance保留原criterion/DVP关联，Resource保留原target_ref/标题/位置/描述；位置不成为可点击链接。原结果不推断测试通过、当前影响、验收完成、文件存在或分发权限。新标签中的详情/history与原审计为独立观察。刷新/卸载/跨会话导入及实际提供方/浏览器/内网验收待完成。

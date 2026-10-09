@@ -2,10 +2,10 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const source=fs.readFileSync('app/commands/page.tsx','utf8');
 const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-async function page({configured=true,governanceConfigured=false,distributionConfigured=false,productionConfigured=false,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
+async function page({configured=true,governanceConfigured=false,distributionConfigured=false,productionConfigured=false,evidenceConfigured=false,resourceConfigured=false,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
  let cookieReads=0,sessionReads=0;const Workbench=()=>null,exports={};
  vm.runInNewContext(compiled,{exports,process:{env:{}},require:name=>name==='next/headers'?{cookies:async()=>{cookieReads++;return{getAll:()=>cookies};}}:
-  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured,governanceSubmissionConfigured:()=>governanceConfigured,distributionSubmissionConfigured:()=>distributionConfigured,productionSubmissionConfigured:()=>productionConfigured}:
+  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured,governanceSubmissionConfigured:()=>governanceConfigured,distributionSubmissionConfigured:()=>distributionConfigured,productionSubmissionConfigured:()=>productionConfigured,evidenceSubmissionConfigured:()=>evidenceConfigured,resourceSubmissionConfigured:()=>resourceConfigured}:
   name==='../../lib/browser-session'?{SESSION_COOKIE:'__Host-slc_session',resolveSession:async()=>{sessionReads++;return identity;}}:
   name==='../../components/command-workbench'?{__esModule:true,default:Workbench}:
   name==='../../components/localized'?{Localized:({children})=>children}:
@@ -83,5 +83,24 @@ test('production capabilities fail closed for missing identity and ambiguous coo
  for(const options of [{identity:null},{cookies:[]},{cookies:[{value:'one'},{value:'two'}]}]){
   const r=await page({configured:false,productionConfigured:true,...options});
   assert.equal(r.component.props.productionSubmissionEnabled,false);assert.equal(r.component.props.productionRecoveryEnabled,false);
+ }
+});
+
+test('six independent command gates resolve one private session and project twelve booleans',async()=>{
+ for(let bits=0;bits<64;bits++)for(const read_only_mode of [false,true,undefined]){
+  const names=['configured','governanceConfigured','distributionConfigured','productionConfigured','evidenceConfigured','resourceConfigured'];
+  const options=Object.fromEntries(names.map((name,index)=>[name,Boolean(bits&(1<<index))]));
+  const r=await page({...options,identity:{read_only_mode,token:'private',principal:{id:'private'}}});
+  assert.equal(r.cookieReads,bits?1:0);assert.equal(r.sessionReads,bits?1:0);
+  for(const [gate,submit,recover] of [[options.configured,'submissionEnabled','recoveryEnabled'],...['governance','distribution','production','evidence','resource'].map(group=>[options[group+'Configured'],group+'SubmissionEnabled',group+'RecoveryEnabled'])]){
+   assert.equal(r.component.props[submit],gate&&read_only_mode===false,submit);assert.equal(r.component.props[recover],gate,recover);
+  }
+  assert.ok(!JSON.stringify(r.component.props).includes('private'));
+ }
+});
+test('evidence and resource capabilities fail closed for missing session, ambiguous cookies and query claims',async()=>{
+ for(const group of ['evidence','resource'])for(const options of [{identity:null},{cookies:[]},{cookies:[{value:'one'},{value:'two'}]}]){
+  const r=await page({configured:false,[group+'Configured']:true,query:{operation:group==='evidence'?'impact':'resource',[group+'SubmissionEnabled']:'true'},...options});
+  assert.equal(r.component.props[group+'SubmissionEnabled'],false);assert.equal(r.component.props[group+'RecoveryEnabled'],false);
  }
 });

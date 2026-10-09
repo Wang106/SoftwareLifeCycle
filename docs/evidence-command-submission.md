@@ -79,7 +79,13 @@ Confirmed is terminal. Lost replies or invalid/missing/denied audit stay unknown
 only explicit retry resends original bytes. Later gate, session, role or business
 denials cannot erase prior uncertainty. Only explicit recovery reads original audit.
 Memory only: refresh/unmount/cross-session import is still pending. Bilingual UI
-capability projection, sending/queries/results for these two and Resource are next.
+capability projection, sending, original-audit queries, explicit retries and exact
+results for these two and Resource are implemented in `/commands`. The page projects
+only submit/recover booleans from the independent gates and one current USER session;
+read-only still permits querying the original audit. Unknown requests stay frozen
+across command, context and capability refreshes and cannot borrow another gate.
+Impact links the original audit snapshot label; Acceptance links the assigned DVP
+UUID. Detail/history links are separate observations and open independently.
 
 No schema migration (0020). Public sample environment remains read-only; OIDC and
 all submission gates stay disabled. Real provider/browser/admin/internal acceptance

@@ -3,6 +3,9 @@ import { Localized, LocalizedAttributes } from "./localized";
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import EvidenceResourceCommandResult from './evidence-resource-command-result';
+import { EvidenceSubmission, parseEvidenceCommand, type EvidenceState } from '../lib/evidence-command-transport';
+import { ResourceSubmission, parseResourceCommand, type ResourceState } from '../lib/resource-command-transport';
 import ProductionCommandResult from './production-command-result';
 import { ProductionSubmission, parseProductionCommand, type ProductionState } from '../lib/production-command-transport';
 import DistributionCommandResult from './distribution-command-result';
@@ -20,19 +23,19 @@ const labels: Record<Operation, string> = {
   delivery: 'Create Delivery Package', distribution: 'Record Distribution', authorization: 'Create Production Authorization',
   impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
-export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, submissionEnabled = false, recoveryEnabled = false, governanceSubmissionEnabled = false, governanceRecoveryEnabled = false, distributionSubmissionEnabled = false, distributionRecoveryEnabled = false, productionSubmissionEnabled = false, productionRecoveryEnabled = false }: {
-  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; submissionEnabled?: boolean; recoveryEnabled?: boolean; governanceSubmissionEnabled?: boolean; governanceRecoveryEnabled?: boolean; distributionSubmissionEnabled?: boolean; distributionRecoveryEnabled?: boolean; productionSubmissionEnabled?: boolean; productionRecoveryEnabled?: boolean;
+export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, submissionEnabled = false, recoveryEnabled = false, governanceSubmissionEnabled = false, governanceRecoveryEnabled = false, distributionSubmissionEnabled = false, distributionRecoveryEnabled = false, productionSubmissionEnabled = false, productionRecoveryEnabled = false, evidenceSubmissionEnabled = false, evidenceRecoveryEnabled = false, resourceSubmissionEnabled = false, resourceRecoveryEnabled = false }: {
+  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; submissionEnabled?: boolean; recoveryEnabled?: boolean; governanceSubmissionEnabled?: boolean; governanceRecoveryEnabled?: boolean; distributionSubmissionEnabled?: boolean; distributionRecoveryEnabled?: boolean; productionSubmissionEnabled?: boolean; productionRecoveryEnabled?: boolean; evidenceSubmissionEnabled?: boolean; evidenceRecoveryEnabled?: boolean; resourceSubmissionEnabled?: boolean; resourceRecoveryEnabled?: boolean;
 }) {
   const [operation, setOperation] = useState<Operation>(initialOperation);
   const [fields, setFields] = useState<Fields>({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
   const [review, setReview] = useState<Review | null>(null);
   const [message, setMessage] = useState('');
   const [copying, setCopying] = useState(false);
-  const controller = useRef<FirstSubmission | GovernanceSubmission | DistributionSubmission | ProductionSubmission | null>(null);
-  const [result, setResult] = useState<FirstState | GovernanceState | DistributionState | ProductionState | null>(null);
+  const controller = useRef<FirstSubmission | GovernanceSubmission | DistributionSubmission | ProductionSubmission | EvidenceSubmission | ResourceSubmission | null>(null);
+  const [result, setResult] = useState<FirstState | GovernanceState | DistributionState | ProductionState | EvidenceState | ResourceState | null>(null);
   const copyPending = useRef(false);
-  const capability = useRef({ submit: submissionEnabled, recover: recoveryEnabled, governanceSubmit: governanceSubmissionEnabled, governanceRecover: governanceRecoveryEnabled, distributionSubmit: distributionSubmissionEnabled, distributionRecover: distributionRecoveryEnabled, productionSubmit: productionSubmissionEnabled, productionRecover: productionRecoveryEnabled });
-  capability.current = { submit: submissionEnabled, recover: recoveryEnabled, governanceSubmit: governanceSubmissionEnabled, governanceRecover: governanceRecoveryEnabled, distributionSubmit: distributionSubmissionEnabled, distributionRecover: distributionRecoveryEnabled, productionSubmit: productionSubmissionEnabled, productionRecover: productionRecoveryEnabled };
+  const capability = useRef({ submit: submissionEnabled, recover: recoveryEnabled, governanceSubmit: governanceSubmissionEnabled, governanceRecover: governanceRecoveryEnabled, distributionSubmit: distributionSubmissionEnabled, distributionRecover: distributionRecoveryEnabled, productionSubmit: productionSubmissionEnabled, productionRecover: productionRecoveryEnabled, evidenceSubmit: evidenceSubmissionEnabled, evidenceRecover: evidenceRecoveryEnabled, resourceSubmit: resourceSubmissionEnabled, resourceRecover: resourceRecoveryEnabled });
+  capability.current = { submit: submissionEnabled, recover: recoveryEnabled, governanceSubmit: governanceSubmissionEnabled, governanceRecover: governanceRecoveryEnabled, distributionSubmit: distributionSubmissionEnabled, distributionRecover: distributionRecoveryEnabled, productionSubmit: productionSubmissionEnabled, productionRecover: productionRecoveryEnabled, evidenceSubmit: evidenceSubmissionEnabled, evidenceRecover: evidenceRecoveryEnabled, resourceSubmit: resourceSubmissionEnabled, resourceRecover: resourceRecoveryEnabled };
   const contextKey = JSON.stringify([initialOperation, initialTarget, initialStep, initialContext]);
   const currentKey = useRef(contextKey); currentKey.current = contextKey;
   const previousKey = useRef(contextKey);
@@ -45,11 +48,13 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   const governanceOperation = currentReview && ['approval', 'decision'].includes(currentReview.draft.operation);
   const distributionOperation = currentReview && ['delivery', 'distribution', 'authorization'].includes(currentReview.draft.operation);
   const productionOperation = currentReview && ['test-release', 'deployment', 'changeover'].includes(currentReview.draft.operation);
-  const supportedOperation = firstOperation || governanceOperation || distributionOperation || productionOperation;
-  const canSubmit = productionOperation ? productionSubmissionEnabled : distributionOperation ? distributionSubmissionEnabled : governanceOperation ? governanceSubmissionEnabled : submissionEnabled;
-  const canRecover = productionOperation ? productionRecoveryEnabled : distributionOperation ? distributionRecoveryEnabled : governanceOperation ? governanceRecoveryEnabled : recoveryEnabled;
-  const submitCapability = () => productionOperation ? capability.current.productionSubmit : distributionOperation ? capability.current.distributionSubmit : governanceOperation ? capability.current.governanceSubmit : capability.current.submit;
-  const recoverCapability = () => productionOperation ? capability.current.productionRecover : distributionOperation ? capability.current.distributionRecover : governanceOperation ? capability.current.governanceRecover : capability.current.recover;
+  const evidenceOperation = currentReview && ['impact', 'acceptance'].includes(currentReview.draft.operation);
+  const resourceOperation = currentReview?.draft.operation === 'resource';
+  const supportedOperation = firstOperation || governanceOperation || distributionOperation || productionOperation || evidenceOperation || resourceOperation;
+  const canSubmit = resourceOperation ? resourceSubmissionEnabled : evidenceOperation ? evidenceSubmissionEnabled : productionOperation ? productionSubmissionEnabled : distributionOperation ? distributionSubmissionEnabled : governanceOperation ? governanceSubmissionEnabled : submissionEnabled;
+  const canRecover = resourceOperation ? resourceRecoveryEnabled : evidenceOperation ? evidenceRecoveryEnabled : productionOperation ? productionRecoveryEnabled : distributionOperation ? distributionRecoveryEnabled : governanceOperation ? governanceRecoveryEnabled : recoveryEnabled;
+  const submitCapability = () => resourceOperation ? capability.current.resourceSubmit : evidenceOperation ? capability.current.evidenceSubmit : productionOperation ? capability.current.productionSubmit : distributionOperation ? capability.current.distributionSubmit : governanceOperation ? capability.current.governanceSubmit : capability.current.submit;
+  const recoverCapability = () => resourceOperation ? capability.current.resourceRecover : evidenceOperation ? capability.current.evidenceRecover : productionOperation ? capability.current.productionRecover : distributionOperation ? capability.current.distributionRecover : governanceOperation ? capability.current.governanceRecover : capability.current.recover;
   useEffect(() => {
     if (previousKey.current === contextKey) return;
     previousKey.current = contextKey;
@@ -69,7 +74,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
         (controller.current && controller.current.state.review !== currentReview)) return;
     if (!controller.current) {
       if (activeReview.current !== currentReview || currentKey.current !== contextKey) return;
-      try { controller.current = productionOperation ? new ProductionSubmission(currentReview) : distributionOperation ? new DistributionSubmission(currentReview) : governanceOperation ? new GovernanceSubmission(currentReview) : new FirstSubmission(currentReview); }
+      try { controller.current = resourceOperation ? new ResourceSubmission(currentReview) : evidenceOperation ? new EvidenceSubmission(currentReview) : productionOperation ? new ProductionSubmission(currentReview) : distributionOperation ? new DistributionSubmission(currentReview) : governanceOperation ? new GovernanceSubmission(currentReview) : new FirstSubmission(currentReview); }
       catch { setMessage('The business request is invalid.'); return; }
     }
     const pending = controller.current.send(submitCapability());
@@ -111,7 +116,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   }
   return <>
     <section className="panel">
-      <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software, batch, approval action, release decision, delivery package, distribution, production authorization, test release, deployment and changeover submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
+      <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software, batch, approval action, release decision, delivery package, distribution, production authorization, test release, deployment, changeover, impact assessment, acceptance-to-DVP and resource reference submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
       <form className="commandform" onSubmit={event => {
         event.preventDefault();
         if (copyPending.current || controller.current || currentKey.current !== contextKey || activeReview.current ||
@@ -125,6 +130,10 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
           if (['delivery', 'distribution', 'authorization'].includes(operation) && !parseDistributionCommand({ operation,
             target: fields.target, body: next.draft.payload })) throw Error('The business request is invalid.');
           if (['test-release', 'deployment', 'changeover'].includes(operation) && !parseProductionCommand({ operation,
+            target: fields.target, body: next.draft.payload })) throw Error('The business request is invalid.');
+          if (['impact', 'acceptance'].includes(operation) && !parseEvidenceCommand({ operation,
+            target: fields.target, body: next.draft.payload })) throw Error('The business request is invalid.');
+          if (operation === 'resource' && !parseResourceCommand({ operation,
             target: fields.target, body: next.draft.payload })) throw Error('The business request is invalid.');
           activeReview.current = next; setReview(next); setMessage('Review the target and request before copying.'); }
         catch (error) { activeReview.current = null; setReview(null); setMessage(error instanceof Error ? error.message : 'Unable to prepare request.'); }
@@ -264,7 +273,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
       <Localized>{supportedOperation && !result && canSubmit && <button type="button" disabled={!currentReview.confirmed || copying} onClick={send}>
         <Localized>{'Send confirmed business request'}</Localized></button>}</Localized>
       <Localized>{supportedOperation && !canSubmit && <p className="notice"><Localized>{'Business command submission is disabled in this environment.'}</Localized></p>}</Localized>
-      <Localized>{result && (['test-release', 'deployment', 'changeover'].includes(result.command.operation) ? <ProductionCommandResult state={result as ProductionState} /> : ['delivery', 'distribution', 'authorization'].includes(result.command.operation) ? <DistributionCommandResult state={result as DistributionState} /> : ('approval' === result.command.operation || 'decision' === result.command.operation) ? <GovernanceCommandResult state={result as GovernanceState} /> : <FirstCommandResult state={result as FirstState} />)}</Localized>
+      <Localized>{result && (['impact', 'acceptance', 'resource'].includes(result.command.operation) ? <EvidenceResourceCommandResult state={result as EvidenceState | ResourceState} /> : ['test-release', 'deployment', 'changeover'].includes(result.command.operation) ? <ProductionCommandResult state={result as ProductionState} /> : ['delivery', 'distribution', 'authorization'].includes(result.command.operation) ? <DistributionCommandResult state={result as DistributionState} /> : ('approval' === result.command.operation || 'decision' === result.command.operation) ? <GovernanceCommandResult state={result as GovernanceState} /> : <FirstCommandResult state={result as FirstState} />)}</Localized>
       <Localized>{result && ['unknown', 'rejected'].includes(result.phase) && <>
         <button type="button" disabled={!canRecover || copying} onClick={recover}><Localized>{'Query original audit without resubmitting'}</Localized></button>
         <button type="button" disabled={!canSubmit || copying} onClick={send}><Localized>{'Retry original business request'}</Localized></button>

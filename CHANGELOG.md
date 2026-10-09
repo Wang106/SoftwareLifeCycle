@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-09 — Impact / Acceptance / Resource bilingual submission UI
+- Connect three independent default-disabled submit/query/retry/result interfaces; all 14 business commands now have bilingual UI.
+- Resolve one private USER session for six command groups; preserve unknown original requests across context and independent capability changes.
+- Show original judgment/snapshot, criterion/DVP assignment and resource reference text without inferring test success, acceptance completion, file existence or distribution rights.
+- No backend/schema change or actual identity/environment enablement; cross-session import and real-provider acceptance remain pending.
+
 ## 0.18.38 — 2026-10-09
 - Impact审计增加规范nullable evidence_ref摘要，引用不进入活动payload，旧不完整审计保持unknown。
 - 新增独立默认关闭Impact/Acceptance提交、原审计恢复、严格回执和冻结控制器。

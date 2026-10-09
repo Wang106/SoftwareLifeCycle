@@ -68,6 +68,14 @@ Lost responses stay unknown; only explicit retry resends original bytes and only
 explicit recovery queries original audit. Later denials cannot erase uncertainty;
 confirmed is terminal. Memory only: refresh/unmount/cross-session import is pending.
 
+The bilingual `/commands` interface now projects independent Resource submit/recover
+booleans using one current USER session for all six command groups. Read-only permits
+original-audit queries; only explicitly non-read-only permits sending. Unknown
+requests keep their original target, ID and exact bytes across context/gate changes.
+The result displays original registration text, target_ref and precise Resource/audit
+links without turning a location into a clickable URL or fetching it. Reference
+registration does not prove file existence, verified content or distribution rights.
+
 Public samples stay read-only; all submission and OIDC gates remain disabled.
 Real provider/browser/admin/internal-server acceptance is pending. Internal server
 installation has not begun; SSO, personnel, OS/CPU and no-Docker constraints are

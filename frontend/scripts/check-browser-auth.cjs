@@ -47,6 +47,15 @@ async function main() {
     console.log(`Identity SSR ${language} ${path}: 200, private/no-store, disabled and no form`);
    }
   }
+  for(const [language,title,sendLabel] of [['zh','准备生命周期请求','发送已确认的业务请求'],['en','Prepare a lifecycle request','Send confirmed business request']]) {
+   for(const operation of ['impact','acceptance','resource']) {
+    const response=await fetch(base+'/commands?operation='+operation,{headers:{Cookie:`slc_language=${language}`}});
+    assert.equal(response.status,200);assert.ok(response.headers.get('cache-control').includes('no-store'));
+    const html=await response.text();assert.ok(html.includes(title));assert.ok(!html.includes(sendLabel));
+    assert.ok(html.includes('name="target"'));assert.ok(html.includes(language==='zh'?'资源引用':'resource reference'));
+    console.log(`Command SSR ${language} ${operation}: 200, no-store, preparation without send capability`);
+   }
+  }
   for(const [language,message] of [['zh','登录失败，请重试。'],['en','Sign-in failed. Please try again.']]) {
    const response=await fetch(base+'/account?auth=failed',{headers:{Cookie:`slc_language=${language}`}});assert.equal(response.status,200);assert.ok((await response.text()).includes(message));console.log(`Account error SSR ${language}: translated generic failure`);
   }
