@@ -24,7 +24,7 @@
 
 ## 当前接手快照
 当前69页面、API代码0.18.38/schema0020。十四类业务代理/冻结控制器完成，十一类双语提交/原审计查询/精确结果界面已接入。Resource及Impact/Acceptance独立默认关闭提交和原审计恢复基础完成；三类双语UI待接入。14业务、2自身会话、6管理员及离线操作分计。
-最新PR#36精确feature CI全部成功：2079后端、174 PostgreSQL-module cases无skip、1015前端；迁移/类型/Worker/中英文禁用认证SSR通过。代码main b812e82d76b1c9ff7e70c67172a4a4d0c9f66e05，本记录后的最新main精确CI与生产构建另核对。Render在线后台版本/部署未核验。
+最新PR#37精确feature fd3dd0b0c101cc097eb51c3a523c26761bfa3d85 的CI37899889085全部成功：2085后端、178 PostgreSQL-module cases无skip、1055前端；迁移/类型/Worker/中英文禁用认证SSR通过。代码main ce220e8dcdcea4b17f929609cdca08590d92bf22；feature Cloudflare Preview build0320f49a-c816-4c34-962d-e2a22e65b1f5成功。本记录后的最新main精确CI与生产构建另核对，Preview不能替代生产证据。Actions独立deploy默认跳过，Render在线后台版本/部署未核验。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读、OIDC和全部提交默认关闭，没有实际身份/授权/秘密配置；真实浏览器/提供方/管理员验收未完成，不重试拒绝的浏览器访问。
 内网尚未开始安装，SSO/人员/系统与CPU/Windows无Docker约束待定。恢复仅内存，跨刷新/卸载/会话导入、更正撤销及离线运营迁移待完成。SoftwareLifeCycle_20全文检索服务报错，未取得原文，依据main交接继续。
 

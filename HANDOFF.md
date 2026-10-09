@@ -1,5 +1,12 @@
 # SoftwareLifeCycle Development Handoff
 
+## PR#37 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/37 已合并；代码main ce220e8dcdcea4b17f929609cdca08590d92bf22，精确feature fd3dd0b0c101cc097eb51c3a523c26761bfa3d85，起点main 68e7491513b0e6676323652f14ac32f7d88ef590。
+feature CI37899889085全部成功：2085后端（301.35秒、11469 warnings）、178 PostgreSQL-module cases/no skips、1055前端/0fail/0skip。后端113719712769、前端113719713082、acceptance113721433758成功；0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker及中英文禁用认证SSR通过。两类evidence路由GET405/POST503、private/no-store。Cloudflare feature Preview build0320f49a-c816-4c34-962d-e2a22e65b1f5成功，不能替代main生产部署证据。本记录之后最新main的精确CI/provider另核对；Actions独立deploy默认门控跳过。
+Impact/Acceptance独立默认关闭提交与原审计恢复、严格目标/正文/声明绑定、冻结控制器完成。Impact新增v1 nullable evidence_ref SHA256，旧缺摘要审计仍unknown，不补写；Acceptance按已有完整原审计确认，不伪造历史摘要。HTTP200/201均须原审计，恢复只GET；未知后的拒绝保持未知、明确重试保持原字节/ID。原Issue/SCR实体UUID与assessment/assignment原请求UUID分开；Snapshot标签来自原审计，不作为调用者字段，不推断当前状态、测试通过或验收完成。API代码0.18.38/schema0020，无迁移，Render在线后台部署/版本未核验。
+本地1055完整前端、73后端定向、类型/Worker配置/构建/双语禁用认证SSR及进度检查通过；4项新增真实PG审计/重放/原子回滚用例由本PR Actions通过，本地无PG服务。云端Linux完整checkout由Codex直接开发，GitHub连接发布并逐一核对21文件blob与本地一致；未另启独立Codex任务。SoftwareLifeCycle_20全文此前检索服务报错，按仓库交接承接。公共样例只读、OIDC及全部提交默认关闭，无实际身份/授权/秘密配置，真实提供方/浏览器/管理员/内网验收未进行，不重试拒绝的浏览器访问；内网未安装，SSO/人员/Windows无Docker/CPU待定。恢复仅页面内存，跨刷新/卸载/会话导入待完成。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。代理/控制器12→14/14（100%）；双语UI仍11/14（79%）。下一包接入Impact/Acceptance/Resource独立默认关闭能力及双语确认发送/原审计查询/原请求明确重试/精确结果，unknown跨上下文和能力刷新冻结；随后跨会话恢复、更正撤销、真实身份/内网验收、离线运营迁移，VIN最后。契约docs/evidence-command-submission.md。
+
 ## 2026-10-09 Impact、Acceptance 提交与原审计恢复基础（Codex）
 起点main 68e7491513b0e6676323652f14ac32f7d88ef590；精确CI37897837744后端/前端/acceptance全部成功（2079后端、174 PG模块无skip、1015前端），Cloudflare生产build965910f1-7e36-427e-87b3-71680f5e9ec4/version1f803cdf-9f4e-4926-8a42-a933068d92b1成功；Actions独立deploy跳过、开放PR0。
 两类独立默认关闭提交/原审计恢复代理、严格正文/目标绑定、原回执与EvidenceSubmission冻结控制器已实现。Impact新增v1规范UTF-8 nullable evidence_ref SHA256摘要，引用不放入活动payload；缺摘要的旧审计包括原null仍unknown，不补写、不查询当前对象。Acceptance实际旧审计已完整，按原assignment/criterion/DVP、声明/原因/实体校验，不伪造历史指纹。两类HTTP201/200都需原审计确认，recover只GET，unknown后拒绝不抹除未知，明确重试原ID/字节不变。原Issue/SCR UUID与assessment/assignment UUID分开；原Snapshot标签来自审计而非请求，不推断当前状态、测试通过、验收完成或下游许可。
