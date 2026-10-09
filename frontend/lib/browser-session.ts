@@ -1,3 +1,5 @@
+import { parseProductionCommand, productionPath, productionEvent, type ProductionCommand } from './production-command-transport';
+import { projectProductionAudit } from './production-command-audit';
 import { parseDistributionCommand, distributionPath, distributionEvent, type DistributionCommand } from './distribution-command-transport';
 import { projectDistributionAudit } from './distribution-command-audit';
 import { parseGovernanceCommand, governancePath, governanceEvent, type GovernanceCommand } from './governance-command-transport';
@@ -663,6 +665,41 @@ export async function executeDistributionCommand(config: SessionConfig, cookie: 
     envelope.token, fetcher, {}, envelope.sid);
   if (!audit || audit.status !== 200) return unknown;
   const receipt = projectDistributionAudit(audit.value, command, identity.principal.id);
+  return receipt ? { status: 200, value: receipt } : unknown;
+}
+
+
+export async function executeProductionCommand(config: SessionConfig, cookie: string | undefined,
+  input: ProductionCommand, mode: 'submit' | 'recover', fetcher: typeof fetch = fetch): Promise<{ status: number; value: unknown }> {
+  const command = parseProductionCommand(input);
+  if (!command || !['submit', 'recover'].includes(mode)) return { status: 400, value: { error: 'invalid_request' } };
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { status: 401, value: { error: 'session_required' } };
+  // A read-only switch does not erase an already committed own-operation receipt.
+  if (mode === 'submit' && identity.read_only_mode) return { status: 403, value: { error: 'read_only_mode' } };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const unknown = { status: 502, value: { error: 'outcome_unknown' } };
+  if (mode === 'submit') {
+    const result = await privateRequest(config, productionPath(command), envelope.token, fetcher,
+      { method: 'POST', body: JSON.stringify(command.body) }, envelope.sid);
+    if (!result) return unknown;
+    const expectedStatuses = command.operation === 'test-release' ? [200,201] : [201];
+    if (!expectedStatuses.includes(result.status)) {
+      const denied: Record<number, string> = { 401: 'session_required', 403: 'submission_forbidden', 422: 'invalid_request' };
+      if (denied[result.status]) return { status: result.status, value: { error: denied[result.status] } };
+      if (result.status === 409) {
+        const detail = result.value && typeof result.value === 'object' ? (result.value as Record<string, unknown>).detail : null;
+        const error = typeof detail === 'string' && /^request_id (already used|or business number already exists)/.test(detail) ? 'request_conflict'  : 'submission_conflict';
+        return { status: 409, value: { error } };
+      }
+      return unknown;
+    }
+  }
+  // No query of current object status can prove this original command's result.
+  const audit = await privateRequest(config, '/api/v1/activity/' + productionEvent(command),
+    envelope.token, fetcher, {}, envelope.sid);
+  if (!audit || audit.status !== 200) return unknown;
+  const receipt = projectProductionAudit(audit.value, command, identity.principal.id);
   return receipt ? { status: 200, value: receipt } : unknown;
 }
 

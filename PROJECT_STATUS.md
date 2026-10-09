@@ -2775,3 +2775,12 @@ feature完整CI37882061097三任务成功：2071后端（344.53秒，11417既有
 69页面/API代码0.18.36/schema0020不变，没有后台/schema改动。公共样例只读，OIDC及全部提交默认关闭；实际身份/授权/秘密未配置，真实浏览器/管理员/提供方/内网验收未进行。内网未安装、SSO/人员/Windows无Docker/系统架构待定，Render后台部署/版本未核验。
 本记录后的最新main精确head CI及Cloudflare生产另核对，不能用旧main或Preview代替；GitHub Actions独立deploy仍门控跳过。36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0；验收增量0，提交UI覆盖5/14→8/14。
 下一包实现Test Release/Deployment/Changeover独立默认关闭提交与原审计恢复、严格原回执和冻结控制器，随后双语UI；再完成Impact/Acceptance/Resource、真实身份与内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装与运营迁移，VIN最后。
+
+
+## 2026-10-09 Test Release、Deployment、Changeover 提交基础（Codex）
+起点main80772cd6cc2ac36b76f53e3da517ac3f2a7db8bb；完整CI37882684715三任务成功（2071后端/172 PostgreSQL-module cases/no skips，922前端），Cloudflare生产build3d981754-9799-4dfb-a9e8-758d3a67a896/versiond6a8566f-1fe9-4090-82c4-8b5ebb89768b成功，Actions独立deploy跳过，开放PR0。
+新增独立默认关闭production-command提交/原审计恢复代理、Test Release/Deployment/Changeover严格正文与目标绑定、精确原回执和ProductionSubmission冻结控制器。Test Release原审计没有request，按原字段/声明/原因校验，HTTP201/200均需原审计；不推断replayed。Deployment原PENDING只表示期望，Changeover原COMPLETED只表示记录，原from/to、声明note及审计occurred_at保留，UTC六位微秒不丢失；不推断测试通过、物理刷写或actual报告。查询只GET原审计，重试保持原ID及原字节，unknown后拒绝仍unknown。
+十一类代理/控制器已有（8→11/14，79%），双语UI仍8/14；三类页面按钮下一包接入，其余Impact/Acceptance/Resource代理尚待实现。69页面/API代码0.18.36/schema0020不变，没有后台/schema修改。
+新增26传输/解析/原审计/精确回执/时间/冻结互锁及17实际RSA OIDC代理行为回归，43项定向通过；本地完整前端965通过/0fail/0skip、类型检查、Worker构建及中英文禁用认证SSR通过；两条新路由GET405/POST503、private/no-store。首轮旧session测试加载器白名单缺少两个新增模块，加入明确模块后全套通过，业务断言未放宽；最终规范UTC时间范围边界追加校验后，54项定向回归、965项完整前端及构建/禁用认证SSR再次通过。精确head Actions/provider证据另记录。迁移/后端回归由本包Actions核对，不能复用旧main。根目录误调用tsc未运行项目检查，随后在frontend正确运行；不修改依赖锁文件。本地完整checkout的Codex直接编写，Git CLI无推送凭据，使用GitHub连接发布。
+公共样例只读，OIDC及全部提交默认关闭；不配置实际身份/权限/秘密，真实浏览器/管理员/提供方/内网验收未进行。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台版本/部署未核验。仅内存，不支持跨卸载/刷新/会话恢复导入。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，验收增量0，代理/控制器覆盖+3。下一包将三类既有准备接入双语确认发送、原审计查询、原请求重试及精确结果，独立productionSubmissionConfigured和唯一当前USER只读投影，不以其他门控覆盖未知原请求；再做Impact/Acceptance/Resource、真实身份与内网验收、跨会话导入恢复、更正撤销、无Docker离线安装与运营迁移，VIN最后。契约docs/production-command-submission.md。
