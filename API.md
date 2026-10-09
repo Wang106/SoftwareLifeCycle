@@ -1,8 +1,19 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.31`.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.39`; readiness requires `0021_impact_supersession`. This is the code contract, not verified Render deployment metadata.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
+
+## Impact historical replacement (0.18.39)
+
+The existing impact-assessment POST adds paired optional `supersedes_id` and
+`correction_reason`. A new request ID creates a same-Issue/Release/frozen-Snapshot
+judgment replacing the exact current effective predecessor; stale/foreign predecessors
+return 409, incomplete metadata 422. Exact actor-bound replay is 200, creation 201.
+Original rows and audits stay immutable; new events use SUPERSEDE. Bounded current
+reads exclude explicit predecessors, historical pages expose forward/backward UUIDs.
+No withdrawal or correction submit/recovery UI is enabled. See
+[the full contract](docs/impact-judgment-corrections.md).
 
 ## Health
 

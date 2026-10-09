@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.36",
-  "baseline_commit": "83eec4946fb944873ad2bf98dcde291923869af6",
+  "as_of_api": "0.18.39",
+  "baseline_commit": "9f3b158c9492ec2ba4c846049f90b03a6a2449d0",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -444,7 +444,18 @@
           "id": "judgment-correction",
           "label": "评审/影响判断/DVP 关系历史替代",
           "complete": false,
-          "evidence": []
+          "evidence": [
+            "docs/impact-judgment-corrections.md",
+            "backend/alembic/versions/0021_impact_supersession.py",
+            "backend/tests/test_impact_supersession.py",
+            "backend/tests/test_impact_supersession_postgres.py",
+            "frontend/tests/issue-views.test.cjs"
+          ],
+          "acceptance_pending": [
+            "Impact supersession backend and bilingual read-only history implemented; withdrawal and controlled correction submission/recovery UI pending",
+            "Acceptance-to-DVP relationship and release-review historical replacement contracts pending",
+            "Approved provider and actual multi-user correction acceptance pending"
+          ]
         },
         {
           "id": "distribution-revocation",

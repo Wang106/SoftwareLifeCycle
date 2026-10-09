@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.39 — 2026-10-09
+- Impact判断支持原ID/同Issue-Release-Snapshot绑定的追加式替代，更正原因必填；旧判断和原审计不修改。
+- Issue锁、精确重试、唯一后继/复合外键和原子SUPERSEDE审计保护；有效读取排除显式被替代记录。
+- 双语只读历史显示前后判断与独立审计；0021迁移保留旧行，存在更正时禁止丢失关系的降级。
+- Acceptance–DVP关系替代、撤销和受控更正提交/恢复UI仍待完成；公共样例只读，身份/提交门控不变。
+
 ## 2026-10-09 — Manual cross-session original-request recovery
 - Add canonical versioned export and strict same-origin import for all 14 business commands.
 - Imported requests remain unknown until matching original actor-bound audit confirms them; import performs no network activity and offers no write or retry path.

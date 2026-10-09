@@ -1848,5 +1848,11 @@
   "Copy original recovery text": "复制原请求恢复文本",
   "Original recovery text — manual copy": "原请求恢复文本 — 手动复制",
   "Imported recovery is query-only. No business write can be retried from this imported text.": "导入恢复仅可查询，不能通过导入文本重试任何业务写入。",
-  "In-memory recovery is lost on reload. Export original recovery text to restore an audit-only query in a later session.": "内存中的恢复状态会在重新加载后丢失。请导出原请求恢复文本，以便后续会话恢复仅审计查询。"
+  "In-memory recovery is lost on reload. Export original recovery text to restore an audit-only query in a later session.": "内存中的恢复状态会在重新加载后丢失。请导出原请求恢复文本，以便后续会话恢复仅审计查询。",
+  "Supersedes judgment": "替代原判断",
+  "Correction reason": "更正原因",
+  "Explicitly superseded by": "已明确被此判断替代",
+  "Open predecessor audit": "打开原判断审计",
+  "Open replacement audit": "打开替代判断审计",
+  "Correction history preserves original judgments. It does not prove test success or release permission.": "更正历史保留原判断，不证明测试通过或发布许可。"
 }

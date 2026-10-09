@@ -13,6 +13,7 @@ from app.api.principal_admin import PrincipalStatusChange, change_principal_stat
 from app.models.audit import AuditEvent
 from app.services.audit import AuditEventService
 from app.models.security import GlobalRoleAssignment, SecurityPrincipal
+from app.core.config import settings
 from test_command_concurrency_postgres import pg, overlapping_commands
 from test_principal_admin_postgres import setup, command, outcome
 
@@ -131,7 +132,7 @@ def test_existing_grants_remain_active_and_downgrade_cannot_reactivate_suspended
     with pytest.raises(DBAPIError,match='Cannot downgrade while suspended global grants exist'):
         migration.downgrade(config,'0019_browser_sessions')
     with engine.connect() as db:
-        assert db.scalar(text('SELECT version_num FROM alembic_version'))=='0020_global_role_status'
+        assert db.scalar(text('SELECT version_num FROM alembic_version'))==settings.required_db_revision
         assert db.scalar(text('SELECT status FROM global_role_assignments WHERE id=:id'),{'id':identifier})=='SUSPENDED'
     with Session(engine) as db:
         db.get(GlobalRoleAssignment,identifier).status='ACTIVE';db.commit()

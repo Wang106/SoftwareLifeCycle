@@ -2,10 +2,47 @@ const {test}=require('node:test');const assert=require('node:assert/strict');con
 const issue='a1234567-1234-1234-1234-123456789abc',release='b1234567-1234-1234-1234-123456789abc',snapshot='c1234567-1234-1234-1234-123456789abc';
 const data={id:issue,issue_no:'ISS/1',title:'Original title',scope:'STANDARD',severity:'HIGH',status:'OPEN',description:'Original description',linked_count:123,candidate_count:321,assessment_count:205,basis:'Review leads'};
 const impact={issue_id:issue,issue_no:data.issue_no,release_id:release,snapshot_id:snapshot,release:{id:release,type:'APPLICATION',version:'Original version'},snapshot:{id:snapshot,snapshot_no:'SNAP/1',number:4,status:'FROZEN',content_hash:'a'.repeat(64)},assessment:{id:'assessment-exact',decision:'NEEDS_REVIEW',reason:'Original reason',evidence_ref:'Original evidence reference',actor_name:'Original reviewer',created_at:'Original time'},component_count:123,verification_count:205};
-function load(file,api,localized,collections){const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;const m={exports:{}};new Function('require','module','exports',code)(name=>{if(name==='next/link')return ({href,children})=>React.createElement('a',{href},children);if(name.endsWith('/api'))return {apiGet:api};if(name.endsWith('/localized'))return localized??{Localized:({children})=>React.createElement(React.Fragment,null,children)};if(name.endsWith('/issue-views'))return load('lib/issue-views.ts');if(name.endsWith('/issue-collections'))return collections;return require(name);},m,m.exports);return m.exports;}
+function load(file,api,localized,collections){const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;const m={exports:{}};new Function('require','module','exports',code)(name=>{if(name==='next/link')return ({href,children})=>React.createElement('a',{href},children);if(name.endsWith('/api'))return {apiGet:api};if(name.endsWith('/localized'))return localized??{Localized:({children})=>React.createElement(React.Fragment,null,children)};if(name.endsWith('/issue-views'))return load('lib/issue-views.ts');if(name.endsWith('/impact-correction-history'))return load('components/impact-correction-history.tsx',api,localized).default;if(name.endsWith('/issue-collections'))return collections;return require(name);},m,m.exports);return m.exports;}
 function response(){return {issue_id:issue,issue_no:data.issue_no,release_id:release,snapshot_id:snapshot,total:321,next_offset:1,items:[{id:'exact-item',relation_id:'relation-uuid',request_no:'SCR/1',title:'Original test title',status:'OPEN',relation_type:'FIXES',release_type:'APPLICATION',version:'Original version',software_name:'Original software',software_code:'SW',customer_code:'C/1',customer:'Original customer',project_id:'project-uuid',project:'Original project',snapshot_id:snapshot,snapshot_no:'SNAP/1',release_id:release,release_version:'Original version',decision:'NEEDS_REVIEW',reason:'Original reason',evidence_ref:'Original evidence reference',actor_name:'Original reviewer',created_at:'Original time',deployment_count:42,batch_count:17,code:'COMP',item_no:'Same item',execution_no:9,result:'FAIL',actual_result:'Original observation',executed_at:'Original execution time'}]};}
 async function render(value=data,search={},transform=r=>r,localized){const calls=[];const Page=load('components/issue-collections.tsx',async url=>{calls.push(url);return transform(response(),url);},localized).default;return {calls,element:await Page({data:value,search})};}
 const html=x=>renderToStaticMarkup(x.element);const links=x=>[...html(x).matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));
+test('historical judgments display predecessor/replacement UUIDs and independent audits without writes',async()=>{
+ const predecessor='d1234567-1234-1234-1234-123456789abc',replacement='e1234567-1234-1234-1234-123456789abc';
+ const x=await render(data,{},r=>({...r,items:r.items.map(row=>({...row,supersedes_id:predecessor,superseded_by_id:replacement,correction_reason:'Original correction reason'}))}));
+ assert.ok(html(x).includes(predecessor)&&html(x).includes(replacement)&&html(x).includes('Original correction reason'));
+ for(const id of [predecessor,replacement])assert.ok(links(x).includes('/activity/EVT-IMPACT-'+id));
+ assert.ok(html(x).includes('Explicitly superseded by'));
+ assert.ok(!html(x).includes('<button')&&!html(x).includes('<form'));
+});
+test('selected effective judgment displays its predecessor but never changes original evidence',async()=>{
+ const predecessor='d1234567-1234-1234-1234-123456789abc';
+ const x=await parent({...impact,assessment:{...impact.assessment,supersedes_id:predecessor,correction_reason:'Original correction reason'}},{snapshot_id:snapshot},true);
+ assert.ok(x.output.includes('Supersedes judgment')&&x.output.includes(predecessor));
+ assert.ok(x.output.includes('Original correction reason')&&x.output.includes('Original evidence reference'));
+ assert.ok(x.output.includes('/activity/EVT-IMPACT-'+predecessor));
+ assert.ok(!x.output.includes('Explicitly superseded by')&&!x.output.includes('<button'));
+});
+test('legacy judgments never acquire a fabricated replacement marker',async()=>{
+ const x=await render();assert.ok(!html(x).includes('Supersedes judgment')&&!html(x).includes('Explicitly superseded by'));
+});
+test('correction labels are bilingual while UUIDs and declared correction text stay exact',()=>{
+ const dictionary=require('../lib/i18n/zh.json');
+ for(const label of ['Supersedes judgment','Correction reason','Explicitly superseded by','Open predecessor audit','Open replacement audit','Correction history preserves original judgments. It does not prove test success or release permission.'])assert.match(dictionary[label],/[\u4e00-\u9fff]/);
+ const {execFileSync}=require('node:child_process');
+ const tmp=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'slc-impact-correction-'));
+ try {
+ execFileSync(process.execPath,[require.resolve('typescript/bin/tsc'),'components/impact-correction-history.tsx','--target','ES2021','--module','commonjs','--jsx','react-jsx','--esModuleInterop','--resolveJsonModule','--strict','--skipLibCheck','--outDir',tmp]);
+ fs.symlinkSync(path.resolve('node_modules'),path.join(tmp,'node_modules'),'dir');
+ const localized=require(path.join(tmp,'components/localized.js'));
+ const Component=load('components/impact-correction-history.tsx',undefined,localized).default;
+ const original='Original correction reason';
+ for(const locale of ['zh','en']){
+  const output=renderToStaticMarkup(React.createElement(localized.LanguageProvider,{initialLocale:locale},React.createElement(Component,{judgment:{supersedes_id:snapshot,superseded_by_id:release,correction_reason:original}})));
+  assert.ok(output.includes(locale==='zh'?dictionary['Supersedes judgment']:'Supersedes judgment'));
+  assert.ok(output.includes(original)&&output.includes(snapshot)&&output.includes(release));
+ }
+ } finally {fs.rmSync(tmp,{recursive:true,force:true});}
+});
 test('Issue three independent bounded collections keep complete counts and exact links',async()=>{const x=await render();assert.equal(x.calls.length,3);for(const url of x.calls){assert.ok(url.startsWith('/api/v1/issue-views/ISS%2F1/'));assert.equal(new URL(url,'https://test.invalid').searchParams.get('issue_id'),issue);}for(const count of [123,321,205])assert.ok(html(x).includes(count));assert.ok(links(x).includes('/changes/SCR%2F1'));assert.ok(links(x).includes('/issues/ISS%2F1/impact/'+release+'?snapshot_id='+snapshot));assert.ok(html(x).includes('Original evidence reference')&&html(x).includes('Original reviewer'));});
 test('independent cursor first/next keeps all other filters',async()=>{const search={issue_limit:'1',changes_offset:'10',candidates_offset:'11',assessments_offset:'12'};const x=await render(data,search);for(const key of ['changes_offset','candidates_offset','assessments_offset']){const next=links(x).find(url=>new URL(url,'https://test.invalid').searchParams.get(key)==='1');assert.ok(next);const q=new URL(next,'https://test.invalid').searchParams;for(const [k,v] of Object.entries(search))assert.equal(q.get(k),k===key?'1':v);assert.ok(links(x).some(url=>url.startsWith('/issues/ISS%2F1?')&&!new URL(url,'https://test.invalid').searchParams.has(key)));}});
 test('impact two bounded pages retain frozen pins, UUID test links and latest observation',async()=>{const x=await render(impact,{issue_limit:'1',components_offset:'3',verification_offset:'4'});assert.equal(x.calls.length,2);for(const url of x.calls)assert.equal(new URL(url,'https://test.invalid').searchParams.get('snapshot_id'),snapshot);assert.ok(links(x).includes('/testing/dvp/exact-item'));assert.ok(html(x).includes('Original observation'));for(const key of ['components_offset','verification_offset']){const next=links(x).find(url=>new URL(url,'https://test.invalid').searchParams.get(key)==='1');const q=new URL(next,'https://test.invalid').searchParams;assert.equal(q.get('snapshot_id'),snapshot);assert.equal(q.get(key==='components_offset'?'verification_offset':'components_offset'),key==='components_offset'?'4':'3');}});

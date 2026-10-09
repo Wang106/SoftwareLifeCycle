@@ -5,13 +5,19 @@
 - Engine: PostgreSQL 16 in the local Compose environment; current Render inventory reports PostgreSQL 18. The local real-concurrency regression uses 16.15.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0019_browser_sessions`.
+- Required schema revision: `0021_impact_supersession` (code contract; online Render schema not verified).
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
 SQLite is used by isolated tests where supported, but it does not validate PostgreSQL JSONB, database triggers or row-lock concurrency. PostgreSQL is required for schema and append-only-rule verification.
 
 ## Table groups
+
+Revision 0021 adds nullable `supersedes_id`/`correction_reason` to immutable impact
+judgments. Same-context composite FK, unique predecessor and paired/self-link checks
+protect replacement chains; legacy rows remain unchanged. Existing append triggers
+remain. Downgrade refuses while corrections exist. See
+[impact correction migration boundaries](docs/impact-judgment-corrections.md).
 
 | Domain | Main tables |
 | --- | --- |

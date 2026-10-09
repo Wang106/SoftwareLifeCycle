@@ -143,7 +143,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"REVIEWER"}),
-        known_gap="There is no correction/supersession command for an append-only judgment.",
+        known_gap="Explicit current-predecessor corrections preserve history; withdrawal and controlled correction UI remain pending.",
     ),
     ("POST", "/api/v1/changes/{request_no}/acceptance-dvp-links"): WriteContract(
         operation="Append acceptance-to-DVP assignment",
