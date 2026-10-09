@@ -1,5 +1,12 @@
 # SoftwareLifeCycle Development Handoff
 
+## PR#40 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/40 已合并；代码main dd79defafa0027e93dc5a412e14edd2b6c9afde3，精确feature dc663a77f86e59b55169b9fb57dc3e0bc42dd1bb，起点main 9f3b158c9492ec2ba4c846049f90b03a6a2449d0。
+feature CI37920958776全部成功：2132后端（502.38秒、11636弃用warnings）、190 PostgreSQL-module cases无skip、1143前端/0fail/0skip。后端113788496661、前端113788496935、acceptance113791614709成功。新增35单元/处理器和12隔离真实PG=47后端回归，新增7前端回归；0021单迁移头/SQL/隔离真实PG升降级往返、进度账本、TypeScript、Next/OpenNext Worker与双语禁用认证SSR通过。Cloudflare feature Preview buildeb8c9b68-7baf-466a-9c03-b866d62c5167成功，不替代main生产证据。本记录后的最新main精确CI/provider另核对，Actions独立deploy仍门控跳过。
+Impact同Issue/Release/冻结Snapshot的原判断ID绑定追加式替代、完整actor/正文/原SUPERSEDE审计重试、Issue串行锁和前驱唯一/同上下文复合外键完成。旧判断/旧ASSESS审计不修改，有效读取排除显式被替代记录，历史显示前后UUID/更正原因/独立审计；分页增长固定SQL/标量读取。旧普通准备/发送/恢复协议仍拒绝更正字段和SUPERSEDE回执，不开放更正提交/撤销UI。0021保留旧行，存在更正时拒绝丢失关系的降级。
+69页面/API代码0.18.39/schema0021；Render线上API/schema/部署未核验，前端构建不证明后台迁移部署。公共样例只读、OIDC/全部提交默认关闭，无实际身份/授权/秘密配置，真实提供方/浏览器/跨会话/管理员/内网验收未做；内网未安装，SSO/人员/系统与CPU/Windows无Docker待定。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。本包只完成Impact替代切片，不称全部更正撤销里程碑通过。下一包Acceptance–DVP历史关系替代/撤销，再补受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；随后真实身份/内网验收及离线运营迁移，VIN最后。
+
 ## 2026-10-09 Impact 原判断绑定的追加式替代（Codex）
 起点main 9f3b158c9492ec2ba4c846049f90b03a6a2449d0；精确main CI37917324331全部成功（2085后端、178 PostgreSQL-module cases无skip、1136前端），Cloudflare生产buildf24c43b8-7723-4d2f-a948-85995a307524/version63f10325-e4c7-4db6-ac26-b9ea559da3b4成功；Actions独立deploy门控跳过，无开放PR。
 既有Impact POST增加paired supersedes_id/correction_reason，新request_id、同Issue/Release/冻结Snapshot、当前有效原判断ID前置条件；原判断和ASSESS审计不修改。Issue锁串行化原写入/替代/重试，同ID不同正文或actor冲突，精确重试在后来替代后仍返回原应用事实、不恢复当前效力。SUPERSEDE原子审计绑定原ID/原decision/新decision/更正原因、精确actor和证据引用摘要，更正重试须完整匹配原审计。身份/权限正反例保留精确REVIEWER项目角色或PLATFORM_ADMIN例外。

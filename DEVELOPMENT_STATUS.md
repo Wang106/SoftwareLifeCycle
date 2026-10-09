@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-Impact判断已实现原ID/同Issue-Release-冻结Snapshot绑定的追加式替代及双语只读历史；原判断与审计不修改。69页面/API代码0.18.39/schema0021；14/14普通业务代理/控制器和双语UI、14类手动导出/跨会话只读恢复已有，更正提交/恢复及撤销UI尚未实现。当前包精确head CI/PG/provider另核对；已验收起点main 9f3b158，CI37917324331和Cloudflare生产构建成功，Render线上API/schema/部署未核验。
+Impact判断已实现原ID/同Issue-Release-冻结Snapshot绑定的追加式替代及双语只读历史；原判断与审计不修改。69页面/API代码0.18.39/schema0021；14/14普通业务代理/控制器和双语UI、14类手动导出/跨会话只读恢复已有，更正提交/恢复及撤销UI尚未实现。PR#40已合并，精确feature CI37920958776通过（2132后端、190 PostgreSQL无skip、1143前端）；最新main CI/provider另核对；已验收起点main 9f3b158，CI37917324331和Cloudflare生产构建成功，Render线上API/schema/部署未核验。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -513,3 +513,10 @@ feature CI37916281195全部成功：2085后端（417.73秒、11469既有warnings
 本包仅先交付影响判断替代，不称完整更正撤销完成；评审决策历史替代、Acceptance-DVP替代/撤销、Impact撤销和受控更正提交/恢复UI尚未完成。69页面、14业务/2自身会话/6管理员/离线操作分计不变。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，账本只追加未完成里程碑的实现证据。
 云端Linux完整checkout由Codex直接开发，无另启独立任务；GitHub连接发布，不创建身份/授权/秘密，不开启OIDC或任何提交。公共样例只读，内网未安装，SSO/人员/系统与CPU/Windows无Docker待定。真实提供方/浏览器/跨会话/管理员/内网验收未做，不重试被拒绝浏览器访问。SoftwareLifeCycle_20全文此前检索服务报错，按仓库交接承接。
 下一包Acceptance–DVP历史关系替代/撤销，再补受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；随后真实身份/内网验收、离线运营迁移，VIN最后。契约docs/impact-judgment-corrections.md。
+
+## PR#40 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/40 已合并；代码main dd79defafa0027e93dc5a412e14edd2b6c9afde3，精确feature dc663a77f86e59b55169b9fb57dc3e0bc42dd1bb，起点main 9f3b158c9492ec2ba4c846049f90b03a6a2449d0。
+feature CI37920958776全部成功：2132后端（502.38秒、11636弃用warnings）、190 PostgreSQL-module cases无skip、1143前端/0fail/0skip。后端113788496661、前端113788496935、acceptance113791614709成功。新增35单元/处理器和12隔离真实PG=47后端回归，新增7前端回归；0021单迁移头/SQL/隔离真实PG升降级往返、进度账本、TypeScript、Next/OpenNext Worker与双语禁用认证SSR通过。Cloudflare feature Preview buildeb8c9b68-7baf-466a-9c03-b866d62c5167成功，不替代main生产证据。本记录后的最新main精确CI/provider另核对，Actions独立deploy仍门控跳过。
+Impact同Issue/Release/冻结Snapshot的原判断ID绑定追加式替代、完整actor/正文/原SUPERSEDE审计重试、Issue串行锁和前驱唯一/同上下文复合外键完成。旧判断/旧ASSESS审计不修改，有效读取排除显式被替代记录，历史显示前后UUID/更正原因/独立审计；分页增长固定SQL/标量读取。旧普通准备/发送/恢复协议仍拒绝更正字段和SUPERSEDE回执，不开放更正提交/撤销UI。0021保留旧行，存在更正时拒绝丢失关系的降级。
+69页面/API代码0.18.39/schema0021；Render线上API/schema/部署未核验，前端构建不证明后台迁移部署。公共样例只读、OIDC/全部提交默认关闭，无实际身份/授权/秘密配置，真实提供方/浏览器/跨会话/管理员/内网验收未做；内网未安装，SSO/人员/系统与CPU/Windows无Docker待定。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。本包只完成Impact替代切片，不称全部更正撤销里程碑通过。下一包Acceptance–DVP历史关系替代/撤销，再补受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；随后真实身份/内网验收及离线运营迁移，VIN最后。
