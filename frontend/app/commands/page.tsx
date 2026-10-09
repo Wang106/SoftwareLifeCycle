@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured } from '../../lib/browser-auth';
+import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured, evidenceSubmissionConfigured, resourceSubmissionConfigured } from '../../lib/browser-auth';
 import { resolveSession, SESSION_COOKIE } from '../../lib/browser-session';
 
 import { Localized, LocalizedAttributes } from "../../components/localized";
@@ -23,8 +23,11 @@ export default async function Page({ searchParams }: {
   const governanceConfigured = governanceSubmissionConfigured(process.env, config);
   const distributionConfigured = distributionSubmissionConfigured(process.env, config);
   const productionConfigured = productionSubmissionConfigured(process.env, config);
-  const values = configured || governanceConfigured || distributionConfigured || productionConfigured ? (await cookies()).getAll(SESSION_COOKIE) : [];
-  const identity = (configured || governanceConfigured || distributionConfigured || productionConfigured) && config && values.length === 1 ? await resolveSession(config.session, values[0].value) : null;
+  const evidenceConfigured = evidenceSubmissionConfigured(process.env, config);
+  const resourceConfigured = resourceSubmissionConfigured(process.env, config);
+  const anyConfigured = configured || governanceConfigured || distributionConfigured || productionConfigured || evidenceConfigured || resourceConfigured;
+  const values = anyConfigured ? (await cookies()).getAll(SESSION_COOKIE) : [];
+  const identity = anyConfigured && config && values.length === 1 ? await resolveSession(config.session, values[0].value) : null;
   const recoveryEnabled = configured && identity !== null;
   const submissionEnabled = recoveryEnabled && identity?.read_only_mode === false;
   const governanceRecoveryEnabled = governanceConfigured && identity !== null;
@@ -33,10 +36,14 @@ export default async function Page({ searchParams }: {
   const distributionSubmissionEnabled = distributionRecoveryEnabled && identity?.read_only_mode === false;
   const productionRecoveryEnabled = productionConfigured && identity !== null;
   const productionSubmissionEnabled = productionRecoveryEnabled && identity?.read_only_mode === false;
+  const evidenceRecoveryEnabled = evidenceConfigured && identity !== null;
+  const evidenceSubmissionEnabled = evidenceRecoveryEnabled && identity?.read_only_mode === false;
+  const resourceRecoveryEnabled = resourceConfigured && identity !== null;
+  const resourceSubmissionEnabled = resourceRecoveryEnabled && identity?.read_only_mode === false;
   return <>
     <div className="top"><div><div className="eyebrow"><Localized>{"CONTROLLED COMMANDS"}</Localized></div><h1><Localized>{"Prepare a lifecycle request"}</Localized></h1>
-      <p className="muted"><Localized>{"Prepare fourteen lifecycle commands. Approved signed-in environments can submit Snapshot, actual software, batch, approval action, release decision, delivery package, distribution, production authorization, test release, deployment and changeover requests and query their original audit receipts."}</Localized></p></div></div>
-    <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} productionSubmissionEnabled={productionSubmissionEnabled} productionRecoveryEnabled={productionRecoveryEnabled} />
+      <p className="muted"><Localized>{"Prepare fourteen lifecycle commands. Approved signed-in environments can submit Snapshot, actual software, batch, approval action, release decision, delivery package, distribution, production authorization, test release, deployment, changeover, impact assessment, acceptance-to-DVP and resource reference requests and query their original audit receipts."}</Localized></p></div></div>
+    <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} productionSubmissionEnabled={productionSubmissionEnabled} productionRecoveryEnabled={productionRecoveryEnabled} evidenceSubmissionEnabled={evidenceSubmissionEnabled} evidenceRecoveryEnabled={evidenceRecoveryEnabled} resourceSubmissionEnabled={resourceSubmissionEnabled} resourceRecoveryEnabled={resourceRecoveryEnabled} />
   </>;
 }
 
