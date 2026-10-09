@@ -10,7 +10,7 @@ DISTRIBUTION_COMMAND_SUBMISSION_MODE=disabled、DISTRIBUTION_COMMAND_APPROVED_AP
 外层严格operation/target/body，target是对应既存Release、DeliveryPackage精确修订或Distribution UUID；必须与正文相应UUID一致，不能改用业务编号或不同对象。
 固定POST后台路径 /api/v1/deliveries、/api/v1/distributions、/api/v1/authorizations，三者成功HTTP均201，仍需精确原审计确认。
 正文固定字段包括request_id；复用既有prepare，UUID规范小写、业务编号及声明边界、revision/有限batch_limit为明确正PostgreSQL整数1–2147483647。不接受字符串数字、缺失/隐式不限批次或额外token/path/headers。不限batch_limit必须显式null。
-交付snapshot_artifact_ids是1–200个无重复UUID的不可变排序集合，数组类型/规范化后重复均校验；数组順序等价不代表不同文件等价。created_by是原声明或null，不代替真实操作者。restriction_note保留原文或null，空字符串拒绝。正文和target绑定后冻结，重试使用原请求ID和相同JSON字节。
+交付snapshot_artifact_ids是1–200个无重复UUID的不可变排序集合，数组类型/规范化后重复均校验；数组顺序等价不代表不同文件等价。created_by是原声明或null，不代替真实操作者。restriction_note保留原文或null，空字符串拒绝。冻结的是已确认Review的规范化正文，不承诺保留任意输入JSON的键顺序；正文和target绑定后，重试使用原请求ID和相同JSON字节。
 同源JSON、严格UTF-8，声明及流式正文上限8192字节；数组及备注也受总字节上限约束，不承诺200个文件加任意声明总能容纳。响应与审计读取上限16384字节、15秒超时、no-store、拒绝重定向。
 
 ## 原子审计与精确结果

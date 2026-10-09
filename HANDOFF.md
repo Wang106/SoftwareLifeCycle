@@ -1,11 +1,12 @@
 # SoftwareLifeCycle Development Handoff
 
 ## 当前交接入口 — 2026-10-09（Codex）
-起点main 56c17665ea09a2cc1cfe8fa933743ef241ef56c9，精确完整CI37821889579及Cloudflare生产成功，Actions部署skipped、开放PR0；本包后另核对新精确head，不复用历史pending。
+PR#32已合并，代码main c47048c40ccad73cd85477da299d26e3f912f7f3，feature 8e0a572bb6ecc1e6e5d9bf308439c12967ab4d29，精确CI37863767376三个任务成功（2071后端、172 PostgreSQL-module cases/no skips、895前端/新增40），迁移/类型/Worker/中英文禁用认证SSR/进度成功，Cloudflare feature Preview成功。首轮4个JSON顺序断言已修正，最终无fail/skip；代码main及文档后最新head CI/provider另核对，不复用旧pending或Preview。
 交付包/分发/生产授权三类独立默认关闭的提交与原审计恢复代理、严格正文/UUID目标绑定/不可变artifact集合/明确finite-null范围、actor/request绑定原审计投影及DistributionSubmission冻结原请求控制器已实现。三个POST成功HTTP201后仍须精确原审计；恢复只GET，不回退重写。回执保留原READY/DRAFT、精确修订、接收方、冻结证据和生产授权范围，不推断current/replayed/签收或量产批准。三类页面发送/查询/结果下一包，现有五类UI不重复实现。
+三个固定collection路径；DistributionSubmission从原payload对应UUID恢复target，不能从路径第4段猜测目标。
 下一包把Delivery Package/Distribution/Production Authorization既有准备接入双语确认发送、原审计查询、明确原请求重试和精确结果，采用独立distributionSubmissionConfigured及唯一当前USER只读投影，未知原请求跨命令/上下文/能力刷新不被覆盖。之后实现其余6业务通道及界面（Test Release/Deployment/Changeover、Impact/Acceptance/Resource），真实身份与内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
-69页面/API代码0.18.36/schema0020，36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量0。八类代理/控制器、五类UI；其余九类UI及六类代理仍待实现。公共样例只读/OIDC及全部提交默认关闭，无实际变量/秘密/身份/授权或真实浏览器/管理员/提供方验收，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/系统架构待定。仅内存恢复，跨会话导入待实现。
-Mac部分快照/GitHub连接服务发布，完整套件为Actions，无另启独立云端Codex任务。Render工作区/后台部署版本未核验；原SoftwareLifeCycle_12全文未取得。全部历史保留，最新记录见末尾。
+69页面/API代码0.18.36/schema0020；36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量0。八类代理/控制器、五类UI，尚有九类UI和六类代理；14业务/2自身会话/6管理员/离线操作分计。公共样例只读/OIDC及全部提交默认关闭，无实际变量/秘密/身份/授权或真实浏览器/管理员/提供方验收，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/系统架构待定。仅内存恢复，跨会话导入待实现。
+Mac部分快照/GitHub连接服务发布，全套为Actions，无另启独立云端Codex任务。Render工作区/后台部署版本未核验；原SoftwareLifeCycle_12全文未取得。全部历史保留，最新记录见末尾。
 
 ## Handoff identity
 
@@ -3152,5 +3153,19 @@ feature精确CI37820812727三个任务全部成功：2071后端（373.00秒）�
 本地Node测试语法及进度--check通过，Mac部分快照没有完整TypeScript/Node依赖；完整套件/类型/Next/Worker/真实PG/生产禁用SSR待Actions，不称本地全套通过。69页面/API代码0.18.36/schema0020不变，没有后台/schema改动。
 公共样例只读/OIDC及全部提交默认关闭；内网未安装、SSO/人员/Windows无Docker/系统架构待定。真实浏览器/管理员/提供方/API在线探针/内网验收未进行，不重试被拒绝浏览器访问。Render工作区未选择、后台部署版本未核验；原SoftwareLifeCycle_12全文未取得，无另启独立云端Codex任务。仅内存，跨会话恢复未实现。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量全部0。14业务/2自身会话/6管理员/离线操作分计。八类业务已有代理/控制器，五类已有UI，九类UI尚待接入，不称全部14类真实提交验收完成。
+下一包把Delivery Package/Distribution/Production Authorization既有准备接入双语确认发送、原审计查询、明确原请求重试和精确结果，采用独立distributionSubmissionConfigured及唯一当前USER只读投影，未知原请求跨命令/上下文/能力刷新不被覆盖。之后实现其余6业务通道及界面（Test Release/Deployment/Changeover、Impact/Acceptance/Resource），真实身份与内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
+契约docs/distribution-command-submission.md。
+
+
+## PR#32 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/32 已合并，代码main c47048c40ccad73cd85477da299d26e3f912f7f3，最终feature 8e0a572bb6ecc1e6e5d9bf308439c12967ab4d29，起点main 56c17665ea09a2cc1cfe8fa933743ef241ef56c9。
+精确feature CI37863767376三个任务全部成功：2071后端（410.11秒）、172 PostgreSQL-module cases/no skips；895前端0fail/0skip，原855新增24传输/解析/原审计/回执/冻结控制器和16实际RSA OIDC代理回归=40。0020单迁移头、SQL、隔离PG升降级往返、进度--check、类型检查、Next/Cloudflare Worker及中英文禁用认证SSR全部通过；两条新路由GET405/POST503，private/no-store。后端113605602650、前端113605602380、acceptance113607738388成功。Cloudflare feature Preview build64bfa355-e716-4cee-b457-85c9c0528a22成功；不是main生产部署证据。
+首轮feature e6caa6e6d2bade66d337cfa5274926e954574f6d CI37863535031有4项新增测试断言失败：按任意输入对象JSON字段顺序比较，而发送正文来自已确认的规范化Review。已修正为比较原确认Review的冻结字节及后台POST全部字段内容，失联/明确重试逐字节一致检查保留，最终895全部通过；不是旧邮件的后台PG问题，不隐去已解决的首轮失败。
+交付包/分发/生产授权三类独立默认关闭的提交与原审计恢复代理、严格正文/UUID目标绑定/不可变artifact集合/明确finite-null范围、actor/request绑定原审计投影及DistributionSubmission冻结原请求控制器已实现。三个POST成功HTTP201后仍须精确原审计；恢复只GET，不回退重写。回执保留原READY/DRAFT、精确修订、接收方、冻结证据和生产授权范围，不推断current/replayed/签收或量产批准。三类页面发送/查询/结果下一包，现有五类UI不重复实现。
+严格UUID目标与正文绑定、正PG整数及finite/null范围、规范化后重复artifact拒绝和不可变集合、完整原actor/body指纹、HTTP201仍需原审计、原READY/DRAFT区别于后续状态、只读只查、同步双击/查询重试互锁、后续拒绝保留unknown、8KiB正文/16KiB回复及UTF-8边界均回归通过。固定三个collection路径；controller从原正文对应UUID构造target，不能沿用路径第4段猜测目标。客户端没有credentials/任意URL/path/headers注入；仅内存，没有跨会话导入或自动重试。
+69页面/API代码0.18.36/schema0020不变，无后台/schema改动。公共样例只读/OIDC及所有提交默认关闭，未配置实际变量/秘密/身份/授权，无真实浏览器/管理员/提供方/API在线探针/内网安装，不重试已被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/系统架构待定；Render工作区/后台部署版本未核验，原SoftwareLifeCycle_12全文未取得。
+代码main及此文档后的最新精确head CI/provider须另核对，不能复用feature Preview或旧pending。Actions deploy.yml独立门控目前skipped，不能把提供方自动构建成功当作Actions部署已启用。后续最新证据覆盖历史pending。
+Mac部分快照/GitHub连接服务发布，本地Node测试语法及进度--check通过，全套测试为Actions，没有另外启动独立云端Codex任务。HANDOFF入口明确生成/回读，全部历史保留。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量全部0。14业务/2自身会话/6管理员/离线操作分计；八类代理/控制器、五类UI，尚有九类UI及六类代理，不称14类真实提交验收完成。
 下一包把Delivery Package/Distribution/Production Authorization既有准备接入双语确认发送、原审计查询、明确原请求重试和精确结果，采用独立distributionSubmissionConfigured及唯一当前USER只读投影，未知原请求跨命令/上下文/能力刷新不被覆盖。之后实现其余6业务通道及界面（Test Release/Deployment/Changeover、Impact/Acceptance/Resource），真实身份与内网验收、跨会话导入恢复、追加更正撤销、无Docker离线安装及运营迁移，VIN最后。
 契约docs/distribution-command-submission.md。
