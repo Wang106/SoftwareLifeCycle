@@ -28,6 +28,14 @@ test('SSR renders Chinese by default and exact English on explicit selection',()
  assert.ok(zh.includes(dictionary.Dashboard)); assert.ok(en.includes('Dashboard'));
  assert.ok(zh.includes('aria-pressed="true"')); assert.ok(en.includes('Interface language'));
 });
+test('impact replacement audit action is bilingual without rewriting protocol evidence',()=>{
+ assert.equal(translateText('SUPERSEDE','zh'),'替代');
+ assert.equal(translateText('SUPERSEDE','en'),'SUPERSEDE');
+ assert.ok(render('zh',element(Localized,null,'SUPERSEDE')).includes('替代'));
+ assert.ok(render('en',element(Localized,null,'SUPERSEDE')).includes('SUPERSEDE'));
+ const raw='{"action":"SUPERSEDE","supersedes_id":"original-uuid"}';
+ assert.ok(render('zh',element(Localized,null,element('pre',null,element('code',null,raw)))).includes('SUPERSEDE'));
+});
 test('presentation translation preserves whitespace, evidence, identifiers and English byte for byte',()=>{
  for(const raw of ['EVT-SN-123456','/api/v1/releases/abc','https://example.com/a:b','{"request_id":"abc"}','Customer-specific evidence', '12345678-1234-1234-1234-123456789abc']) {
   assert.equal(translateText(raw,'zh'),raw); assert.equal(translateText(raw,'en'),raw);

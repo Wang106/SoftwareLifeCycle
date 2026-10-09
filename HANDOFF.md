@@ -1,5 +1,11 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-09 Impact 审计动作中英文本地化复核（Codex）
+已验收起点main 757655d16c92659308d09a9405f26693fb399b66，精确main CI37922122235全部成功：2132后端（466.14秒）、190 PostgreSQL-module cases无skip、1143前端。Cloudflare生产build35a8fc1d-8df9-4811-9c14-5e0f43ef36a1/version57cc0094-d4ef-4950-9180-7b495cb0a6de成功；Actions独立deploy跳过，Render线上API/schema/部署仍未核验。
+最终复核发现新SUPERSEDE审计动作码缺中文显示；先新增翻译/实际双语SSR/原始JSON保留回归证明旧显示失败，再补字典“替代”。英文/原始action值/JSON证据不改，后端/路由/契约/API0.18.39/schema0021不变；不新增提交能力或身份授权。
+本地完整前端1144通过/0fail/0skip（新增1审计动作本地化回归），Next/OpenNext生产构建通过；单独类型/禁用认证SSR通过。本包精确head CI/provider另核对。Impact替代基础及只读历史已验收，Acceptance–DVP关系替代/撤销、更正提交/恢复和完整撤销仍未完成。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量全部0。公共样例只读、OIDC及所有提交默认关闭，无实际身份/授权/秘密配置；真实提供方/浏览器/管理员/跨会话/内网验收未做，不重试拒绝浏览器访问。内网未部署，SSO/人员/系统与CPU/Windows无Docker待定。下一包仍为Acceptance–DVP历史关系替代/撤销，再做更正UI/原审计恢复、Impact撤销和评审/下游政策，随后真实环境验收、离线运营迁移，VIN最后。
+
 ## PR#40 验收 — 2026-10-09（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/40 已合并；代码main dd79defafa0027e93dc5a412e14edd2b6c9afde3，精确feature dc663a77f86e59b55169b9fb57dc3e0bc42dd1bb，起点main 9f3b158c9492ec2ba4c846049f90b03a6a2449d0。
 feature CI37920958776全部成功：2132后端（502.38秒、11636弃用warnings）、190 PostgreSQL-module cases无skip、1143前端/0fail/0skip。后端113788496661、前端113788496935、acceptance113791614709成功。新增35单元/处理器和12隔离真实PG=47后端回归，新增7前端回归；0021单迁移头/SQL/隔离真实PG升降级往返、进度账本、TypeScript、Next/OpenNext Worker与双语禁用认证SSR通过。Cloudflare feature Preview buildeb8c9b68-7baf-466a-9c03-b866d62c5167成功，不替代main生产证据。本记录后的最新main精确CI/provider另核对，Actions独立deploy仍门控跳过。

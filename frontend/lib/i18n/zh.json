@@ -1203,6 +1203,7 @@
   "CANCELLED": "已取消",
   "ACTIVE": "有效",
   "SUPERSEDED": "已替代",
+  "SUPERSEDE": "替代",
   "REVOKED": "已吊销",
   "HIGH": "高",
   "MEDIUM": "中",
