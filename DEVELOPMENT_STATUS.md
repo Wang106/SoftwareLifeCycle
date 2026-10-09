@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
 更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-Impact判断已实现原ID/同Issue-Release-冻结Snapshot绑定的追加式替代及双语只读历史；原判断与审计不修改。69页面/API代码0.18.39/schema0021；14/14普通业务代理/控制器和双语UI、14类手动导出/跨会话只读恢复已有，更正提交/恢复及撤销UI尚未实现。PR#40已合并，精确feature CI37920958776通过（2132后端、190 PostgreSQL无skip、1143前端）；最新main CI/provider另核对；已验收起点main 9f3b158，CI37917324331和Cloudflare生产构建成功，Render线上API/schema/部署未核验。
+Impact原判断绑定的追加式替代/0021保护及双语只读历史已通过PR#40与main757655d完整CI（2132后端、190 PostgreSQL无skip、1143前端）及Cloudflare生产构建。另补SUPERSEDE审计动作中文，原动作码/JSON不改；本地前端1144通过，本包精确head CI/provider另核对。69页面/API代码0.18.39/schema0021；完整更正/撤销UI和真实环境验收仍未完成，Render线上API/schema/部署未核验。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -520,3 +520,9 @@ feature CI37920958776全部成功：2132后端（502.38秒、11636弃用warnings
 Impact同Issue/Release/冻结Snapshot的原判断ID绑定追加式替代、完整actor/正文/原SUPERSEDE审计重试、Issue串行锁和前驱唯一/同上下文复合外键完成。旧判断/旧ASSESS审计不修改，有效读取排除显式被替代记录，历史显示前后UUID/更正原因/独立审计；分页增长固定SQL/标量读取。旧普通准备/发送/恢复协议仍拒绝更正字段和SUPERSEDE回执，不开放更正提交/撤销UI。0021保留旧行，存在更正时拒绝丢失关系的降级。
 69页面/API代码0.18.39/schema0021；Render线上API/schema/部署未核验，前端构建不证明后台迁移部署。公共样例只读、OIDC/全部提交默认关闭，无实际身份/授权/秘密配置，真实提供方/浏览器/跨会话/管理员/内网验收未做；内网未安装，SSO/人员/系统与CPU/Windows无Docker待定。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。本包只完成Impact替代切片，不称全部更正撤销里程碑通过。下一包Acceptance–DVP历史关系替代/撤销，再补受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；随后真实身份/内网验收及离线运营迁移，VIN最后。
+
+## 2026-10-09 Impact 审计动作中英文本地化复核（Codex）
+已验收起点main 757655d16c92659308d09a9405f26693fb399b66，精确main CI37922122235全部成功：2132后端（466.14秒）、190 PostgreSQL-module cases无skip、1143前端。Cloudflare生产build35a8fc1d-8df9-4811-9c14-5e0f43ef36a1/version57cc0094-d4ef-4950-9180-7b495cb0a6de成功；Actions独立deploy跳过，Render线上API/schema/部署仍未核验。
+最终复核发现新SUPERSEDE审计动作码缺中文显示；先新增翻译/实际双语SSR/原始JSON保留回归证明旧显示失败，再补字典“替代”。英文/原始action值/JSON证据不改，后端/路由/契约/API0.18.39/schema0021不变；不新增提交能力或身份授权。
+本地完整前端1144通过/0fail/0skip（新增1审计动作本地化回归），Next/OpenNext生产构建通过；单独类型/禁用认证SSR通过。本包精确head CI/provider另核对。Impact替代基础及只读历史已验收，Acceptance–DVP关系替代/撤销、更正提交/恢复和完整撤销仍未完成。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量全部0。公共样例只读、OIDC及所有提交默认关闭，无实际身份/授权/秘密配置；真实提供方/浏览器/管理员/跨会话/内网验收未做，不重试拒绝浏览器访问。内网未部署，SSO/人员/系统与CPU/Windows无Docker待定。下一包仍为Acceptance–DVP历史关系替代/撤销，再做更正UI/原审计恢复、Impact撤销和评审/下游政策，随后真实环境验收、离线运营迁移，VIN最后。

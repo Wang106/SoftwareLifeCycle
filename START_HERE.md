@@ -24,7 +24,7 @@
 
 ## 当前接手快照
 当前69页面、API代码0.18.39/schema0021。Impact原判断绑定的追加式替代与双语只读历史已实现，原行/原审计不修改；更正提交/恢复、撤销及Acceptance–DVP关系替代待完成。十四类普通业务代理/控制器与双语UI、同站点原请求导出/只读导入已有。14业务、2自身会话、6管理员及离线操作分计，所有实际身份/提交门控仍关闭。
-最新PR#40精确feature dc663a77f86e59b55169b9fb57dc3e0bc42dd1bb 的CI37920958776全部成功：2132后端、190 PostgreSQL-module cases无skip、1143前端；0021迁移/类型/Worker/中英文禁用认证SSR通过。代码main dd79defafa0027e93dc5a412e14edd2b6c9afde3；feature Cloudflare Preview buildeb8c9b68-7baf-466a-9c03-b866d62c5167成功。本记录之后最新main精确CI和生产构建另核对，Preview不能替代生产证据。Actions独立deploy默认跳过，Render在线API/schema/部署未核验。
+已验收起点main 757655d16c92659308d09a9405f26693fb399b66，CI37922122235全部成功（2132后端、190 PostgreSQL-module cases无skip、1143前端），0021迁移/类型/Worker/双语禁用认证SSR通过，Cloudflare生产build35a8fc1d-8df9-4811-9c14-5e0f43ef36a1/version57cc0094-d4ef-4950-9180-7b495cb0a6de成功。另补SUPERSEDE动作中文，普通action/JSON不改，后端/schema不变；当前修补精确CI/provider另核对。Actions独立deploy默认跳过，Render在线API/schema/部署未核验。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读、OIDC和全部提交默认关闭，没有实际身份/授权/秘密配置；真实浏览器/提供方/管理员验收未完成，不重试拒绝的浏览器访问。
 内网尚未开始安装，SSO/人员/系统与CPU/Windows无Docker约束待定。页面状态仍只在内存；手动导出/严格同站点跨刷新卸载会话导入已实现，导入只能查原审计，不自动联网/写入。真实跨会话验收、更正撤销及离线运营迁移待完成。SoftwareLifeCycle_20全文检索服务报错，未取得原文，依据main交接继续。
 
