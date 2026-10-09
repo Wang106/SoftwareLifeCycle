@@ -1,5 +1,14 @@
 # SoftwareLifeCycle Development Handoff
 
+## PR#38 验收 — 2026-10-09（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/38 已合并；代码main d5bdee2f4e56173df3ce4fc5a019b199a5c76d1d，精确feature b60e7a0e93a765d5d01819bd5123287ef4602a4a，起点main a34d09da5e331188c96655f6b607dc372e5a496a。
+feature CI37902904446全部成功：2085后端（419.51秒、11469 warnings）、178 PostgreSQL-module cases/no skips、1087前端/0fail/0skip。后端113729384952、前端113729385124、acceptance113731913021成功。0020单迁移头/SQL/隔离真实PG往返、进度账本、TypeScript、Next/OpenNext Worker及中英文禁用认证SSR通过；新增6实际Next命令中英文SSR无发送能力，evidence/resource四路由GET405/POST503、private/no-store。Cloudflare feature Preview buildaf7458b8-ed06-47b7-b161-58ed271e82a9成功，不能替代main生产证据。本记录后的最新main精确CI/provider另核对；Actions独立deploy仍默认跳过。
+Impact/Acceptance/Resource独立evidence/resource能力投影、确认发送、原审计查询、原字节明确重试与双语精确结果完成；六组门控只复核一次当前USER会话，12布尔能力不含凭据；只读可查询，非只读才提交。未知结果跨上下文/命令/能力刷新锁定，不能借另一组门控或开始新请求，复制/发送/查询同步互锁。Impact保留原nullable引用/判断/冻结Snapshot，Acceptance保留原criterion/DVP关联，Resource保留原target_ref/标题/位置/描述且位置为文本；精确详情、DVP、快照与原审计独立新标签。不推断测试通过、当前影响、验收完成、文件存在或分发权限。
+本地1087完整前端、41定向、类型/Worker配置/构建/禁用认证SSR及进度检查通过；32新增=29组件行为/双语结果+2页面门控+1新组件本地化。先新增页面回归证明旧代码缺能力失败；新测试夹具原组gate重新明确开放后才可重试，另外验证关闭不借用；Resource描述使用真实textarea事件修复，未放宽业务断言。本包只有前端/文档，69页面/API代码0.18.38/schema0020不变；完整后端/PG核验由Actions完成，本地无PG。云端Linux完整checkout由Codex直接开发，未另启独立任务；GitHub连接发布并核对14文件blob和整棵tree与本地一致。
+公共样例只读、OIDC及全部提交默认关闭，无实际身份/授权/秘密配置；真实提供方/浏览器/管理员/内网验收未进行，不重试拒绝的浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU待定；Render在线后台版本/部署未核验。恢复仅页面内存，跨刷新/卸载/会话导入待完成，beforeunload不保证应用内路由提醒。SoftwareLifeCycle_20全文此前检索服务报错，依据仓库交接承接。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。双语UI11→14/14（100%），代理/控制器14/14。下一包严格原请求导出与跨刷新/卸载/会话导入恢复，只查询本人原审计、不自动写入；随后追加式更正撤销、真实身份/内网验收、离线部署/运营迁移，VIN最后。契约docs/evidence-command-submission.md、docs/resource-command-submission.md。
+
+
 ## 2026-10-09 Impact、Acceptance、Resource 双语提交界面（Codex）
 起点main a34d09da5e331188c96655f6b607dc372e5a496a；精确CI37900763051全部成功（2085后端、178 PostgreSQL-module cases无skip、1055前端），Cloudflare生产build9e914984-04be-48f9-8454-ebfc08b90769/version6b87d364-240b-4516-b01c-f35868666b90成功，Actions独立deploy跳过、开放PR0。
 三类已有代理/冻结控制器接入独立evidence/resource能力投影、双语确认发送/原审计查询/原字节明确重试/精确结果。六组门控只复核一次当前USER会话，仅12个布尔值到客户端；明确非只读才发送，只读仍可查原审计。未知请求跨命令/目标/上下文/门控刷新冻结，不借另一组能力，复制/发送/查询同步互锁，成功后不重复写入。Impact保留原nullable evidence_ref/判断/冻结Snapshot及原snapshot_no链接；Acceptance保留原criterion/DVP关联及精确DVP链接；Resource保留原target_ref/标题/位置/描述，仅文本，不打开或获取位置。原结果不推断测试通过、当前影响、验收完成、文件存在或分发权限；详情/history/原审计独立新标签。
