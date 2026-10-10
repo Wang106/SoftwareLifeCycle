@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 当前模式：Plus 本地 Codex 会话 — 2026-10-10
+用户明确选择仅 Plus、无额外 API 费用。入口 docs/automation/plus-local.md 与 scripts/codex_plus.py；由用户本机 ChatGPT 登录启动/恢复，Actions 仅自动 CI。启动器强制 ChatGPT/openai、移除子进程 API key 环境、保留 workspace-write/on-request；不上传登录缓存、不购买额度、不无人值守无限重试。Windows 启动器使用 WSL；原生终端未支持。当前执行环境未装 CLI，没有用户 Plus 登录/实际 CLI/gh/跨会话验收；不称已启动自动开发。
+API dispatcher 已删除 schedule；实际 plan/worker/continuation 需显式 CODEX_DEVELOPMENT_MODE=api，现有变量未设置该模式、CODEX_AUTODEV_ENABLED=false，故本次不调用付费模型。不需要两项 Key/专用 App，已注册 App ID5259214，可保持未安装，无主动撤销用户设置。main PR/strict三个CI/admin不可绕过保护已配置。
+PR45 已在精确head216006d63252e988eea389e32cd8ce945a05b289的完整CI38024913819三job成功后合并到main2d0c23dec74a8aca944c86d72ab10ae28fe9d5c7，修复reusable caller actions:read继承。Plus切换本地38调度/启动器测试、actionlint、进度--check、prompt预览通过，精确远端CI/合并另核验；缺少本地CLI时入口明确退出，没有启动模型。
+任务指令先恢复开放PR，依实际合并代码跳过已完成启用项，再做Acceptance更正确认/原始结果与手动导出/只读恢复导入；宽泛后续scope仍禁用。每包检查点需提交推送并记录HANDOFF，未推送内存/本地改动不保证跨机恢复。同机resume选择会话后需输入恢复指令；新机从GitHub交接启动新会话。CLI因额度、安全提示、登录、冲突或任务边界可能暂停，不保证24小时运行。
+36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量0。公共样例只读、真实OIDC/业务提交关闭、内网未部署。Render live API/schema及真实浏览器验收未做，Actions deploy独立门控，前端provider构建与后台部署分记。
+
+
 ## 自动调度账户配置与首次演练 — 2026-10-10（Codex）
 GitHub 网页已验证登录。main classic 保护已创建：必须 PR、三个既有 CI 检查、strict 最新主线、管理员不可绕过；禁止 force/delete，未要求人工审批以支持用户授权的自动合并。三个变量已保存：CODEX_AUTODEV_ENABLED=false、CODEX_AUTODEV_DAILY_MAX=6、CODEX_REQUIRE_DEPLOYMENT=false；Secrets 当前为空，专用 App 尚未注册/安装，付费自动开发未启用。
 首次 main dry-run 38024835129 在模型调用前 startup_failure：调用方 develop 未授予 actions:read，嵌套 codex job 因权限不可提升被拒绝。修复只在 reusable caller 添加 contents:read/actions:read，不扩大 App 权限，不授予 GITHUB_TOKEN 写入。36 调度回归本地通过，精确修复 CI/再次 dry-run 待核验。此前 actionlint/常规 CI 通过不能代替真实 dispatch 启动验收。

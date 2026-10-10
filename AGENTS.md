@@ -2,6 +2,17 @@
 
 Repository: Wang106/SoftwareLifeCycle. Use the current main branch as the baseline; preserve unrelated local changes.
 
+## Current development mode: ChatGPT Plus local CLI
+The user chose no additional API charges on 2026-10-10. Follow docs/automation/plus-local.md.
+Use scripts/codex_plus.py in the user's own interactive terminal with ChatGPT login;
+do not request API/App secrets, use paid APIs, buy credits, upload auth.json, or enable API workflows.
+Actions runs independent CI; main requires PR, strict CI and administrator enforcement.
+Direct CLI development uses normal git/gh and durable HANDOFF/PR checkpoints, not the API
+controller's codex-state reservation protocol or structured patch output schema.
+Resume an existing unfinished PR before starting duplicate work. Continue only the enabled
+scopes in docs/automation/tasks.json; stop on plan quota/login/conflicts or completed queue.
+The launcher does not establish a real user login or guarantee an uninterrupted session.
+
 ## GitHub Actions bounded development
 See docs/automation/README.md and docs/automation/tasks.json. Missing
 CODEX_AUTODEV_ENABLED/credentials means inactive, not configured success.

@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   codex:
-    if: github.repository == 'Wang106/SoftwareLifeCycle' && github.ref == 'refs/heads/main'
+    if: github.repository == 'Wang106/SoftwareLifeCycle' && github.ref == 'refs/heads/main' && vars.CODEX_DEVELOPMENT_MODE == 'api'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     permissions:
