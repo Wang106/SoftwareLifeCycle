@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "base_sha", "status", "summary", "patch_b64"],
+  "properties": {
+    "task_id": {"type": "string"},
+    "base_sha": {"type": "string"},
+    "status": {"type": "string", "enum": ["ready", "checkpoint", "blocked"]},
+    "summary": {"type": "string"},
+    "patch_b64": {"type": "string"}
+  }
+}

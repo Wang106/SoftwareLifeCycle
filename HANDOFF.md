@@ -1,5 +1,25 @@
 # SoftwareLifeCycle Development Handoff
 
+## 当前入口 — 2026-10-10 GitHub Actions 自动开发配置（Codex）
+用户选择GitHub Actions并授权落实方案；起点main6f661fef4aad60642bfc533ba3ca121653cf75f0，
+本包分支codex/github-actions-orchestrator，不重复PR43已经完成的Acceptance更正受控协议。
+新增3工作流、2个启用scope的UI任务与3个禁用待切分任务、模型结构化补丁、干净Runner发布、
+CAS运行状态、exact-head三job/main CI核验、非force主线同步、次数预算与明确blocked。
+Codex是worker最后一步；App只在控制/干净发布Runner注入；候选不能改CI/调度/迁移/依赖/已有测试。
+预算每task3次/每日最多6次，按北京时间日期；中断也计数，cron+completed事件接力，idle不自触发。
+意外中止从最近已推送检查点恢复，不承诺恢复未导出的内存改动。恢复源为仓库，不是旧聊天。
+本地36项真实git补丁/状态/失败门禁行为回归、actionlint1.7.12、编译与进度--check通过。
+尝试本地已有CI证据pytest时执行器未安装pytest，没有宣称它通过；完整CI/PG由本包精确云端验收另记。
+当前连接仅代码/PR接口，无Secrets/Variables/App/分支保护接口，未配置/核验账户凭据，默认关闭。
+未调用付费模型，不创建实际身份/授权，不改提供方/内网。操作文档docs/automation/README.md。
+deploy.yml仍独立门控；Render请求不是live证明，done_code不表示部署成功；strict部署开关等待独立证据，
+自动live适配器尚未实现。该限制不能从CI绿色推断为已完成。
+业务基线69页面/API0.18.40/schema0022，公共样例只读，OIDC/真实提交默认关闭，内网未部署。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。
+后续先核验本包精确CI并合并，再由用户在Secrets/Variables填入独立API key/App ID/private key、main保护；
+dry-run后小任务付费验收，再启用。首任务Acceptance更正双语确认/结果，第二任务手动导出/只读导入。
+
+
 ## PR#43 验收 — 2026-10-10（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/43 已合并；代码main 2ed38c8cd55d5c1ce9f65efaf2e44141f46ee2db，精确feature f56e01200e0b8ebb875c5e8e95dc2643234b5db3，起点main 9c15808ed41d5cb5c5de79b68eba16c9fd59b0da。18个发布blob及完整tree b8cb88defc974d80500cf780d93a9688778b5979与本地逐一核对一致（本地feature cb4a8e2ab65000507df944062102d9ccf3e75203），本地main清洁快进同步到代码合并提交。
 精确feature CI38015391790全部成功：2180后端（473.96秒、11806既有弃用warnings）、203 PostgreSQL-module cases无skip、1186前端/0fail/0skip。后端114104392202、前端114104392023、acceptance114106074341成功；0022单迁移头/SQL/隔离真实PG往返、进度账本、类型/Next/OpenNext/双语禁用认证SSR及新增两路GET405/POST503/private-no-store通过。本PR首次完整云端CI成功；Cloudflare feature Preview builde82683ea-63db-4d1b-8ab0-998e7d9e86be/check114104703260成功，不能替代main生产部署。此验收文档提交后的最新main精确CI/provider另核对，Actions独立deploy仍跳过。

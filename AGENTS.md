@@ -2,6 +2,19 @@
 
 Repository: Wang106/SoftwareLifeCycle. Use the current main branch as the baseline; preserve unrelated local changes.
 
+## GitHub Actions bounded development
+See docs/automation/README.md and docs/automation/tasks.json. Missing
+CODEX_AUTODEV_ENABLED/credentials means inactive, not configured success.
+The model runner returns a bounded data-only patch; a clean publisher handles
+GitHub writes and an independent controller validates exact-head CI/merge/main.
+Within that runner, do not execute the publish/merge instructions below yourself.
+Never alter the scheduler/CI/deployment, existing tests, dependencies or migrations
+from a queued candidate. New scoped tests are allowed. Resume codex-state only
+after checking the original run and remote branch; do not rely on chat history.
+done_code is code acceptance only; live provider/schema and real acceptance are
+separate evidence. Two scoped UI tasks are approved in the initial queue;
+subsequent broader tasks remain disabled until their scope is reviewed.
+
 ## Start each new session
 Read START_HERE.md, REQUIREMENTS.md, DEVELOPMENT_STATUS.md, ROADMAP.md and docs/development-plan-progress.json.
 Read the current-entry section and newest dated records in HANDOFF.md; it also contains historical states.

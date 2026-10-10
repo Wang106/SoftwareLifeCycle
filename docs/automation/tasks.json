@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "baseline": "PR43 protocol implemented; latest main must be rechecked on every execution",
+  "tasks": [
+    {
+      "id": "acceptance-correction-ui",
+      "title": "Acceptance 更正双语确认与原始结果",
+      "enabled": true,
+      "auto_merge": true,
+      "depends_on": [],
+      "allowed_paths": [
+        "frontend/components/acceptance-correction-*.tsx",
+        "frontend/components/change-coverage-collections.tsx",
+        "frontend/app/commands/page.tsx",
+        "frontend/lib/i18n/zh.json",
+        "frontend/lib/i18n/templates.json",
+        "frontend/tests/acceptance-correction-ui*.test.cjs",
+        "frontend/tests/fixtures/acceptance-correction-ui*.cjs",
+        "docs/acceptance-correction-ui.md",
+        "DEVELOPMENT_STATUS.md",
+        "HANDOFF.md"
+      ],
+      "acceptance": [
+        "复用 PR43 冻结控制器和独立默认关闭代理；普通 ASSIGN 与更正保持隔离",
+        "默认中文/English；SUPERSEDE/WITHDRAW 精确前驱、原因、请求 ID 及双语确认",
+        "显示原操作原审计确认的结果和精确链接，不以当前有效关系或覆盖状态推断成功",
+        "unknown 保持冻结；发送/查询/复制互锁，原字节明确重试与过期上下文有新增行为回归",
+        "实际身份、真实提供方、内网验收不计完成；导出/导入由下一任务实现"
+      ]
+    },
+    {
+      "id": "acceptance-correction-recovery-ui",
+      "title": "Acceptance 更正手动导出及只读导入恢复",
+      "enabled": true,
+      "auto_merge": true,
+      "depends_on": ["acceptance-correction-ui"],
+      "allowed_paths": [
+        "frontend/components/acceptance-correction-*.tsx",
+        "frontend/lib/acceptance-correction-recovery.ts",
+        "frontend/lib/i18n/zh.json",
+        "frontend/lib/i18n/templates.json",
+        "frontend/tests/acceptance-correction-recovery*.test.cjs",
+        "frontend/tests/fixtures/acceptance-correction-recovery*.cjs",
+        "docs/acceptance-correction-recovery.md",
+        "DEVELOPMENT_STATUS.md",
+        "HANDOFF.md"
+      ],
+      "acceptance": [
+        "规范同站点手动导出/导入，原字节/actor/前驱/请求 ID 与原审计绑定",
+        "导入零网络、不发送、不自动重试；仅显式只读查询原审计",
+        "严格版本、字段、重复键、长度、origin 与凭据隔离校验",
+        "中英文实际 UI 行为新增回归；真实跨会话/提供方验收仍待"
+      ]
+    },
+    {
+      "id": "impact-correction-and-withdrawal",
+      "title": "Impact 更正提交与撤销契约及实现",
+      "enabled": false,
+      "auto_merge": false,
+      "depends_on": ["acceptance-correction-recovery-ui"],
+      "allowed_paths": ["docs/impact-correction-plan.md"],
+      "acceptance": ["先明确撤销数据模型、迁移、受控协议与切片范围；迁移须独立审核"]
+    },
+    {
+      "id": "review-downstream-corrections",
+      "title": "评审及下游更正规则",
+      "enabled": false,
+      "auto_merge": false,
+      "depends_on": ["impact-correction-and-withdrawal"],
+      "allowed_paths": ["docs/downstream-correction-plan.md"],
+      "acceptance": ["明确发布/分发/授权及批次历史更正规则和验收范围"]
+    },
+    {
+      "id": "offline-operations",
+      "title": "离线部署与运营准备",
+      "enabled": false,
+      "auto_merge": false,
+      "depends_on": ["review-downstream-corrections"],
+      "allowed_paths": ["docs/offline-operations-plan.md"],
+      "acceptance": ["内网 OS/CPU/安装条件确认后切分无 Docker 离线交付；VIN 最后"]
+    }
+  ]
+}
