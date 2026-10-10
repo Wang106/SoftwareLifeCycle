@@ -1,3 +1,4 @@
+import type {ImpactCorrectionCommand} from './impact-correction-transport';
 import {parseAcceptanceCorrectionCommand,acceptanceCorrectionPath,acceptanceCorrectionEvent,type AcceptanceCorrectionCommand} from './acceptance-correction-transport';
 import {projectAcceptanceCorrectionAudit} from './acceptance-correction-audit';
 import {parseEvidenceCommand,evidencePath,evidenceEvent,type EvidenceCommand} from './evidence-command-transport';
@@ -814,4 +815,40 @@ export async function executeAcceptanceCorrectionCommand(config: SessionConfig, 
 
 
 // Server-only session helpers; OIDC routes opt in with explicit operator configuration.
+
+export async function executeImpactCorrectionCommand(config: SessionConfig, cookie: string | undefined,
+  input: ImpactCorrectionCommand, mode: 'submit' | 'recover', fetcher: typeof fetch = fetch): Promise<{ status: number; value: unknown }> {
+  const {parseImpactCorrectionCommand,impactCorrectionPath,impactCorrectionEvent}=await import('./impact-correction-transport');
+  const {projectImpactCorrectionAudit}=await import('./impact-correction-audit');
+  const command = parseImpactCorrectionCommand(input);
+  if (!command || !['submit', 'recover'].includes(mode)) return { status: 400, value: { error: 'invalid_request' } };
+  const identity = await resolveSession(config, cookie, fetcher);
+  if (!identity) return { status: 401, value: { error: 'session_required' } };
+  // A read-only switch does not erase an already committed own-operation receipt.
+  if (mode === 'submit' && identity.read_only_mode) return { status: 403, value: { error: 'read_only_mode' } };
+  const envelope = await openCookie(config, SESSION_COOKIE, cookie) as Envelope;
+  const unknown = { status: 502, value: { error: 'outcome_unknown' } };
+  if (mode === 'submit') {
+    const result = await privateRequest(config, impactCorrectionPath(command), envelope.token, fetcher,
+      { method: 'POST', body: JSON.stringify(command.body) }, envelope.sid);
+    if (!result) return unknown;
+    const expectedStatuses = [200,201];
+    if (!expectedStatuses.includes(result.status)) {
+      const denied: Record<number, string> = { 401: 'session_required', 403: 'submission_forbidden', 422: 'invalid_request' };
+      if (denied[result.status]) return { status: result.status, value: { error: denied[result.status] } };
+      if (result.status === 409) {
+        const detail = result.value && typeof result.value === 'object' ? (result.value as Record<string, unknown>).detail : null;
+        const error = typeof detail === 'string' && /^request_id already used/.test(detail) ? 'request_conflict'  : 'submission_conflict';
+        return { status: 409, value: { error } };
+      }
+      return unknown;
+    }
+  }
+  // No query of current object status can prove this original command's result.
+  const audit = await privateRequest(config, '/api/v1/activity/' + impactCorrectionEvent(command),
+    envelope.token, fetcher, {}, envelope.sid);
+  if (!audit || audit.status !== 200) return unknown;
+  const receipt = await projectImpactCorrectionAudit(audit.value, command, identity.principal.id);
+  return receipt ? { status: 200, value: receipt } : unknown;
+}
 

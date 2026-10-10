@@ -1,5 +1,12 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-10 Impact SUPERSEDE受控协议 A（Codex）
+用户21:40明确确认方案A；不扩大到B界面或C撤销/迁移，不启用宽泛disabled队列/API自动调度。PR49精确head6d1dcb06568eb56b269120615149394ee23e8bfa/CI38056373895成功（2180后端381.84秒/203 PostgreSQL-module cases无skip/1219前端），经受保护PR合并到main ccbdc61a9ddceac5af9c7b598f651bfa3dffba1f。开发分支codex/impact-correction-transport先基于规划head，待本地提交后安全重放到该合并main，避免重复规划提交。起点995366c的CI38028319364和生产38f23945-5639-46b4-989a-a84ea2563fd2/version21926ecc-a74a-45be-895d-aae7d329e3a9已核验；本包精确CI/main/provider另验收。
+实现Impact SUPERSEDE独立默认关闭提交/原审计恢复、严格原前驱与Issue/Release/FROZEN Snapshot/决策/原因/actor/nullable证据摘要绑定、原回执白名单和冻结内存控制器。新请求ID、独立更正原因、原字节重试、发送查询互锁、confirmed终态、unknown保留；恢复只GET原审计，不读当前状态/后继/就绪/replayed判断原成功。普通ASSESS及Acceptance协议隔离；不接受撤销动作。session新模块惰性加载，既有测试/断言不改。
+本地新增58协议/代理、1277完整前端/0fail/0skip、类型/Worker配置/Next/OpenNext通过；真实Next禁用路由/双语SSR及进度/diff检查全部通过。后端本地不重跑，本包完整后端/真实PG以精确云端CI验收，不能复用起点成功。契约docs/impact-correction-submission.md，规划docs/impact-correction-plan.md明确仅A授权。未启动用户本地Plus CLI或付费API worker，无登录缓存上传。
+69页面/API0.18.40/schema0022不变；无后端/迁移/依赖/CI/调度/已有测试变更；14业务/2自身会话/6管理员/离线操作分计。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读、OIDC及实际提交门控关闭，无真实身份/授权/秘密。Render live API/schema未核验，Actions deploy/wake独立门控；真实浏览器/提供方/跨会话/内网验收未做，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU/Windows无Docker待定；SoftwareLifeCycle_20原文未取得。
+下一包B：Impact替代双语确认/原结果/手动导出与只读恢复导入；C撤销模型和迁移独立审查，防止旧独立判断复活。随后评审/下游政策、真实身份/内网和运营迁移，VIN最后；B/C不因本轮A自动获批。
+
 ## 2026-10-10 最新主分支验收与 Impact 待审查计划（Codex）
 已同步最新main 995366cd3c5a5b0d06722aa53d980f21cf709bd8（PR48），无开放PR，本地起点清洁；PR47双语更正确认/原结果及PR48手动导出/只读恢复导入已实现，不能重做。精确main CI38028319364成功：2180后端（439.15秒）、203 PostgreSQL-module cases无skip、1219前端/0fail/0skip；backend114143787316、frontend114143787207、acceptance114145137113成功。Cloudflare生产build38f23945-5639-46b4-989a-a84ea2563fd2/check114144078704成功，version21926ecc-a74a-45be-895d-aae7d329e3a9；Actions deploy/wake跳过。以上覆盖旧PR48记录的pending，不是本规划分支的CI。
 启用队列的两项Acceptance任务已完成；AGENTS要求后续disabled范围先审查，本轮未擅自启用或实现Impact/数据库迁移。独立分支codex/impact-correction-plan形成docs/impact-correction-plan.md：建议先授权A仅现有SUPERSEDE的独立默认关闭协议/原审计恢复/冻结控制器，无schema变化；B再接双语UI/手动恢复；C撤销模型与迁移独立审核。核对实际模型/锁/原审计字段；撤销不能伪装为NOT_AFFECTED/NEEDS_REVIEW，也不能使旧独立判断复活，统一上下文终端语义须先评审。
@@ -13,6 +20,13 @@
 13项新格式/控制器/UI/双语回归，既有18更正UI回归未改；完整前端1219/0fail/0skip、类型、Worker配置、Next/OpenNext生产构建、双语禁用认证SSR/真实Next路由私有405/503、进度--check和diff检查通过。无后端/schema/迁移/依赖/调度/CI或既有测试改动。完整后端/真实PG/本包精确CI及main生产提供方另核验；本地未重跑后端，不复用旧成功称本包验收。
 契约docs/acceptance-correction-recovery.md覆盖上一包memory-only限制。69页面/API0.18.40/schema0022不变，14业务/2自身会话/6管理员/离线操作分计。实际跨会话/提供方/浏览器/管理员验收仍待，内网未部署/OIDC未定，无真实身份/授权/秘密配置。Render live API/schema未核验，Actions deploy独立门控。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，业务验收增量0，不因模拟UI回归提升里程碑。两项启用UI任务实现，待本包受保护合并；后续Impact撤销/提交、评审下游和离线运营scope仍禁用，需具体划定范围，VIN最后。
+
+## 2026-10-10 Impact SUPERSEDE受控协议 A（Codex）
+用户21:40明确确认方案A；不扩大到B界面或C撤销/迁移，不启用宽泛disabled队列/API自动调度。PR49精确head6d1dcb06568eb56b269120615149394ee23e8bfa/CI38056373895成功（2180后端381.84秒/203 PostgreSQL-module cases无skip/1219前端），经受保护PR合并到main ccbdc61a9ddceac5af9c7b598f651bfa3dffba1f。开发分支codex/impact-correction-transport先基于规划head，待本地提交后安全重放到该合并main，避免重复规划提交。起点995366c的CI38028319364和生产38f23945-5639-46b4-989a-a84ea2563fd2/version21926ecc-a74a-45be-895d-aae7d329e3a9已核验；本包精确CI/main/provider另验收。
+实现Impact SUPERSEDE独立默认关闭提交/原审计恢复、严格原前驱与Issue/Release/FROZEN Snapshot/决策/原因/actor/nullable证据摘要绑定、原回执白名单和冻结内存控制器。新请求ID、独立更正原因、原字节重试、发送查询互锁、confirmed终态、unknown保留；恢复只GET原审计，不读当前状态/后继/就绪/replayed判断原成功。普通ASSESS及Acceptance协议隔离；不接受撤销动作。session新模块惰性加载，既有测试/断言不改。
+本地新增58协议/代理、1277完整前端/0fail/0skip、类型/Worker配置/Next/OpenNext通过；真实Next禁用路由/双语SSR及进度/diff检查全部通过。后端本地不重跑，本包完整后端/真实PG以精确云端CI验收，不能复用起点成功。契约docs/impact-correction-submission.md，规划docs/impact-correction-plan.md明确仅A授权。未启动用户本地Plus CLI或付费API worker，无登录缓存上传。
+69页面/API0.18.40/schema0022不变；无后端/迁移/依赖/CI/调度/已有测试变更；14业务/2自身会话/6管理员/离线操作分计。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读、OIDC及实际提交门控关闭，无真实身份/授权/秘密。Render live API/schema未核验，Actions deploy/wake独立门控；真实浏览器/提供方/跨会话/内网验收未做，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU/Windows无Docker待定；SoftwareLifeCycle_20原文未取得。
+下一包B：Impact替代双语确认/原结果/手动导出与只读恢复导入；C撤销模型和迁移独立审查，防止旧独立判断复活。随后评审/下游政策、真实身份/内网和运营迁移，VIN最后；B/C不因本轮A自动获批。
 
 ## 2026-10-10 最新主分支验收与 Impact 待审查计划（Codex）
 已同步最新main 995366cd3c5a5b0d06722aa53d980f21cf709bd8（PR48），无开放PR，本地起点清洁；PR47双语更正确认/原结果及PR48手动导出/只读恢复导入已实现，不能重做。精确main CI38028319364成功：2180后端（439.15秒）、203 PostgreSQL-module cases无skip、1219前端/0fail/0skip；backend114143787316、frontend114143787207、acceptance114145137113成功。Cloudflare生产build38f23945-5639-46b4-989a-a84ea2563fd2/check114144078704成功，version21926ecc-a74a-45be-895d-aae7d329e3a9；Actions deploy/wake跳过。以上覆盖旧PR48记录的pending，不是本规划分支的CI。

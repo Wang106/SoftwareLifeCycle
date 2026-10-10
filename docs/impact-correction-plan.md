@@ -2,7 +2,7 @@
 
 更新：2026-10-10（Asia/Shanghai）。模式：Codex / Work；没有启动本地 Plus CLI 或付费 API worker。
 
-状态：**范围提案，尚未授权为启用开发任务**。本文件不改变 docs/automation/tasks.json 的 enabled/auto_merge、不启用调度或实际写入、不实现新协议或迁移。当前授权的 Acceptance 双语界面与手动恢复两项已通过 PR47/PR48 合并。下一阶段先审核具体切片，避免一次授权覆盖数据库迁移、撤销和全部下游政策。
+状态：用户于2026-10-10 21:40（Asia/Shanghai）确认仅方案A继续，规划PR49经精确head完整CI成功后合并。A由Codex在Work直接开发；B双语界面与C撤销/数据库迁移仍待后续具体授权。docs/automation/tasks.json 的宽泛任务enabled/auto_merge不变，不启用付费API调度或实际业务写入。下文保留范围基准，A协议交付契约见docs/impact-correction-submission.md；不能以A授权覆盖B/C及全部下游政策。
 
 ## 已核对基线
 
