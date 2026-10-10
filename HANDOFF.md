@@ -1,5 +1,14 @@
 # SoftwareLifeCycle Development Handoff
 
+## 当前开发包 — 2026-10-10 Acceptance 更正双语界面（Codex）
+起点main 59581f3efd220c8de54dc8c94d3b8b46e6c4da52（PR46）；无开放PR，清洁完整checkout后创建codex/acceptance-correction-ui。本会话由Codex在Work环境直接修改仓库，没有启动独立本地Plus CLI/API worker，不使用付费API或上传登录缓存。
+起点完整CI38026495717三个job均成功，Cloudflare生产build53b5ee1f-576d-4ae3-96ab-8d9da93aeaae/version3584169b-9d49-4fd6-8d77-9a3e30260ec0成功；Actions deploy/wake跳过。当前包精确CI/合并/提供方另核对，不复用起点证据。
+有效Acceptance历史行新增绑定SCR/criterion/前驱/DVP/原动作的替代撤销入口；独立双语更正准备、精确确认、冻结原字节发送/明确重试/只读原审计查询及原结果链接完成。普通ASSIGN独立，原行及审计不改；unknown不因后来拒绝丢失，过期上下文/能力闭包及复制发送查询互锁。按更正上下文加载panel，同panel查询刷新不改已尝试请求；卸载/跨路由/刷新仍会丢内存，导出导入待下一包。
+18项新行为回归及类型/进度--check通过。完整前端1206项/0fail/0skip通过；Next/OpenNext构建通过；双语禁用认证SSR/真实Next路由私有405/503检查通过；远端exact-head CI在验收记录补充。首次完整回归发现新增静态导入与旧页面测试模块桩不兼容、条件表达式本地化包装遗漏；改为按更正上下文动态加载并补齐Localized容器，145项相关回归通过，未修改已有测试/依赖/迁移/CI/调度配置。
+契约docs/acceptance-correction-ui.md；69页面/API0.18.40/schema0022不变。14业务/2自身会话/6管理员/离线操作分计。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读/OIDC及提交门控关闭，无实际身份/授权/秘密；Render live API/schema未核验，内网未部署，真实提供方/浏览器/管理员验收未完成。
+下一包手动同站点导出与只读原审计恢复导入（已启用scope）；随后Impact撤销/评审下游/离线运营仍为待划定禁用scope，VIN最后。
+
+
 ## 当前模式：Plus 本地 Codex 会话 — 2026-10-10
 用户明确选择仅 Plus、无额外 API 费用。入口 docs/automation/plus-local.md 与 scripts/codex_plus.py；由用户本机 ChatGPT 登录启动/恢复，Actions 仅自动 CI。启动器强制 ChatGPT/openai、移除子进程 API key 环境、保留 workspace-write/on-request；不上传登录缓存、不购买额度、不无人值守无限重试。Windows 启动器使用 WSL；原生终端未支持。当前执行环境未装 CLI，没有用户 Plus 登录/实际 CLI/gh/跨会话验收；不称已启动自动开发。
 API dispatcher 已删除 schedule；实际 plan/worker/continuation 需显式 CODEX_DEVELOPMENT_MODE=api，现有变量未设置该模式、CODEX_AUTODEV_ENABLED=false，故本次不调用付费模型。不需要两项 Key/专用 App，已注册 App ID5259214，可保持未安装，无主动撤销用户设置。main PR/strict三个CI/admin不可绕过保护已配置。
@@ -3452,3 +3461,11 @@ Test Release/Deployment/Changeover双语确认发送、原审计查询、原请�
 本地993前端、TypeScript、Worker配置/构建、双语禁用认证SSR及进度--check通过。新增门控测试先验证旧代码缺能力投影失败；初次组件夹具误把textarea当命名input，改用真实textarea事件后完整通过，未放宽断言。本PR首次云端完整CI成功。执行为云端Linux完整checkout的Codex直接编写；Git CLI无推送凭据，通过GitHub连接发布，没有另启独立云端Codex任务。
 69页面/API0.18.36/schema0020不变，无后台/schema改动。公共样例只读，OIDC及全部提交默认关闭；无实际身份/权限/秘密配置，真实浏览器/管理员/提供方/内网验收未进行，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台版本/部署未核验。仅页面内存，刷新/卸载/跨会话导入恢复待完成，beforeunload不保证应用内路由提醒。SoftwareLifeCycle_17全文此前两次检索服务报错，依据仓库最新交接承接。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，双语UI+3。下一包实现Impact/Acceptance/Resource独立默认关闭提交与原审计恢复基础，再接双语UI；之后真实身份/内网验收、跨会话恢复、更正撤销、无Docker离线安装及运营迁移，VIN最后。契约docs/production-command-submission.md。
+
+## 当前开发包 — 2026-10-10 Acceptance 更正双语界面（Codex）
+起点main 59581f3efd220c8de54dc8c94d3b8b46e6c4da52（PR46）；无开放PR，清洁完整checkout后创建codex/acceptance-correction-ui。本会话由Codex在Work环境直接修改仓库，没有启动独立本地Plus CLI/API worker，不使用付费API或上传登录缓存。
+起点完整CI38026495717三个job均成功，Cloudflare生产build53b5ee1f-576d-4ae3-96ab-8d9da93aeaae/version3584169b-9d49-4fd6-8d77-9a3e30260ec0成功；Actions deploy/wake跳过。当前包精确CI/合并/提供方另核对，不复用起点证据。
+有效Acceptance历史行新增绑定SCR/criterion/前驱/DVP/原动作的替代撤销入口；独立双语更正准备、精确确认、冻结原字节发送/明确重试/只读原审计查询及原结果链接完成。普通ASSIGN独立，原行及审计不改；unknown不因后来拒绝丢失，过期上下文/能力闭包及复制发送查询互锁。按更正上下文加载panel，同panel查询刷新不改已尝试请求；卸载/跨路由/刷新仍会丢内存，导出导入待下一包。
+18项新行为回归及类型/进度--check通过。完整前端1206项/0fail/0skip通过；Next/OpenNext构建通过；双语禁用认证SSR/真实Next路由私有405/503检查通过；远端exact-head CI在验收记录补充。首次完整回归发现新增静态导入与旧页面测试模块桩不兼容、条件表达式本地化包装遗漏；改为按更正上下文动态加载并补齐Localized容器，145项相关回归通过，未修改已有测试/依赖/迁移/CI/调度配置。
+契约docs/acceptance-correction-ui.md；69页面/API0.18.40/schema0022不变。14业务/2自身会话/6管理员/离线操作分计。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读/OIDC及提交门控关闭，无实际身份/授权/秘密；Render live API/schema未核验，内网未部署，真实提供方/浏览器/管理员验收未完成。
+下一包手动同站点导出与只读原审计恢复导入（已启用scope）；随后Impact撤销/评审下游/离线运营仍为待划定禁用scope，VIN最后。

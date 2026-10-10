@@ -1,0 +1,2 @@
+const base=require('./acceptance-correction.cjs');
+module.exports={...base,props:(action='SUPERSEDE')=>{const c=base.command(action);return {initialContext:{target:c.target,criterion:c.body.criterion_id,predecessor:c.predecessor.id,previousDvp:c.predecessor.dvp_item_id,previousAction:c.predecessor.action,action,dvp:c.body.dvp_item_id,actor:c.body.actor_name,reason:c.body.reason},submissionEnabled:true,recoveryEnabled:true};}};
