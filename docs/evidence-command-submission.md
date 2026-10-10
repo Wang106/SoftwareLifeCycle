@@ -2,6 +2,12 @@
 
 Updated: 2026-10-09 (Asia/Shanghai), Codex.
 
+API0.18.40 separately adds Acceptance–DVP SUPERSEDE/WITHDRAW to the same backend
+route. Ordinary ASSIGN preparation/submission/import/recovery deliberately rejects
+action/predecessor fields and correction audit receipts. Read-only history shows
+the relationship, but controlled correction submission/recovery remains pending.
+See [acceptance history](acceptance-dvp-corrections.md).
+
 API0.18.39 separately adds explicit Impact supersession to the existing backend
 route. This ordinary ASSESS transport/parser deliberately does not accept
 `supersedes_id`/`correction_reason` or recover SUPERSEDE events; a controlled correction

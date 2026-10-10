@@ -14,6 +14,7 @@ from test_evidence_audit_postgres import evidence_context, command_input
 from app.api.issue_views import SnapshotSelection, evidence_summary
 from app.models.audit import AuditEvent
 from app.models.impact import IssueImpactAssessment
+from app.core.config import settings
 from app.services.audit import AuditEventService
 from app.services.impact_assessment import AssessmentError, record_assessment
 
@@ -88,7 +89,7 @@ def test_migration_preserves_legacy_rows_and_refuses_loss_of_correction_history(
     with pytest.raises(DBAPIError, match='Cannot downgrade while impact corrections exist'):
         migration.downgrade(config, '0020_global_role_status')
     with engine.connect() as db:
-        assert db.scalar(text('SELECT version_num FROM alembic_version')) == '0021_impact_supersession'
+        assert db.scalar(text('SELECT version_num FROM alembic_version')) == settings.required_db_revision
         assert db.scalar(text('SELECT count(*) FROM issue_impact_assessments')) == 2
         for query in ['UPDATE issue_impact_assessments SET reason=reason WHERE id=:id', 'DELETE FROM issue_impact_assessments WHERE id=:id']:
             with pytest.raises(DBAPIError, match='append-only'):

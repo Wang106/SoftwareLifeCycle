@@ -1,6 +1,6 @@
 # DEVELOPMENT_STATUS
-更新：2026-10-09（Asia/Shanghai）；模式：Codex。
-Impact原判断绑定追加式替代/0021保护和双语只读历史已完成；PR#41补齐SUPERSEDE中文而不改原动作码/JSON。精确feature CI37923596146通过（2132后端、190 PostgreSQL无skip、1144前端）；最新main CI/provider另核对。69页面/API代码0.18.39/schema0021，完整更正/撤销UI和真实环境验收仍待完成，Render线上API/schema/部署未核验。PR#41合并后本地执行环境未返回同步结果，最新本地checkout状态未确认，以核验过的GitHub main为准。
+更新：2026-10-10（Asia/Shanghai）；模式：Codex。
+Acceptance–DVP原关系绑定追加式替代/撤销、有效读取与双语只读历史已实现，API代码0.18.40/schema0022，69页面。当前包精确head CI/provider另核对，完整更正提交/恢复UI及真实环境验收未完成；Render线上API/schema/部署未核验。起点main ec12176a23dac49af752d0cfd974b69c956d6973已核验CI37925224881全部成功（2132后端、190 PostgreSQL无skip、1144前端），Cloudflare生产builde0c059ee-23bf-449e-9c86-327c45e3850f/version8eab4f89-d4e7-4edd-86ca-2e4958bb33eb成功，Actions独立deploy跳过。本地环境已恢复，清洁checkout已快进到起点再创建独立feature，不复用上轮“本地状态未确认”作为当前状态。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
 
 ## 已完成和未完成
@@ -534,3 +534,12 @@ feature CI37923596146全部成功：2132后端（477.95秒、11636 warnings）�
 PR#41合并后本地执行环境的同步及只读状态命令未返回结果；中止等待，不重复合并或覆盖文件。已通过原GitHub连接确认main/merge及三个文档基准内容，后续验收记录从核验过的远端内容追加。最新本地checkout状态未确认；下一窗口先核对工作区与远端main、保护未提交改动后同步，不把旧本地head当成最新事实。
 69页面，14业务/2自身会话/6管理员/离线操作分计不变；公共样例只读、OIDC/所有提交默认关闭，无真实身份/授权/秘密配置。Render线上API/schema/部署未核验，前端构建不等于API迁移部署；真实提供方/浏览器/跨会话/管理员/内网验收未做，不重试拒绝访问。内网未安装，SSO/人员/系统与CPU/Windows无Docker待定。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0。下一包Acceptance–DVP历史关系替代/撤销，再做受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；随后真实身份/内网验收、离线运营迁移，VIN最后。
+
+
+## 2026-10-10 Acceptance–DVP原关系替代与撤销（Codex）
+起点main ec12176a23dac49af752d0cfd974b69c956d6973、CI37925224881及Cloudflare生产已核验成功，无开放PR。恢复后的云端Linux完整checkout由Codex直接开发，清洁状态快进同步后使用独立feature；上轮本地未确认限制已解除，未覆盖用户改动。
+现有Acceptance POST增加action默认ASSIGN、SUPERSEDE/WITHDRAW及supersedes_id，原关系/原审计不修改。替代/撤销必须新请求ID、同criterion当前有效前驱和原因；替代选不同同SCR测试，撤销保留原测试；当前有效pair重复、失效/外域前驱409，不完整动作422。SCR锁串行化所有动作、完全actor/原审计校验重试；后续替代后的原操作重试不恢复关系。0022同criterion复合FK/唯一后继/动作检查保留append-only triggers，旧行默认ASSIGN，存在更正拒绝降级；永久pair唯一改为SCR锁下有效pair检查，撤销后可明确重新分配。
+有界覆盖汇总/选定组/DVP反向关联和内部legacy报告共用有效谓词；完整分页历史保留所有行、scalar前后ID/有效性、双语动作和精确独立审计链接，增长SQL/ORM/页大小受控。普通ASSIGN准备/发送/导入/恢复仍拒绝更正字段及SUPERSEDE/WITHDRAW回执，更正提交/恢复UI未开放。契约docs/acceptance-dvp-corrections.md。
+新增35后端单元/处理器/权限/有界历史回归本地通过，13隔离真实PostgreSQL并发/迁移/审计回滚/数据库约束回归由CI验收，本地无PG服务。完整前端1147通过/0fail/0skip，新增2历史/实际双语SSR及1协议分离测试；TypeScript、Worker配置、Next/OpenNext构建、禁用认证双语SSR、进度--check及0022单迁移头/升降级SQL通过。首次alembic入口缺app导入路径，改用python -m alembic后SQL验证成功。本地完整非PG/非operator_db后端1574通过/606 deselected（186.69秒），完整2180已收集；本包精确head CI/provider证据后续验收条目补充，不复用起点或Preview。
+69页面/API代码0.18.40/schema0022；14业务/2自身会话/6管理员/离线操作分计不变。公共样例只读、OIDC/所有提交默认关闭，无实际身份/授权/秘密配置，Render线上API/schema/部署未核验，前端构建不证明后台迁移。真实提供方/浏览器/管理员/跨会话/内网验收未完成，不重试拒绝访问；内网未安装，SSO/人员/OS与CPU/Windows无Docker待定。SoftwareLifeCycle_20原文未取得，按仓库需求和交接继续。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。下一包Acceptance更正/撤销受控提交与原审计恢复协议，再接双语确认/结果/导入恢复；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。

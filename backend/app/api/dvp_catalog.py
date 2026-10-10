@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.change import AcceptanceCriterion, ChangePoint, Issue, SoftwareChangeRequest
 from app.models.acceptance import AcceptanceDvpLink
+from app.services.acceptance_history import effective
 from app.models.core import ApplicationReleaseDetail, Release
 from app.models.snapshot import ReleaseSnapshot
 from app.models.testing import ChangePointDvpItem, DvpExecution, DvpItem, DvpPlan, IssueDvpItem, TestRelease
@@ -128,7 +129,7 @@ def relation_rows(item_id, kind):
     if kind == 'criteria':
         c, link = AcceptanceCriterion, AcceptanceDvpLink
         return select(c.id, c.criterion_no.label('number'), c.description.label('text')).where(
-            select(link.id).where(link.criterion_id == c.id, link.dvp_item_id == item_id).exists())
+            select(link.id).where(link.criterion_id == c.id, link.dvp_item_id == item_id, effective()).exists())
     if kind == 'points':
         c, link = ChangePoint, ChangePointDvpItem
         return select(c.id, c.change_no.label('number'), c.title.label('text')).where(
