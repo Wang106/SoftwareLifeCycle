@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "scripts/automation"))
 from common import MAX_PATCH, REQUIRED_JOBS, strict_json, successful_ci, validate_candidate, validate_path, validate_tasks
 from github_api import APIError, StateStore
-from orchestrator import reconcile, select, tick, validate_remote_diff
+from orchestrator import main_protection_ready, reconcile, select, tick, validate_remote_diff
 from publish import apply_and_read, publish
 
 MAIN = "a" * 40
@@ -71,6 +71,9 @@ class FakeAPI:
         self.commit_message = "codex-auto sample run 42 ready\n\nSample"
         self.merge_error = None
         self.open_prs = []
+        self.protection = {"required_status_checks": {"strict": True, "contexts": list(REQUIRED_JOBS)},
+                           "required_pull_request_reviews": {"required_approving_review_count": 0},
+                           "enforce_admins": {"enabled": True}}
 
     def ref(self, branch):
         if branch not in self.refs:
@@ -79,6 +82,8 @@ class FakeAPI:
 
     def get(self, suffix, **params):
         self.calls.append(("GET", suffix))
+        if suffix == "branches/main/protection":
+            return self.protection
         if suffix.startswith("actions/runs/"):
             return {"status": "in_progress" if self.running else "completed"}
         if suffix == "actions/workflows/ci.yml/runs":
@@ -195,6 +200,16 @@ class GateTests(unittest.TestCase):
 
 
 class RecoveryTests(unittest.TestCase):
+    def test_missing_or_non_strict_protection_prevents_any_reservation(self):
+        for protection in ({}, {"required_status_checks": {"strict": False, "contexts": list(REQUIRED_JOBS)}},
+                           {"required_status_checks": {"strict": True, "contexts": []}}):
+            api, store = FakeAPI(), MemoryStore(state())
+            api.protection = protection
+            self.assertFalse(main_protection_ready(api))
+            self.assertEqual(tick(api, store, [TASK], MAIN, "42")["execute"], "false")
+            self.assertEqual(store.saves, 0)
+            self.assertFalse(any(call[0] != "GET" for call in api.calls))
+
     def test_dependency_budget_and_blocked_stop_queue(self):
         value = state()
         self.assertEqual(select([TASK], value, "2026-10-10"), TASK)

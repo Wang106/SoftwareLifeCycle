@@ -3,7 +3,7 @@
 ## GitHub Actions 自动接力配置 — 2026-10-10
 新增三个调度/worker/continuation工作流、任务队列和标准库恢复/发布脚本。
 操作与账户启用步骤见 docs/automation/README.md。默认开关未设置时不调用模型，
-本地35项离线回归及actionlint通过；实际云端完整CI/付费worker验收另记。
+本地36项离线回归及actionlint通过；实际云端完整CI/付费worker验收另记。
 当前连接不支持Secrets/Variables/App/分支保护设置，账户配置未核验，不能称已启用。
 首批队列承接PR43：Acceptance更正双语确认/原始结果，随后手动导出/只读导入。
 广义Impact/评审/内网任务仍禁用。进度仍36/44=82%，不将调度配置计入业务验收。

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from common import sha, successful_ci, validate_path, validate_tasks
+from common import REQUIRED_JOBS, sha, successful_ci, validate_path, validate_tasks
 from github_api import APIError, GitHub, StateStore
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -13,6 +13,21 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def event(state, tid, message):
     state["events"].append({"at": datetime.now(timezone.utc).isoformat(), "task": tid, "message": message})
+
+
+def main_protection_ready(api):
+    """Verify the server-side race gate before any paid execution or auto-merge."""
+    try:
+        protection = api.get("branches/main/protection")
+    except APIError as error:
+        if error.code in (403, 404):
+            return False
+        raise
+    checks = protection.get("required_status_checks") or {}
+    names = set(checks.get("contexts", [])) | {item["context"] for item in checks.get("checks", [])}
+    return (checks.get("strict") is True and REQUIRED_JOBS.issubset(names)
+            and protection.get("required_pull_request_reviews") is not None
+            and protection.get("enforce_admins", {}).get("enabled") is True)
 
 
 def latest_ci(api, head, branch):
@@ -132,6 +147,9 @@ def reconcile(api, tasks, state, main_sha, require_deployment=False):
             if not task["auto_merge"]:
                 record.update(status="blocked", reason="Task requires manual merge")
                 continue
+            if api.ref("main") != main_sha:
+                event(state, task["id"], "Main changed during validation; defer merge to fresh tick")
+                continue
             # Branch protection is authoritative. No bypass token, no auto-dismissal.
             try:
                 result = api.mutate(f"pulls/{record['pr']}/merge", "PUT", {
@@ -185,6 +203,8 @@ def tick(api, state_store, tasks, control_sha, run_id, daily_max=6, require_depl
     main = sha(api.ref("main"))
     if main != control_sha:
         return {"execute": "false", "reason": "Dispatcher checkout superseded; next tick uses latest main"}
+    if not main_protection_ready(api):
+        return {"execute": "false", "reason": "Main PR/strict required CI/admin protection missing or unreadable"}
     state = state_store.load(main)
     reconcile(api, tasks, state, main, require_deployment)
     state_store.save(state)

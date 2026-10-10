@@ -34,8 +34,8 @@ idle/dry-run 的 dispatcher 完成事件不会继续唤醒，避免事件空转�
 1. 在 OpenAI Platform 为该调度器使用独立 API 项目/服务账户，配置适当模型权限和费用限额。
    配置本项目 API key。API 计费独立；次数/时间限制不等于美元硬预算。
 2. 在 GitHub 创建专用 App，只安装到 `Wang106/SoftwareLifeCycle`。
-   Repository permissions：Contents Read & write，Pull requests Read & write，Actions Read，Checks Read，Metadata Read。
-   不授予 Administration 或 Workflows write，不加入分支保护 bypass 名单。
+   Repository permissions：Contents Read & write，Pull requests Read & write，Actions Read，Checks Read，Metadata Read，Administration Read。
+   Administration仅只读，用于核对main分支保护；不授予Administration/Workflows write，不加入bypass名单。
    生成 private key 后使用下面列出的 secret 名称；App ID 使用 variable。
 3. 在仓库 Settings → Secrets and variables → Actions 中配置：
 
@@ -50,7 +50,9 @@ idle/dry-run 的 dispatcher 完成事件不会继续唤醒，避免事件空转�
 
 4. 保护 main：要求 PR，禁止 force-push/删除，要求三个现有 CI checks：
    `Backend, PostgreSQL and migrations`、`Frontend tests and Cloudflare production build`、`CI acceptance`。
-   建议要求分支保持最新；这些检查由 GitHub Actions 提供。
+   必须要求分支保持最新（strict），保护规则应用到管理员；这些检查由 GitHub Actions 提供。
+   控制器启用前通过只读API核对上述classic main保护规则；缺失/无读取权限则不调用模型。
+   单独使用ruleset时需后续添加等效读取适配；当前不将未知规则认定为已保护。
    如果保护规则要求人工 review，调度器会在该关卡停止；它不会自我批准、删除要求或越权合并。
    自定义规则照常保留。仓库 `allow_auto_merge=false` 不影响本方案的受保护 REST merge；无需打开 auto-merge 开关。
 5. 在 Actions → Codex development dispatcher → Run workflow（main），先 `dry_run=true`。

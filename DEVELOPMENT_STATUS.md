@@ -3,7 +3,7 @@
 ## 2026-10-10 GitHub Actions 自动开发配置（Codex）
 起点main 6f661fef4aad60642bfc533ba3ca121653cf75f0；新增有界dispatcher/reusable worker/continuation、
 精确任务队列、codex-state CAS恢复、干净Runner补丁发布、SHA绑定CI与合并门禁、预算及停机说明。
-本地35项标准库行为回归、actionlint1.7.12、Python编译、进度--check通过；本地pytest不可用，
+本地36项标准库行为回归、actionlint1.7.12、Python编译、进度--check通过；本地pytest不可用，
 完整后端/真实PG/前端由本包精确云端CI核验，提交前仍待。未调用付费模型或部署服务。
 当前GitHub连接无Secrets/Variables/App/分支保护接口，账户设置未完成/未核验；
 默认不开启，不能称自动开发已运行。已有deploy.yml不改变，live部署仍unverified，

@@ -8,7 +8,7 @@ CAS运行状态、exact-head三job/main CI核验、非force主线同步、次数
 Codex是worker最后一步；App只在控制/干净发布Runner注入；候选不能改CI/调度/迁移/依赖/已有测试。
 预算每task3次/每日最多6次，按北京时间日期；中断也计数，cron+completed事件接力，idle不自触发。
 意外中止从最近已推送检查点恢复，不承诺恢复未导出的内存改动。恢复源为仓库，不是旧聊天。
-本地35项真实git补丁/状态/失败门禁行为回归、actionlint1.7.12、编译与进度--check通过。
+本地36项真实git补丁/状态/失败门禁行为回归、actionlint1.7.12、编译与进度--check通过。
 尝试本地已有CI证据pytest时执行器未安装pytest，没有宣称它通过；完整CI/PG由本包精确云端验收另记。
 当前连接仅代码/PR接口，无Secrets/Variables/App/分支保护接口，未配置/核验账户凭据，默认关闭。
 未调用付费模型，不创建实际身份/授权，不改提供方/内网。操作文档docs/automation/README.md。
