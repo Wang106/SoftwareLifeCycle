@@ -78,6 +78,10 @@ jobs:
   develop:
     needs: plan
     if: needs.plan.outputs.execute == 'true'
+    # Reusable jobs cannot elevate the caller's GITHUB_TOKEN permissions.
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/codex-worker.yml
     with:
       task_id: ${{ needs.plan.outputs.task_id }}

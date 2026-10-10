@@ -1,5 +1,12 @@
 # SoftwareLifeCycle Development Handoff
 
+## 自动调度账户配置与首次演练 — 2026-10-10（Codex）
+GitHub 网页已验证登录。main classic 保护已创建：必须 PR、三个既有 CI 检查、strict 最新主线、管理员不可绕过；禁止 force/delete，未要求人工审批以支持用户授权的自动合并。三个变量已保存：CODEX_AUTODEV_ENABLED=false、CODEX_AUTODEV_DAILY_MAX=6、CODEX_REQUIRE_DEPLOYMENT=false；Secrets 当前为空，专用 App 尚未注册/安装，付费自动开发未启用。
+首次 main dry-run 38024835129 在模型调用前 startup_failure：调用方 develop 未授予 actions:read，嵌套 codex job 因权限不可提升被拒绝。修复只在 reusable caller 添加 contents:read/actions:read，不扩大 App 权限，不授予 GITHUB_TOKEN 写入。36 调度回归本地通过，精确修复 CI/再次 dry-run 待核验。此前 actionlint/常规 CI 通过不能代替真实 dispatch 启动验收。
+App 草案名 Wang106 SoftwareLifeCycle Codex，Contents/Pull requests 读写，Actions/Checks/Administration/Metadata 只读，仅 Wang106 安装、Webhook 关闭；实际持续授权与私钥/API key 输入待页面确认/安全交接。自动开发验收仍需 worker→PR CI→受保护合并→main CI→下一任务恢复。done_code 仅代码接受，Render live/API/schema 未验收，Actions deploy 仍独立门控。公共样例只读、真实 OIDC/提交门控保持关闭，内网未部署。
+进度36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，业务验收增量0。下一步修复调度启动→注册/限定仓库安装 App→用户安全填写 Secrets→启用→实际小任务验收。
+
+
 ## PR#44 自动开发配置验收 — 2026-10-10（Codex）
 PR#44 已合并，代码main 3bee60ee299cface413fb3042debeb8c00aa4368；最终feature 1b610c6fbfef103bc4a7d822d2e81021ed1bf10d，精确CI38018860206三个job全部成功：36调度回归、2180后端（407.26秒）、203 PostgreSQL-module cases无skip、1186前端/0fail/0skip；0022迁移/隔离PG往返、生产构建与双语禁用认证SSR通过。Cloudflare feature Preview ce546156-3ef2-4768-8af0-e9bc7c457470成功，不替代main生产证据。19文件发布/修补blob及完整tree fabaee292a6300ae6bf14c5633fa071bcb83441c与本地一致；此记录后的最新main CI/provider另核对。主线只读API观察到protected=false，尚需classic PR/strict三个CI检查/admin保护；控制器缺失保护不启动模型。连接无Secrets/Variables/App/保护配置接口，凭据和付费worker端到端未配置/未验收，自动执行未启用，不以CI通过推断启用。操作说明docs/automation/README.md。36/44=82%，七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。公共样例只读/OIDC与真实提交默认关闭，内网未部署，Render live API/schema/部署未核验。下一步账户配置→dry-run→首个付费小任务验收；队列首任务Acceptance更正双语确认/原始结果，第二任务手动导出与只读导入；后续宽泛任务待切分。
 
