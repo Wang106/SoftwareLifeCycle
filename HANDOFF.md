@@ -1,5 +1,12 @@
 # SoftwareLifeCycle Development Handoff
 
+## 当前入口 — 2026-10-10 Acceptance更正受控协议（Codex）
+起点main 9c15808ed41d5cb5c5de79b68eba16c9fd59b0da已核验，精确CI38008222373成功：2180后端、203 PostgreSQL-module cases无skip、1147前端；Cloudflare生产build157e8884-3328-4fdd-b091-792cf1151888/version91c5a882-2b0e-4e34-a66a-5c0b8ea51652成功。工作区清洁，创建codex/acceptance-correction-transport；无开放PR，无另启独立Codex任务。
+新增Acceptance SUPERSEDE/WITHDRAW严格原关系上下文、独立默认关闭代理/原审计恢复、原始回执白名单及冻结内存控制器。原body/前驱ID/criterion/测试/动作/原因/当前token-bound USER及原审计全绑定；不读当前效力推断原结果。恢复只GET原审计，unknown保留，显式重试同字节/ID，互锁且确认终态。普通ASSIGN仍隔离，14业务/2自身会话/6管理员/离线操作分计不变。契约docs/acceptance-correction-submission.md。
+本地新增39协议/代理回归、1186完整前端/0fail/0skip、类型/Worker配置/Next/OpenNext及禁用认证真实Next路由/双语SSR/进度检查全部通过。最初代理测试函数引用命名不一致，修正后完整通过；无后端本地重跑，精确云端完整CI待验收。本包精确head CI/provider待核对，不能用起点CI证明。本轮无后端/schema变更，69页面/API代码0.18.40/schema0022；双语更正确认/结果及手动导出/只读导入恢复仍待接入。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读，OIDC及所有提交默认关闭，无实际身份/授权/秘密配置。Render在线API/schema/部署未核验，Actions独立deploy跳过；真实提供方/浏览器/跨会话/管理员验收未做，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU及Windows无Docker约束待定，SoftwareLifeCycle_20原文未取得。
+下一包Acceptance更正双语确认/结果/手动导出与只读审计恢复导入；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。
+
 ## PR#42 验收 — 2026-10-10（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/42 已合并；代码main 51c9219921baca4c9a8cf05a0c71d9c5a6587909，精确feature 6097534187e2d5df79133f0eaf41894a5838b6a1，起点main ec12176a23dac49af752d0cfd974b69c956d6973。30个发布blob及完整tree与本地逐一核对一致（本地feature89473e8/tree b20f6ff302687506baa65ba7cb27b5eff698abcb）；本地main已安全快进同步到合并提交。
 精确feature CI38007402472全部成功：2180后端（506.97秒、11806既有弃用warnings）、203 PostgreSQL-module cases无skip、1147前端/0fail/0skip。后端114079259778、前端114079259824、acceptance114081458352成功；0022单迁移头/SQL/隔离真实PG往返、进度账本、类型/Next/OpenNext/双语禁用认证SSR成功。新增35非PG后端+13隔离真实PG=48，前端新增3。本PR首次完整云端CI成功，Cloudflare feature Preview builda4012cd6-4330-4b4e-8863-f46b7bf4f3b9成功；不是main生产部署。此文档提交后的最新main精确CI/provider另核对，Actions独立deploy仍跳过。
@@ -118,6 +125,13 @@ Test Release/Deployment/Changeover双语确认发送、原审计查询、原请�
 本地993前端、TypeScript、Worker配置/构建、双语禁用认证SSR及进度--check通过。新增门控测试先验证旧代码缺能力投影失败；初次组件夹具误把textarea当命名input，改用真实textarea事件后完整通过，未放宽断言。本PR首次云端完整CI成功。执行为云端Linux完整checkout的Codex直接编写；Git CLI无推送凭据，通过GitHub连接发布，没有另启独立云端Codex任务。
 69页面/API0.18.36/schema0020不变，无后台/schema改动。公共样例只读，OIDC及全部提交默认关闭；无实际身份/权限/秘密配置，真实浏览器/管理员/提供方/内网验收未进行，不重试被拒绝浏览器访问。内网未安装，SSO/人员/Windows无Docker/CPU架构待定，Render后台版本/部署未核验。仅页面内存，刷新/卸载/跨会话导入恢复待完成，beforeunload不保证应用内路由提醒。SoftwareLifeCycle_17全文此前两次检索服务报错，依据仓库最新交接承接。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量全部0，双语UI+3。下一包实现Impact/Acceptance/Resource独立默认关闭提交与原审计恢复基础，再接双语UI；之后真实身份/内网验收、跨会话恢复、更正撤销、无Docker离线安装及运营迁移，VIN最后。契约docs/production-command-submission.md。
+
+## 当前入口 — 2026-10-10 Acceptance更正受控协议（Codex）
+起点main 9c15808ed41d5cb5c5de79b68eba16c9fd59b0da已核验，精确CI38008222373成功：2180后端、203 PostgreSQL-module cases无skip、1147前端；Cloudflare生产build157e8884-3328-4fdd-b091-792cf1151888/version91c5a882-2b0e-4e34-a66a-5c0b8ea51652成功。工作区清洁，创建codex/acceptance-correction-transport；无开放PR，无另启独立Codex任务。
+新增Acceptance SUPERSEDE/WITHDRAW严格原关系上下文、独立默认关闭代理/原审计恢复、原始回执白名单及冻结内存控制器。原body/前驱ID/criterion/测试/动作/原因/当前token-bound USER及原审计全绑定；不读当前效力推断原结果。恢复只GET原审计，unknown保留，显式重试同字节/ID，互锁且确认终态。普通ASSIGN仍隔离，14业务/2自身会话/6管理员/离线操作分计不变。契约docs/acceptance-correction-submission.md。
+本地新增39协议/代理回归、1186完整前端/0fail/0skip、类型/Worker配置/Next/OpenNext及禁用认证真实Next路由/双语SSR/进度检查全部通过。最初代理测试函数引用命名不一致，修正后完整通过；无后端本地重跑，精确云端完整CI待验收。本包精确head CI/provider待核对，不能用起点CI证明。本轮无后端/schema变更，69页面/API代码0.18.40/schema0022；双语更正确认/结果及手动导出/只读导入恢复仍待接入。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读，OIDC及所有提交默认关闭，无实际身份/授权/秘密配置。Render在线API/schema/部署未核验，Actions独立deploy跳过；真实提供方/浏览器/跨会话/管理员验收未做，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU及Windows无Docker约束待定，SoftwareLifeCycle_20原文未取得。
+下一包Acceptance更正双语确认/结果/手动导出与只读审计恢复导入；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。
 
 ## PR#42 验收 — 2026-10-10（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/42 已合并；代码main 51c9219921baca4c9a8cf05a0c71d9c5a6587909，精确feature 6097534187e2d5df79133f0eaf41894a5838b6a1，起点main ec12176a23dac49af752d0cfd974b69c956d6973。30个发布blob及完整tree与本地逐一核对一致（本地feature89473e8/tree b20f6ff302687506baa65ba7cb27b5eff698abcb）；本地main已安全快进同步到合并提交。

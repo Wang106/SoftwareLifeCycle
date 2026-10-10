@@ -1,4 +1,6 @@
 # DEVELOPMENT_STATUS
+
+Acceptance更正受控协议基础已完成：独立默认关闭提交/原审计恢复、严格前驱与原审计校验及冻结控制器；双语确认/结果/导出导入UI待下一包。起点精确main 9c15808/CI38008222373为2180后端/203 PostgreSQL无skip/1147前端，Cloudflare生产157e8884-3328-4fdd-b091-792cf1151888成功；本包最终精确CI/provider待验收。69页面/API0.18.40/schema0022不变。下方旧摘要保留历史，由本条及末尾最新验收覆盖。
 更新：2026-10-10（Asia/Shanghai）；模式：Codex。
 Acceptance–DVP原关系绑定追加式替代/撤销、有效读取与双语只读历史已实现，API代码0.18.40/schema0022，69页面。当前包精确head CI/provider另核对，完整更正提交/恢复UI及真实环境验收未完成；Render线上API/schema/部署未核验。起点main ec12176a23dac49af752d0cfd974b69c956d6973已核验CI37925224881全部成功（2132后端、190 PostgreSQL无skip、1144前端），Cloudflare生产builde0c059ee-23bf-449e-9c86-327c45e3850f/version8eab4f89-d4e7-4edd-86ca-2e4958bb33eb成功，Actions独立deploy跳过。本地环境已恢复，清洁checkout已快进到起点再创建独立feature，不复用上轮“本地状态未确认”作为当前状态。
 本文件是当前摘要入口；PROJECT_STATUS.md 与 HANDOFF.md 保留历史证据，后面的验收记录优先于前面的旧状态。
@@ -551,3 +553,10 @@ Acceptance–DVP同criterion当前有效原关系绑定替代/撤销、原因/ac
 本地1574非PG/非operator_db后端、1147完整前端、155定向前端、35新增后端、类型/Worker配置/构建/禁用认证SSR/进度检查通过。首次alembic脚本缺app导入路径，改用python -m alembic后升降级SQL通过；首次远端update_ref不能创建不存在的分支，随后明确create_branch成功后才建PR，没有覆盖其他ref。本地执行环境恢复，清洁checkout同步确认，无另启独立Codex任务。
 69页面/API代码0.18.40/schema0022；公共样例只读，OIDC/所有提交默认关闭，无实际身份/授权/秘密配置。Render在线API/schema/部署未核验，前端构建不证明后台迁移；真实提供方/浏览器/管理员/跨会话/内网验收未完成，不重试拒绝访问。内网未安装，SSO/人员/OS与CPU/Windows无Docker待定。14业务/2自身会话/6管理员/离线操作分计。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。下一包Acceptance更正/撤销受控提交与原审计恢复协议，再接双语确认/结果/导入恢复；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。契约docs/acceptance-dvp-corrections.md。
+
+## 当前入口 — 2026-10-10 Acceptance更正受控协议（Codex）
+起点main 9c15808ed41d5cb5c5de79b68eba16c9fd59b0da已核验，精确CI38008222373成功：2180后端、203 PostgreSQL-module cases无skip、1147前端；Cloudflare生产build157e8884-3328-4fdd-b091-792cf1151888/version91c5a882-2b0e-4e34-a66a-5c0b8ea51652成功。工作区清洁，创建codex/acceptance-correction-transport；无开放PR，无另启独立Codex任务。
+新增Acceptance SUPERSEDE/WITHDRAW严格原关系上下文、独立默认关闭代理/原审计恢复、原始回执白名单及冻结内存控制器。原body/前驱ID/criterion/测试/动作/原因/当前token-bound USER及原审计全绑定；不读当前效力推断原结果。恢复只GET原审计，unknown保留，显式重试同字节/ID，互锁且确认终态。普通ASSIGN仍隔离，14业务/2自身会话/6管理员/离线操作分计不变。契约docs/acceptance-correction-submission.md。
+本地新增39协议/代理回归、1186完整前端/0fail/0skip、类型/Worker配置/Next/OpenNext及禁用认证真实Next路由/双语SSR/进度检查全部通过。最初代理测试函数引用命名不一致，修正后完整通过；无后端本地重跑，精确云端完整CI待验收。本包精确head CI/provider待核对，不能用起点CI证明。本轮无后端/schema变更，69页面/API代码0.18.40/schema0022；双语更正确认/结果及手动导出/只读导入恢复仍待接入。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读，OIDC及所有提交默认关闭，无实际身份/授权/秘密配置。Render在线API/schema/部署未核验，Actions独立deploy跳过；真实提供方/浏览器/跨会话/管理员验收未做，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU及Windows无Docker约束待定，SoftwareLifeCycle_20原文未取得。
+下一包Acceptance更正双语确认/结果/手动导出与只读审计恢复导入；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。

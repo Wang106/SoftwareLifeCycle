@@ -451,6 +451,9 @@
             "backend/tests/test_impact_supersession_postgres.py",
             "frontend/tests/issue-views.test.cjs",
             "docs/acceptance-dvp-corrections.md",
+            "docs/acceptance-correction-submission.md",
+            "frontend/tests/acceptance-correction-transport.test.cjs",
+            "frontend/tests/acceptance-correction-proxy.test.cjs",
             "backend/alembic/versions/0022_acceptance_history.py",
             "backend/tests/test_acceptance_history.py",
             "backend/tests/test_acceptance_history_postgres.py",
@@ -458,7 +461,7 @@
           ],
           "acceptance_pending": [
             "Impact supersession backend and bilingual read-only history implemented; withdrawal and controlled correction submission/recovery UI pending",
-            "Acceptance-to-DVP replacement/withdrawal backend and bilingual read-only history implemented; controlled correction submission/recovery and release-review historical replacement pending",
+            "Acceptance-to-DVP replacement/withdrawal backend, bilingual read-only history and independently disabled correction submission/original-audit recovery protocol implemented; bilingual confirmation/result/export/import UI and release-review historical replacement pending",
             "Approved provider and actual multi-user correction acceptance pending"
           ]
         },
