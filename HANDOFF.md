@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 当前开发包 — 2026-10-10 Acceptance 更正手动恢复（Codex）
+在PR47已提交的双语确认/原结果界面基础上准备第二个已启用scope：同站点手动导出与只读原审计恢复导入。公共样例仍只读，未启动独立Plus本地CLI/API worker，无付费API调用或登录缓存上传。PR47已在精确head9e2bef610be52d0608ecb5fbf52bbbe41f069d52/CI38027348828三个job成功后受保护合并到main88b578f8dbf20711a0078c7760f39a5fc2173b7c；2180后端（324.97秒）、203 PostgreSQL-module cases/no skips、1206前端，Cloudflare feature Preview build5071f8f0-9df6-4a33-9921-f9bf1ee72981成功。新包基于此合并main，本包精确head CI/provider另核对，不以Preview代替main生产部署。
+规范slc-acceptance-correction-recovery/version1文本绑定origin/原body/原actor声明/精确前驱/请求ID。严格compact/pretty字段顺序与字节、格式/版本/重复键/Unicode/长度/同站点/凭据隔离校验；导入零网络，unknown只读facade无send方法，界面隐藏发送/重试，只显式查询原审计。原controller不可被导入替换，过期导入/复制/发送/查询互锁，后来拒绝不丢未知状态。明确导出提供剪贴板和可手动复制文本，无自动查询/重试/存储；模拟新组件恢复保留原字节及ID。
+13项新格式/控制器/UI/双语回归，既有18更正UI回归未改；完整前端1219/0fail/0skip、类型、Worker配置、Next/OpenNext生产构建、双语禁用认证SSR/真实Next路由私有405/503、进度--check和diff检查通过。无后端/schema/迁移/依赖/调度/CI或既有测试改动。完整后端/真实PG/本包精确CI及main生产提供方另核验；本地未重跑后端，不复用旧成功称本包验收。
+契约docs/acceptance-correction-recovery.md覆盖上一包memory-only限制。69页面/API0.18.40/schema0022不变，14业务/2自身会话/6管理员/离线操作分计。实际跨会话/提供方/浏览器/管理员验收仍待，内网未部署/OIDC未定，无真实身份/授权/秘密配置。Render live API/schema未核验，Actions deploy独立门控。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，业务验收增量0，不因模拟UI回归提升里程碑。两项启用UI任务实现，待本包受保护合并；后续Impact撤销/提交、评审下游和离线运营scope仍禁用，需具体划定范围，VIN最后。
+
+
 ## 当前开发包 — 2026-10-10 Acceptance 更正双语界面（Codex）
 起点main 59581f3efd220c8de54dc8c94d3b8b46e6c4da52（PR46）；无开放PR，清洁完整checkout后创建codex/acceptance-correction-ui。本会话由Codex在Work环境直接修改仓库，没有启动独立本地Plus CLI/API worker，不使用付费API或上传登录缓存。
 起点完整CI38026495717三个job均成功，Cloudflare生产build53b5ee1f-576d-4ae3-96ab-8d9da93aeaae/version3584169b-9d49-4fd6-8d77-9a3e30260ec0成功；Actions deploy/wake跳过。当前包精确CI/合并/提供方另核对，不复用起点证据。
@@ -3469,3 +3477,10 @@ Test Release/Deployment/Changeover双语确认发送、原审计查询、原请�
 18项新行为回归及类型/进度--check通过。完整前端1206项/0fail/0skip通过；Next/OpenNext构建通过；双语禁用认证SSR/真实Next路由私有405/503检查通过；远端exact-head CI在验收记录补充。首次完整回归发现新增静态导入与旧页面测试模块桩不兼容、条件表达式本地化包装遗漏；改为按更正上下文动态加载并补齐Localized容器，145项相关回归通过，未修改已有测试/依赖/迁移/CI/调度配置。
 契约docs/acceptance-correction-ui.md；69页面/API0.18.40/schema0022不变。14业务/2自身会话/6管理员/离线操作分计。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读/OIDC及提交门控关闭，无实际身份/授权/秘密；Render live API/schema未核验，内网未部署，真实提供方/浏览器/管理员验收未完成。
 下一包手动同站点导出与只读原审计恢复导入（已启用scope）；随后Impact撤销/评审下游/离线运营仍为待划定禁用scope，VIN最后。
+
+## 当前开发包 — 2026-10-10 Acceptance 更正手动恢复（Codex）
+在PR47已提交的双语确认/原结果界面基础上准备第二个已启用scope：同站点手动导出与只读原审计恢复导入。公共样例仍只读，未启动独立Plus本地CLI/API worker，无付费API调用或登录缓存上传。PR47已在精确head9e2bef610be52d0608ecb5fbf52bbbe41f069d52/CI38027348828三个job成功后受保护合并到main88b578f8dbf20711a0078c7760f39a5fc2173b7c；2180后端（324.97秒）、203 PostgreSQL-module cases/no skips、1206前端，Cloudflare feature Preview build5071f8f0-9df6-4a33-9921-f9bf1ee72981成功。新包基于此合并main，本包精确head CI/provider另核对，不以Preview代替main生产部署。
+规范slc-acceptance-correction-recovery/version1文本绑定origin/原body/原actor声明/精确前驱/请求ID。严格compact/pretty字段顺序与字节、格式/版本/重复键/Unicode/长度/同站点/凭据隔离校验；导入零网络，unknown只读facade无send方法，界面隐藏发送/重试，只显式查询原审计。原controller不可被导入替换，过期导入/复制/发送/查询互锁，后来拒绝不丢未知状态。明确导出提供剪贴板和可手动复制文本，无自动查询/重试/存储；模拟新组件恢复保留原字节及ID。
+13项新格式/控制器/UI/双语回归，既有18更正UI回归未改；完整前端1219/0fail/0skip、类型、Worker配置、Next/OpenNext生产构建、双语禁用认证SSR/真实Next路由私有405/503、进度--check和diff检查通过。无后端/schema/迁移/依赖/调度/CI或既有测试改动。完整后端/真实PG/本包精确CI及main生产提供方另核验；本地未重跑后端，不复用旧成功称本包验收。
+契约docs/acceptance-correction-recovery.md覆盖上一包memory-only限制。69页面/API0.18.40/schema0022不变，14业务/2自身会话/6管理员/离线操作分计。实际跨会话/提供方/浏览器/管理员验收仍待，内网未部署/OIDC未定，无真实身份/授权/秘密配置。Render live API/schema未核验，Actions deploy独立门控。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，业务验收增量0，不因模拟UI回归提升里程碑。两项启用UI任务实现，待本包受保护合并；后续Impact撤销/提交、评审下游和离线运营scope仍禁用，需具体划定范围，VIN最后。
