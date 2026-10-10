@@ -1,0 +1,88 @@
+name: Codex development dispatcher
+
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Validate configuration without model calls or GitHub writes'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+# Includes the reusable worker and publisher. Ticks never cancel active work.
+concurrency:
+  group: softwarelifecycle-codex-controller
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    if: github.repository == 'Wang106/SoftwareLifeCycle' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      execute: ${{ steps.plan.outputs.execute }}
+      task_id: ${{ steps.plan.outputs.task_id }}
+      control_sha: ${{ steps.plan.outputs.control_sha }}
+      work_sha: ${{ steps.plan.outputs.work_sha }}
+      branch: ${{ steps.plan.outputs.branch }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Validate queue and recovery tests without API calls
+        run: python -m unittest discover -s scripts/automation/tests -v
+      - name: Check enabled flag and credential presence without exposing values
+        id: preflight
+        env:
+          ENABLED: ${{ vars.CODEX_AUTODEV_ENABLED }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          HAS_OPENAI: ${{ secrets.OPENAI_API_KEY != '' }}
+          HAS_APP_ID: ${{ vars.CODEX_APP_ID != '' }}
+          HAS_APP_KEY: ${{ secrets.CODEX_APP_PRIVATE_KEY != '' }}
+        run: |
+          python - <<'PY'
+          import os
+          ready = (os.environ['ENABLED'] == 'true' and os.environ['DRY_RUN'] != 'true'
+                   and all(os.environ[key] == 'true' for key in ['HAS_OPENAI', 'HAS_APP_ID', 'HAS_APP_KEY']))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('ready=' + str(ready).lower() + '\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+              out.write('Autodevelopment preflight: ' + ('ready' if ready else 'inactive/dry-run/missing credentials') + '\n')
+              for key in ['ENABLED', 'DRY_RUN', 'HAS_OPENAI', 'HAS_APP_ID', 'HAS_APP_KEY']:
+                  out.write(key + ': ' + (os.environ[key] or 'unset') + '\n')
+          PY
+      - name: Obtain repository-scoped short-lived publisher token
+        if: steps.preflight.outputs.ready == 'true'
+        id: app
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.CODEX_APP_ID }}
+          private-key: ${{ secrets.CODEX_APP_PRIVATE_KEY }}
+          owner: Wang106
+          repositories: SoftwareLifeCycle
+      - name: Reconcile durable state and reserve one task
+        if: steps.preflight.outputs.ready == 'true'
+        id: plan
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          AUTODEV_ENABLED: ${{ vars.CODEX_AUTODEV_ENABLED }}
+          DAILY_MAX: ${{ vars.CODEX_AUTODEV_DAILY_MAX }}
+          REQUIRE_DEPLOYMENT: ${{ vars.CODEX_REQUIRE_DEPLOYMENT }}
+          CONTROL_SHA: ${{ github.sha }}
+        run: python scripts/automation/orchestrator.py
+
+  develop:
+    needs: plan
+    if: needs.plan.outputs.execute == 'true'
+    uses: ./.github/workflows/codex-worker.yml
+    with:
+      task_id: ${{ needs.plan.outputs.task_id }}
+      control_sha: ${{ needs.plan.outputs.control_sha }}
+      work_sha: ${{ needs.plan.outputs.work_sha }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      CODEX_APP_PRIVATE_KEY: ${{ secrets.CODEX_APP_PRIVATE_KEY }}

@@ -1,5 +1,19 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-10 GitHub Actions 自动开发配置（Codex）
+起点main 6f661fef4aad60642bfc533ba3ca121653cf75f0；新增有界dispatcher/reusable worker/continuation、
+精确任务队列、codex-state CAS恢复、干净Runner补丁发布、SHA绑定CI与合并门禁、预算及停机说明。
+本地35项标准库行为回归、actionlint1.7.12、Python编译、进度--check通过；本地pytest不可用，
+完整后端/真实PG/前端由本包精确云端CI核验，提交前仍待。未调用付费模型或部署服务。
+当前GitHub连接无Secrets/Variables/App/分支保护接口，账户设置未完成/未核验；
+默认不开启，不能称自动开发已运行。已有deploy.yml不改变，live部署仍unverified，
+严格部署开关为等待独立证据；不以Render请求受理等同线上成功。
+首两个具体UI任务已批准入队，后续宽泛任务禁用。最新业务基线仍PR43，下一业务包
+Acceptance更正双语确认/原始结果、随后手动导出/只读导入恢复。
+模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0；36/44=82%，增量0。
+69页面/API0.18.40/schema0022不变；公共样例只读/OIDC与真实提交默认关闭，内网未部署。
+
+
 PR#43已合并到代码main 2ed38c8cd55d5c1ce9f65efaf2e44141f46ee2db，独立默认关闭Acceptance更正受控协议验收通过：精确feature CI38015391790为2180后端/203 PostgreSQL无skip/1186前端，Cloudflare feature Preview e82683ea-63db-4d1b-8ab0-998e7d9e86be成功；最终文档main精确CI/生产部署另核对。69页面/API0.18.40/schema0022不变，下一包双语更正确认/结果/手动导出与只读审计恢复导入。下方旧摘要均为历史，由本条及最新验收记录覆盖。
 
 Acceptance更正受控协议基础已完成：独立默认关闭提交/原审计恢复、严格前驱与原审计校验及冻结控制器；双语确认/结果/导出导入UI待下一包。起点精确main 9c15808/CI38008222373为2180后端/203 PostgreSQL无skip/1147前端，Cloudflare生产157e8884-3328-4fdd-b091-792cf1151888成功；本包最终精确CI/provider待验收。69页面/API0.18.40/schema0022不变。下方旧摘要保留历史，由本条及末尾最新验收覆盖。
