@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.change import AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation, SoftwareChangeRequest
 from app.models.acceptance import AcceptanceDvpLink
+from app.services.acceptance_history import effective, successor_id
 from app.models.core import ApplicationReleaseDetail, Release
 from app.models.snapshot import ReleaseSnapshot
 from app.models.testing import ChangePointDvpItem, DvpExecution, DvpItem, DvpPlan, IssueDvpItem
@@ -125,6 +126,7 @@ def group_rows(ctx,kind,items):
     base = select(m.id,getattr(m,number).label('ref'),desc.label('description')).where(scope).subquery()
     def count(condition=None, foreign=False):
         stmt = select(func.count()).select_from(link).where(getattr(link,attr) == base.c.id)
+        if kind == 'acceptance': stmt = stmt.where(effective())
         if foreign:
             stmt = stmt.where(~select(items.c.id).where(items.c.id == link.dvp_item_id).exists())
         else:
@@ -226,13 +228,15 @@ def group_items_page(request_no: str, kind: Kind, group_id: uuid.UUID, filters: 
     ctx = page_context(db,request_no,filters); items,_,_ = selected_group(db,ctx,kind,group_id)
     link,attr = {'acceptance':(AcceptanceDvpLink,'criterion_id'),'points':(ChangePointDvpItem,'change_point_id'),'issues':(IssueDvpItem,'issue_id')}[kind]
     stmt = select(items).join(link,link.dvp_item_id == items.c.id).where(getattr(link,attr) == group_id)
+    if kind == 'acceptance': stmt = stmt.where(effective())
     return page(db,ctx,filters,stmt,[items.c.item_no,items.c.id],kind=kind,group_id=str(group_id))
 
 
 @router.get('/{request_no}/acceptance/{criterion_id}/assignments')
 def assignment_page(request_no: str, criterion_id: uuid.UUID, filters: Annotated[PageFilters,Query()], db: Session = Depends(get_db)):
     ctx = page_context(db,request_no,filters); selected_group(db,ctx,'acceptance',criterion_id); a = AcceptanceDvpLink
-    stmt = select(a.id,a.dvp_item_id,a.actor_name,a.reason,a.created_at).where(a.criterion_id == criterion_id)
+    stmt = select(a.id,a.dvp_item_id,a.actor_name,a.reason,a.created_at,a.action,a.supersedes_id,
+        successor_id().label('superseded_by_id'),effective().label('effective')).where(a.criterion_id == criterion_id)
     return page(db,ctx,filters,stmt,[a.created_at,a.id],kind='acceptance',group_id=str(criterion_id))
 
 

@@ -6,6 +6,9 @@ from app.core.db import get_db
 from app.services.change_coverage import AssignmentInput, CoverageError, record_assignment, report_coverage
 from app.authorization import authorize_change
 from app.actor import resolve_actor
+from app.services.acceptance_history import successor_id
+from app.models.acceptance import AcceptanceDvpLink
+from sqlalchemy import select
 
 router = APIRouter(prefix='/api/v1/changes', tags=['change coverage'])
 
@@ -33,6 +36,8 @@ def assign_acceptance(
         db.commit(); db.refresh(row)
         response.status_code = 201 if created else 200
         return {'id': str(row.id), 'criterion_id': str(row.criterion_id), 'dvp_item_id': str(row.dvp_item_id),
+            'action': row.action, 'supersedes_id': str(row.supersedes_id) if row.supersedes_id else None,
+            'superseded_by_id': str(successor) if (successor := db.scalar(select(successor_id()).where(AcceptanceDvpLink.id == row.id))) else None,
             'actor_name': row.actor_name, 'reason': row.reason, 'created_at': row.created_at}
     except CoverageError as exc:
         db.rollback()

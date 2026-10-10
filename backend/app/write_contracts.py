@@ -153,7 +153,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"CONTRIBUTOR"}),
-        known_gap="There is no correction/supersession command for an append-only assignment.",
+        known_gap="Current-predecessor replacement/withdrawal preserve assignment history; controlled correction UI and real acceptance remain pending.",
     ),
     ("POST", "/api/v1/testing/releases"): WriteContract(
         operation="Create purpose-limited test release draft",

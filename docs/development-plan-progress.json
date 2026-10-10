@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.39",
-  "baseline_commit": "9f3b158c9492ec2ba4c846049f90b03a6a2449d0",
+  "as_of_api": "0.18.40",
+  "baseline_commit": "ec12176a23dac49af752d0cfd974b69c956d6973",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -449,11 +449,16 @@
             "backend/alembic/versions/0021_impact_supersession.py",
             "backend/tests/test_impact_supersession.py",
             "backend/tests/test_impact_supersession_postgres.py",
-            "frontend/tests/issue-views.test.cjs"
+            "frontend/tests/issue-views.test.cjs",
+            "docs/acceptance-dvp-corrections.md",
+            "backend/alembic/versions/0022_acceptance_history.py",
+            "backend/tests/test_acceptance_history.py",
+            "backend/tests/test_acceptance_history_postgres.py",
+            "frontend/tests/change-coverage-views.test.cjs"
           ],
           "acceptance_pending": [
             "Impact supersession backend and bilingual read-only history implemented; withdrawal and controlled correction submission/recovery UI pending",
-            "Acceptance-to-DVP relationship and release-review historical replacement contracts pending",
+            "Acceptance-to-DVP replacement/withdrawal backend and bilingual read-only history implemented; controlled correction submission/recovery and release-review historical replacement pending",
             "Approved provider and actual multi-user correction acceptance pending"
           ]
         },

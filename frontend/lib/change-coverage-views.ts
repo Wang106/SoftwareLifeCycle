@@ -13,7 +13,9 @@ export type CoverageRow = { id: string; ref?: string; description?: string; veri
   type?: string; version?: string; status?: string; code?: string; message?: string; owner_id?: string; kind?: string;
   item_no?: string; title?: string; scope?: string; declared_status?: string; execution_no?: number | null;
   result?: string | null; actual_result?: string | null; executed_at?: string | null;
-  dvp_item_id?: string; actor_name?: string; reason?: string; created_at?: string };
+  dvp_item_id?: string; actor_name?: string; reason?: string; created_at?: string;
+  action?: 'ASSIGN'|'SUPERSEDE'|'WITHDRAW'; supersedes_id?: string|null;
+  superseded_by_id?: string|null; effective?: boolean };
 export type CoveragePage = CoveragePins & {kind?: string; group_id?: string;total:number;next_offset:number|null;items:CoverageRow[]};
 export type SelectedCoverage = CoveragePins & CoverageRow & {kind:string;group_id:string;assignment_count:number};
 export const rawCoverage = (search:CoverageSearch,key:string) => search[key] === undefined ? undefined : typeof search[key] === 'string' ? search[key] as string : 'invalid';

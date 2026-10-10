@@ -3,7 +3,8 @@
 This report does not assert incorporation into a release or alter readiness gates.
 """
 import uuid
-from pydantic import BaseModel, Field, field_validator
+from typing import Literal
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import or_, select
 from app.models.change import AcceptanceCriterion, ChangePoint, Issue, IssueChangeRequestRelation, SoftwareChangeRequest
 from app.models.acceptance import AcceptanceDvpLink
@@ -12,7 +13,8 @@ from app.models.core import ApplicationReleaseDetail, Release
 from app.models.snapshot import ReleaseSnapshot
 from app.models.testing import ChangePointDvpItem, DvpExecution, DvpItem, DvpPlan, IssueDvpItem
 from app.services.audit import AuditEventService
-from app.actor import ActorContext, idempotent_actor_matches
+from app.actor import ActorContext, audit_actor_matches, idempotent_actor_matches
+from app.services.acceptance_history import effective
 
 
 class CoverageError(ValueError):
@@ -69,7 +71,7 @@ def report_coverage(db, request_no, release_id=None, snapshot_no=None):
     items = db.scalars(select(DvpItem).where(DvpItem.plan_id.in_([p.id for p in plans]))
         .order_by(DvpItem.item_no, DvpItem.id)).all() if plans else []
     own_items = {i.id: i for i in items}
-    ac_links = db.scalars(select(AcceptanceDvpLink).where(AcceptanceDvpLink.criterion_id.in_([c.id for c in criteria]))).all() if criteria else []
+    ac_links = db.scalars(select(AcceptanceDvpLink).where(AcceptanceDvpLink.criterion_id.in_([c.id for c in criteria]), effective())).all() if criteria else []
     cp_links = db.scalars(select(ChangePointDvpItem).where(ChangePointDvpItem.change_point_id.in_([p.id for p in points]))).all() if points else []
     issue_links = db.scalars(select(IssueDvpItem).where(IssueDvpItem.issue_id.in_([i.id for i in issues]))).all() if issues else []
     latest = {}
@@ -155,6 +157,8 @@ class AssignmentInput(BaseModel):
     request_id: uuid.UUID
     criterion_id: uuid.UUID
     dvp_item_id: uuid.UUID
+    action: Literal['ASSIGN', 'SUPERSEDE', 'WITHDRAW'] = 'ASSIGN'
+    supersedes_id: uuid.UUID | None = None
     actor_name: str = Field(min_length=1, max_length=120)
     reason: str = Field(min_length=1, max_length=4000)
 
@@ -164,6 +168,19 @@ class AssignmentInput(BaseModel):
         if not value.strip():
             raise ValueError('must not be blank')
         return value.strip()
+
+    @model_validator(mode='after')
+    def history_pair(self):
+        if (self.action == 'ASSIGN') != (self.supersedes_id is None):
+            raise ValueError('replacement/withdrawal requires supersedes_id; assignment must omit it')
+        return self
+
+
+def correction_payload(data, predecessor, actor):
+    return {'assignment_id': str(data.request_id), 'criterion_id': str(data.criterion_id),
+        'dvp_item_id': str(data.dvp_item_id), 'supersedes_id': str(data.supersedes_id),
+        'previous_dvp_item_id': str(predecessor.dvp_item_id), 'previous_action': predecessor.action,
+        'actor_source': actor.source}
 
 
 def record_assignment(db, request_no, data, actor_context: ActorContext | None = None):
@@ -175,12 +192,20 @@ def record_assignment(db, request_no, data, actor_context: ActorContext | None =
         event = db.scalars(select(AuditEvent).where(
             AuditEvent.event_no == f'EVT-AC-{data.request_id}'
         )).first()
-        if (criterion.change_request_id != change.id
+        if (criterion is None or criterion.change_request_id != change.id
             or any(getattr(existing, field) != getattr(data, field)
-                for field in ('criterion_id', 'dvp_item_id', 'reason'))
+                for field in ('criterion_id', 'dvp_item_id', 'reason', 'action', 'supersedes_id'))
             or existing.actor_name != resolved_actor.name
             or not idempotent_actor_matches(event, resolved_actor)):
             raise CoverageError('request_id already used for different content')
+        if data.action != 'ASSIGN':
+            predecessor = db.get(AcceptanceDvpLink, data.supersedes_id)
+            if (predecessor is None or event is None or not audit_actor_matches(event, resolved_actor)
+                or event.event_type != 'ACCEPTANCE_DVP' or event.action != data.action
+                or event.entity_type != 'SoftwareChangeRequest' or event.entity_id != change.id
+                or event.entity_ref != change.request_no or event.detail != data.reason
+                or event.payload_json != correction_payload(data, predecessor, resolved_actor)):
+                raise CoverageError('request_id correction audit does not match original operation')
         return existing, False
     criterion = db.get(AcceptanceCriterion, data.criterion_id)
     item = db.get(DvpItem, data.dvp_item_id)
@@ -189,16 +214,26 @@ def record_assignment(db, request_no, data, actor_context: ActorContext | None =
         raise CoverageError('criterion or DVP item not found', 404)
     if criterion.change_request_id != change.id or not plan or plan.change_request_id != change.id:
         raise CoverageError('criterion and DVP item must belong to this SCR')
-    if db.scalars(select(AcceptanceDvpLink).where(AcceptanceDvpLink.criterion_id == criterion.id,
-        AcceptanceDvpLink.dvp_item_id == item.id)).first():
+    predecessor = None
+    if data.action != 'ASSIGN':
+        predecessor = db.scalar(select(AcceptanceDvpLink).where(AcceptanceDvpLink.id == data.supersedes_id,
+            AcceptanceDvpLink.criterion_id == criterion.id, effective()))
+        if data.supersedes_id == data.request_id or predecessor is None:
+            raise CoverageError('supersedes_id must identify a current effective relationship of this criterion')
+        if (data.action == 'WITHDRAW') != (data.dvp_item_id == predecessor.dvp_item_id):
+            raise CoverageError('withdrawal must retain original DVP; replacement must select a different DVP')
+    if data.action != 'WITHDRAW' and db.scalars(select(AcceptanceDvpLink).where(AcceptanceDvpLink.criterion_id == criterion.id,
+        AcceptanceDvpLink.dvp_item_id == item.id, effective())).first():
         raise CoverageError('criterion/test pair already assigned; retry with its original request_id')
     row = AcceptanceDvpLink(id=data.request_id, criterion_id=data.criterion_id, dvp_item_id=data.dvp_item_id,
-        actor_name=resolved_actor.name, reason=data.reason)
+        actor_name=resolved_actor.name, reason=data.reason, action=data.action, supersedes_id=data.supersedes_id)
     db.add(row); db.flush()
-    AuditEventService(db).record(event_no=f'EVT-AC-{data.request_id}', event_type='ACCEPTANCE_DVP', action='ASSIGN',
+    payload = correction_payload(data, predecessor, resolved_actor) if predecessor else {
+        'assignment_id': str(row.id), 'criterion_id': str(criterion.id),
+        'dvp_item_id': str(item.id), 'actor_source': resolved_actor.source}
+    AuditEventService(db).record(event_no=f'EVT-AC-{data.request_id}', event_type='ACCEPTANCE_DVP', action=data.action,
         entity_type='SoftwareChangeRequest', entity_id=change.id, entity_ref=change.request_no,
         **resolved_actor.audit_fields(),
         summary=f'{change.request_no}: {criterion.criterion_no} → {item.item_no}'[:240],
-        detail=data.reason, payload={'assignment_id': str(row.id), 'criterion_id': str(criterion.id),
-            'dvp_item_id': str(item.id), 'actor_source': resolved_actor.source})
+        detail=data.reason, payload=payload)
     return row, True

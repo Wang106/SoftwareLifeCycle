@@ -5,13 +5,20 @@
 - Engine: PostgreSQL 16 in the local Compose environment; current Render inventory reports PostgreSQL 18. The local real-concurrency regression uses 16.15.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0021_impact_supersession` (code contract; online Render schema not verified).
+- Required schema revision: `0022_acceptance_history` (code contract; online Render schema not verified).
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
 SQLite is used by isolated tests where supported, but it does not validate PostgreSQL JSONB, database triggers or row-lock concurrency. PostgreSQL is required for schema and append-only-rule verification.
 
 ## Table groups
+
+Revision 0022 adds ASSIGN/SUPERSEDE/WITHDRAW action and nullable predecessor to
+acceptance_dvp_links. Same-criterion composite self-FK and unique successor preserve
+history; original append-only triggers remain. Permanent pair uniqueness is replaced
+by SCR-locked effective-pair checks so a withdrawn/replaced test may be deliberately
+reassigned. Existing rows default ASSIGN without UPDATE/backfill. Downgrade refuses
+to lose correction history. See docs/acceptance-dvp-corrections.md.
 
 Revision 0021 adds nullable `supersedes_id`/`correction_reason` to immutable impact
 judgments. Same-context composite FK, unique predecessor and paired/self-link checks

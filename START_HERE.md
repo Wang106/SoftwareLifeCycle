@@ -23,15 +23,15 @@
 先检查 checkout 状态与 main 新提交，保护未提交改动；未完成 PR 不应被重复实现。每包结束后先更新摘要和追加交接，使下一窗口知道确切完成点。
 
 ## 当前接手快照
-当前69页面、API代码0.18.39/schema0021。Impact原判断绑定的追加式替代与双语只读历史已实现，原行/原审计不修改；更正提交/恢复、撤销及Acceptance–DVP关系替代待完成。十四类普通业务代理/控制器与双语UI、同站点原请求导出/只读导入已有。14业务、2自身会话、6管理员及离线操作分计，所有实际身份/提交门控仍关闭。
-最新PR#41精确feature 2ff793c751bb576af390faaff22e1d212e3362c8 的CI37923596146全部成功：2132后端、190 PostgreSQL-module cases无skip、1144前端；0021迁移/类型/Worker/双语禁用认证SSR通过。代码main e3d4f5ca16f0bfe12f9dd7136e6ead901bf9a393；feature Cloudflare Preview builda1e33a40-0a38-4973-8bf3-517deb559304成功，不替代main生产证据，最新main CI/provider另核对。SUPERSEDE中文已补齐，原动作码/JSON不变。Actions独立deploy跳过，Render在线API/schema/部署未核验。本地执行环境未返回最新同步结果，下一窗口先核对工作区、远端main并保护未提交改动后同步。
+当前69页面、API代码0.18.40/schema0022。Impact替代及Acceptance–DVP替代/撤销、有效读取和双语只读历史已实现，原行/原审计不修改；更正提交/恢复UI、Impact撤销和评审/下游更正规则待完成。十四类普通业务代理/控制器与双语UI、同站点原请求导出/只读导入已有。14业务、2自身会话、6管理员及离线操作分计，所有实际身份/提交门控仍关闭。
+已核验起点main ec12176a23dac49af752d0cfd974b69c956d6973，精确CI37925224881全成功：2132后端、190 PostgreSQL-module cases无skip、1144前端；Cloudflare生产builde0c059ee-23bf-449e-9c86-327c45e3850f/version8eab4f89-d4e7-4edd-86ca-2e4958bb33eb成功。覆盖旧PR#41 pending记录，本轮本地执行环境已恢复并安全快进同步。当前包精确head CI/provider另核对；Actions独立deploy跳过，Render在线API/schema/部署未核验。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读、OIDC和全部提交默认关闭，没有实际身份/授权/秘密配置；真实浏览器/提供方/管理员验收未完成，不重试拒绝的浏览器访问。
 内网尚未开始安装，SSO/人员/系统与CPU/Windows无Docker约束待定。页面状态仍只在内存；手动导出/严格同站点跨刷新卸载会话导入已实现，导入只能查原审计，不自动联网/写入。真实跨会话验收、更正撤销及离线运营迁移待完成。SoftwareLifeCycle_20全文检索服务报错，未取得原文，依据main交接继续。
 
 
 ## 下一包
-本包交付Impact原判断绑定替代、有效读取及双语历史，契约docs/impact-judgment-corrections.md。下一包Acceptance–DVP历史关系替代/撤销，随后受控更正提交/原审计恢复、Impact撤销及评审/下游更正规则；再做真实身份/跨会话/内网验收、离线部署及运营迁移，VIN最后。
-69页面、API代码0.18.39/schema0021。本包精确head CI/provider证据见HANDOFF当前入口与DEVELOPMENT_STATUS末尾；不复用旧main/Preview成功，不将前端构建当成Render API/迁移部署。
+本包交付Acceptance–DVP原关系绑定替代/撤销、有效读取及双语历史，契约docs/acceptance-dvp-corrections.md。下一包Acceptance更正/撤销受控提交与原审计恢复协议，再接双语确认/结果/导入恢复；随后Impact更正提交与撤销、评审/下游政策、真实身份/跨会话/内网验收、离线部署及运营迁移，VIN最后。
+69页面、API代码0.18.40/schema0022。本包精确head CI/provider证据见HANDOFF当前入口与DEVELOPMENT_STATUS最新记录；不复用旧main/Preview成功，不将前端构建当成Render API/迁移部署。
 
 ## PR#28 验收 — 2026-10-08（Codex）
 PR https://github.com/Wang106/SoftwareLifeCycle/pull/28 已合并，代码main 759b94d190407b50c6b90f416ebfb953bf7f875f，最终feature fffe74f1a437d3fcb18a8d52e896be1a6559c33c；起点 5cf8798fdac12bd23f42b95e7d17b4cc0f5b23e9。

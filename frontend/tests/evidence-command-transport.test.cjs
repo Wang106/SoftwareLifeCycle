@@ -14,6 +14,14 @@ test('replacement audit cannot confirm the ordinary ASSESS receipt protocol',asy
  assert.equal(await audit(event,c,f.principal),null);
 });
 after(()=>fs.rmSync(output,{recursive:true,force:true}));
+test('acceptance replacement/withdrawal bodies and audit actions cannot confirm ordinary ASSIGN',async()=>{
+ const c=parse(f.command('acceptance'));
+ for(const action of ['SUPERSEDE','WITHDRAW']) {
+  assert.equal(parse({...c,body:{...c.body,action,supersedes_id:f.entity}}),null);
+  const event=f.audit(c);event.action=action;event.payload.supersedes_id=f.entity;
+  assert.equal(await audit(event,c,f.principal),null);
+ }
+});
 for(const operation of ['impact','acceptance']) {
  test(operation+' canonical exact fields, existing fixed path and request UUID remain frozen',()=>{const c=parse(f.command(operation));assert.deepEqual(c,f.command(operation));assert.ok(Object.isFrozen(c.body));assert.equal(fixedPath(c),'/api/v1/'+(operation==='impact'?'issues/':'changes/')+encodeURIComponent(c.target)+(operation==='impact'?'/impact-assessments':'/acceptance-dvp-links'));assert.equal(review(c).draft.audit,'/activity/'+f.eventNo(c));});
  test(operation+' parser rejects invalid target/UUID and credential injection',()=>{const c=f.command(operation);for(const v of [null,{...c,url:'https://evil'},{...c,operation:'resource'},{...c,target:'../evil'},{...c,body:{...c.body,request_id:'invalid'}},{...c,body:{...c.body,token:'private'}},{...c,body:{...c.body,reason:' '}},{...c,body:{...c.body,reason:'中'.repeat(3000)}},{...c,body:{...c.body,actor_name:'\ud800'}}])assert.equal(parse(v),null);});

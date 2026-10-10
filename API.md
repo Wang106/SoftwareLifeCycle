@@ -1,8 +1,19 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.39`; readiness requires `0021_impact_supersession`. This is the code contract, not verified Render deployment metadata.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.40`; readiness requires `0022_acceptance_history`. This is the code contract, not verified Render deployment metadata.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
+
+## Acceptance–DVP relationship history (0.18.40)
+
+The existing acceptance-dvp-links POST adds optional action (default ASSIGN) and
+supersedes_id. SUPERSEDE selects a different same-SCR test; WITHDRAW retains the
+original test, and both require an exact current predecessor, a new request ID and
+reason. Original rows/audits stay immutable, retry is actor/audit bound, and all
+actions serialize on the SCR. Current coverage/reverse relations exclude ended and
+withdrawal rows; assignment history retains every row with scalar predecessor,
+successor and effectiveness. Ordinary frontend ASSIGN submission cannot send/recover
+corrections. See [the full contract](docs/acceptance-dvp-corrections.md).
 
 ## Impact historical replacement (0.18.39)
 
