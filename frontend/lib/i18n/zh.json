@@ -1888,5 +1888,12 @@
   "Retry original correction request": "重试原更正请求",
   "The acceptance correction context or request is invalid.": "验收关系更正上下文或请求无效。",
   "Prepare relationship replacement →": "准备替代关系 →",
-  "Prepare relationship withdrawal →": "准备撤销关系 →"
+  "Prepare relationship withdrawal →": "准备撤销关系 →",
+  "Copy correction recovery text": "复制更正恢复文本",
+  "Recovery text contains the original correction and predecessor, not proof of execution. Store it securely.": "恢复文本包含原更正请求和前驱上下文，并非执行证明，请妥善保存。",
+  "Imported correction recovery is read-only. Nothing was sent; explicitly query your original audit after signing in.": "导入的更正恢复为只读模式，未发送任何操作；登录后请明确查询原审计。",
+  "Restore an original correction audit query": "恢复原更正审计查询",
+  "Paste correction recovery text exported from this exact site. Import does not send, retry or query automatically.": "请粘贴此精确站点导出的更正恢复文本。导入不会自动发送、重试或查询。",
+  "Correction recovery text": "更正恢复文本",
+  "Import correction recovery without sending": "导入更正恢复且不发送"
 }

@@ -28,6 +28,6 @@ export default function AcceptanceCorrectionResult({state}:{state:AcceptanceCorr
       {' · '}{link('/testing/dvp/'+encodeURIComponent(c.predecessor.dvp_item_id),'Open predecessor DVP item')}
       {c.body.action==='SUPERSEDE'&&<>{' · '}{link('/testing/dvp/'+encodeURIComponent(c.body.dvp_item_id),'Open replacement DVP item')}</>}</p>
     <p className="muted"><Localized>{'Current detail and history are independent observations; they do not prove the result of the original request.'}</Localized></p>
-    <p className="muted"><Localized>{'Correction recovery is kept only in page memory. Reloading loses it; copying a request does not create a recovery import.'}</Localized></p>
+    <p className="muted"><Localized>{'In-memory recovery is lost on reload. Export original recovery text to restore an audit-only query in a later session.'}</Localized></p>
   </section></Localized>;
 }

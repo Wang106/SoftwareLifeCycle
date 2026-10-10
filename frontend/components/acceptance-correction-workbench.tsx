@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {Localized} from './localized';
+import {exportAcceptanceCorrectionRecovery,importAcceptanceCorrectionRecovery,correctionRecoveryTextLimit,type ImportedAcceptanceCorrectionRecovery} from '../lib/acceptance-correction-recovery';
 import AcceptanceCorrectionResult from './acceptance-correction-result';
 import {parseAcceptanceCorrectionCommand,confirmAcceptanceCorrection,AcceptanceCorrectionSubmission,
   type AcceptanceCorrectionReview,type AcceptanceCorrectionState} from '../lib/acceptance-correction-transport';
@@ -15,7 +16,9 @@ export default function AcceptanceCorrectionWorkbench({initialContext={},submiss
   const [result,setResult]=useState<AcceptanceCorrectionState|null>(null);
   const [message,setMessage]=useState('');
   const [copying,setCopying]=useState(false);
-  const controller=useRef<AcceptanceCorrectionSubmission|null>(null),copyPending=useRef(false);
+  const [importText,setImportText]=useState('');
+  const importSource=useRef(''),imported=useRef(false);
+  const controller=useRef<AcceptanceCorrectionSubmission|ImportedAcceptanceCorrectionRecovery|null>(null),copyPending=useRef(false);
   const capability=useRef({submit:submissionEnabled,recover:recoveryEnabled});
   capability.current={submit:submissionEnabled,recover:recoveryEnabled};
   const key=JSON.stringify(initialContext),currentKey=useRef(key),previousKey=useRef(key);currentKey.current=key;
@@ -39,29 +42,42 @@ export default function AcceptanceCorrectionWorkbench({initialContext={},submiss
     active.current=null;preparation.current={...fields,[name]:value};setFields(preparation.current);setReview(null);setMessage('');
   }
   async function run(mode:'send'|'recover'){
+    if(mode==='send'&&imported.current)return;
     if(!current?.confirmed||!matches()||copyPending.current||!(mode==='send'?capability.current.submit:capability.current.recover))return;
     if(!controller.current){if(mode==='recover')return;controller.current=new AcceptanceCorrectionSubmission(current);}
-    const pending=mode==='send'?controller.current.send(capability.current.submit):controller.current.recover(capability.current.recover);
+    if(mode==='send'&&!('send' in controller.current))return;
+    const pending=mode==='send'&&'send' in controller.current?controller.current.send(capability.current.submit):controller.current.recover(capability.current.recover);
     active.current=controller.current.state.review;setResult(controller.current.state);setMessage('');setResult(await pending);
   }
-  async function copy(){
+  async function copy(recovery=false){
     if(!current?.confirmed||!matches()||copyPending.current||['sending','checking'].includes(controller.current?.state.phase??''))return;
     copyPending.current=true;setCopying(true);
-    try{await navigator.clipboard.writeText(JSON.stringify(current.command));
-      if(controller.current||currentKey.current===key)setMessage('Original correction request copied. Copying does not send an operation.');
+    try{await navigator.clipboard.writeText(recovery?exportAcceptanceCorrectionRecovery(current,window.location.origin):JSON.stringify(current.command));
+      if(controller.current||currentKey.current===key)setMessage(recovery?'Recovery text copied. It contains business data, not proof of execution. Store it securely.':'Original correction request copied. Copying does not send an operation.');
     }catch{if(controller.current||currentKey.current===key)setMessage('Clipboard unavailable. Select and copy the confirmed request below.');}
     finally{copyPending.current=false;setCopying(false);}
   }
   function reset(){
     if(!matches()||copyPending.current||(controller.current&&!['confirmed','rejected'].includes(controller.current.state.phase)))return;
-    controller.current=null;active.current=null;setResult(null);setReview(null);setMessage('');setFields({...blank,...initialContext});
+    controller.current=null;imported.current=false;importSource.current='';setImportText('');active.current=null;setResult(null);setReview(null);setMessage('');setFields({...blank,...initialContext});
   }
+  function stageRecovery(){
+    if(copyPending.current||controller.current||active.current||currentKey.current!==key||importSource.current!==importText)return;
+    try{
+      const restored=importAcceptanceCorrectionRecovery(importText,window.location.origin);
+      controller.current=restored;imported.current=true;active.current=restored.state.review;
+      setReview(restored.state.review);setResult(restored.state);setImportText('');importSource.current='';setMessage('');
+    }catch{setMessage('Recovery text is invalid, noncanonical or belongs to another site. Nothing was sent.');}
+  }
+  let recoveryText='';
+  try{if(current?.confirmed&&typeof window!=='undefined'&&window.location?.origin)recoveryText=exportAcceptanceCorrectionRecovery(current,window.location.origin);}
+  catch{ /* Invalid manual exports never break preparation. */ }
   const input=(name:keyof CorrectionFields,label:string,maxLength:number)=><label><Localized>{label}</Localized><input name={name} required maxLength={maxLength} value={fields[name]} onChange={e=>edit(name,e.target.value)}/></label>;
   return <Localized><section className="panel">
     <h2><Localized>{'Correct an acceptance-to-DVP relationship'}</Localized></h2>
     <p className="notice"><Localized>{'Replacement and withdrawal append history. Review the exact predecessor; the API checks its current effectiveness and permission. Ordinary assignment uses its separate form.'}</Localized></p>
     {!submissionEnabled&&<p><Localized>{'Acceptance correction submission is disabled in this environment.'}</Localized></p>}
-    <form className="commandform" onSubmit={e=>{
+    <form className="commandform" hidden={imported.current} onSubmit={e=>{
       e.preventDefault();if(controller.current||copyPending.current||currentKey.current!==key||active.current||preparation.current!==fields)return;
       const command=parseAcceptanceCorrectionCommand({operation:'acceptance-correction',target:fields.target,
         body:{request_id:crypto.randomUUID(),actor_name:fields.actor,reason:fields.reason,criterion_id:fields.criterion,
@@ -102,12 +118,25 @@ export default function AcceptanceCorrectionWorkbench({initialContext={},submiss
         if(controller.current||copyPending.current||!matches())return;
         const next=confirmAcceptanceCorrection(current.command,e.target.checked);active.current=next;setReview(next);
       }}/><Localized>{'I confirm this exact predecessor, action, DVP item, reason and request ID.'}</Localized></label>}
-      <p><button type="button" disabled={!current.confirmed||busy} onClick={copy}><Localized>{'Copy confirmed correction request'}</Localized></button>
-        {!result&&submissionEnabled&&<button type="button" disabled={!current.confirmed||busy} onClick={()=>run('send')}><Localized>{'Send confirmed correction request'}</Localized></button>}
-        {result&&['unknown','rejected'].includes(result.phase)&&<button type="button" disabled={!submissionEnabled||busy} onClick={()=>run('send')}><Localized>{'Retry original correction request'}</Localized></button>}
+      <p><button type="button" disabled={!current.confirmed||busy} onClick={()=>copy()}><Localized>{'Copy confirmed correction request'}</Localized></button>
+        {!imported.current&&!result&&submissionEnabled&&<button type="button" disabled={!current.confirmed||busy} onClick={()=>run('send')}><Localized>{'Send confirmed correction request'}</Localized></button>}
+        {!imported.current&&result&&['unknown','rejected'].includes(result.phase)&&<button type="button" disabled={!submissionEnabled||busy} onClick={()=>run('send')}><Localized>{'Retry original correction request'}</Localized></button>}
         {result&&result.phase!=='confirmed'&&<button type="button" disabled={!recoveryEnabled||busy} onClick={()=>run('recover')}><Localized>{'Query original audit without resubmitting'}</Localized></button>}
         {(!result||['confirmed','rejected'].includes(result.phase))&&<button type="button" disabled={busy} onClick={reset}><Localized>{'Start a new request'}</Localized></button>}
+        <button type="button" disabled={!current.confirmed||busy} onClick={()=>copy(true)}><Localized>{'Copy correction recovery text'}</Localized></button>
       </p>
+      {recoveryText&&<><p className="muted"><Localized>{'Recovery text contains the original correction and predecessor, not proof of execution. Store it securely.'}</Localized></p>
+        <pre><code>{recoveryText}</code></pre></>}
+      {imported.current&&<p className="notice"><Localized>{'Imported correction recovery is read-only. Nothing was sent; explicitly query your original audit after signing in.'}</Localized></p>}
+    </section>}
+    {!current&&!result&&<section>
+      <h3><Localized>{'Restore an original correction audit query'}</Localized></h3>
+      <p className="muted"><Localized>{'Paste correction recovery text exported from this exact site. Import does not send, retry or query automatically.'}</Localized></p>
+      <label><Localized>{'Correction recovery text'}</Localized><textarea name="importText" maxLength={correctionRecoveryTextLimit} value={importText} onChange={e=>{
+        if(copyPending.current||controller.current||currentKey.current!==key)return;
+        importSource.current=e.target.value;setImportText(e.target.value);setMessage('');
+      }}/></label>
+      <button type="button" onClick={stageRecovery} disabled={copying||!importText}><Localized>{'Import correction recovery without sending'}</Localized></button>
     </section>}
     {message&&<p role="status"><Localized>{message}</Localized></p>}
     {result&&<AcceptanceCorrectionResult state={result}/>}
