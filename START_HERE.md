@@ -23,6 +23,13 @@
 先检查 checkout 状态与 main 新提交，保护未提交改动；未完成 PR 不应被重复实现。每包结束后先更新摘要和追加交接，使下一窗口知道确切完成点。
 
 ## 当前接手快照
+
+### 2026-10-10 最新开发包
+起点main 9c15808ed41d5cb5c5de79b68eba16c9fd59b0da已核验，精确CI38008222373成功：2180后端、203 PostgreSQL-module cases无skip、1147前端；Cloudflare生产build157e8884-3328-4fdd-b091-792cf1151888/version91c5a882-2b0e-4e34-a66a-5c0b8ea51652成功。工作区清洁，创建codex/acceptance-correction-transport；无开放PR，无另启独立Codex任务。
+新增Acceptance SUPERSEDE/WITHDRAW严格原关系上下文、独立默认关闭代理/原审计恢复、原始回执白名单及冻结内存控制器。原body/前驱ID/criterion/测试/动作/原因/当前token-bound USER及原审计全绑定；不读当前效力推断原结果。恢复只GET原审计，unknown保留，显式重试同字节/ID，互锁且确认终态。普通ASSIGN仍隔离，14业务/2自身会话/6管理员/离线操作分计不变。契约docs/acceptance-correction-submission.md。
+本地新增39协议/代理回归、1186完整前端/0fail/0skip、类型/Worker配置/Next/OpenNext及禁用认证真实Next路由/双语SSR/进度检查全部通过。最初代理测试函数引用命名不一致，修正后完整通过；无后端本地重跑，精确云端完整CI待验收。本包精确head CI/provider待核对，不能用起点CI证明。本轮无后端/schema变更，69页面/API代码0.18.40/schema0022；双语更正确认/结果及手动导出/只读导入恢复仍待接入。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读，OIDC及所有提交默认关闭，无实际身份/授权/秘密配置。Render在线API/schema/部署未核验，Actions独立deploy跳过；真实提供方/浏览器/跨会话/管理员验收未做，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU及Windows无Docker约束待定，SoftwareLifeCycle_20原文未取得。
+下一包Acceptance更正双语确认/结果/手动导出与只读审计恢复导入；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。
 当前69页面、API代码0.18.40/schema0022。Impact替代及Acceptance–DVP替代/撤销、有效读取和双语只读历史已实现，原行/原审计不修改；更正提交/恢复UI、Impact撤销和评审/下游更正规则待完成。十四类普通业务代理/控制器与双语UI、同站点原请求导出/只读导入已有。14业务、2自身会话、6管理员及离线操作分计，所有实际身份/提交门控仍关闭。
 已核验起点main ec12176a23dac49af752d0cfd974b69c956d6973，精确CI37925224881全成功：2132后端、190 PostgreSQL-module cases无skip、1144前端；Cloudflare生产builde0c059ee-23bf-449e-9c86-327c45e3850f/version8eab4f89-d4e7-4edd-86ca-2e4958bb33eb成功。覆盖旧PR#41 pending记录，本轮本地执行环境已恢复并安全快进同步。当前包精确head CI/provider另核对；Actions独立deploy跳过，Render在线API/schema/部署未核验。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读、OIDC和全部提交默认关闭，没有实际身份/授权/秘密配置；真实浏览器/提供方/管理员验收未完成，不重试拒绝的浏览器访问。
@@ -30,7 +37,7 @@
 
 
 ## 下一包
-本包交付Acceptance–DVP原关系绑定替代/撤销、有效读取及双语历史，契约docs/acceptance-dvp-corrections.md。下一包Acceptance更正/撤销受控提交与原审计恢复协议，再接双语确认/结果/导入恢复；随后Impact更正提交与撤销、评审/下游政策、真实身份/跨会话/内网验收、离线部署及运营迁移，VIN最后。
+本包交付Acceptance更正/撤销独立默认关闭受控提交与原审计恢复协议，契约docs/acceptance-correction-submission.md。下一包双语更正确认/原始结果/手动导出与只读审计恢复导入；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。
 69页面、API代码0.18.40/schema0022。本包精确head CI/provider证据见HANDOFF当前入口与DEVELOPMENT_STATUS最新记录；不复用旧main/Preview成功，不将前端构建当成Render API/迁移部署。
 
 ## PR#28 验收 — 2026-10-08（Codex）
