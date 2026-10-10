@@ -1,5 +1,7 @@
 # DEVELOPMENT_STATUS
 
+PR#43已合并到代码main 2ed38c8cd55d5c1ce9f65efaf2e44141f46ee2db，独立默认关闭Acceptance更正受控协议验收通过：精确feature CI38015391790为2180后端/203 PostgreSQL无skip/1186前端，Cloudflare feature Preview e82683ea-63db-4d1b-8ab0-998e7d9e86be成功；最终文档main精确CI/生产部署另核对。69页面/API0.18.40/schema0022不变，下一包双语更正确认/结果/手动导出与只读审计恢复导入。下方旧摘要均为历史，由本条及最新验收记录覆盖。
+
 Acceptance更正受控协议基础已完成：独立默认关闭提交/原审计恢复、严格前驱与原审计校验及冻结控制器；双语确认/结果/导出导入UI待下一包。起点精确main 9c15808/CI38008222373为2180后端/203 PostgreSQL无skip/1147前端，Cloudflare生产157e8884-3328-4fdd-b091-792cf1151888成功；本包最终精确CI/provider待验收。69页面/API0.18.40/schema0022不变。下方旧摘要保留历史，由本条及末尾最新验收覆盖。
 更新：2026-10-10（Asia/Shanghai）；模式：Codex。
 Acceptance–DVP原关系绑定追加式替代/撤销、有效读取与双语只读历史已实现，API代码0.18.40/schema0022，69页面。当前包精确head CI/provider另核对，完整更正提交/恢复UI及真实环境验收未完成；Render线上API/schema/部署未核验。起点main ec12176a23dac49af752d0cfd974b69c956d6973已核验CI37925224881全部成功（2132后端、190 PostgreSQL无skip、1144前端），Cloudflare生产builde0c059ee-23bf-449e-9c86-327c45e3850f/version8eab4f89-d4e7-4edd-86ca-2e4958bb33eb成功，Actions独立deploy跳过。本地环境已恢复，清洁checkout已快进到起点再创建独立feature，不复用上轮“本地状态未确认”作为当前状态。
@@ -560,3 +562,11 @@ Acceptance–DVP同criterion当前有效原关系绑定替代/撤销、原因/ac
 本地新增39协议/代理回归、1186完整前端/0fail/0skip、类型/Worker配置/Next/OpenNext及禁用认证真实Next路由/双语SSR/进度检查全部通过。最初代理测试函数引用命名不一致，修正后完整通过；无后端本地重跑，精确云端完整CI待验收。本包精确head CI/provider待核对，不能用起点CI证明。本轮无后端/schema变更，69页面/API代码0.18.40/schema0022；双语更正确认/结果及手动导出/只读导入恢复仍待接入。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读，OIDC及所有提交默认关闭，无实际身份/授权/秘密配置。Render在线API/schema/部署未核验，Actions独立deploy跳过；真实提供方/浏览器/跨会话/管理员验收未做，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU及Windows无Docker约束待定，SoftwareLifeCycle_20原文未取得。
 下一包Acceptance更正双语确认/结果/手动导出与只读审计恢复导入；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。
+
+## PR#43 验收 — 2026-10-10（Codex）
+PR https://github.com/Wang106/SoftwareLifeCycle/pull/43 已合并；代码main 2ed38c8cd55d5c1ce9f65efaf2e44141f46ee2db，精确feature f56e01200e0b8ebb875c5e8e95dc2643234b5db3，起点main 9c15808ed41d5cb5c5de79b68eba16c9fd59b0da。18个发布blob及完整tree b8cb88defc974d80500cf780d93a9688778b5979与本地逐一核对一致（本地feature cb4a8e2ab65000507df944062102d9ccf3e75203），本地main清洁快进同步到代码合并提交。
+精确feature CI38015391790全部成功：2180后端（473.96秒、11806既有弃用warnings）、203 PostgreSQL-module cases无skip、1186前端/0fail/0skip。后端114104392202、前端114104392023、acceptance114106074341成功；0022单迁移头/SQL/隔离真实PG往返、进度账本、类型/Next/OpenNext/双语禁用认证SSR及新增两路GET405/POST503/private-no-store通过。本PR首次完整云端CI成功；Cloudflare feature Preview builde82683ea-63db-4d1b-8ab0-998e7d9e86be/check114104703260成功，不能替代main生产部署。此验收文档提交后的最新main精确CI/provider另核对，Actions独立deploy仍跳过。
+Acceptance SUPERSEDE/WITHDRAW独立默认关闭受控提交与原审计恢复协议、严格前驱上下文/原actor/原因/请求/全审计绑定、回执白名单、冻结内存控制器及互锁完成。原请求字节/ID重试、原审计恢复只GET、unknown保留、确认终态；不从当前后继/效力/覆盖状态推断原操作成功。普通ASSIGN仍隔离。契约docs/acceptance-correction-submission.md，新增39协议/代理回归。
+本地1186完整前端、39新增协议/代理、类型/Worker配置/Next/OpenNext/禁用认证SSR/进度检查通过；后端本地未重跑，完整后端/PG以上述本包精确云端证据验收。最初代理测试函数命名不一致已修正；新远端分支用create_branch成功创建，未覆盖其他ref。生成的tsbuildinfo已清理，无用户改动覆盖，无另启独立Codex任务。
+69页面/API代码0.18.40/schema0022不变；本包无后端/schema改动，双语更正确认/结果/手动导出与只读审计恢复导入仍待下一包。公共样例只读，OIDC及所有提交默认关闭，无实际身份/授权/秘密配置。Render在线API/schema/部署未核验，前端构建不证明后台迁移；真实提供方/浏览器/管理员/跨会话/内网验收未完成，不重试拒绝访问。内网未安装，SSO/人员/OS/CPU/Windows无Docker待定。14业务/2自身会话/6管理员/离线操作分计；SoftwareLifeCycle_20原文未取得。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。下一包Acceptance更正双语确认/原始结果/手动导出与只读审计恢复导入；随后Impact更正提交与撤销、评审/下游政策、真实身份/内网验收、离线部署及运营迁移，VIN最后。
