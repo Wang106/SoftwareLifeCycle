@@ -1,11 +1,25 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-10 最新主分支验收与 Impact 待审查计划（Codex）
+已同步最新main 995366cd3c5a5b0d06722aa53d980f21cf709bd8（PR48），无开放PR，本地起点清洁；PR47双语更正确认/原结果及PR48手动导出/只读恢复导入已实现，不能重做。精确main CI38028319364成功：2180后端（439.15秒）、203 PostgreSQL-module cases无skip、1219前端/0fail/0skip；backend114143787316、frontend114143787207、acceptance114145137113成功。Cloudflare生产build38f23945-5639-46b4-989a-a84ea2563fd2/check114144078704成功，version21926ecc-a74a-45be-895d-aae7d329e3a9；Actions deploy/wake跳过。以上覆盖旧PR48记录的pending，不是本规划分支的CI。
+启用队列的两项Acceptance任务已完成；AGENTS要求后续disabled范围先审查，本轮未擅自启用或实现Impact/数据库迁移。独立分支codex/impact-correction-plan形成docs/impact-correction-plan.md：建议先授权A仅现有SUPERSEDE的独立默认关闭协议/原审计恢复/冻结控制器，无schema变化；B再接双语UI/手动恢复；C撤销模型与迁移独立审核。核对实际模型/锁/原审计字段；撤销不能伪装为NOT_AFFECTED/NEEDS_REVIEW，也不能使旧独立判断复活，统一上下文终端语义须先评审。
+本轮仅文档与验收交接，无业务代码/迁移/调度/依赖/已有测试/任务启用变更；进度--check及diff检查，本规划精确CI另核对。将发布待评审规划PR，不作为已获批功能或已部署业务变更。Codex在Work直接维护仓库；未启动用户本地Plus CLI/API worker，无付费API调用/登录缓存上传。
+69页面/API0.18.40/schema0022及14业务/2自身会话/6管理员/离线操作分计不变；36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，本轮增量0。公共样例只读/OIDC与提交关闭，无真实身份/授权/秘密；Render live API/schema未核验，真实浏览器/提供方/跨会话与内网验收未做。内网未安装，SSO/人员/OS/CPU/无Docker待定，VIN最后；SoftwareLifeCycle_20原文仍未取得。
+下一步须审查并授权具体Impact切片；推荐仅A，无数据库迁移，不自动启用整个后续队列。
+
 ## 当前开发包 — 2026-10-10 Acceptance 更正手动恢复（Codex）
 在PR47已提交的双语确认/原结果界面基础上准备第二个已启用scope：同站点手动导出与只读原审计恢复导入。公共样例仍只读，未启动独立Plus本地CLI/API worker，无付费API调用或登录缓存上传。PR47已在精确head9e2bef610be52d0608ecb5fbf52bbbe41f069d52/CI38027348828三个job成功后受保护合并到main88b578f8dbf20711a0078c7760f39a5fc2173b7c；2180后端（324.97秒）、203 PostgreSQL-module cases/no skips、1206前端，Cloudflare feature Preview build5071f8f0-9df6-4a33-9921-f9bf1ee72981成功。新包基于此合并main，本包精确head CI/provider另核对，不以Preview代替main生产部署。
 规范slc-acceptance-correction-recovery/version1文本绑定origin/原body/原actor声明/精确前驱/请求ID。严格compact/pretty字段顺序与字节、格式/版本/重复键/Unicode/长度/同站点/凭据隔离校验；导入零网络，unknown只读facade无send方法，界面隐藏发送/重试，只显式查询原审计。原controller不可被导入替换，过期导入/复制/发送/查询互锁，后来拒绝不丢未知状态。明确导出提供剪贴板和可手动复制文本，无自动查询/重试/存储；模拟新组件恢复保留原字节及ID。
 13项新格式/控制器/UI/双语回归，既有18更正UI回归未改；完整前端1219/0fail/0skip、类型、Worker配置、Next/OpenNext生产构建、双语禁用认证SSR/真实Next路由私有405/503、进度--check和diff检查通过。无后端/schema/迁移/依赖/调度/CI或既有测试改动。完整后端/真实PG/本包精确CI及main生产提供方另核验；本地未重跑后端，不复用旧成功称本包验收。
 契约docs/acceptance-correction-recovery.md覆盖上一包memory-only限制。69页面/API0.18.40/schema0022不变，14业务/2自身会话/6管理员/离线操作分计。实际跨会话/提供方/浏览器/管理员验收仍待，内网未部署/OIDC未定，无真实身份/授权/秘密配置。Render live API/schema未核验，Actions deploy独立门控。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，业务验收增量0，不因模拟UI回归提升里程碑。两项启用UI任务实现，待本包受保护合并；后续Impact撤销/提交、评审下游和离线运营scope仍禁用，需具体划定范围，VIN最后。
+
+## 2026-10-10 最新主分支验收与 Impact 待审查计划（Codex）
+已同步最新main 995366cd3c5a5b0d06722aa53d980f21cf709bd8（PR48），无开放PR，本地起点清洁；PR47双语更正确认/原结果及PR48手动导出/只读恢复导入已实现，不能重做。精确main CI38028319364成功：2180后端（439.15秒）、203 PostgreSQL-module cases无skip、1219前端/0fail/0skip；backend114143787316、frontend114143787207、acceptance114145137113成功。Cloudflare生产build38f23945-5639-46b4-989a-a84ea2563fd2/check114144078704成功，version21926ecc-a74a-45be-895d-aae7d329e3a9；Actions deploy/wake跳过。以上覆盖旧PR48记录的pending，不是本规划分支的CI。
+启用队列的两项Acceptance任务已完成；AGENTS要求后续disabled范围先审查，本轮未擅自启用或实现Impact/数据库迁移。独立分支codex/impact-correction-plan形成docs/impact-correction-plan.md：建议先授权A仅现有SUPERSEDE的独立默认关闭协议/原审计恢复/冻结控制器，无schema变化；B再接双语UI/手动恢复；C撤销模型与迁移独立审核。核对实际模型/锁/原审计字段；撤销不能伪装为NOT_AFFECTED/NEEDS_REVIEW，也不能使旧独立判断复活，统一上下文终端语义须先评审。
+本轮仅文档与验收交接，无业务代码/迁移/调度/依赖/已有测试/任务启用变更；进度--check及diff检查，本规划精确CI另核对。将发布待评审规划PR，不作为已获批功能或已部署业务变更。Codex在Work直接维护仓库；未启动用户本地Plus CLI/API worker，无付费API调用/登录缓存上传。
+69页面/API0.18.40/schema0022及14业务/2自身会话/6管理员/离线操作分计不变；36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，本轮增量0。公共样例只读/OIDC与提交关闭，无真实身份/授权/秘密；Render live API/schema未核验，真实浏览器/提供方/跨会话与内网验收未做。内网未安装，SSO/人员/OS/CPU/无Docker待定，VIN最后；SoftwareLifeCycle_20原文仍未取得。
+下一步须审查并授权具体Impact切片；推荐仅A，无数据库迁移，不自动启用整个后续队列。
 
 
 ## 当前开发包 — 2026-10-10 Acceptance 更正双语界面（Codex）
