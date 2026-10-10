@@ -1,11 +1,21 @@
-# GitHub Actions 持续开发操作说明
+# 自动开发操作说明
+
+## 当前选择：Plus 本地会话
+
+用户于2026-10-10选择无额外API费用的方式。当前操作入口是 [Plus本地开发](plus-local.md)：
+用户在自己机器用ChatGPT登录Codex CLI，执行 `python3 scripts/codex_plus.py`，
+GitHub Actions负责CI，仓库交接负责恢复。下文是已停用的可选API模式，不要按它填写密钥。
+API dispatcher已经移除定时触发，正常调用/worker/接力需显式 CODEX_DEVELOPMENT_MODE=api；
+现有CODEX_AUTODEV_ENABLED=false，App仅注册，Plus路径不需要App或两项Secret。
+
+## 历史/可选 API 模式（非当前启用方案）
 
 模式：Codex。配置基线：2026-10-10 main `6f661fef4aad60642bfc533ba3ca121653cf75f0`，PR43 的 Acceptance 更正协议已完成。
 本配置不提高产品验收进度（36/44=82%），不配置业务身份、实际授权或真实写入。
 
 ## 已实现的链路
 
-`codex-dispatch.yml` 每小时 UTC 第17/47分钟（北京时间同分钟）以及手动触发。
+旧版 `codex-dispatch.yml` 每小时 UTC 第17/47分钟扫描；当前已经移除 schedule，仅保留手动触发。
 默认变量未设置时只跑离线配置检查，不调用模型、不创建状态分支。
 `dry_run=true` 即使开关已开也不调用模型、不写 GitHub。
 开启后的控制器先核验最新 main 和精确 CI，再恢复未结束任务或预留一个新执行。
@@ -24,7 +34,7 @@ Codex 是开发 job 的最后一步，使用固定 CLI0.162.1、Action commit、
 `codex-reconcile.yml` 在本仓库 CI 或实际 worker 完成后唤醒主线 dispatcher，
 只读取运行元数据，不检出 triggering commit、不下载或执行其 artifact。
 idle/dry-run 的 dispatcher 完成事件不会继续唤醒，避免事件空转循环。
-定时扫描负责事件丢失恢复；GitHub schedule 可能延迟，不能承诺精确半小时运行。
+历史定时扫描负责事件丢失恢复；当前未注册此定时扫描。
 
 ## 启用前账户配置
 

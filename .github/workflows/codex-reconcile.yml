@@ -17,6 +17,7 @@ jobs:
   wake:
     if: >-
       github.repository == 'Wang106/SoftwareLifeCycle' &&
+      vars.CODEX_DEVELOPMENT_MODE == 'api' &&
       vars.CODEX_AUTODEV_ENABLED == 'true' &&
       github.event.workflow_run.head_repository.full_name == github.repository &&
       (github.event.workflow_run.head_branch == 'main' ||

@@ -1,5 +1,13 @@
 # 新 Codex 窗口接手入口
 
+## 当前模式：Plus 本地 Codex 会话 — 2026-10-10
+用户明确选择仅 Plus、无额外 API 费用。入口 docs/automation/plus-local.md 与 scripts/codex_plus.py；由用户本机 ChatGPT 登录启动/恢复，Actions 仅自动 CI。启动器强制 ChatGPT/openai、移除子进程 API key 环境、保留 workspace-write/on-request；不上传登录缓存、不购买额度、不无人值守无限重试。Windows 启动器使用 WSL；原生终端未支持。当前执行环境未装 CLI，没有用户 Plus 登录/实际 CLI/gh/跨会话验收；不称已启动自动开发。
+API dispatcher 已删除 schedule；实际 plan/worker/continuation 需显式 CODEX_DEVELOPMENT_MODE=api，现有变量未设置该模式、CODEX_AUTODEV_ENABLED=false，故本次不调用付费模型。不需要两项 Key/专用 App，已注册 App ID5259214，可保持未安装，无主动撤销用户设置。main PR/strict三个CI/admin不可绕过保护已配置。
+PR45 已在精确head216006d63252e988eea389e32cd8ce945a05b289的完整CI38024913819三job成功后合并到main2d0c23dec74a8aca944c86d72ab10ae28fe9d5c7，修复reusable caller actions:read继承。Plus切换本地38调度/启动器测试、actionlint、进度--check、prompt预览通过，精确远端CI/合并另核验；缺少本地CLI时入口明确退出，没有启动模型。
+任务指令先恢复开放PR，依实际合并代码跳过已完成启用项，再做Acceptance更正确认/原始结果与手动导出/只读恢复导入；宽泛后续scope仍禁用。每包检查点需提交推送并记录HANDOFF，未推送内存/本地改动不保证跨机恢复。同机resume选择会话后需输入恢复指令；新机从GitHub交接启动新会话。CLI因额度、安全提示、登录、冲突或任务边界可能暂停，不保证24小时运行。
+36/44=82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，增量0。公共样例只读、真实OIDC/业务提交关闭、内网未部署。Render live API/schema及真实浏览器验收未做，Actions deploy独立门控，前端provider构建与后台部署分记。
+
+
 ## PR#44 自动开发配置验收 — 2026-10-10（Codex）
 PR#44 已合并，代码main 3bee60ee299cface413fb3042debeb8c00aa4368；最终feature 1b610c6fbfef103bc4a7d822d2e81021ed1bf10d，精确CI38018860206三个job全部成功：36调度回归、2180后端（407.26秒）、203 PostgreSQL-module cases无skip、1186前端/0fail/0skip；0022迁移/隔离PG往返、生产构建与双语禁用认证SSR通过。Cloudflare feature Preview ce546156-3ef2-4768-8af0-e9bc7c457470成功，不替代main生产证据。19文件发布/修补blob及完整tree fabaee292a6300ae6bf14c5633fa071bcb83441c与本地一致；此记录后的最新main CI/provider另核对。主线只读API观察到protected=false，尚需classic PR/strict三个CI检查/admin保护；控制器缺失保护不启动模型。连接无Secrets/Variables/App/保护配置接口，凭据和付费worker端到端未配置/未验收，自动执行未启用，不以CI通过推断启用。操作说明docs/automation/README.md。36/44=82%，七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。公共样例只读/OIDC与真实提交默认关闭，内网未部署，Render live API/schema/部署未核验。下一步账户配置→dry-run→首个付费小任务验收；队列首任务Acceptance更正双语确认/原始结果，第二任务手动导出与只读导入；后续宽泛任务待切分。
 

@@ -1,8 +1,7 @@
 name: Codex development dispatcher
 
 on:
-  schedule:
-    - cron: '17,47 * * * *'
+  # Plus development runs locally; no paid API scheduler is registered.
   workflow_dispatch:
     inputs:
       dry_run:
@@ -20,7 +19,7 @@ concurrency:
 
 jobs:
   plan:
-    if: github.repository == 'Wang106/SoftwareLifeCycle' && github.ref == 'refs/heads/main'
+    if: github.repository == 'Wang106/SoftwareLifeCycle' && github.ref == 'refs/heads/main' && (inputs.dry_run || vars.CODEX_DEVELOPMENT_MODE == 'api')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -39,6 +38,7 @@ jobs:
         id: preflight
         env:
           ENABLED: ${{ vars.CODEX_AUTODEV_ENABLED }}
+          DEVELOPMENT_MODE: ${{ vars.CODEX_DEVELOPMENT_MODE }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
           HAS_OPENAI: ${{ secrets.OPENAI_API_KEY != '' }}
           HAS_APP_ID: ${{ vars.CODEX_APP_ID != '' }}
@@ -46,7 +46,7 @@ jobs:
         run: |
           python - <<'PY'
           import os
-          ready = (os.environ['ENABLED'] == 'true' and os.environ['DRY_RUN'] != 'true'
+          ready = (os.environ['DEVELOPMENT_MODE'] == 'api' and os.environ['ENABLED'] == 'true' and os.environ['DRY_RUN'] != 'true'
                    and all(os.environ[key] == 'true' for key in ['HAS_OPENAI', 'HAS_APP_ID', 'HAS_APP_KEY']))
           with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
               out.write('ready=' + str(ready).lower() + '\n')
