@@ -1,5 +1,9 @@
 # SoftwareLifeCycle Development Handoff
 
+## PR#44 自动开发配置验收 — 2026-10-10（Codex）
+PR#44 已合并，代码main 3bee60ee299cface413fb3042debeb8c00aa4368；最终feature 1b610c6fbfef103bc4a7d822d2e81021ed1bf10d，精确CI38018860206三个job全部成功：36调度回归、2180后端（407.26秒）、203 PostgreSQL-module cases无skip、1186前端/0fail/0skip；0022迁移/隔离PG往返、生产构建与双语禁用认证SSR通过。Cloudflare feature Preview ce546156-3ef2-4768-8af0-e9bc7c457470成功，不替代main生产证据。19文件发布/修补blob及完整tree fabaee292a6300ae6bf14c5633fa071bcb83441c与本地一致；此记录后的最新main CI/provider另核对。主线只读API观察到protected=false，尚需classic PR/strict三个CI检查/admin保护；控制器缺失保护不启动模型。连接无Secrets/Variables/App/保护配置接口，凭据和付费worker端到端未配置/未验收，自动执行未启用，不以CI通过推断启用。操作说明docs/automation/README.md。36/44=82%，七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。公共样例只读/OIDC与真实提交默认关闭，内网未部署，Render live API/schema/部署未核验。下一步账户配置→dry-run→首个付费小任务验收；队列首任务Acceptance更正双语确认/原始结果，第二任务手动导出与只读导入；后续宽泛任务待切分。
+
+
 ## 当前入口 — 2026-10-10 GitHub Actions 自动开发配置（Codex）
 用户选择GitHub Actions并授权落实方案；起点main6f661fef4aad60642bfc533ba3ca121653cf75f0，
 本包分支codex/github-actions-orchestrator，不重复PR43已经完成的Acceptance更正受控协议。
