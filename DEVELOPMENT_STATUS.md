@@ -2,6 +2,8 @@
 
 ## 2026-10-11 Impact 撤销历史后台与只读展示（Codex / ChatGPT Work）
 
+真实PG首轮完整CI38114318903（head634819cdbaa7dfb58e4faac43105ceb24ebc2216）检出长历史分页的逐行相关终端子查询超时：1 failed/2230 passed/no skips；前端1319/Next/OpenNext/禁用认证SSR与Cloudflare Preview成功。未合并、不调高10秒statement_timeout、不缩减11,024旧事件测试。已将终端标记计算移到分页之后，只查询当前页的去重快照上下文，结果仍带is_context_terminal；既有长历史测试与断言保持不变，修复精确head须重新完整CI。最终PR记录成功或阻塞及main/provider；失败证据不隐藏。
+
 用户明确授权 `impact-withdrawal-history-backend-read`；从真实 main `1615ab72c0b11deea21674f2bfe8a91dde3c8197`（PR54 已合并审查）开始，无开放 PR。独立分支 `codex/impact-withdrawal-history-backend-read`，不直接推 main、不改保护或 force-push；本包 PR [#55](https://github.com/Wang106/SoftwareLifeCycle/pull/55)，实现提交 `4f387649e611be2aca1daaa180462a33e954a5e2`；首次完整 CI `38114147873` 启动，最终 head/完整 CI/合并与提供方证据记录于 PR，未核验不得称成功。
 实现增量 `0023_impact_withdrawal_history`（前驱 `0022_acceptance_history`），API `0.18.41`。旧判断/原审计逐字段保留，旧 action/seq 为 NULL，仅读取时推导；新行必须显式 ASSESS/SUPERSEDE/WITHDRAW 和锁内上下文序号。WITHDRAW 无技术 decision/evidence，不复活旧独立根；新判断明确确认当前撤销 UUID，新 request_id。原撤销重放只返回原操作和独立当前观察，不再撤销后来判断。
 新增 POST `/api/v1/issues/{issue_no}/impact-withdrawals`：当前 Issue/Release/FROZEN Snapshot/前驱检查、Issue FOR UPDATE、统一写者序号、同事务审计、actor/完整规范化请求指纹绑定；返回 201/200/409。既有 POST assessment 新增 after_withdrawal_id。共享上下文终端 SQL 覆盖当前证据、候选、兼容读取、完整历史分页；JUDGED/WITHDRAWN/UNASSESSED 与技术判断分离，history_count 与 assessment_count 分计。Issue/Impact/候选/历史双语只读展示保留原 UUID、原因和原审计链接，不增加撤销浏览器提交/恢复协议或真实门控。

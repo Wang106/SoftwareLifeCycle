@@ -114,14 +114,23 @@ def judgments(identifier):
     return select(j.id,j.release_id,j.snapshot_id,j.decision,j.reason,j.evidence_ref,j.actor_name,j.created_at,
         j.supersedes_id,j.correction_reason,successor_id().label('superseded_by_id'),
         action_expression().label('action'),j.context_seq,j.after_withdrawal_id,
-        (j.id == terminal_id(j.issue_id,j.release_id,j.snapshot_id,j)).label('is_context_terminal'),
         r.version.label('release_version'),r.release_type,s.snapshot_no).outerjoin(r,r.id == j.release_id).outerjoin(s,s.id == j.snapshot_id).where(j.issue_id == identifier)
 
 
 @router.get('/{issue_no}/assessments')
 def assessments_page(issue_no: str, filters: Annotated[Pages,Query()], db: Session = Depends(get_db)):
     row = issue(db,issue_no,filters.issue_id)
-    return page(db,row,filters,judgments(row['id']),[IssueImpactAssessment.created_at.desc(),IssueImpactAssessment.id.desc()])
+    result = page(db,row,filters,judgments(row['id']),[IssueImpactAssessment.created_at.desc(),IssueImpactAssessment.id.desc()])
+    # Compute context terminals only for bounded page contexts. A per-history-row
+    # correlated terminal is also evaluated for rows discarded by OFFSET in PG.
+    snapshot_ids = {uuid.UUID(item['snapshot_id']) for item in result['items']}
+    f = ReleaseSnapshot
+    terminals = db.execute(select(f.release_id,f.id,terminal_id(row['id'],f.release_id,f.id,f))
+        .where(f.id.in_(snapshot_ids))).all() if snapshot_ids else []
+    winners = {(str(release),str(snapshot)):str(terminal) for release,snapshot,terminal in terminals}
+    for item in result['items']:
+        item['is_context_terminal'] = item['id'] == winners.get((item['release_id'],item['snapshot_id']))
+    return result
 
 
 def evidence_context(db,number,release_id,snapshot_id=None,issue_id=None):
@@ -174,8 +183,8 @@ def evidence_summary(issue_no: str, release_id: uuid.UUID, filters: Annotated[Sn
         'context_state':'UNASSESSED' if assessment is None else 'WITHDRAWN' if assessment['action']=='WITHDRAW' else 'JUDGED',
         'terminal_event_id':str(assessment['id']) if assessment else None,
         'terminal_action':assessment['action'] if assessment else None,
-        'withdrawal':serialize(assessment) if assessment and assessment['action']=='WITHDRAW' else None,
-        'assessment':serialize(assessment) if assessment and assessment['action']!='WITHDRAW' else None,'component_count':count(db,components(snapshot)),
+        'withdrawal':{**serialize(assessment),'is_context_terminal':True} if assessment and assessment['action']=='WITHDRAW' else None,
+        'assessment':{**serialize(assessment),'is_context_terminal':True} if assessment and assessment['action']!='WITHDRAW' else None,'component_count':count(db,components(snapshot)),
         'verification_count':count(db,verification(row['id'],release_id,snapshot))}
 
 
