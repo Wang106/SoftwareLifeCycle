@@ -19,6 +19,7 @@ gh auth login
 gh auth setup-git
 git clone https://github.com/Wang106/SoftwareLifeCycle.git
 cd SoftwareLifeCycle
+python3 scripts/codex_plus.py --check
 python3 scripts/codex_plus.py
 ```
 
@@ -26,7 +27,7 @@ python3 scripts/codex_plus.py
 GitHub 登录使用有 Wang106/SoftwareLifeCycle 写入权限的账号。若已有完整 checkout，进入它即可，
 先保留已有本地改动，工作树干净时可 `git pull --ff-only`，不要覆盖已有改动或强行切主线。
 首次工具安装、登录与系统/网络权限提示由用户在自己机器完成；不向聊天发送密码或登录缓存。
-脚本本身不安装依赖、不改变登录状态、不修改 git 配置、不替用户提交未检查代码。
+脚本本身不安装依赖、不修改 git 配置、不替用户提交未检查代码。CLI 的强制认证模式可能清除不匹配的登录，见下文。
 
 启动器传入 `forced_login_method="chatgpt"` 和 `model_provider="openai"`，
 从子进程环境移除 OPENAI_API_KEY/CODEX_API_KEY/AZURE_OPENAI_API_KEY/OPENAI_BASE_URL。
@@ -35,10 +36,22 @@ API 登录不符合强制模式时 CLI 会退出，用户重新用 ChatGPT 登�
 默认不选定付费模型或额外额度；使用当前登录计划提供的能力，额度用尽停止。
 这些控制针对启动的 Codex 会话；并不限制用户自行在其他终端运行的 API 程序。
 
+## 启动前检查
+
+`python3 scripts/codex_plus.py --check` 可以在非交互终端运行，成功退出0、失败退出2。
+正常启动/恢复也先执行相同检查。它只检查 codex/git/gh/node 是否存在、Node.js 22、
+本地 origin 是否为目标仓库标准 HTTPS/SSH 地址，以及 `gh repo view` 的仓库写入权限，
+用 `gh pr list` 报告开放 PR（最多100个）。每个外部检查15秒超时，不启动模型、不产生 API 调用。
+本地改动仅提醒保留，不自动 stash/reset/fetch/pull，也不打印文件内容或原始命令错误/凭据。
+检查需要 GitHub 网络访问；失败时按登录/权限/网络提示修复，再重跑。
+它不验证 ChatGPT 登录、Plus 额度、Git 推送凭据或实际沙箱审批，不证明 CI/部署成功。
+`--print-prompt` 仍可无工具/无网络预览指令。
+
 ## 开发、测试与提交
 
-内置任务指令读取仓库交接，再按启用队列的范围逐包开发：Acceptance 更正双语确认/原始结果，
-然后手动导出/只读恢复导入。已完成任务由实际合并 PR/代码确认，不仅靠队列 enabled 标志。
+内置任务指令读取仓库交接，再按启用队列的范围逐包开发。Acceptance 更正界面/恢复已由
+PR47/48 合并，必须核对最新代码并跳过；启用任务全部完成时停止，报告下一待划定范围。
+已完成任务由实际合并 PR/代码确认，不仅靠队列 enabled 标志。
 后续宽泛任务没有明确范围时仍保持禁用。CLI 不读写 API 控制器的 codex-state CAS 运行所有权。
 任务跨会话恢复使用代码分支、开放 PR、HANDOFF.md 和 DEVELOPMENT_STATUS.md。
 
@@ -69,7 +82,7 @@ Codex 从已推送任务分支/PR 和交接恢复。新会话不能恢复尚未�
 
 ## GitHub Actions 的 API 模式已经停用
 
-dispatcher 已移除 schedule；手动 dry_run 仍可运行不付费的 38 项标准库回归。
+dispatcher 已移除 schedule；手动 dry_run 仍可运行不付费的 46 项标准库回归。
 正常 dispatcher、worker、continuation 均需要 CODEX_DEVELOPMENT_MODE=api 才可能开发，
 还要原启用开关、API/App 凭据与完整 main 保护。该模式变量当前未配置，启用开关 false。
 因此已有未配置的 App ID、误点普通 Run workflow 或 CI 完成事件不会启动 API 开发。
@@ -83,7 +96,8 @@ dispatcher 已移除 schedule；手动 dry_run 仍可运行不付费的 38 项�
 安全提示、额度、登录、网络、CI、冲突与任务边界都可能需要用户处理。
 不新增 API 调用费用，不承诺无限 Plus 用量，也不自动购买任何额度。
 公共样例只读、真实 OIDC/提交门控关闭、内网未部署，产品进度仍36/44=82%。
-本地验证：38 调度/启动器回归、actionlint、进度 --check 和 prompt 预览；
+本包本地验证：46 调度/启动器回归、进度 --check、diff 检查和 prompt 预览；
+启动前检查在缺少 codex/gh、Node 不匹配时明确退出2，未调用模型；无工作流修改。
 实际用户 Plus 登录、CLI 会话/沙箱/gh 推送与跨会话运行尚需用户机器验收。
 
 官方 OpenAI documentation：
