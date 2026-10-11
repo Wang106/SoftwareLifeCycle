@@ -116,7 +116,7 @@ WITHDRAW 不是 NOT_AFFECTED 或 NEEDS_REVIEW，不产生新的技术判断，�
 升级验收从真实 0022 旧库开始，包含独立根、替代链、相同时间/UUID tie、nullable 证据、legacy 与 authenticated 审计。核对旧行及审计逐字段/哈希不变。新列逻辑默认不能把旧 SUPERSEDE 误标 ASSESS；旧 append-only trigger 始终存在，INSERT guard 与新约束安装后新程序方可写。
 发布期间停止旧写版本，升级迁移并验证 required revision，再启动新程序/检查 readiness；不能仅凭健康路由期待所有旧实例自动停写。新 schema 下旧版本 INSERT 必须拒绝；禁止“先允许旧写、稍后修补语义”。
 
-降级至 0022 前，若存在 WITHDRAW 或任何旧版本不能表达的 after_withdrawal 关系，立即抛错，在一个 PostgreSQL 事务内保持 schema、revision、历史、trigger、原审计原样。不可删撤销、复制旧判断、改审计或先丢列后检查。仅无撤销/恢复历史、所有现存新技术判断可完整投影回旧结构时，允许移除新 INSERT guard/约束/元数据列并恢复 decision NOT NULL；不删除任何判断行或审计。升级–安全降级–再升级必须保留旧 SUPERSEDE 和审计绑定。
+降级至 0022 前，若存在 WITHDRAW 或任何旧版本不能表达的 after_withdrawal 关系，立即抛错，在一个 PostgreSQL 事务内保持 schema、revision、历史、trigger、原审计原样。不可删撤销、复制旧判断、改审计或先丢列后检查。采用保守降级条件：只有全部记录仍是 legacy NULL action/NULL context_seq，且没有恢复关系时才允许移除新 INSERT guard/约束/元数据列并恢复 decision NOT NULL；不删除任何判断行或审计。有任何新序号动作（包括纯 ASSESS/SUPERSEDE）也拒绝降级，因为丢失 context_seq 后旧 created_at/id 排序未必保持同一终端，尤其旧库未来时间或 tie。不得只检查 WITHDRAW 就称无损。升级–安全降级–再升级必须保留旧 SUPERSEDE 和审计绑定。
 任何部分降级都须通过真实 PG 验证；SQLite 不是 trigger/锁/迁移事务的验收替代。SEED 不增加撤销演示、不改旧判断或审计，仍需重复执行确认幂等。
 
 ## 7. 下一实现包测试矩阵（本轮未实施）
@@ -129,7 +129,7 @@ WITHDRAW 不是 NOT_AFFECTED 或 NEEDS_REVIEW，不产生新的技术判断，�
 | PG 事务故障 | 历史 flush 后、审计 flush 后、commit 失败；请求取消/回滚后重试 | 两者全回滚，旧终端保持，锁可复用；不能将单边记录当成功 |
 | DB 防护 | UPDATE/DELETE，空动作/序号、非法 NULL 组合、跨 K/自指、重复前驱/序号、旧版本 INSERT | 真迁移 PG 直接 SQL 拒绝，原 trigger 未绕过；非法请求服务同样拒绝 |
 | 旧库升级 | 0022 数据含旧根/链、timestamp tie、nullable 证据、原认证/legacy actor | 逐字段与审计摘要相同；新增动作胜过全部旧根；唯一新 head |
-| 安全降级 | 仅旧/新纯判断：upgrade→downgrade→upgrade；含 W/恢复行：downgrade 拒绝 | 原数据/审计完全保留；拒绝后 revision/列/trigger 仍一致，无部分 DDL |
+| 安全降级 | 纯旧根/替代：upgrade→downgrade→upgrade；含新序号判断/W/恢复行：downgrade 拒绝（包括未来旧时间及 tie） | 原数据/审计完全保留；拒绝后 revision/列/trigger 仍一致，无部分 DDL |
 | 原审计恢复 | W→C 后恢复 W；错实体/actor/body/前驱/空值/指纹版本；审计缺失；原 ASSESS/SUPERSEDE 回归 | 只确认原操作，错绑 unknown/409，GET 恢复零写入 |
 | 有界长历史 | 10,000+ 独立根与长替代链；终端在分页外；多快照、相同旧时间、offset 边界 | SQL limit 生效、无 Python 全历史 materialization、查询次数/结果规模随页面及上下文有界；PG EXPLAIN/索引证据，不以小 fixture 时间断言冒充 |
 | API/只读 UI | UUID pin/冻结上下文/401/403/409/422；JUDGED/WITHDRAWN/UNASSESSED 中英 SSR | action 判别/null 安全、原历史可读；退休 GET 仍410，所有真实门控保持关闭 |
@@ -160,5 +160,6 @@ WITHDRAW 不是 NOT_AFFECTED 或 NEEDS_REVIEW，不产生新的技术判断，�
 独立分支 `codex/impact-withdrawal-design-review`，基线见第1节。执行进度 --check、既有标准库自动化回归、diff/仅三文件检查；完整后端/PG/前端构建由新 PR 精确 head 的既有 CI 证明，不把基线成功当本包测试。
 本地实际执行进度 --check、52 项既有标准库自动化回归（全部通过）、diff --check 与仅三文件边界核对；本地未运行后端/PG/Next/OpenNext，不冒称本地构建通过。
 Render monitor 技能的只读 list_services 检查返回 no workspace selected，不能自行选择或把历史服务当本次验收；当前 Render live API/schema/部署未核验。该限制不阻断本包文档与 GitHub CI，不增加部署权限。
+本包 PR 为 [#54](https://github.com/Wang106/SoftwareLifeCycle/pull/54)，首份文档提交 `44d78d97246c2b5e5903c5a4c03c1a51c2e1bcd3`；随后收紧无损降级条件并补充此检查点，最终精确 head 及 CI/merge 以 PR 记录为准。
 PR 描述记录最终 head、三个 job、真实 merge SHA、独立 main CI、Cloudflare/Render/Actions 的实际状态。HANDOFF 顶部及末尾保存本包，远端合并证据覆盖 plus-tasks 的旧 pending；该队列不在本包允许文件范围，故不编辑。
 本包真实合并并核验后暂停当前自动任务；不重复执行已完成审查，也不把下一实现提案当成自动授权。skipped/unverified 不称部署成功。
