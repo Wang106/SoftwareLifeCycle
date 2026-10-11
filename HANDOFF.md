@@ -3528,3 +3528,9 @@ Test Release/Deployment/Changeover双语确认发送、原审计查询、原请�
 新增36协议/行为/SSR/集成回归；相关81项及完整1315前端/0fail/0skip、类型、Worker配置、进度/diff检查通过；最终Next/OpenNext及实际禁用路由/双语SSR检查通过，auth:check新增实际Impact更正页面中英双语SSR200/no-store/独立禁用表单与只读导入验证。既有测试/断言未改；首次新增测试桩缺少server-only替身、语言提供方按钮误判及新增集成fixture的Issue UUID引用已修正。契约docs/impact-correction-ui-recovery.md。本地不重跑后端，完整后端/真实PG以本包精确云端CI另验收。
 69页面/API0.18.40/schema0022、14业务/2自身会话/6管理员/离线操作分计不变，无后端/迁移/依赖/CI/调度/真实身份配置变化。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，验收增量0。公共样例只读/OIDC/真实提交关闭，Render live API/schema未核验；实际浏览器/提供方/跨会话/内网验收未做，不绕过之前拒绝访问。内网未安装，SSO/人员/OS/CPU/Windows无Docker未定；SoftwareLifeCycle_20原文未取得。
 基线PR49 main的SQLite UUID读浮点故障与成功重跑已记录PR50（1failed2179passed→2180passed/203PG无skip），未修复，不因本包前端成功隐藏。下一包先审查C撤销终端语义/模型/迁移，不把旧独立判断复活或NOT_AFFECTED当撤销；随后评审/下游政策、真实身份/内网及离线运营，VIN最后。宽泛自动队列/API调度保持禁用。
+
+## 2026-10-11 Plus 自动开发启动前检查（Codex）
+基线main ebfac27a2086ec99245de02294e98f8b0ab79193（PR51），开放PR为0，精确main CI38105904092 success；Actions deploy/continuation跳过。本包仅完善Plus本地启动/恢复，不启动付费API或实际用户CLI，不扩大disabled业务范围。
+新增 --check 只读工具/Node22/origin/gh目标仓库写入权限/开放PR检查；正常启动及恢复先检查。外部检查15秒超时，不输出原始错误或凭据；本地改动仅提醒、保留，不fetch/stash/reset。检查失败退出2，不调用模型；不声称验证Plus登录/额度/Git推送/沙箱。指令更新为跳过已合并PR47/48的Acceptance任务，启用队列完成即停止。
+本地46项调度/启动器标准库回归通过（新增8项），进度 --check、prompt预览和diff检查通过；实际 --check 检出codex/gh缺失及Node版本不符并退出2，未启动模型。本包完整远端精确head CI、受保护合并及main/provider证据另核验并记录PR描述；不以基线成功代替。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。公共样例只读，OIDC/真实提交关闭，内网未部署；Render live API/schema、真实浏览器及用户本机Plus/gh/跨会话验收未完成。下一步用户机器 --check 后启动或恢复；启用任务代码已完成，后续Impact撤销模型/迁移须单独划定，API调度关闭。

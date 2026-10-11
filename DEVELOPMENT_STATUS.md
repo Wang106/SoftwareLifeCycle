@@ -1,5 +1,11 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-11 Plus 自动开发启动前检查（Codex）
+基线main ebfac27a2086ec99245de02294e98f8b0ab79193（PR51），开放PR为0，精确main CI38105904092 success；Actions deploy/continuation跳过。本包仅完善Plus本地启动/恢复，不启动付费API或实际用户CLI，不扩大disabled业务范围。
+新增 --check 只读工具/Node22/origin/gh目标仓库写入权限/开放PR检查；正常启动及恢复先检查。外部检查15秒超时，不输出原始错误或凭据；本地改动仅提醒、保留，不fetch/stash/reset。检查失败退出2，不调用模型；不声称验证Plus登录/额度/Git推送/沙箱。指令更新为跳过已合并PR47/48的Acceptance任务，启用队列完成即停止。
+本地46项调度/启动器标准库回归通过（新增8项），进度 --check、prompt预览和diff检查通过；实际 --check 检出codex/gh缺失及Node版本不符并退出2，未启动模型。本包完整远端精确head CI、受保护合并及main/provider证据另核验并记录PR描述；不以基线成功代替。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。公共样例只读，OIDC/真实提交关闭，内网未部署；Render live API/schema、真实浏览器及用户本机Plus/gh/跨会话验收未完成。下一步用户机器 --check 后启动或恢复；启用任务代码已完成，后续Impact撤销模型/迁移须单独划定，API调度关闭。
+
 ## 2026-10-11 Impact SUPERSEDE 双语界面与手动恢复 B（Codex）
 用户10:19“继续”承接下一包B；仅实现既有SUPERSEDE的双语确认/原结果/手动导出与只读原审计恢复导入，不扩大到C撤销/数据库迁移或宽泛disabled队列。Codex在Work直接开发，未启动用户本地Plus CLI或付费API worker，无登录缓存上传。
 基线main0c622c54c4db9f7b1581752b44713192370759a0（PR50），无开放PR/工作区清洁。核验精确main CI38058331160成功：2180后端446.87秒/203 PostgreSQL-module cases无skip、1277前端；backend114231271610/frontend114231271424/acceptance114232825373。生产Cloudflare builda21a67f1-f6bd-4985-a01d-aa4604b48fb1/check114231558199/version49343597-3549-4dd4-a709-abb9f4e5f677成功；Actions deploy/wake跳过。本包精确head/main CI及生产须独立核验，最终证据记录本包PR描述，不复用基线成功。
