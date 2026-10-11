@@ -1,5 +1,20 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-12 ZFI Excel 演示导入（Codex / ChatGPT Work）
+
+基线真实main d84c363af1794fa953753eacff2d8b40d8528b1d，无开放PR；基线三个CI及Cloudflare生产success，Actions deploy/wake skipped。用户授权Excel导入，2供应商/2产品/2客户/4项目/4SSR/16ASR，固定UUID保留原版本与客户/项目。审批A7 z修正SSR02，孤立M22忽略。运行目录恢复丢失未推送内容后，已保存PR60检查点2e3c751c3984a09607d8e3250afa8c21aca9bda7；清单依据此前逐行核对内容恢复，不伪造不可用原附件字节哈希。
+
+新增0024_release_customer_scope nullable客户scope与唯一索引；旧NULL记录、快照、审批、审计不回填。新增scopedASR由PG延迟触发器验证客户/项目/同产品SSR，客户身份不可改，有scoped记录拒绝丢语义降级。版本兼容读取歧义409，UUID目录保留明确消歧。API0.18.43，required head0024。新增GET /api/v1/demo/zfi-import固定20UUID读取当前对象与导入回执；导入回执不证明当前正式发布。
+
+seed_zfi_demo独立opt-in、flush-only、调用方原子commit；PG advisory事务锁、固定UUID、规范化manifest哈希、碰撞拒绝、重复保留历史。20个DRAFT、20个空演示冻结快照、20个四级合成审批/审计；15APPROVED、3PENDING、1RETURNED、1REJECTED。发布日期为用户元数据，前版空白不推断。组件/测试为空，不生成PASS/固件/正式RELEASE，真实ReadinessNOT_READY。
+
+新增SEED_ZFI_DEMO默认关闭启动入口，必须READ_ONLY_MODE=true；测试服务保持免费，不新建/升级服务或设置身份/秘密。仅精确head完整CI成功后合并，再更新已授权Render测试服务非秘密opt-in变量，迁移后事务导入，核验health/schema/20对象与页面。尚未合并或导入，不称线上成功。Render先前核验库0023、API免费live、供应商/产品/客户无碰撞；下一次操作仍复核。
+
+本地恢复后22项定向回归通过：新增6导入/重复/事务/碰撞/客户唯一/歧义读取/NOT_READY及既有Seed/evidence/security/catalog。升级/降级离线SQL、进度--check、diff检查通过；新增6真实PG测试由既有CI验收（并发、真实触发器/原子/重复、项目绑定、身份唯一不可改、旧库往返/原审计、拒绝降级）。本地无PG，不伪造PG或Next/OpenNext本地验证。完整后台/PG/前端/Next/OpenNext按最终精确head既有CI；PR记录提交/CI/main/provider最终证据，不用旧测试成功替代。
+
+七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，业务仍36/44=82%，资料导入不提升真实验收；公开只读/OIDC与真实提交关闭，内网未部署，实际浏览器完整验收待做。当前仅导入资料及授权审批；后续组件/测试合成资料需明确授权。
+
+
 ## 2026-10-11 合并后 CI 恢复：SQLite UUID 测试存储（Codex / ChatGPT Work）
 
 用户继续指令后，从实际main86153aca191f7a71649e3231d1cec85b954a249e开始，八项入口/计划/交接已读、开放PR为空。PR58真实合并，但独立main CI38144471792 Backend114484826551失败（2243passed/1failed，原Readiness live_declaration在已过期Snapshot.id读取时UUID得到float）；Acceptance114486516299失败。不能用feature2244/222PG/no-skips成功或单次重跑替代失败，第四轮仍未验收。
