@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-11 合并后 CI 恢复：SQLite UUID 测试存储（Codex / ChatGPT Work）
+
+用户继续指令后，从实际main86153aca191f7a71649e3231d1cec85b954a249e开始，八项入口/计划/交接已读、开放PR为空。PR58真实合并，但独立main CI38144471792 Backend114484826551失败（2243passed/1failed，原Readiness live_declaration在已过期Snapshot.id读取时UUID得到float）；Acceptance114486516299失败。不能用feature2244/222PG/no-skips成功或单次重跑替代失败，第四轮仍未验收。
+独立分支codex/sqlite-uuid-fixture：新增仅pytest加载的backend/tests/conftest.py，对SQLite UUID/Uuid DDL编译成CHAR(32)，保留ORM UUID输入输出及正式PostgreSQL UUID编译，不改生产模型、migration、API、Seed、页面、依赖、CI或既有断言。新增6项确定性回归：数字hex/前导零/类似科学计数法/普通UUID，真实复制Schema的Snapshot提交后过期加载、原始typeof=text、再次按UUID查询；验证SQLite编译文本而PG仍UUID/正式模型类型不变。
+红绿证据：暂时移除新conftest，6项中4failed/2passed，3项确定性float.replace；恢复后6通过。原Readiness全文件/新样例定向38passed/4skipped，Coverage/Impact/Seed另一组38passed/1skipped；跳过均因本地无PG，未称本地数据库验收通过。完整精确head CI必须真实PG且零跳过、前端完整Next/OpenNext与Acceptance成功后才普通受保护合并；精确提交/PR/CI/合并main/provider最终证据在本修复PR，恢复以真实PR覆盖旧记录。
+API0.18.42，schema0023_impact_withdrawal_history不变，Seed仍独立opt-in/幂等，未在live库执行。前三轮演示代码PR56/57/58已合并，但main恢复验收待本修复；第四轮依然需要确认Render My Workspace与真实浏览器访问条件，未选择工作区/秘密/实际身份/门控/内网部署。仅当前持续开发任务暂停，不创建新自动任务/付费模型API/上传登录缓存/启用Actions API开发；Codex/ChatGPT Work通过授权GitHub连接执行，不依赖用户CLI常驻。
+业务验收增量0，36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。修复CI可靠性不提升真实业务完成度；如果精确CI失败则停止合并，记录具体阻碍，不无限重试或放宽断言。
+
 ## 2026-10-11 SSR / ASR 云端演示第三轮：精确发布证据（Codex / ChatGPT Work）
 
 从实际main2f60d7cd0c8038c47258caec35d674eeb2f8953b开始，无开放PR；已读取八项入口/进度/交接文件，较新PR56/57覆盖旧pending。第二轮PR57精确head5b96d6a775d1dcab73079184a48fa2c5f0b7ade9/CI38141068310与独立main CI38141752492三个必需job成功；2235后端/221 PG-module cases无skip、1329前端/Next/OpenNext。Cloudflare生产build0863ea19-5100-4d10-9cea-0fea4c65557c/version095a474a-9728-40d0-abdc-7d62d279f4cd成功；Actions部署/唤醒skipped，不算成功。Render API/schema/样例仍未核验。
