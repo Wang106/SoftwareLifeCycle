@@ -1,3 +1,4 @@
+from app.api.release_demo import router as release_demo_router
 from app.api.admin_principals import router as admin_principals_router
 from app.api.global_roles import router as global_roles_router
 from app.api.admin_grants import router as admin_grants_router
@@ -53,7 +54,7 @@ from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.41"
+APP_VERSION = "0.18.42"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -73,6 +74,7 @@ async def authorization_error_handler(_request: Request, exc: AuthorizationError
     )
 app.include_router(releases_router, prefix="/api/v1")
 app.include_router(dashboard_router)
+app.include_router(release_demo_router)
 app.include_router(release_catalog_router)
 app.include_router(change_catalog_router)
 app.include_router(issue_views_router)

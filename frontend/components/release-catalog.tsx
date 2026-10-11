@@ -24,6 +24,7 @@ export default async function ReleaseCatalog({kind, search}: {kind: Kind; search
     <div className="top"><div><h1><Localized>{kind === 'application' ? 'Application Releases' : 'Standard Releases'}</Localized></h1>
       <p className="muted"><Localized>{kind === 'application' ? 'Customer-specific application software releases and their latest snapshots.' : 'Recorded supplier software baselines used by application releases.'}</Localized></p></div></div>
     <p><Link href={kind === 'application' ? '/releases/standard' : '/releases/application'}><Localized>{kind === 'application' ? 'Browse standard releases →' : 'Application Releases →'}</Localized></Link></p>
+    <p><Link href="/demo/releases"><Localized>{'Release evidence demonstration'}</Localized></Link></p>
     <section className="panel"><form method="get" className="filters">
       <label><Localized>{'Search'}</Localized> <input name="q" defaultValue={query.get('q') || ''} maxLength={200}/></label>
       <label><Localized>{'Status'}</Localized> <input name="status" defaultValue={query.get('status') || ''} maxLength={30}/></label>
