@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-11 最高优先级：SSR / ASR 四轮云端演示（Codex / ChatGPT Work）
+
+用户授权四轮演示任务，新增 docs/release-demo-plan.md / .json，优先于未划定Impact浏览器撤销及本地部署。SSR节点：电子工程师→电子经理→系统工程师→研发总监；ASR节点：应用工程师→应用经理→系统工程师→项目经理。按顺序只读展示，岗位标签不等于已配置实际岗位权限；通用REVIEWER授权边界不变。
+第一轮从main 985c7b2a516d58c11b63ded94c6e39d39d1331c2、无开放PR开始；独立分支codex/release-demo-round-1。新增独立opt-in seed_release_demo：两版SSR/两个客户ASR、三组件、继承hash与显式差异、四种审批状态、绑定冻结清单与样例审计，同事务、固定UUID、重复保留历史。未修改旧Seed/既有记录、迁移/依赖/CI/门控，不自动加载线上数据库；显式专用测试库命令见计划。无实际文件下载或正式RELEASE伪造。
+本地定向3 passed/1 PostgreSQL unavailable skip；skip不是验收，新增真实PG测试必须由既有完整CI证明。进度账本/diff检查通过，精确提交/PR/CI及main/provider后续证据记录本包PR。当前API0.18.41/schema0023不变。下一轮：SSR/ASR与四级审批双语进度展示；第四轮Render工作区/实际API/schema及真实浏览器仍待验收。
+公共样例只读、OIDC/真实提交关闭、暂缓内网部署。Codex在ChatGPT Work使用授权GitHub连接，不调用付费模型API或启用Actions开发。业务验收增量0，36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。已有已完成PR54/55覆盖旧pending，不能重复实现；本四轮授权覆盖旧停止范围但不授权实际身份配置。
+
+
 ## 2026-10-11 Impact 撤销历史后台与只读展示（Codex / ChatGPT Work）
 
 真实PG首轮完整CI38114318903（head634819cdbaa7dfb58e4faac43105ceb24ebc2216）检出长历史分页的逐行相关终端子查询超时：1 failed/2230 passed/no skips；前端1319/Next/OpenNext/禁用认证SSR与Cloudflare Preview成功。未合并、不调高10秒statement_timeout、不缩减11,024旧事件测试。已将终端标记计算移到分页之后，只查询当前页的去重快照上下文，结果仍带is_context_terminal；既有长历史测试与断言保持不变，修复精确head须重新完整CI。最终PR记录成功或阻塞及main/provider；失败证据不隐藏。
