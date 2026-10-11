@@ -60,6 +60,15 @@ async function main() {
     console.log(`Command SSR ${language} ${operation}: 200, no-store, preparation without send capability`);
    }
   }
+  for(const [language,title,sendLabel] of [['zh','替代一个影响判断','发送已确认的更正请求'],['en','Replace an impact judgment','Send confirmed correction request']]) {
+   const params=new URLSearchParams({operation:'impact-correction',target:'ISS-1',release:'23456789-1234-1234-1234-123456789abc',snapshot:'45678901-1234-1234-1234-123456789abc',predecessor:'89012345-1234-1234-1234-123456789abc',previous_decision:'AFFECTED'});
+   const response=await fetch(base+'/commands?'+params,{headers:{Cookie:`slc_language=${language}`}});
+   assert.equal(response.status,200);assert.ok(response.headers.get('cache-control').includes('no-store'));
+   const html=await response.text();assert.ok(html.includes(title));assert.ok(!html.includes(sendLabel));
+   for(const field of ['predecessor','previousDecision','correctionReason','importText'])assert.ok(html.includes(`name="${field}"`));
+   assert.ok(html.includes(params.get('predecessor')));assert.ok(html.includes(language==='zh'?'导入更正恢复且不发送':'Import correction recovery without sending'));
+   console.log(`Impact correction SSR ${language}: 200, no-store, separate disabled preparation and audit-only import`);
+  }
   for(const [language,message] of [['zh','登录失败，请重试。'],['en','Sign-in failed. Please try again.']]) {
    const response=await fetch(base+'/account?auth=failed',{headers:{Cookie:`slc_language=${language}`}});assert.equal(response.status,200);assert.ok((await response.text()).includes(message));console.log(`Account error SSR ${language}: translated generic failure`);
   }
