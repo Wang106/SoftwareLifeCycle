@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "priority": "highest",
+  "authorized_at": "2026-10-11",
+  "scope": "cloud-read-only-SSR-ASR-approval-demo",
+  "baseline_main": "985c7b2a516d58c11b63ded94c6e39d39d1331c2",
+  "rounds": [
+    {
+      "id": "release-demo-round-1",
+      "status": "in_progress",
+      "depends_on": [],
+      "title": "数据与四级审批样例"
+    },
+    {
+      "id": "release-demo-round-2",
+      "status": "pending",
+      "depends_on": [
+        "release-demo-round-1"
+      ],
+      "title": "双语发布与审批进度页面"
+    },
+    {
+      "id": "release-demo-round-3",
+      "status": "pending",
+      "depends_on": [
+        "release-demo-round-2"
+      ],
+      "title": "审批到正式发布证据及演示脚本"
+    },
+    {
+      "id": "release-demo-round-4",
+      "status": "pending",
+      "depends_on": [
+        "release-demo-round-3"
+      ],
+      "title": "云端提供方与浏览器验收"
+    }
+  ],
+  "business_milestone_increment": 0
+}
