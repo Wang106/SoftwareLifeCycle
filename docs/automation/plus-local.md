@@ -49,9 +49,15 @@ API 登录不符合强制模式时 CLI 会退出，用户重新用 ChatGPT 登�
 
 ## 开发、测试与提交
 
-内置任务指令读取仓库交接，再按启用队列的范围逐包开发。Acceptance 更正界面/恢复已由
-PR47/48 合并，必须核对最新代码并跳过；启用任务全部完成时停止，报告下一待划定范围。
-已完成任务由实际合并 PR/代码确认，不仅靠队列 enabled 标志。
+Plus 会话使用独立清单 `docs/automation/plus-tasks.json`，不执行旧 API tasks.json。
+可先运行 `python3 scripts/codex_plus.py --show-tasks`，无需工具/网络/模型即可查看本地任务。
+该清单记录 PR47/48 的合并证据，Acceptance 已完成；会话仍须核对实际 main/PR 后跳过。
+当前 pending 是 **Impact 撤销模型与迁移方案审查，仅文档**：比较模型、统一有效读取/终端语义、
+锁/审计/重试、旧数据/降级策略与真实 PG 测试矩阵，交付下一实现包的精确范围。
+只允许任务列出的新设计文档、DEVELOPMENT_STATUS.md 和 HANDOFF.md，不编写后端/迁移/界面。
+清单验证会拒绝错误模式、缺失完成证据、重复任务、前向依赖及越出文档的待办路径。
+这是本地结构检查，不自动验证远端合并事实。任务完成按真实PR/HANDOFF证据跳过，
+未合并或只有本地测试不得标完成；清单/较新证据核对后无待办即停止，不扩充实现范围。
 后续宽泛任务没有明确范围时仍保持禁用。CLI 不读写 API 控制器的 codex-state CAS 运行所有权。
 任务跨会话恢复使用代码分支、开放 PR、HANDOFF.md 和 DEVELOPMENT_STATUS.md。
 
@@ -82,7 +88,7 @@ Codex 从已推送任务分支/PR 和交接恢复。新会话不能恢复尚未�
 
 ## GitHub Actions 的 API 模式已经停用
 
-dispatcher 已移除 schedule；手动 dry_run 仍可运行不付费的 46 项标准库回归。
+dispatcher 已移除 schedule；手动 dry_run 仍可运行不付费的标准库回归（当前52项）。
 正常 dispatcher、worker、continuation 均需要 CODEX_DEVELOPMENT_MODE=api 才可能开发，
 还要原启用开关、API/App 凭据与完整 main 保护。该模式变量当前未配置，启用开关 false。
 因此已有未配置的 App ID、误点普通 Run workflow 或 CI 完成事件不会启动 API 开发。
@@ -96,7 +102,7 @@ dispatcher 已移除 schedule；手动 dry_run 仍可运行不付费的 46 项�
 安全提示、额度、登录、网络、CI、冲突与任务边界都可能需要用户处理。
 不新增 API 调用费用，不承诺无限 Plus 用量，也不自动购买任何额度。
 公共样例只读、真实 OIDC/提交门控关闭、内网未部署，产品进度仍36/44=82%。
-本包本地验证：46 调度/启动器回归、进度 --check、diff 检查和 prompt 预览；
+本包本地验证：52 调度/启动器/Plus队列回归、进度 --check、diff 检查和 prompt/任务预览；
 启动前检查在缺少 codex/gh、Node 不匹配时明确退出2，未调用模型；无工作流修改。
 实际用户 Plus 登录、CLI 会话/沙箱/gh 推送与跨会话运行尚需用户机器验收。
 

@@ -1,5 +1,12 @@
 # 新 Codex 窗口接手入口
 
+## 2026-10-11 Plus 独立任务清单与下一审查包（Codex）
+基线main cb95a53f1aa2b630c817843f74dea67312bcfcd6（PR52），精确feature4a5312024995333488966fc0f4e0a6965c0011bb/CI38106971532三个必需job成功（46自动化、2180后端/203PG无skip、1315前端），已受保护合并；此后main CI38108763320/provider另核验，不复用feature或旧main证据。
+当前Plus任务事实源改为docs/automation/plus-tasks.json，旧docs/automation/tasks.json仍是未启用API队列。重新核验PR47/48真实merged及合并SHA，记录Acceptance两项completed；新增pending Impact撤销模型/迁移方案审查，只改docs/impact-withdrawal-design-review.md及开发/交接文档，不实现后端/迁移/界面。审查需比较模型、上下文终端/统一消费者、锁/原审计/请求重放、旧库/降级与PG测试矩阵，给下一实现包精确范围，完成后停止。
+启动器新增 --show-tasks，无工具/网络/模型查看清单；--check/启动/恢复先校验模式/证据/依赖/文档边界。52项标准库回归通过（新增6队列测试），任务/prompt预览、进度--check和diff检查通过。清单只是本地结构检查，真实远端合并/CI/较新HANDOFF须在会话内再核验，不把旧pending或模拟测试当完成。
+仍由用户在自己机器启动；当前Work未安装codex/gh、未验收用户Plus登录/实际CLI/Git推送/沙箱/跨会话，不称无人值守自动开发已运行。无API调用、凭据上传、账户/真实门控变更；API调度关闭。本包精确head完整CI/合并/main/provider证据另记PR描述。
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。公共样例只读、OIDC/提交关闭、内网未部署；Render live API/schema及真实浏览器/提供方验收待做。用户下一步 --show-tasks/--check 后启动或恢复，先复核当前证据，再执行文档审查。
+
 ## 当前模式：Plus 本地 Codex 会话 — 2026-10-10
 用户明确选择仅 Plus、无额外 API 费用。入口 docs/automation/plus-local.md 与 scripts/codex_plus.py；由用户本机 ChatGPT 登录启动/恢复，Actions 仅自动 CI。启动器强制 ChatGPT/openai、移除子进程 API key 环境、保留 workspace-write/on-request；不上传登录缓存、不购买额度、不无人值守无限重试。Windows 启动器使用 WSL；原生终端未支持。当前执行环境未装 CLI，没有用户 Plus 登录/实际 CLI/gh/跨会话验收；不称已启动自动开发。
 API dispatcher 已删除 schedule；实际 plan/worker/continuation 需显式 CODEX_DEVELOPMENT_MODE=api，现有变量未设置该模式、CODEX_AUTODEV_ENABLED=false，故本次不调用付费模型。不需要两项 Key/专用 App，已注册 App ID5259214，可保持未安装，无主动撤销用户设置。main PR/strict三个CI/admin不可绕过保护已配置。

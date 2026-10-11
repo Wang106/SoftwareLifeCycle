@@ -9,8 +9,12 @@ do not request API/App secrets, use paid APIs, buy credits, upload auth.json, or
 Actions runs independent CI; main requires PR, strict CI and administrator enforcement.
 Direct CLI development uses normal git/gh and durable HANDOFF/PR checkpoints, not the API
 controller's codex-state reservation protocol or structured patch output schema.
-Resume an existing unfinished PR before starting duplicate work. Continue only the enabled
-scopes in docs/automation/tasks.json; stop on plan quota/login/conflicts or completed queue.
+Resume an existing unfinished PR before starting duplicate work. For Plus local sessions,
+use docs/automation/plus-tasks.json: verify completed PR evidence and execute only pending
+scoped tasks. The current next package is documentation-only Impact withdrawal design review,
+not backend/migration implementation. Check newer merged PR/HANDOFF evidence before repeating it.
+Stop on plan quota/login/conflicts or completed queue. docs/automation/tasks.json is the
+inactive legacy API queue; do not switch modes or enable it from a Plus session.
 The launcher does not establish a real user login or guarantee an uninterrupted session.
 
 ## GitHub Actions bounded development
