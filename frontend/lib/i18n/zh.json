@@ -1915,5 +1915,6 @@
   "Open original withdrawal audit": "查看原撤销审计",
   "Withdrawal does not revive older judgments or grant release permission.": "撤销不会恢复更早的判断，也不授予发布权限。",
   "A new judgment requires explicit confirmation of the current withdrawal. Submission remains disabled here.": "新增判断须显式确认当前撤销；此处提交仍未开放。",
-  "Impact history event count": "影响历史事件数"
+  "Impact history event count": "影响历史事件数",
+  "New judgment after withdrawal": "撤销后新增判断"
 }
