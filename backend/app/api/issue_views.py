@@ -3,7 +3,7 @@ import uuid
 from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import func, literal, select
+from sqlalchemy import case, func, literal, select
 from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models.change import Issue, IssueChangeRequestRelation, SoftwareChangeRequest
@@ -11,7 +11,7 @@ from app.models.core import ApplicationReleaseDetail, Customer, Project, Release
 from app.models.production import Deployment, ProductionBatch
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.impact import IssueImpactAssessment
-from app.services.impact_history import effective, successor_id
+from app.services.impact_history import action_expression, terminal_id, successor_id
 from app.models.testing import IssueDvpItem, DvpItem, DvpExecution
 
 router = APIRouter(prefix='/api/v1/issue-views', tags=['issue views'])
@@ -53,14 +53,17 @@ def relations(identifier):
 def candidates(identifier):
     r = Release; s = SoftwareProduct; a = ApplicationReleaseDetail; f = ReleaseSnapshot; j = IssueImpactAssessment
     frozen = select(f.id).where(f.release_id == r.id,f.status == 'FROZEN').order_by(f.snapshot_number.desc()).limit(1).correlate(r).scalar_subquery()
-    judgment = select(j.id).where(j.issue_id == identifier,j.release_id == r.id,j.snapshot_id == f.id,effective()).order_by(j.created_at.desc(),j.id.desc()).limit(1).correlate(r,f).scalar_subquery()
+    judgment = terminal_id(identifier, r.id, f.id, r, f)
     deployment_count = select(func.count()).select_from(Deployment).where(Deployment.actual_release_id == r.id).correlate(r).scalar_subquery()
     batch_count = select(func.count()).select_from(ProductionBatch).where(ProductionBatch.release_id == r.id).correlate(r).scalar_subquery()
     # Legacy directory displays only releases with real product metadata. Candidate
     # scope is software membership, deliberately not SCR customer/project ownership.
     return select(r.id,r.release_type,r.version,r.status,r.created_at,s.code.label('software_code'),s.name.label('software_name'),
         Customer.code.label('customer_code'),Customer.name.label('customer'),a.project_id,Project.name.label('project'),
-        f.id.label('snapshot_id'),f.snapshot_no,j.id.label('assessment_id'),j.decision,
+        f.id.label('snapshot_id'),f.snapshot_no,
+        case((action_expression() != 'WITHDRAW', j.id), else_=None).label('assessment_id'),j.decision,
+        j.id.label('terminal_event_id'),case((j.id.is_not(None), action_expression()),else_=None).label('terminal_action'),
+        case((j.id.is_(None), 'UNASSESSED'), (action_expression() == 'WITHDRAW', 'WITHDRAWN'), else_='JUDGED').label('context_state'),
         deployment_count.label('deployment_count'),batch_count.label('batch_count')).join(s,s.id == r.software_id).outerjoin(a,a.release_id == r.id).outerjoin(Customer,Customer.id == a.customer_id).outerjoin(Project,Project.id == a.project_id).outerjoin(f,f.id == frozen).outerjoin(j,j.id == judgment).where(membership(identifier,r.software_id))
 
 
@@ -89,7 +92,8 @@ def summary(issue_no: str, filters: Annotated[Empty,Query()], db: Session = Depe
     row = issue(db,issue_no)
     linked = count(db,relations(row['id']))
     return {**serialize(row),'linked_count':linked,'candidate_count':count(db,candidates(row['id'])),
-        'assessment_count':db.scalar(select(func.count()).select_from(IssueImpactAssessment).where(IssueImpactAssessment.issue_id == row['id'])),
+        'assessment_count':db.scalar(select(func.count()).select_from(IssueImpactAssessment).where(IssueImpactAssessment.issue_id == row['id'], action_expression() != 'WITHDRAW')),
+        'history_count':db.scalar(select(func.count()).select_from(IssueImpactAssessment).where(IssueImpactAssessment.issue_id == row['id'])),
         'basis':'Candidate releases share a software product with a linked SCR. Actual issue impact requires review.' if linked else 'No linked SCR; release impact cannot be inferred.'}
 
 
@@ -109,13 +113,24 @@ def judgments(identifier):
     j = IssueImpactAssessment; s = ReleaseSnapshot; r = Release
     return select(j.id,j.release_id,j.snapshot_id,j.decision,j.reason,j.evidence_ref,j.actor_name,j.created_at,
         j.supersedes_id,j.correction_reason,successor_id().label('superseded_by_id'),
+        action_expression().label('action'),j.context_seq,j.after_withdrawal_id,
         r.version.label('release_version'),r.release_type,s.snapshot_no).outerjoin(r,r.id == j.release_id).outerjoin(s,s.id == j.snapshot_id).where(j.issue_id == identifier)
 
 
 @router.get('/{issue_no}/assessments')
 def assessments_page(issue_no: str, filters: Annotated[Pages,Query()], db: Session = Depends(get_db)):
     row = issue(db,issue_no,filters.issue_id)
-    return page(db,row,filters,judgments(row['id']),[IssueImpactAssessment.created_at.desc(),IssueImpactAssessment.id.desc()])
+    result = page(db,row,filters,judgments(row['id']),[IssueImpactAssessment.created_at.desc(),IssueImpactAssessment.id.desc()])
+    # Compute context terminals only for bounded page contexts. A per-history-row
+    # correlated terminal is also evaluated for rows discarded by OFFSET in PG.
+    snapshot_ids = {uuid.UUID(item['snapshot_id']) for item in result['items']}
+    f = ReleaseSnapshot
+    terminals = db.execute(select(f.release_id,f.id,terminal_id(row['id'],f.release_id,f.id,f))
+        .where(f.id.in_(snapshot_ids))).all() if snapshot_ids else []
+    winners = {(str(release),str(snapshot)):str(terminal) for release,snapshot,terminal in terminals}
+    for item in result['items']:
+        item['is_context_terminal'] = item['id'] == winners.get((item['release_id'],item['snapshot_id']))
+    return result
 
 
 def evidence_context(db,number,release_id,snapshot_id=None,issue_id=None):
@@ -163,9 +178,13 @@ def evidence_summary(issue_no: str, release_id: uuid.UUID, filters: Annotated[Sn
     assessment = None
     if snapshot:
         j = IssueImpactAssessment
-        assessment = db.execute(judgments(row['id']).where(j.release_id == release_id,j.snapshot_id == uuid.UUID(snapshot['id']),effective()).order_by(j.created_at.desc(),j.id.desc()).limit(1)).mappings().first()
+        assessment = db.execute(judgments(row['id']).where(j.id == terminal_id(row['id'],release_id,uuid.UUID(snapshot['id'])))).mappings().first()
     return {**pins(row),**evidence_pins(release_id,snapshot),'release':{k:release[k] for k in ['id','type','version']},'snapshot':snapshot,
-        'assessment':serialize(assessment) if assessment else None,'component_count':count(db,components(snapshot)),
+        'context_state':'UNASSESSED' if assessment is None else 'WITHDRAWN' if assessment['action']=='WITHDRAW' else 'JUDGED',
+        'terminal_event_id':str(assessment['id']) if assessment else None,
+        'terminal_action':assessment['action'] if assessment else None,
+        'withdrawal':{**serialize(assessment),'is_context_terminal':True} if assessment and assessment['action']=='WITHDRAW' else None,
+        'assessment':{**serialize(assessment),'is_context_terminal':True} if assessment and assessment['action']!='WITHDRAW' else None,'component_count':count(db,components(snapshot)),
         'verification_count':count(db,verification(row['id'],release_id,snapshot))}
 
 

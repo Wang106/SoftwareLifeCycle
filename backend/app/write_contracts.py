@@ -143,7 +143,17 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"REVIEWER"}),
-        known_gap="Explicit current-predecessor corrections preserve history; withdrawal and controlled correction UI remain pending.",
+        known_gap="Context-terminal corrections/withdrawals preserve history; controlled withdrawal UI and real acceptance remain pending.",
+    ),
+    ("POST", "/api/v1/issues/{issue_no}/impact-withdrawals"): WriteContract(
+        operation="Append terminal issue impact withdrawal",
+        scope="issue, release, frozen snapshot and current judgment",
+        actor_source="DECLARED_REQUIRED",
+        audit="ATOMIC_APPEND",
+        idempotency="REQUEST_ID",
+        concurrency="ROW_LOCK",
+        planned_roles=frozenset({"REVIEWER"}),
+        known_gap="Backend-only withdrawal; browser submission, recovery and real acceptance remain pending.",
     ),
     ("POST", "/api/v1/changes/{request_no}/acceptance-dvp-links"): WriteContract(
         operation="Append acceptance-to-DVP assignment",
@@ -210,7 +220,7 @@ class AdminControlContract:
     precondition: str = 'EXPECTED_MEMBERSHIP_STATUS'
 
 
-# Authorization administration is separate from the fixed14 domain commands and
+# Authorization administration is separate from the domain commands and
 # from own-session metadata. It has no read-only or auth-disabled exception.
 ADMIN_CONTROL_CONTRACTS = {
     ('POST', '/api/v1/security/admin/global-roles'):

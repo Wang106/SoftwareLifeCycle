@@ -14,9 +14,10 @@ from app.models.core import ApplicationReleaseDetail, Customer, Project, Release
 from app.models.production import Deployment, ProductionBatch
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.impact import IssueImpactAssessment
-from app.services.impact_history import effective, successor_id
+from app.services.impact_history import action_value, current_event, observation, terminal_id, effective, successor_id
 from app.models.testing import IssueDvpItem, DvpItem, DvpExecution
 from app.services.impact_assessment import AssessmentError, AssessmentInput, record_assessment
+from app.services.impact_withdrawal import WithdrawalInput, record_withdrawal
 from app.authorization import authorize_issue_assessment
 from app.actor import resolve_actor
 
@@ -24,7 +25,8 @@ router = APIRouter(prefix="/api/v1/issues", tags=["impact"])
 
 
 def _assessment(row, superseded_by_id=None):
-    return {'id': str(row.id), 'release_id': str(row.release_id), 'snapshot_id': str(row.snapshot_id),
+    return {'action': action_value(row), 'context_seq': row.context_seq,
+            'after_withdrawal_id': str(row.after_withdrawal_id) if row.after_withdrawal_id else None, 'id': str(row.id), 'release_id': str(row.release_id), 'snapshot_id': str(row.snapshot_id),
             'decision': row.decision, 'reason': row.reason, 'evidence_ref': row.evidence_ref,
             'actor_name': row.actor_name, 'created_at': row.created_at,
             'supersedes_id': str(row.supersedes_id) if row.supersedes_id else None,
@@ -42,12 +44,11 @@ def _contexts(db, issue_id, releases):
     snapshot_ids = [row.id for row in latest.values()]
     artifacts = db.scalars(select(SnapshotArtifact).where(SnapshotArtifact.snapshot_id.in_(snapshot_ids))
         .order_by(SnapshotArtifact.component_code, SnapshotArtifact.filename)).all() if snapshot_ids else []
-    assessments = db.scalars(select(IssueImpactAssessment).where(IssueImpactAssessment.issue_id == issue_id,
-        IssueImpactAssessment.release_id.in_(ids), IssueImpactAssessment.snapshot_id.in_(snapshot_ids), effective())
-        .order_by(IssueImpactAssessment.created_at.desc(), IssueImpactAssessment.id.desc())).all() if snapshot_ids else []
-    reviews = {}
-    for row in assessments:
-        reviews.setdefault((row.release_id, row.snapshot_id), row)
+    # At most one history event per selected context, not all independent roots.
+    j = IssueImpactAssessment; f = ReleaseSnapshot
+    winners = select(terminal_id(issue_id, f.release_id, f.id, f)).where(f.id.in_(snapshot_ids))
+    assessments = db.scalars(select(j).where(j.id.in_(winners))).all() if snapshot_ids else []
+    reviews = {(row.release_id, row.snapshot_id): row for row in assessments}
     result = {}
     for release in releases:
         snapshot = latest.get(release.id)
@@ -57,7 +58,8 @@ def _contexts(db, issue_id, releases):
             'frozen_components': [{'code': code, 'version': version} for code, version in sorted({
                 (row.component_code, row.component_version or '') for row in artifacts
                 if snapshot and row.snapshot_id == snapshot.id})],
-            'assessment': _assessment(assessment) if assessment else None}
+            'assessment': _assessment(assessment) if assessment and action_value(assessment) != 'WITHDRAW' else None,
+            **observation(assessment)}
     return result
 
 
@@ -187,6 +189,25 @@ def create_assessment(
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(status_code=409, detail='assessment request conflict') from exc
+    except Exception:
+        db.rollback()
+        raise
+
+
+@router.post('/{issue_no}/impact-withdrawals', status_code=201)
+def create_withdrawal(issue_no: str, data: WithdrawalInput, response: Response,
+                      db: Session = Depends(get_db), request: Request = None):
+    authorize_issue_assessment(request, db, issue_no, data.release_id)
+    actor = resolve_actor(request, data.actor_name)
+    try:
+        row, created = record_withdrawal(db, issue_no, data, actor)
+        db.commit(); db.refresh(row)
+        response.status_code = 201 if created else 200
+        return {'original_operation': _assessment(row),
+            'context_observation': observation(current_event(db, row.issue_id, row.release_id, row.snapshot_id))}
+    except (AssessmentError, IntegrityError) as exc:
+        db.rollback()
+        raise HTTPException(409, str(exc) if isinstance(exc, AssessmentError) else 'withdrawal request conflict') from exc
     except Exception:
         db.rollback()
         raise

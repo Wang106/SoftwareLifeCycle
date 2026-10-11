@@ -1904,10 +1904,17 @@
   "Predecessor judgment UUID": "前驱判断 UUID",
   "Predecessor judgment": "前驱判断",
   "Replacement judgment": "替代后的判断",
-  "Frozen snapshot UUID": "冻结快照 UUID",
   "I confirm this exact Issue, Release, frozen Snapshot, predecessor, new judgment, evidence, reasons and request ID.": "我确认此精确 Issue、发布、冻结快照、前驱、新判断、证据、两项原因及请求 ID。",
   "Impact correction result": "影响更正结果",
   "This confirms the original impact replacement only. Current impact, test success and release permission are separate observations.": "此结果只确认原影响替代操作。当前影响、测试通过及发布许可需分别核对。",
   "Prepare replacement of this judgment →": "准备替代此判断 →",
-  "The API rechecks the current predecessor and frozen context. This history link does not grant permission or confirm an operation.": "API 会重新核对当前前驱和冻结上下文。此历史入口不授予权限，也不确认操作结果。"
+  "The API rechecks the current predecessor and frozen context. This history link does not grant permission or confirm an operation.": "API 会重新核对当前前驱和冻结上下文。此历史入口不授予权限，也不确认操作结果。",
+  "Impact judgment withdrawn": "影响判断已撤销",
+  "Withdrawal reason": "撤销原因",
+  "Withdraws judgment": "撤销的判断",
+  "Open original withdrawal audit": "查看原撤销审计",
+  "Withdrawal does not revive older judgments or grant release permission.": "撤销不会恢复更早的判断，也不授予发布权限。",
+  "A new judgment requires explicit confirmation of the current withdrawal. Submission remains disabled here.": "新增判断须显式确认当前撤销；此处提交仍未开放。",
+  "Impact history event count": "影响历史事件数",
+  "New judgment after withdrawal": "撤销后新增判断"
 }

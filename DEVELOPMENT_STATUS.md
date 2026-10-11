@@ -1,5 +1,18 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-11 Impact 撤销历史后台与只读展示（Codex / ChatGPT Work）
+
+真实PG首轮完整CI38114318903（head634819cdbaa7dfb58e4faac43105ceb24ebc2216）检出长历史分页的逐行相关终端子查询超时：1 failed/2230 passed/no skips；前端1319/Next/OpenNext/禁用认证SSR与Cloudflare Preview成功。未合并、不调高10秒statement_timeout、不缩减11,024旧事件测试。已将终端标记计算移到分页之后，只查询当前页的去重快照上下文，结果仍带is_context_terminal；既有长历史测试与断言保持不变，修复精确head须重新完整CI。最终PR记录成功或阻塞及main/provider；失败证据不隐藏。
+
+用户明确授权 `impact-withdrawal-history-backend-read`；从真实 main `1615ab72c0b11deea21674f2bfe8a91dde3c8197`（PR54 已合并审查）开始，无开放 PR。独立分支 `codex/impact-withdrawal-history-backend-read`，不直接推 main、不改保护或 force-push；本包 PR [#55](https://github.com/Wang106/SoftwareLifeCycle/pull/55)，实现提交 `4f387649e611be2aca1daaa180462a33e954a5e2`；首次完整 CI `38114147873` 启动，最终 head/完整 CI/合并与提供方证据记录于 PR，未核验不得称成功。
+实现增量 `0023_impact_withdrawal_history`（前驱 `0022_acceptance_history`），API `0.18.41`。旧判断/原审计逐字段保留，旧 action/seq 为 NULL，仅读取时推导；新行必须显式 ASSESS/SUPERSEDE/WITHDRAW 和锁内上下文序号。WITHDRAW 无技术 decision/evidence，不复活旧独立根；新判断明确确认当前撤销 UUID，新 request_id。原撤销重放只返回原操作和独立当前观察，不再撤销后来判断。
+新增 POST `/api/v1/issues/{issue_no}/impact-withdrawals`：当前 Issue/Release/FROZEN Snapshot/前驱检查、Issue FOR UPDATE、统一写者序号、同事务审计、actor/完整规范化请求指纹绑定；返回 201/200/409。既有 POST assessment 新增 after_withdrawal_id。共享上下文终端 SQL 覆盖当前证据、候选、兼容读取、完整历史分页；JUDGED/WITHDRAWN/UNASSESSED 与技术判断分离，history_count 与 assessment_count 分计。Issue/Impact/候选/历史双语只读展示保留原 UUID、原因和原审计链接，不增加撤销浏览器提交/恢复协议或真实门控。
+同步真实消费者 `frontend/components/issue-collections.tsx` 和写接口契约清单（15 业务命令），API 版本；已有 3 个固定计数/head 测试仅更新精确常量，既有 PG 迁移测试改在旧 schema 写旧行，避免把新序号行伪称旧数据，原断言全部保留。Seed 与依赖/CI/调度/身份配置未改。
+本地新增 31 撤销语义/正文与原审计回归、3 统一读取/快照隔离/只读 OIDC 门控、4 双语只读 SSR；新增 17 真实 PG cases（并发各写者/原审计原子回滚/旧库往返/拒绝语义丢失降级/数据库约束/10,000旧根+1,024旧链/EXPLAIN 与有界结果）。本地没有 PG，17 cases 跳过明确不算验收，必须由既有完整 CI 的 PostgreSQL16、no skips 报告证明；精确结果以 PR 检查点为准。
+迁移 head 和 offline SQL、前端类型/Worker 配置与 Next/OpenNext 已运行；末次本地完整后端1615 passed/616 unavailable DB skips；完整前端初版1318 passed/0skip，另新增撤销后新判断原审计展示回归，当前精确CI前端总数另记PR；末次本地禁用认证SSR通过。最终结果以本包 PR 逐项记录。初次前端完整测试检出撤销组件标点未包裹 Localized，已修复组件并重跑，未削弱测试。首次本地后端全套运行遇到旧 14-command/0022 常量，已同步真实新接口/head 后单独验证，不隐瞒首次结果；真实 PG 的新测试尚待 CI。
+Codex 在 ChatGPT Work 云端直接开发并使用已授权 GitHub 连接，不调用付费 API，不上传登录缓存，不依赖旧 checkout/本地常驻 CLI。公共样例只读，OIDC/真实业务提交关闭、内网未部署。Seed 代码未变，幂等性须以真实 CI 重复 Seed 证明。Cloudflare、Render、Actions 和 main CI 在合并后独立核验；skipped/unverified 不称上线成功。
+业务验收增量 0：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。实现包验收不等于真实身份/浏览器/生产验收。下一待划定包为浏览器撤销受控协议、双语确认与手动原审计恢复；不自动扩大范围，已授权实现完成后暂停。
+
 ## 2026-10-11 Impact 撤销设计审查（Codex / ChatGPT Work 云端）
 
 当前包仅 impact-withdrawal-design-review，三份文档；PR[#54](https://github.com/Wang106/SoftwareLifeCycle/pull/54)，首份文档提交44d78d97246c2b5e5903c5a4c03c1a51c2e1bcd3，最终精确head/CI/合并证据见PR；基线远端 main d13c42af3b6f95a3d4f31b5c060db3ac967b6316，开始无开放PR。已核对真实合并PR47/48及PR50/51，较新代码覆盖旧pending，不重复Acceptance或Impact SUPERSEDE。

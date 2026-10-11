@@ -3,7 +3,7 @@ import uuid
 import hashlib
 import json
 from typing import Literal
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,10 +14,11 @@ from app.models.impact import IssueImpactAssessment
 from app.models.audit import AuditEvent
 from app.actor import ActorContext, audit_actor_matches, idempotent_actor_matches
 from app.services.audit import AuditEventService
-from app.services.impact_history import effective
+from app.services.impact_history import action_value, current_event, next_sequence
 
 
 class AssessmentInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     request_id: uuid.UUID
     release_id: uuid.UUID
     snapshot_id: uuid.UUID
@@ -25,11 +26,16 @@ class AssessmentInput(BaseModel):
     reason: str = Field(min_length=1, max_length=4000)
     evidence_ref: str | None = Field(default=None, max_length=2000)
     actor_name: str = Field(min_length=1, max_length=120)
+    after_withdrawal_id: uuid.UUID | None = None
     supersedes_id: uuid.UUID | None = None
     correction_reason: str | None = Field(default=None, min_length=1, max_length=4000)
 
     @model_validator(mode='after')
     def correction_pair(self):
+        if self.supersedes_id is not None and self.after_withdrawal_id is not None:
+            raise ValueError('a replacement cannot also restore a withdrawal')
+        if self.after_withdrawal_id == self.request_id:
+            raise ValueError('a judgment cannot restore itself')
         if (self.supersedes_id is None) != (self.correction_reason is None):
             raise ValueError('supersedes_id and correction_reason must be supplied together')
         if self.correction_reason is not None:
@@ -73,7 +79,7 @@ def record_assessment(
     if issue is None:
         raise AssessmentError('issue not found')
     existing = db.get(IssueImpactAssessment, data.request_id)
-    fields = ('release_id', 'snapshot_id', 'decision', 'reason', 'evidence_ref', 'supersedes_id', 'correction_reason')
+    fields = ('release_id', 'snapshot_id', 'decision', 'reason', 'evidence_ref', 'supersedes_id', 'correction_reason', 'after_withdrawal_id')
     if existing:
         event = db.scalars(select(AuditEvent).where(
             AuditEvent.event_no == f'EVT-IMPACT-{data.request_id}'
@@ -95,7 +101,9 @@ def record_assessment(
             or any(getattr(existing, field) != getattr(data, field) for field in fields)
             or existing.actor_name != resolved_actor.name
             or not idempotent_actor_matches(event, resolved_actor)
-            or not correction_audit_matches):
+            or not correction_audit_matches
+            or action_value(existing) != ('SUPERSEDE' if data.supersedes_id else 'ASSESS')
+            or (existing.context_seq is not None and not sequenced_audit_matches(event, existing, issue, data, resolved_actor))):
             raise AssessmentError('request_id already used for a different assessment')
         return existing, False
     release = db.get(Release, data.release_id)
@@ -115,13 +123,17 @@ def record_assessment(
         if (previous is None or previous.id == data.request_id or previous.issue_id != issue.id
             or previous.release_id != data.release_id or previous.snapshot_id != data.snapshot_id):
             raise AssessmentError('correction predecessor must match the issue, release and frozen snapshot')
-        current = db.scalar(select(IssueImpactAssessment.id).where(
-            IssueImpactAssessment.issue_id == issue.id, IssueImpactAssessment.release_id == data.release_id,
-            IssueImpactAssessment.snapshot_id == data.snapshot_id, effective())
-            .order_by(IssueImpactAssessment.created_at.desc(), IssueImpactAssessment.id.desc()).limit(1))
-        if current != previous.id:
+        current = current_event(db, issue.id, data.release_id, data.snapshot_id)
+        if current is None or action_value(current) == 'WITHDRAW' or current.id != previous.id:
             raise AssessmentError('correction predecessor is not the current effective judgment')
+    current = current_event(db, issue.id, data.release_id, data.snapshot_id)
+    if previous is None:
+        expected = current.id if current is not None and action_value(current) == 'WITHDRAW' else None
+        if data.after_withdrawal_id != expected:
+            raise AssessmentError('new judgment must explicitly confirm the current withdrawal')
     assessment = IssueImpactAssessment(id=data.request_id, issue_id=issue.id,
+        action='SUPERSEDE' if previous else 'ASSESS',
+        context_seq=next_sequence(db, issue.id, data.release_id, data.snapshot_id),
         actor_name=resolved_actor.name, **{field: getattr(data, field) for field in fields})
     db.add(assessment)
     db.flush()
@@ -134,6 +146,34 @@ def record_assessment(
             'evidence_ref_digest_version': 1,
             'evidence_ref_sha256': evidence_reference_digest(data.evidence_ref),
             'decision': data.decision, 'actor_source': resolved_actor.source,
+            **sequenced_payload(assessment, issue, data),
             **({'supersedes_id': str(previous.id), 'previous_decision': previous.decision,
                 'correction_reason': data.correction_reason} if previous else {})})
     return assessment, True
+
+
+def request_fingerprint(issue_no, data):
+    value = {'issue_no': issue_no, 'body': data.model_dump(mode='json')}
+    return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True,
+        separators=(',', ':')).encode('utf-8')).hexdigest()
+
+
+def sequenced_payload(row, issue, data):
+    return {'request_body_digest_version': 1, 'request_body_sha256': request_fingerprint(issue.issue_no, data),
+        'history_action': row.action, 'context_seq': row.context_seq,
+        'after_withdrawal_id': str(row.after_withdrawal_id) if row.after_withdrawal_id else None}
+
+
+def sequenced_audit_matches(event, row, issue, data, actor):
+    # Strict even for new legacy-declared writes. Original legacy rows retain their
+    # existing versioned contract; no trusted actor or original payload is fabricated.
+    expected = {**sequenced_payload(row, issue, data), 'assessment_id': str(row.id),
+        'release_id': str(row.release_id), 'snapshot_id': str(row.snapshot_id),
+        'decision': row.decision, 'actor_source': actor.source,
+        'evidence_ref_digest_version': 1, 'evidence_ref_sha256': evidence_reference_digest(row.evidence_ref)}
+    return (event is not None and isinstance(event.payload_json, dict)
+        and audit_actor_matches(event, actor) and event.action == row.action
+        and event.event_type == 'ISSUE_IMPACT' and event.entity_type == 'Issue'
+        and event.entity_id == issue.id and event.entity_ref == issue.issue_no and event.detail == data.reason
+        and all(key in event.payload_json and event.payload_json[key] == value
+            for key, value in expected.items()))
