@@ -7,13 +7,20 @@
   "rounds": [
     {
       "id": "release-demo-round-1",
-      "status": "in_progress",
+      "status": "completed_code",
       "depends_on": [],
-      "title": "数据与四级审批样例"
+      "title": "数据与四级审批样例",
+      "evidence": {
+        "pr": 56,
+        "head_sha": "5866bacc429e1f9b2ec7cbd3dff3e88db9e06fc1",
+        "merge_sha": "52d5f37568dbf753b51614f88736c3b68621833b",
+        "feature_ci": 38139907977,
+        "live_sample_loaded": false
+      }
     },
     {
       "id": "release-demo-round-2",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "release-demo-round-1"
       ],

@@ -43,6 +43,12 @@ export default async function Page({ params, searchParams }: { params: Promise<{
     {label: 'Batch', count: downstream.history_counts.batches, href: `/production/batches?${productionScope}`},
   ] : [];
   return <>
+    <section className="panel"><h2><Localized>{"Customer application release"}</Localized></h2>
+      <p><Localized>{"This customer release derives from one exact standard baseline. Component declarations explain inheritance and customer-specific changes."}</Localized></p>
+      <p><b><Localized>{"Demo review template"}</Localized></b><Localized>{": "}</Localized><Localized>{"Application Engineer → Application Manager → Systems Engineer → Project Manager"}</Localized></p>
+      <p className="muted"><Localized>{"Existing approval histories retain their original stages."}</Localized></p>
+      <p className="muted"><Localized>{"The release record status is separate from snapshot approval and the formal release decision."}</Localized></p>
+    </section>
     <p><Link href={`/commands?${new URLSearchParams({operation: "snapshot", target: profile.id})}`}><Localized>{"Prepare Snapshot request →"}</Localized></Link></p>
     <p><Link href={`/approvals?release_id=${profile.id}`}><Localized>{"Approval history →"}</Localized></Link><Localized>{" · "}</Localized><Link href={`/release-decisions?release_id=${profile.id}`}><Localized>{"Release decision history →"}</Localized></Link></p>
     <p><Link href={`/deployments?${productionScope}`}><Localized>{"Deployment history →"}</Localized></Link><Localized>{" · "}</Localized><Link href={`/production/batches?${productionScope}`}><Localized>{"Batch history →"}</Localized></Link></p>

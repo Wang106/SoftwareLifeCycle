@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-11 SSR / ASR 云端演示第二轮：双语审批进度（Codex / ChatGPT Work）
+
+最高优先级四轮任务继续。第一轮PR56真实合并main52d5f37568dbf753b51614f88736c3b68621833b；feature5866bacc429e1f9b2ec7cbd3dff3e88db9e06fc1/CI38139907977全部成功：2235后端、221 PostgreSQL-module cases/no skips、1319前端/Next/OpenNext。独立main CI38140420117仍在运行；Cloudflare生产build92db69a7-6998-4c29-b7c8-7f00c2b53080/version9eff77ce-ef76-4a49-9dd0-c60243d9808e已success，不能替代Render API/schema或实际样例加载。计划第一轮标completed_code，第二轮in_progress。
+从该实际main开始、无开放PR，独立分支codex/release-demo-round-2。SSR/ASR详情增加基线/客户组件差异说明和两条固定四级节点；审批详情新增完整记录进度、当前明确PENDING节点、通过数量、关闭状态及自适应节点卡。只有完整第一页/匹配总量且无后续页才表示整体进度；部分/外来节点页不推断当前节点，WAITING前驱阻止后来PENDING被误称当前。退回/拒绝/取消/通过请求不显示活动节点；正式发布决策仍独立。
+指定岗位在展示层映射中英文，未知角色及原actor/意见/时间/UUID/请求不改；相关组件名称补翻译。10项新SSR/双语/分页/关闭/角色回归通过，完整前端1329 passed/0 failed/0 skipped。原测试不修改。首轮本地Next编译/类型通过，OpenNext使用软链接依赖时Sharp打包失败，改为独立依赖目录重跑，不改锁文件/CI或断言，独立目录Next/OpenNext构建成功，最后模板标注补正127项定向/本地化测试通过；完整精确CI另验收。API0.18.41/schema0023不变，无后台/迁移/Seed/身份/秘密/门控/部署设置更改。完整后端/PG验收须由此PR精确head既有CI证明，不复用第一轮。
+公共样例只读/OIDC与实际提交关闭，内网暂缓，尚未注入新样例。第三轮下一范围：Snapshot/测试/Readiness/审批/正式Decision/Passport成功与阻断证据及演示脚本；第四轮云端与真实浏览器验收。Render工作区未确认，不能声称后台已部署。使用Codex/ChatGPT Work授权GitHub连接及订阅，不付费API/本地常驻CLI/登录缓存上传/Actions API开发。业务增量0，36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。精确head/PR/合并main及provider后续证据记录本包PR，恢复须优先实际远端而非旧pending。
+
+
 ## 2026-10-11 最高优先级：SSR / ASR 四轮云端演示（Codex / ChatGPT Work）
 
 用户授权四轮演示任务，新增 docs/release-demo-plan.md / .json，优先于未划定Impact浏览器撤销及本地部署。SSR节点：电子工程师→电子经理→系统工程师→研发总监；ASR节点：应用工程师→应用经理→系统工程师→项目经理。按顺序只读展示，岗位标签不等于已配置实际岗位权限；通用REVIEWER授权边界不变。
