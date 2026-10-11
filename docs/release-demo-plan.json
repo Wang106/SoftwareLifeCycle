@@ -20,15 +20,23 @@
     },
     {
       "id": "release-demo-round-2",
-      "status": "in_progress",
+      "status": "completed_code",
       "depends_on": [
         "release-demo-round-1"
       ],
-      "title": "双语发布与审批进度页面"
+      "title": "双语发布与审批进度页面",
+      "evidence": {
+        "pr": 57,
+        "head_sha": "5b96d6a775d1dcab73079184a48fa2c5f0b7ade9",
+        "merge_sha": "2f60d7cd0c8038c47258caec35d674eeb2f8953b",
+        "feature_ci": 38141068310,
+        "main_ci": 38141752492,
+        "live_sample_loaded": false
+      }
     },
     {
       "id": "release-demo-round-3",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "release-demo-round-2"
       ],

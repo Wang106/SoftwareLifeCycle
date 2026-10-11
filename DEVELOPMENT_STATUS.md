@@ -1,5 +1,14 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-11 SSR / ASR 云端演示第三轮：精确发布证据（Codex / ChatGPT Work）
+
+从实际main2f60d7cd0c8038c47258caec35d674eeb2f8953b开始，无开放PR；已读取八项入口/进度/交接文件，较新PR56/57覆盖旧pending。第二轮PR57精确head5b96d6a775d1dcab73079184a48fa2c5f0b7ade9/CI38141068310与独立main CI38141752492三个必需job成功；2235后端/221 PG-module cases无skip、1329前端/Next/OpenNext。Cloudflare生产build0863ea19-5100-4d10-9cea-0fea4c65557c/version095a474a-9728-40d0-abdc-7d62d279f4cd成功；Actions部署/唤醒skipped，不算成功。Render API/schema/样例仍未核验。
+独立分支codex/release-demo-round-3：新增单独opt-in seed_release_evidence，固定命名空间1 SSR/2 ASR、三组件、SCR/验收/Issue与Software/Battery/Customer三项测试；两条READY+RELEASE成功链，一条APPROVED但当前快照无执行→NOT_READY+HOLD链。旧快照有PASS且与新快照hash相同，仍不得复用执行。样例的冻结/审批/Decision/审计均新建、同事务；调用方commit，重复保留旧/新执行与审批决策审计，碰撞外来产品拒绝，未接入旧seed/启动或实际提供方。不产生真实固件/身份/提交/量产授权。
+新增GET /api/v1/demo/release-evidence：固定最多三个Release隔离读取、原bounded Readiness、最新Decision与Approval/当前Snapshot精确绑定；旧RELEASE不覆盖当前证据失配。未安装/缺失不编造fallback。/demo/releases中英文展示实际规则/当前测试数、快照hash、Approval/Decision与精确DVP UUID+release/snapshot上下文链接；目录新增入口，成功/阻断Passport链接，docs/release-demo-script.md约12分钟演示脚本。APP_VERSION0.18.42；无新migration，head0023_impact_withdrawal_history不变。原Readiness执行覆盖语义未改，未宣称所有FAIL结果门控完成。
+本地新增8后端/6前端语义测试；后端8通过，先前13/14项定向Seed/health通过；真实PG需本PR既有CI执行，本机无PG。新HTTP测试先因SQLite跨线程/JSONB兼容失败，修复独立StaticPool/复制metadata后通过；前端全量曾报新增页本地化漏包，修正并重跑，不删既有断言/改测试或门控。Next/OpenNext与完整前端最终结果、精确feature CI/三个job/PG no-skips、合并main/provider证据记录本包PR；CI失败不合并。
+本地最终前端1336 passed/0 failed/0 skipped，Next/OpenNext生产bundle完成，disabled auth SSR检查成功；进度账本与diff检查通过。实际PG及全后端仍待本PR精确head CI，不称本地PG已执行。
+公共样例只读，OIDC/真实写入关闭，身份/秘密/依赖/CI/部署配置未改；公司内部部署暂缓。业务增量0：36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0。第一/二轮completed_code，第三轮in_progress；第四轮待确认Render工作区及真实浏览器权限，独立验证live API/schema、样例安装与桌面/移动双语，不将构建或Preview当完成。使用Codex/ChatGPT Work与授权GitHub连接/订阅，不调用付费模型API，不要求本机CLI/登录缓存，不启用Actions API开发。
+
 ## 2026-10-11 SSR / ASR 云端演示第二轮：双语审批进度（Codex / ChatGPT Work）
 
 最高优先级四轮任务继续。第一轮PR56真实合并main52d5f37568dbf753b51614f88736c3b68621833b；feature5866bacc429e1f9b2ec7cbd3dff3e88db9e06fc1/CI38139907977全部成功：2235后端、221 PostgreSQL-module cases/no skips、1319前端/Next/OpenNext。独立main CI38140420117仍在运行；Cloudflare生产build92db69a7-6998-4c29-b7c8-7f00c2b53080/version9eff77ce-ef76-4a49-9dd0-c60243d9808e已success，不能替代Render API/schema或实际样例加载。计划第一轮标completed_code，第二轮in_progress。
