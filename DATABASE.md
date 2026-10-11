@@ -491,3 +491,11 @@ registration/revocation and the16 active-session quota; session change and audit
 append share one transaction. Audit payload contains expiry only. Downgrade drops
 the table and index; disable authentication before an older frontend rollback and
 rotate the session key. Tombstone retention/backup policy remains unimplemented.
+
+## 0023_impact_withdrawal_history
+
+Extends append-only `issue_impact_assessments` with nullable legacy `action`, `context_seq BIGINT`, `after_withdrawal_id` and nullable technical `decision`. Existing rows and audit JSON are not rewritten. New inserts require explicit action and positive sequence; ASSESS/SUPERSEDE require a technical decision, WITHDRAW requires null decision/evidence and a predecessor. Same-context composite foreign keys, unique predecessor/sequence and non-self checks protect history. Original UPDATE/DELETE append-only triggers remain in force.
+
+All service writers lock Issue before allocating the next sequence and atomically appending the actor/body-bound audit. Context terminal selection includes withdrawals, so removing a judgment never revives an older independent judgment. The next judgment must explicitly confirm the terminal withdrawal. Sequence wins over future-dated legacy rows; old rows retain deterministic leaf timestamp/UUID ordering.
+
+Downgrade to 0022 succeeds only with legacy-null history. If any sequenced action/new confirmation exists, it fails before DDL because old readers would lose terminal semantics (even for new ordinary ASSESS/SUPERSEDE). Original audit/data must survive upgrade/downgrade/upgrade. New PG tests use disposable schemas only and cover legacy body/audit preservation, guarded downgrade, real lock contention, append-only constraints and 11,024 legacy events with bounded reads. Seed is unchanged; no test targets public/company databases.

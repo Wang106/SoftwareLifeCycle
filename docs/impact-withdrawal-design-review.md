@@ -163,3 +163,11 @@ Render monitor 技能的只读 list_services 检查返回 no workspace selected�
 本包 PR 为 [#54](https://github.com/Wang106/SoftwareLifeCycle/pull/54)，首份文档提交 `44d78d97246c2b5e5903c5a4c03c1a51c2e1bcd3`；随后收紧无损降级条件并补充此检查点，最终精确 head 及 CI/merge 以 PR 记录为准。
 PR 描述记录最终 head、三个 job、真实 merge SHA、独立 main CI、Cloudflare/Render/Actions 的实际状态。HANDOFF 顶部及末尾保存本包，远端合并证据覆盖 plus-tasks 的旧 pending；该队列不在本包允许文件范围，故不编辑。
 本包真实合并并核验后暂停当前自动任务；不重复执行已完成审查，也不把下一实现提案当成自动授权。skipped/unverified 不称部署成功。
+
+## 10. 已授权实现检查点 — 2026-10-11
+
+PR54 真实合并到 1615ab72c0b11deea21674f2bfe8a91dde3c8197 后，用户明确授权 impact-withdrawal-history-backend-read，覆盖第8节旧“待授权”描述。本实现采用扩展动作历史方案，revision 0023_impact_withdrawal_history、API0.18.41；原历史和审计不回填，锁内 sequence、新 WITHDRAW、显式 after_withdrawal_id、原请求 actor/全正文指纹/原审计重放均落实。当前 Package 的最终精确 head/真实 PG/full CI/merge/main/provider 证据以其 PR 为准，不复用审查包成功。
+
+实际消费者额外包括 frontend/components/issue-collections.tsx；新增路由必须同步 backend/app/write_contracts.py 及 main.py API 版本。3 个既有测试精确计数/head 常量从14/0022更新到15/0023；旧迁移测试在0022插入旧数据再往返，不用新写者伪造旧行，不移除旧断言。其余既有迁移、依赖、CI、真实门控未修改。新增数据库测试含10,000旧独立根、1,024旧替代链、原审计逐字段恢复、真实锁争用及EXPLAIN/索引/有界结果检查。
+
+当前撤销仅后台写入与双语只读展示，浏览器撤销提交/确认/恢复及生产身份/部署仍是下一待划定范围。公共样例只读、OIDC/真实提交关闭，不因本包或文档提高36/44业务验收。

@@ -77,7 +77,15 @@ def test_audit_interruption_leaves_original_effective_and_lock_reusable(evidence
 
 
 def test_migration_preserves_legacy_rows_and_refuses_loss_of_correction_history(evidence_context):
-    engine, ids = evidence_context; original = root(engine, ids); config = Config('alembic.ini')
+    engine, ids = evidence_context; original = command_input('impact', ids); config = Config('alembic.ini')
+    # A legacy upgrade fixture must be written before the sequenced-history revision.
+    migration.downgrade(config, '0022_acceptance_history')
+    with engine.begin() as db:
+        db.execute(text('''INSERT INTO issue_impact_assessments
+            (id, issue_id, release_id, snapshot_id, decision, reason, evidence_ref, actor_name, created_at)
+            VALUES (:id,:issue,:release,:snapshot,:decision,:reason,:evidence,:actor,CURRENT_TIMESTAMP)'''),
+            dict(id=original.request_id,issue=ids['issue'],release=ids['release'],snapshot=ids['snapshot'],
+                decision=original.decision,reason=original.reason,evidence=original.evidence_ref,actor=original.actor_name))
     migration.downgrade(config, '0020_global_role_status')
     with engine.connect() as db:
         assert db.scalar(text('SELECT decision FROM issue_impact_assessments WHERE id=:id'), {'id': original.request_id}) == original.decision
@@ -85,6 +93,7 @@ def test_migration_preserves_legacy_rows_and_refuses_loss_of_correction_history(
     with Session(engine) as db:
         legacy = db.get(IssueImpactAssessment, original.request_id)
         assert legacy.supersedes_id is legacy.correction_reason is None
+        assert legacy.action is legacy.context_seq is legacy.after_withdrawal_id is None
         body = corrected(ids, original); record_assessment(db, 'ISSUE-ORIGINAL', body); db.commit()
     with pytest.raises(DBAPIError, match='Cannot downgrade while impact corrections exist'):
         migration.downgrade(config, '0020_global_role_status')

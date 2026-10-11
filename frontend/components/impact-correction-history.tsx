@@ -6,9 +6,10 @@ import type { ImpactCorrection } from '../lib/issue-views';
 export default function ImpactCorrectionHistory({ judgment, issueNo }: { judgment: ImpactCorrection & {id?:string;release_id?:string;snapshot_id?:string|null;decision?:string|null}; issueNo?:string }) {
   // A bounded preparation link is review context, never evidence of current effectiveness.
   const ids=[judgment.id,judgment.release_id,judgment.snapshot_id];
-  const canPrepare=typeof issueNo==='string'&&!!issueNo.trim()&&issueNo.length<=50&&judgment.superseded_by_id===null&&
+  const canPrepare=typeof issueNo==='string'&&!!issueNo.trim()&&issueNo.length<=50&&judgment.superseded_by_id===null&&judgment.action!=='WITHDRAW'&&judgment.is_context_terminal!==false&&
     ids.every(id=>typeof id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id))&&
     ['AFFECTED','NOT_AFFECTED','NEEDS_REVIEW'].includes(judgment.decision??'');
+  if (judgment.action==='WITHDRAW') return <Localized><div className="muted"><p><Localized>{'Impact judgment withdrawn'}</Localized></p><p><Localized>{'Withdrawal reason'}</Localized>: {judgment.correction_reason}</p><p><Localized>{'Withdraws judgment'}</Localized>: <code>{judgment.supersedes_id}</code></p><Link href={'/activity/'+encodeURIComponent('EVT-IMPACT-'+judgment.id)} target="_blank" rel="noopener noreferrer" prefetch={false}><Localized>{'Open original withdrawal audit'}</Localized></Link><p><Localized>{'Withdrawal does not revive older judgments or grant release permission.'}</Localized></p></div></Localized>;
   if (!judgment.supersedes_id && !judgment.superseded_by_id && !canPrepare) return null;
   const audit = (id: string) => '/activity/' + encodeURIComponent('EVT-IMPACT-' + id);
   return <Localized><div className="muted">
