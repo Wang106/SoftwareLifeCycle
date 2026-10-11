@@ -1,5 +1,14 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-11 Impact 撤销设计审查（Codex / ChatGPT Work 云端）
+
+当前包仅 impact-withdrawal-design-review，三份文档；基线远端 main d13c42af3b6f95a3d4f31b5c060db3ac967b6316，开始无开放PR。已核对真实合并PR47/48及PR50/51，较新代码覆盖旧pending，不重复Acceptance或Impact SUPERSEDE。
+设计见 [docs/impact-withdrawal-design-review.md](docs/impact-withdrawal-design-review.md)：比较扩展动作历史与独立撤销表；推荐增量动作历史、旧行不回填正文、统一上下文终端与锁内序号。WITHDRAW不等于NOT_AFFECTED，不复活旧独立根；显式新判断确认当前撤销，旧撤销重放只确认原操作。列出完整消费者、锁/原子审计/actor与全正文绑定、旧库无损及拒绝丢语义降级、真实PG/恢复/长历史有界矩阵和下一包精确路径。
+本轮Codex直接在Work云端使用GitHub连接；未调用付费API、未启动用户本地常驻CLI、无登录缓存上传。历史本地CLI限制不代表云端连接不能开发。
+API0.18.40/schema0022不变；没有后端/迁移/界面/测试/依赖/CI/队列或真实门控修改，Seed代码未变。新revision0023仅设计提案。公共样例只读、OIDC/真实提交关闭、内网未部署。
+本地进度 --check、52项既有标准库回归及diff/三文件边界检查通过；未本地重跑后端/PG/Next/OpenNext。Render只读list_services返回未选择工作区，live API/schema/部署仍未核验，不自行选择。精确PR head完整CI、合并/main/provider状态分开记录：最终精确证据以本包PR描述为准，未核验和skipped不称成功。合并证据覆盖plus-tasks旧pending，队列不在允许路径内所以不修改。所有已授权任务完成后暂停当前自动任务；下一实现包impact-withdrawal-history-backend-read尚未授权，不自行扩大范围。
+业务验收增量0：36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。真实提供方/浏览器/管理员/内网验收仍未完成。
+
 ## 2026-10-11 Impact SUPERSEDE 双语界面与手动恢复 B（Codex）
 用户10:19“继续”承接下一包B；仅实现既有SUPERSEDE的双语确认/原结果/手动导出与只读原审计恢复导入，不扩大到C撤销/数据库迁移或宽泛disabled队列。Codex在Work直接开发，未启动用户本地Plus CLI或付费API worker，无登录缓存上传。
 基线main0c622c54c4db9f7b1581752b44713192370759a0（PR50），无开放PR/工作区清洁。核验精确main CI38058331160成功：2180后端446.87秒/203 PostgreSQL-module cases无skip、1277前端；backend114231271610/frontend114231271424/acceptance114232825373。生产Cloudflare builda21a67f1-f6bd-4985-a01d-aa4604b48fb1/check114231558199/version49343597-3549-4dd4-a709-abb9f4e5f677成功；Actions deploy/wake跳过。本包精确head/main CI及生产须独立核验，最终证据记录本包PR描述，不复用基线成功。
@@ -3541,3 +3550,12 @@ Test Release/Deployment/Changeover双语确认发送、原审计查询、原请�
 启动器新增 --show-tasks，无工具/网络/模型查看清单；--check/启动/恢复先校验模式/证据/依赖/文档边界。52项标准库回归通过（新增6队列测试），任务/prompt预览、进度--check和diff检查通过。清单只是本地结构检查，真实远端合并/CI/较新HANDOFF须在会话内再核验，不把旧pending或模拟测试当完成。
 仍由用户在自己机器启动；当前Work未安装codex/gh、未验收用户Plus登录/实际CLI/Git推送/沙箱/跨会话，不称无人值守自动开发已运行。无API调用、凭据上传、账户/真实门控变更；API调度关闭。本包精确head完整CI/合并/main/provider证据另记PR描述。
 36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。公共样例只读、OIDC/提交关闭、内网未部署；Render live API/schema及真实浏览器/提供方验收待做。用户下一步 --show-tasks/--check 后启动或恢复，先复核当前证据，再执行文档审查。
+
+## 2026-10-11 Impact 撤销设计审查（Codex / ChatGPT Work 云端）
+
+当前包仅 impact-withdrawal-design-review，三份文档；基线远端 main d13c42af3b6f95a3d4f31b5c060db3ac967b6316，开始无开放PR。已核对真实合并PR47/48及PR50/51，较新代码覆盖旧pending，不重复Acceptance或Impact SUPERSEDE。
+设计见 [docs/impact-withdrawal-design-review.md](docs/impact-withdrawal-design-review.md)：比较扩展动作历史与独立撤销表；推荐增量动作历史、旧行不回填正文、统一上下文终端与锁内序号。WITHDRAW不等于NOT_AFFECTED，不复活旧独立根；显式新判断确认当前撤销，旧撤销重放只确认原操作。列出完整消费者、锁/原子审计/actor与全正文绑定、旧库无损及拒绝丢语义降级、真实PG/恢复/长历史有界矩阵和下一包精确路径。
+本轮Codex直接在Work云端使用GitHub连接；未调用付费API、未启动用户本地常驻CLI、无登录缓存上传。历史本地CLI限制不代表云端连接不能开发。
+API0.18.40/schema0022不变；没有后端/迁移/界面/测试/依赖/CI/队列或真实门控修改，Seed代码未变。新revision0023仅设计提案。公共样例只读、OIDC/真实提交关闭、内网未部署。
+本地进度 --check、52项既有标准库回归及diff/三文件边界检查通过；未本地重跑后端/PG/Next/OpenNext。Render只读list_services返回未选择工作区，live API/schema/部署仍未核验，不自行选择。精确PR head完整CI、合并/main/provider状态分开记录：最终精确证据以本包PR描述为准，未核验和skipped不称成功。合并证据覆盖plus-tasks旧pending，队列不在允许路径内所以不修改。所有已授权任务完成后暂停当前自动任务；下一实现包impact-withdrawal-history-backend-read尚未授权，不自行扩大范围。
+业务验收增量0：36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。真实提供方/浏览器/管理员/内网验收仍未完成。
