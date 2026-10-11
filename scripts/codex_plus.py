@@ -14,16 +14,19 @@ PROMPT = """继续开发 Wang106/SoftwareLifeCycle，使用当前 ChatGPT Plus �
 先读 AGENTS.md、START_HERE.md、REQUIREMENTS.md、DEVELOPMENT_STATUS.md、ROADMAP.md、
 docs/development-plan-progress.json 和 HANDOFF.md 最新记录；核对最新 main、开放 PR 和精确 CI。
 保留所有已有改动，已有未完成 PR 优先恢复，不重复实现，不 force-push。
-按 docs/automation/tasks.json 中 enabled 的任务范围开发；已完成任务根据实际代码/合并 PR 跳过。
+按 docs/automation/plus-tasks.json 中 pending 的任务范围开发；completed 的证据先核对实际合并PR。
+该清单仅用于当前Plus本地会话，不启用旧API队列；发现开放PR先恢复相关任务。
 Acceptance 更正界面/恢复已由 PR47/48 合并；先核对实际代码，不重复开发。
-启用任务完成时明确停止；不要自行开启 disabled 的 Impact 撤销/迁移等宽泛范围。
+下一项是Impact撤销模型/迁移方案审查，只允许该任务列出的文档路径，不实现代码或数据库迁移。
+任务完成时明确停止；不要自行扩大到撤销实现、评审下游或离线运营范围。
 这些范围内正常开发、测试、提交和成功 CI 后合并已有用户授权，不需逐包询问是否继续。
 每包在独立分支做针对性测试，更新 DEVELOPMENT_STATUS.md/HANDOFF.md，提交并推送 PR。
 用已有用户 GitHub 登录及 gh/git；不可把 ChatGPT 登录缓存或凭据上传 GitHub。
 合并前核对当前 PR head SHA 的三个必需 CI job，包含最新 main，遵守分支保护。
 再核对合并后 main CI 和实际部署证据，不能将 skipped/unverified 说成成功。
 在 HANDOFF 中记录精确分支/提交/PR、已做测试、待办、阻塞和下一包；GitHub 是跨机器恢复源。
-如额度用尽、登录/权限缺失、出现冲突或队列启用任务完成，保存现有工作并停止，明确原因。
+清单完成标记须核对真实合并证据，不能把待验收任务当完成；较新PR/HANDOFF证据覆盖旧pending记录。
+如额度用尽、登录/权限缺失、出现冲突或pending任务完成，保存现有工作并停止，明确原因。
 关闭会话之前尽量提交并推送安全检查点；未推送的本地改动不能保证跨机器恢复。
 公共样例保持只读，真实身份/OIDC/提交门控关闭，内网未部署；不设置真实业务权限。
 报告七模块和七计划百分比。CLI 的安全授权提示按实际需要由用户处理。
@@ -54,6 +57,59 @@ class CheckFailed(Exception):
     pass
 
 
+def load_plus_tasks():
+    """Read only the local queue; no API-controller ownership or login data."""
+    def unique_pairs(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate key")
+            result[key] = value
+        return result
+
+    data = json.loads((ROOT / "docs/automation/plus-tasks.json").read_text(), object_pairs_hook=unique_pairs)
+    if (data.get("schema") != 1 or data.get("mode") != "chatgpt-local"
+            or data.get("repository") != "Wang106/SoftwareLifeCycle"
+            or not isinstance(data.get("tasks"), list) or not data["tasks"]):
+        raise ValueError("invalid Plus queue")
+    known = set()
+    for task in data["tasks"]:
+        tid = task.get("id")
+        if (not isinstance(tid, str) or not re.fullmatch(r"[a-z][a-z0-9-]{0,63}", tid)
+                or tid in known or not isinstance(task.get("title"), str) or not task["title"]
+                or task.get("status") not in ("pending", "completed", "blocked")
+                or not isinstance(task.get("depends_on"), list)
+                or not set(task["depends_on"]).issubset(known)):
+            raise ValueError("invalid Plus task")
+        if task["status"] == "completed":
+            evidence = task.get("evidence", {})
+            if (type(evidence.get("pr")) is not int or evidence["pr"] <= 0
+                    or not re.fullmatch(r"[0-9a-f]{40}", str(evidence.get("merge_sha", "")))):
+                raise ValueError("completion needs merged PR evidence")
+        else:
+            if not task.get("allowed_paths") or not task.get("acceptance"):
+                raise ValueError("unfinished task needs scope and acceptance")
+            # The currently authorized next package is documentation-only.
+            for path in task["allowed_paths"]:
+                if (not isinstance(path, str) or path.startswith("/") or ".." in path.split("/")
+                        or not re.fullmatch(r"[A-Za-z0-9_./-]+", path)
+                        or not (path.startswith("docs/") and path.endswith(".md")
+                                or path in ("DEVELOPMENT_STATUS.md", "HANDOFF.md"))):
+                    raise ValueError("Plus review task must stay in documentation")
+        known.add(tid)
+    return data["tasks"]
+
+
+def task_summary(tasks):
+    completed = {task["id"] for task in tasks if task["status"] == "completed"}
+    ready = [task for task in tasks if task["status"] == "pending"
+             and set(task["depends_on"]).issubset(completed)]
+    lines = [f"{task['status']}: {task['id']} — {task['title']}" for task in tasks]
+    lines.append("下一待核对任务：" + (ready[0]["id"] if ready else "无；停止并报告阻塞或队列完成。"))
+    lines.append("本地清单不是远端验收；会话须核对最新main/开放PR/合并证据后执行。")
+    return lines
+
+
 def read_command(command, env):
     """Bounded read-only probe; never print credential-bearing subprocess output."""
     try:
@@ -69,6 +125,10 @@ def read_command(command, env):
 def check_environment(env):
     """Inspect prerequisites without fetching, changing git, or invoking a model."""
     errors, notices = [], []
+    try:
+        notices.extend(task_summary(load_plus_tasks()))
+    except (OSError, ValueError, TypeError, AttributeError):
+        errors.append("Plus任务清单无法验证；先修复 docs/automation/plus-tasks.json，未启动模型。")
     if os.name == "nt":
         return ["请在 Windows WSL、Linux 或 macOS 中运行。"], []
     executables = {name: shutil.which(name) for name in ("codex", "git", "gh", "node")}
@@ -126,10 +186,18 @@ def main():
     parser.add_argument("--resume", action="store_true", help="Pick a saved session for this repository")
     parser.add_argument("--print-prompt", action="store_true", help="Print the task instructions without launching Codex")
     parser.add_argument("--check", action="store_true", help="Read-only prerequisites and GitHub access check; no model call")
+    parser.add_argument("--show-tasks", action="store_true", help="Show local task scope without tools, network or model calls")
     args = parser.parse_args()
     if args.print_prompt:
         print(PROMPT)
         return 0
+    if args.show_tasks:
+        try:
+            print("\n".join(task_summary(load_plus_tasks())))
+            return 0
+        except (OSError, ValueError, TypeError, AttributeError):
+            print("Plus任务清单无法验证；未启动模型。", file=sys.stderr)
+            return 2
     env = session_env(os.environ)
     errors, notices = check_environment(env)
     for notice in notices:

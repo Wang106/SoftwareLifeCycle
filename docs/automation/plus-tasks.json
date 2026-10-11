@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "mode": "chatgpt-local",
+  "repository": "Wang106/SoftwareLifeCycle",
+  "tasks": [
+    {
+      "id": "acceptance-correction-ui",
+      "title": "Acceptance 更正双语确认与原始结果",
+      "status": "completed",
+      "depends_on": [],
+      "evidence": {"pr": 47, "merge_sha": "88b578f8dbf20711a0078c7760f39a5fc2173b7c"}
+    },
+    {
+      "id": "acceptance-correction-recovery-ui",
+      "title": "Acceptance 手动导出与只读恢复导入",
+      "status": "completed",
+      "depends_on": ["acceptance-correction-ui"],
+      "evidence": {"pr": 48, "merge_sha": "995366cd3c5a5b0d06722aa53d980f21cf709bd8"}
+    },
+    {
+      "id": "impact-withdrawal-design-review",
+      "title": "Impact 撤销模型与迁移方案审查（仅文档）",
+      "status": "pending",
+      "depends_on": ["acceptance-correction-recovery-ui"],
+      "allowed_paths": [
+        "docs/impact-withdrawal-design-review.md",
+        "DEVELOPMENT_STATUS.md",
+        "HANDOFF.md"
+      ],
+      "acceptance": [
+        "先核对最新 main/PR50/PR51、Impact 模型、写入服务、历史有效读取、全部消费者及当前迁移头",
+        "比较扩展历史表与独立撤销表，明确上下文终端语义、后续新判断及旧撤销重放；撤销不得复活旧独立判断，也不等于 NOT_AFFECTED",
+        "逐项列出需要修改的读取/就绪消费者、锁与原子审计、原请求/actor绑定、旧数据兼容和有撤销时拒绝丢语义降级",
+        "提出真实 PostgreSQL 并发、旧库升降级、原审计恢复及有界长历史测试矩阵；写明下一实现包的精确路径与验收条件",
+        "本任务不实现后端/迁移/界面，不改CI/依赖/调度或真实门控；文档完成不增加业务验收百分比",
+        "更新交接、提交PR，精确head三个必需CI成功后按既有授权合并；核对main/provider，完成后停止，不自行扩大到实现"
+      ]
+    }
+  ]
+}
