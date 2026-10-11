@@ -1895,5 +1895,19 @@
   "Restore an original correction audit query": "恢复原更正审计查询",
   "Paste correction recovery text exported from this exact site. Import does not send, retry or query automatically.": "请粘贴此精确站点导出的更正恢复文本。导入不会自动发送、重试或查询。",
   "Correction recovery text": "更正恢复文本",
-  "Import correction recovery without sending": "导入更正恢复且不发送"
+  "Import correction recovery without sending": "导入更正恢复且不发送",
+  "Evidence reference": "证据引用",
+  "Replace an impact judgment": "替代一个影响判断",
+  "Replacement appends a complete judgment to the same Issue, Release and frozen Snapshot. The API checks the current predecessor and permission. Ordinary assessment uses its separate form.": "替代操作在同一 Issue、发布和冻结快照下追加完整判断。API 会核对当前前驱及权限；普通判断使用独立表单。",
+  "Impact correction submission is disabled in this environment.": "此环境未启用影响更正提交。",
+  "The impact correction context or request is invalid.": "影响更正上下文或请求无效。",
+  "Predecessor judgment UUID": "前驱判断 UUID",
+  "Predecessor judgment": "前驱判断",
+  "Replacement judgment": "替代后的判断",
+  "Frozen snapshot UUID": "冻结快照 UUID",
+  "I confirm this exact Issue, Release, frozen Snapshot, predecessor, new judgment, evidence, reasons and request ID.": "我确认此精确 Issue、发布、冻结快照、前驱、新判断、证据、两项原因及请求 ID。",
+  "Impact correction result": "影响更正结果",
+  "This confirms the original impact replacement only. Current impact, test success and release permission are separate observations.": "此结果只确认原影响替代操作。当前影响、测试通过及发布许可需分别核对。",
+  "Prepare replacement of this judgment →": "准备替代此判断 →",
+  "The API rechecks the current predecessor and frozen context. This history link does not grant permission or confirm an operation.": "API 会重新核对当前前驱和冻结上下文。此历史入口不授予权限，也不确认操作结果。"
 }

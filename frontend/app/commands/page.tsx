@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured, evidenceSubmissionConfigured, resourceSubmissionConfigured, acceptanceCorrectionSubmissionConfigured } from '../../lib/browser-auth';
+import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured, evidenceSubmissionConfigured, resourceSubmissionConfigured, acceptanceCorrectionSubmissionConfigured, impactCorrectionSubmissionConfigured } from '../../lib/browser-auth';
 import { resolveSession, SESSION_COOKIE } from '../../lib/browser-session';
 
 import { Localized, LocalizedAttributes } from "../../components/localized";
@@ -11,7 +11,7 @@ export default async function Page({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const query = await searchParams;
-  const operation: Operation = query.operation === 'actual' || query.operation === 'batch' || query.operation === 'approval' || query.operation === 'decision' || query.operation === 'impact' || query.operation === 'acceptance' || query.operation === 'resource' || query.operation === 'delivery' || query.operation === 'distribution' || query.operation === 'authorization' || query.operation === 'test-release' || query.operation === 'deployment' || query.operation === 'changeover' ? query.operation : 'snapshot';
+  const operation: Operation = query.operation === 'impact-correction' ? 'impact' : query.operation === 'actual' || query.operation === 'batch' || query.operation === 'approval' || query.operation === 'decision' || query.operation === 'impact' || query.operation === 'acceptance' || query.operation === 'resource' || query.operation === 'delivery' || query.operation === 'distribution' || query.operation === 'authorization' || query.operation === 'test-release' || query.operation === 'deployment' || query.operation === 'changeover' ? query.operation : 'snapshot';
   const target = typeof query.target === 'string' ? query.target.slice(0, 80) : '';
   const step = typeof query.step === 'string' && query.step.length <= 36 ? query.step : '';
   const bounded = (name: string, max = 36) => typeof query[name] === 'string' && (query[name] as string).length <= max ? query[name] as string : '';
@@ -25,10 +25,13 @@ export default async function Page({ searchParams }: {
   const productionConfigured = productionSubmissionConfigured(process.env, config);
   const evidenceConfigured = evidenceSubmissionConfigured(process.env, config);
   const resourceConfigured = resourceSubmissionConfigured(process.env, config);
-  const correctionContextRequested = query.predecessor !== undefined || query.correction_action !== undefined;
+  const impactCorrectionContextRequested = query.operation === 'impact-correction';
+  const correctionContextRequested = !impactCorrectionContextRequested && (query.predecessor !== undefined || query.correction_action !== undefined);
   const correctionConfigured = correctionContextRequested && acceptanceCorrectionSubmissionConfigured(process.env, config);
   const AcceptanceCorrectionWorkbench = correctionContextRequested ? (await import('../../components/acceptance-correction-workbench')).default : null;
-  const anyConfigured = configured || governanceConfigured || distributionConfigured || productionConfigured || evidenceConfigured || resourceConfigured || correctionConfigured;
+  const impactCorrectionConfigured = impactCorrectionContextRequested && impactCorrectionSubmissionConfigured(process.env, config);
+  const ImpactCorrectionWorkbench = impactCorrectionContextRequested ? (await import('../../components/impact-correction-workbench')).default : null;
+  const anyConfigured = configured || governanceConfigured || distributionConfigured || productionConfigured || evidenceConfigured || resourceConfigured || correctionConfigured || impactCorrectionConfigured;
   const values = anyConfigured ? (await cookies()).getAll(SESSION_COOKIE) : [];
   const identity = anyConfigured && config && values.length === 1 ? await resolveSession(config.session, values[0].value) : null;
   const recoveryEnabled = configured && identity !== null;
@@ -50,6 +53,10 @@ export default async function Page({ searchParams }: {
       previousAction:bounded('previous_action',10)||'ASSIGN',action:bounded('correction_action',10)||'SUPERSEDE'}}
       submissionEnabled={correctionConfigured && identity !== null && identity.read_only_mode === false}
       recoveryEnabled={correctionConfigured && identity !== null}/> }
+    {ImpactCorrectionWorkbench && <ImpactCorrectionWorkbench initialContext={{target,release:bounded('release'),snapshot:bounded('snapshot'),predecessor:bounded('predecessor'),
+      previousDecision:bounded('previous_decision',20)}}
+      submissionEnabled={impactCorrectionConfigured && identity !== null && identity.read_only_mode === false}
+      recoveryEnabled={impactCorrectionConfigured && identity !== null}/> }
     <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} productionSubmissionEnabled={productionSubmissionEnabled} productionRecoveryEnabled={productionRecoveryEnabled} evidenceSubmissionEnabled={evidenceSubmissionEnabled} evidenceRecoveryEnabled={evidenceRecoveryEnabled} resourceSubmissionEnabled={resourceSubmissionEnabled} resourceRecoveryEnabled={resourceRecoveryEnabled} />
   </>;
 }

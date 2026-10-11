@@ -1,0 +1,2 @@
+const base=require('./impact-correction.cjs');
+module.exports={...base,props:(decision='NEEDS_REVIEW')=>{const c=base.command(decision);return {initialContext:{target:c.target,release:c.body.release_id,snapshot:c.body.snapshot_id,predecessor:c.predecessor.id,previousDecision:c.predecessor.decision,decision,actor:c.body.actor_name,reason:c.body.reason,evidence:c.body.evidence_ref||'',correctionReason:c.body.correction_reason},submissionEnabled:true,recoveryEnabled:true};}};

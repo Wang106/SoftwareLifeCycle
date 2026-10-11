@@ -2,6 +2,8 @@
 
 更新：2026-10-10（Asia/Shanghai）。模式：Codex / Work；没有启动本地 Plus CLI 或付费 API worker。
 
+2026-10-11更新：A已在PR50验收合并，main0c622c54c4db9f7b1581752b44713192370759a0的完整CI与Cloudflare生产成功；用户10:19“继续”推进本文件已切分的B。B仅现有SUPERSEDE双语确认/原结果/手动恢复，契约docs/impact-correction-ui-recovery.md；C撤销/模型/数据库迁移仍先独立审查，不启用宽泛队列或实际写入。本条覆盖下文早期B待授权的历史状态。
+
 状态：用户于2026-10-10 21:40（Asia/Shanghai）确认仅方案A继续，规划PR49经精确head完整CI成功后合并。A由Codex在Work直接开发；B双语界面与C撤销/数据库迁移仍待后续具体授权。docs/automation/tasks.json 的宽泛任务enabled/auto_merge不变，不启用付费API调度或实际业务写入。下文保留范围基准，A协议交付契约见docs/impact-correction-submission.md；不能以A授权覆盖B/C及全部下游政策。
 
 ## 已核对基线
