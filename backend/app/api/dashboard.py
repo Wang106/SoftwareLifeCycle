@@ -632,12 +632,16 @@ def dvp_item_detail(item_id: uuid.UUID, db: Session = Depends(get_db)):
 
 
 def _application_release(db: Session, version: str) -> Release | None:
-    return db.scalars(
+    rows = db.scalars(
         select(Release).where(
             Release.release_type == "APPLICATION",
             Release.version == version,
         )
-    ).first()
+        .order_by(Release.id).limit(2)
+    ).all()
+    if len(rows) > 1:
+        raise HTTPException(status_code=409, detail="ambiguous release version; use release UUID catalog")
+    return rows[0] if rows else None
 
 
 def release_overview(version: str, db: Session = Depends(get_db)):

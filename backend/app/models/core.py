@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, String, Text, UniqueConstraint, Index, func, literal
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db import Base
@@ -48,14 +48,19 @@ class SoftwareProduct(Base):
 
 class Release(Base):
     __tablename__ = "releases"
-    __table_args__ = (UniqueConstraint("software_id", "release_type", "version"), CheckConstraint("release_type IN ('STANDARD','APPLICATION')", name="ck_release_type"))
+    __table_args__ = (CheckConstraint("release_type IN ('STANDARD','APPLICATION')", name="ck_release_type"),
+        CheckConstraint("(release_type = 'APPLICATION' OR customer_scope_id IS NULL) AND (customer_scope_id IS NULL OR customer_scope_id <> '00000000-0000-0000-0000-000000000000')", name="ck_release_customer_scope"))
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uid)
     software_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("software_products.id"), nullable=False)
+    customer_scope_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("customers.id"))
     release_type: Mapped[str] = mapped_column(String(20), nullable=False)
     version: Mapped[str] = mapped_column(String(100), nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="DRAFT")
     release_notes: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+Index('uq_release_customer_version', Release.software_id, Release.release_type, Release.version,
+      func.coalesce(Release.customer_scope_id, literal(uuid.UUID(int=0), type_=UUID(as_uuid=True))), unique=True)
 
 class StandardReleaseDetail(Base):
     __tablename__ = "standard_release_details"

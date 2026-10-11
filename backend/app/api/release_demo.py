@@ -13,6 +13,29 @@ from app.seed_release_evidence import key, VERSIONS, PRODUCT_CODE
 router = APIRouter(prefix='/api/v1/demo', tags=['read-only sample evidence'])
 
 
+@router.get('/zfi-import')
+def zfi_import(db: Session = Depends(get_db)):
+    from app.seed_zfi_demo import key as identity, manifest, manifest_hash, MARKER
+    from app.models.audit import AuditEvent
+    data = manifest(); marker = db.get(AuditEvent, identity('import'))
+    if marker is None or marker.event_no != MARKER or marker.payload_json.get('manifest_sha256') != manifest_hash(data):
+        return {'sample_only':True,'initialized':False,'items':[]}
+    refs = data['standards'] + data['applications']
+    releases = {r.id:r for r in db.scalars(select(Release).where(Release.id.in_([identity(r['ref']) for r in refs])))}
+    approvals = {a.id:a for a in db.scalars(select(ApprovalRequest).where(ApprovalRequest.id.in_([identity(r['ref']+'-approval') for r in refs])))}
+    items = []
+    for row in refs:
+        release = releases.get(identity(row['ref'])); approval = approvals.get(identity(row['ref']+'-approval'))
+        if release is None: continue
+        items.append({'source_ref':row['ref'],'release_id':str(release.id),'version':release.version,
+            'release_type':release.release_type,'product':row['product'],'customer':row.get('customer'),
+            'project_code':row.get('project_code'),'record_status':release.status,
+            'approval_no':approval.approval_no if approval else None,'approval_status':approval.status if approval else None,
+            'source_release_date':row.get('release_date'),'supplied_artifacts':0,'supplied_test_evidence':0})
+    return {'sample_only':True,'initialized':len(items)==20 and len(approvals)==20,'import_event_no':MARKER,
+        'corrections':data['corrections'],'synthetic_approvals':True,'release_decisions_created':0,'items':items}
+
+
 @router.get('/release-evidence')
 def evidence(db: Session = Depends(get_db)):
     product = db.get(SoftwareProduct, key('product'))
