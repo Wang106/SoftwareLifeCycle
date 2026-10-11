@@ -2,7 +2,7 @@
 
 ## 2026-10-11 Impact 撤销历史后台与只读展示（Codex / ChatGPT Work）
 
-用户明确授权 `impact-withdrawal-history-backend-read`；从真实 main `1615ab72c0b11deea21674f2bfe8a91dde3c8197`（PR54 已合并审查）开始，无开放 PR。独立分支 `codex/impact-withdrawal-history-backend-read`，不直接推 main、不改保护或 force-push；本包精确提交、完整 CI、合并与提供方证据记录于本包 PR，未核验不得称成功。
+用户明确授权 `impact-withdrawal-history-backend-read`；从真实 main `1615ab72c0b11deea21674f2bfe8a91dde3c8197`（PR54 已合并审查）开始，无开放 PR。独立分支 `codex/impact-withdrawal-history-backend-read`，不直接推 main、不改保护或 force-push；本包 PR [#55](https://github.com/Wang106/SoftwareLifeCycle/pull/55)，实现提交 `4f387649e611be2aca1daaa180462a33e954a5e2`；首次完整 CI `38114147873` 启动，最终 head/完整 CI/合并与提供方证据记录于 PR，未核验不得称成功。
 实现增量 `0023_impact_withdrawal_history`（前驱 `0022_acceptance_history`），API `0.18.41`。旧判断/原审计逐字段保留，旧 action/seq 为 NULL，仅读取时推导；新行必须显式 ASSESS/SUPERSEDE/WITHDRAW 和锁内上下文序号。WITHDRAW 无技术 decision/evidence，不复活旧独立根；新判断明确确认当前撤销 UUID，新 request_id。原撤销重放只返回原操作和独立当前观察，不再撤销后来判断。
 新增 POST `/api/v1/issues/{issue_no}/impact-withdrawals`：当前 Issue/Release/FROZEN Snapshot/前驱检查、Issue FOR UPDATE、统一写者序号、同事务审计、actor/完整规范化请求指纹绑定；返回 201/200/409。既有 POST assessment 新增 after_withdrawal_id。共享上下文终端 SQL 覆盖当前证据、候选、兼容读取、完整历史分页；JUDGED/WITHDRAWN/UNASSESSED 与技术判断分离，history_count 与 assessment_count 分计。Issue/Impact/候选/历史双语只读展示保留原 UUID、原因和原审计链接，不增加撤销浏览器提交/恢复协议或真实门控。
 同步真实消费者 `frontend/components/issue-collections.tsx` 和写接口契约清单（15 业务命令），API 版本；已有 3 个固定计数/head 测试仅更新精确常量，既有 PG 迁移测试改在旧 schema 写旧行，避免把新序号行伪称旧数据，原断言全部保留。Seed 与依赖/CI/调度/身份配置未改。
