@@ -36,19 +36,41 @@
     },
     {
       "id": "release-demo-round-3",
-      "status": "in_progress",
+      "status": "completed_code",
       "depends_on": [
         "release-demo-round-2"
       ],
-      "title": "审批到正式发布证据及演示脚本"
+      "title": "审批到正式发布证据及演示脚本",
+      "evidence": {
+        "pr": 58,
+        "head_sha": "5c8efe2bdc179da58e64e27eb9ad6d5f44a38318",
+        "merge_sha": "86153aca191f7a71649e3231d1cec85b954a249e",
+        "main_recovery_pr": 59,
+        "main_recovery_ci": 38146430955,
+        "live_sample_loaded": false
+      }
     },
     {
       "id": "release-demo-round-4",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "release-demo-round-3"
       ],
-      "title": "云端提供方与浏览器验收"
+      "title": "云端提供方与浏览器验收",
+      "evidence": {
+        "excel_import_pr": 60,
+        "merge_sha": "9dba7e948ac1d35d5544663e65d0b4686fc6babc",
+        "main_ci": 38160754690,
+        "api_version": "0.18.43",
+        "database_revision": "0024_release_customer_scope",
+        "excel_family_loaded": true,
+        "excel_records": 20,
+        "release_evidence_family_loaded": true,
+        "cloudflare_build": "92493d33-d63a-44d5-9f92-8acc6474a794",
+        "render_deploy": "dep-db5sl1fgfhjc73eva640",
+        "browser_acceptance": "blocked_previous_cloudflare_403_1010",
+        "actions_deploy": "skipped"
+      }
     }
   ],
   "business_milestone_increment": 0

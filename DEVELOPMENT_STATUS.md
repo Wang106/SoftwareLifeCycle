@@ -1,5 +1,19 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-12 Excel 演示总览与第四轮状态核对（Codex / ChatGPT Work）
+
+从真实远端main 9dba7e948ac1d35d5544663e65d0b4686fc6babc开始，开放PR为0；PR60真实merged及独立main CI38160754690三必需job success已核对（2262后台/228 PostgreSQL-module cases无skip、1336前端/Next/OpenNext）。PR60最终记录覆盖旧“尚未合并或导入”；Excel测试库已导入20记录，未重复执行Seed或改历史。
+
+新增 /demo/zfi 中英双语只读总览，消费既有GET /api/v1/demo/zfi-import：4SSR/16ASR及各行原编号、原版本、客户/项目、原发布日期、实际审批状态、UUID详情/审批导航和已提供文件/测试数。统计从当前API行计算，不硬编码15/3/1/1；同版本KUBO/VOL保留独立UUID。未导入/部分/无API/外来响应不显示成功家族，不补造证据；导入回执/原日期/合成审批不等于当前Readiness、实际人员审批或正式Decision。标准/应用目录与原证据页增加总览入口。
+
+四轮账本更新第三轮completed_code（PR58/59已恢复），第四轮in_progress；本次实际API观察health ready0.18.43/schema0024，Excel initialized true/20，独立发布证据initialized true/3：SSR2.0与ASR-A2.0 READY+RELEASE/精确当前Snapshot确认，ASR-B2.0 APPROVED但NOT_READY+HOLD/不确认正式发布。该三例为先前独立合成家族，不能当成Excel版本真实测试证据。Render既有free服务dep-db5sl1fgfhjc73eva640 live精确旧main，Cloudflare旧main生产check成功。首次health30秒超时，后续read-only请求ready，未重启/升级服务。真实浏览器仍沿用历史403/1010阻碍，未绕过/重试拒绝访问；电脑/手机/中英文现场验收未完成。
+
+本地7新增行为回归及既有6证据回归13通过；完整前端1344 passed/0 failed/0 skipped，生产Next/OpenNext与disabled auth SSR最终结果记录本PR。后台/API/迁移/Seed/依赖/既有测试/CI/身份/秘密均未修改；schema0024/API0.18.43及Seed幂等代码保持不变。本地未重跑完整后台/真实PG，精确feature完整CI成功后才合并，合并后main/provider另验；最终提交/CI/部署以本包PR记录为准。
+
+本机fetch无及时结果，未覆盖旧未提交工作；独立目录以d84c363旧树加从当前main读取的15差异文件复原代码，发布树从真实main tree构建，只提交本包8个前端/计划/交接路径，不把历史差异再提交。Codex直接在ChatGPT Work通过GitHub连接，不调用付费模型API、不上传登录缓存/启用Actions开发；免费测试公开只读/OIDC及真实提交关闭，内网暂缓。
+
+业务验收增量0，36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0。下一步正常浏览器核对总览→SSR/ASR→审批节点→当前证据/成功阻断链接；未提供Excel组件/固件/测试，后续补齐须有资料或明确合成授权，不自行扩大为身份/内网/Impact提交实现。
+
 ## 2026-10-12 ZFI Excel 演示导入（Codex / ChatGPT Work）
 
 基线真实main d84c363af1794fa953753eacff2d8b40d8528b1d，无开放PR；基线三个CI及Cloudflare生产success，Actions deploy/wake skipped。用户授权Excel导入，2供应商/2产品/2客户/4项目/4SSR/16ASR，固定UUID保留原版本与客户/项目。审批A7 z修正SSR02，孤立M22忽略。运行目录恢复丢失未推送内容后，已保存PR60检查点2e3c751c3984a09607d8e3250afa8c21aca9bda7；清单依据此前逐行核对内容恢复，不伪造不可用原附件字节哈希。
