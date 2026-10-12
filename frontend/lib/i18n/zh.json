@@ -1972,5 +1972,18 @@
   "Current Snapshot": "当前快照",
   "Release Decision": "发布决策",
   "Change Request": "变更请求",
-  "Software Passport": "软件护照"
+  "Software Passport": "软件护照",
+  "Excel demonstration overview": "Excel 演示总览",
+  "Desensitized Excel records with synthetic approval history. Read-only; no real personnel approval or firmware delivery.": "脱敏 Excel 记录及合成审批历史。仅供只读展示，不代表人员真实审批或固件交付。",
+  "Excel import API unavailable": "Excel 导入 API 暂不可用",
+  "Excel sample family incomplete or not installed": "Excel 样例不完整或尚未导入",
+  "This overview requires the complete imported family. Partial records do not establish successful import.": "总览需要完整的导入样例；部分记录不能证明导入成功。",
+  "Imported software records": "已导入的软件记录",
+  "The import receipt is not current release readiness or a formal release decision. Open each release for current evidence.": "导入回执不代表当前发布就绪或正式发布决策，请打开各软件详情查看当前证据。",
+  "Source dates are Excel metadata, not approval or deployment dates. Customer and project columns show the reviewed import mapping.": "原发布日期为 Excel 元数据，不是审批或部署日期；客户及项目列展示已核对的导入映射。",
+  "Import event": "导入事件",
+  "Excel reference": "Excel 编号",
+  "Project code": "项目编号",
+  "Source release date": "原发布日期",
+  "Supplied files / tests": "已提供文件 / 测试"
 }
