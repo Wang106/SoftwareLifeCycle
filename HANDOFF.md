@@ -10,9 +10,9 @@
 
 新增21项行为回归，旧实现17failed/4passed证明缺能力；新实现与既有总览/发布证据/完整本地化检查共153passed/0failed/0skipped。首轮本地化检查发现Release type/Approval status/Page词条缺失，补齐后通过；已有测试/断言未改。进度--check通过。本机GitHub DNS不可解析，通过授权GitHub连接恢复固定main前端源码；npm离线完整安装缺jose缓存，后以锁文件integrity读取既有TypeScript/React缓存，仅供定向测试。没有本地完整Next/OpenNext/后端/真实PG验证，必须由本包精确既有CI证明；未改依赖/锁文件/CI/迁移/Seed/后台/身份或门控。
 
-Render兼容会话返回no workspace selected，未自行选择或更改提供方；本轮API/schema/样例线上状态未重新核验，旧2026-10-12观察不得当作本轮证明。浏览器既往403/1010仍保留，未绕过/重试拒绝；电脑/手机双语现场链路验收未完成，第四轮保持in_progress。公司内网未部署、公开样例只读、OIDC/真实提交关闭，无付费模型API或登录缓存上传。
+Render初始兼容会话无工作区；后从较新用户记录确认2026-10-11已明确授权My Workspace及保持免费，复用tea-datl248u01pc739j09eg核验既有free服务srv-datm6o6k1f9s738r19gg。最新部署dep-db5sl1fgfhjc73eva640为live，精确旧main9dba7e948ac1d35d5544663e65d0b4686fc6babc；未新建/升级/重启或改配置。直接GET /health/ready因当前执行环境DNS不可解析失败，日志查询无健康记录，不声称本轮API版本/schema/样例已重验；旧2026-10-12观察不得当作本轮证明。已有My Workspace授权可延续，无需再次确认。浏览器既往403/1010仍保留，未绕过/重试拒绝；电脑/手机双语现场链路验收未完成，第四轮保持in_progress。公司内网未部署、公开样例只读、OIDC/真实提交关闭，无付费模型API或登录缓存上传。
 
-业务验收增量0：36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。下一步：本包精确CI成功后受保护合并、独立main/provider核对；随后在明确的Render工作区和恢复正常访问的浏览器中完成总览筛选分页→SSR/ASR→四级审批→当前Snapshot/Readiness/Decision/Passport链路。Excel文件/测试仍未提供，不自行合成或扩大Impact提交、身份/内网范围。
+业务验收增量0：36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。下一步：本包精确CI成功后受保护合并、独立main/provider核对；随后在已授权Render工作区和恢复正常访问的浏览器中完成总览筛选分页→SSR/ASR→四级审批→当前Snapshot/Readiness/Decision/Passport链路。Excel文件/测试仍未提供，不自行合成或扩大Impact提交、身份/内网范围。
 
 ## 2026-10-12 Excel 演示总览与第四轮状态核对（Codex / ChatGPT Work）
 

@@ -75,8 +75,11 @@
         "overview_main_ci": 38260714118,
         "overview_cloudflare_build": "23c53e09-d4c9-4b5f-bf76-28b8b64757eb",
         "latest_main_verified_at": "2026-10-13",
-        "current_render_verification": "unverified_no_workspace_selected",
-        "overview_filter_pagination": "implemented_pending_exact_head_ci"
+        "current_render_verification": "free_service_live_old_main_verified_health_dns_blocked",
+        "overview_filter_pagination": "implemented_pending_exact_head_ci",
+        "render_workspace_id": "tea-datl248u01pc739j09eg",
+        "render_service_id": "srv-datm6o6k1f9s738r19gg",
+        "render_live_commit": "9dba7e948ac1d35d5544663e65d0b4686fc6babc"
       }
     }
   ],
