@@ -1985,5 +1985,17 @@
   "Excel reference": "Excel 编号",
   "Project code": "项目编号",
   "Source release date": "原发布日期",
-  "Supplied files / tests": "已提供文件 / 测试"
+  "Supplied files / tests": "已提供文件 / 测试",
+  "Filter imported records": "筛选导入记录",
+  "All release types": "全部发布类型",
+  "All customers": "全部客户",
+  "All approval statuses": "全部审批状态",
+  "Clear filters": "清除筛选",
+  "Matched records": "匹配记录数",
+  "Record pages": "记录分页",
+  "Summary counts describe the complete imported family; filters apply only to the records below.": "上方统计覆盖完整导入家族；筛选仅影响下方记录。",
+  "No imported records match these filters.": "没有符合当前筛选条件的导入记录。",
+  "Release type": "发布类型",
+  "Approval status": "审批状态",
+  "Page": "页码"
 }

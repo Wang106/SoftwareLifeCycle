@@ -69,7 +69,14 @@
         "cloudflare_build": "92493d33-d63a-44d5-9f92-8acc6474a794",
         "render_deploy": "dep-db5sl1fgfhjc73eva640",
         "browser_acceptance": "blocked_previous_cloudflare_403_1010",
-        "actions_deploy": "skipped"
+        "actions_deploy": "skipped",
+        "overview_pr": 61,
+        "overview_merge_sha": "1d134dada149ceb2b70a9f18e46c04c7a826366e",
+        "overview_main_ci": 38260714118,
+        "overview_cloudflare_build": "23c53e09-d4c9-4b5f-bf76-28b8b64757eb",
+        "latest_main_verified_at": "2026-10-13",
+        "current_render_verification": "unverified_no_workspace_selected",
+        "overview_filter_pagination": "implemented_pending_exact_head_ci"
       }
     }
   ],
