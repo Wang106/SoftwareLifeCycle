@@ -10,8 +10,8 @@ type Receipt = {sample_only: boolean; initialized: boolean; import_event_no?: st
 type Query = Record<string, string | string[] | undefined>;
 const pageSize = 10;
 
-export default async function Page({searchParams}: {searchParams?: Promise<Query>} = {}) {
-  const query = await searchParams || {};
+export default async function Page(props: {searchParams?: Promise<Query>}) {
+  const query = await props?.searchParams || {};
   const single = (key: string) => typeof query[key] === 'string' ? query[key] as string : '';
   const type = ['STANDARD', 'APPLICATION'].includes(single('type')) ? single('type') : '';
   const customer = single('customer');
