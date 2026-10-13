@@ -24,7 +24,10 @@ for(const locale of ['en','zh'])test('actual imported identities, dates and read
  assert.ok(html.includes('/releases/standard/standard-uuid')&&html.includes('/approvals/APR-ZFI-ASR01'));
  assert.equal((html.match(/>v3\.8\.1\.1<\/a>/g)||[]).length,2);
  assert.ok(html.includes('KUBO')&&html.includes('VOL')&&html.includes('2026-01-01')&&html.includes('EVT-ZFI-IMPORT-V1'));
- assert.ok(html.includes('SSR: 1')&&html.includes('ASR: 2')&&!html.includes('<form')&&!html.includes('operation=')&&!html.includes('/api/commands'));
+ assert.ok(html.includes('SSR: 1')&&html.includes('ASR: 2')&&!html.includes('operation=')&&!html.includes('/api/commands'));
+ assert.equal((html.match(/<form\b/g)||[]).length,1);
+ assert.match(html,/<form(?=[^>]*action="\/demo\/zfi")(?=[^>]*method="get")(?=[^>]*role="search")[^>]*>/);
+ assert.ok(!html.includes('method="post"'));
 });
 for(const [name,data,expected] of [['unavailable',null,'Excel import API unavailable'],['foreign',{...receipt,sample_only:false},'Excel import API unavailable'],['partial',{...receipt,initialized:false},'Excel sample family incomplete or not installed'],['malformed',{...receipt,items:null},'Excel import API unavailable']])test(name+' must not present an imported family',async()=>{
  const {html}=await render(data);assert.ok(html.includes(expected)&&!html.includes('/approvals/APR-ZFI-ASR01')&&!html.includes('SSR: 1'));

@@ -90,7 +90,9 @@ for(const locale of ['zh','en'])test('filters and empty result labels render bil
   assert.ok(html.includes(translation.exports.translateText(label,locale)),label);
   if(locale==='zh')assert.notEqual(translation.exports.translateText(label,locale),label);
  }
- assert.ok(!html.includes('<form')&&!html.includes('/api/commands')&&!html.includes('operation='));
+ assert.equal((html.match(/<form\b/g)||[]).length,1);
+ assert.match(html,/<form(?=[^>]*action="\/demo\/zfi")(?=[^>]*method="get")(?=[^>]*role="search")[^>]*>/);
+ assert.ok(!html.includes('method="post"')&&!html.includes('/api/commands')&&!html.includes('operation='));
 });
 for(const data of [null,{...receipt,sample_only:false},{...receipt,initialized:false},{...receipt,items:null}])test('unavailable foreign incomplete or malformed receipt never exposes filter or pagination controls',async()=>{
  const {html}=await render({page:'2',customer:'VOL'},data);
