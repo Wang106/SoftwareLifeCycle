@@ -1,5 +1,19 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-13 Excel 总览组合筛选与分页（Codex / ChatGPT Work）
+
+基线真实 main `1d134dada149ceb2b70a9f18e46c04c7a826366e`（PR61已合并），开放PR为0。独立main CI38260714118三必需job success已核对：2262后端、228 PostgreSQL-module cases/no skips、1344前端及Next/OpenNext/disabled auth SSR；Cloudflare生产build23c53e09-d4c9-4b5f-bf76-28b8b64757eb success。Actions deploy/wake均skipped，不能称Actions部署启用。本包精确head/main CI及生产证据由本包PR最终记录独立核对，不复用基线。
+
+继续最高优先级第四轮云端只读演示范围，/demo/zfi新增类型/客户/审批状态组合筛选、未记录审批筛选及每页10条分页。GET导航固定本站路径；更换筛选重置页码，翻页保留其他筛选，异常/重复页码归一化，超界整数定位末页；空交集明确显示无匹配，不回退其他客户。顶部统计继续使用完整当前API家族，列表统计独立，原版本/客户/项目/日期/审批/UUID链接不改、不把同版本客户合并。筛选组有选中状态与键盘焦点，链接可换行；总览表格支持移动端横向滚动。中文默认/English标签完整，页面无业务命令表单，不增加API请求或后端扫描。
+
+首份提交e734221c的CI38396273162前端1365/0fail/0skip通过，但Next生成PageProps拒绝默认参数使FirstArg包含undefined，生产构建失败；未合并。改为非可选props类型及运行时可选读取，保留无参数既有调用；本地153定向重验，最终精确head完整CI必须另验，不将首轮前端测试当构建成功。
+
+新增21项行为回归，旧实现17failed/4passed证明缺能力；新实现与既有总览/发布证据/完整本地化检查共153passed/0failed/0skipped。首轮本地化检查发现Release type/Approval status/Page词条缺失，补齐后通过；已有测试/断言未改。进度--check通过。本机GitHub DNS不可解析，通过授权GitHub连接恢复固定main前端源码；npm离线完整安装缺jose缓存，后以锁文件integrity读取既有TypeScript/React缓存，仅供定向测试。没有本地完整Next/OpenNext/后端/真实PG验证，必须由本包精确既有CI证明；未改依赖/锁文件/CI/迁移/Seed/后台/身份或门控。
+
+Render初始兼容会话无工作区；后从较新用户记录确认2026-10-11已明确授权My Workspace及保持免费，复用tea-datl248u01pc739j09eg核验既有free服务srv-datm6o6k1f9s738r19gg。最新部署dep-db5sl1fgfhjc73eva640为live，精确旧main9dba7e948ac1d35d5544663e65d0b4686fc6babc；未新建/升级/重启或改配置。直接GET /health/ready因当前执行环境DNS不可解析失败，日志查询无健康记录，不声称本轮API版本/schema/样例已重验；旧2026-10-12观察不得当作本轮证明。已有My Workspace授权可延续，无需再次确认。浏览器既往403/1010仍保留，未绕过/重试拒绝；电脑/手机双语现场链路验收未完成，第四轮保持in_progress。公司内网未部署、公开样例只读、OIDC/真实提交关闭，无付费模型API或登录缓存上传。
+
+业务验收增量0：36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。下一步：本包精确CI成功后受保护合并、独立main/provider核对；随后在已授权Render工作区和恢复正常访问的浏览器中完成总览筛选分页→SSR/ASR→四级审批→当前Snapshot/Readiness/Decision/Passport链路。Excel文件/测试仍未提供，不自行合成或扩大Impact提交、身份/内网范围。
+
 ## 2026-10-12 Excel 演示总览与第四轮状态核对（Codex / ChatGPT Work）
 
 从真实远端main 9dba7e948ac1d35d5544663e65d0b4686fc6babc开始，开放PR为0；PR60真实merged及独立main CI38160754690三必需job success已核对（2262后台/228 PostgreSQL-module cases无skip、1336前端/Next/OpenNext）。PR60最终记录覆盖旧“尚未合并或导入”；Excel测试库已导入20记录，未重复执行Seed或改历史。

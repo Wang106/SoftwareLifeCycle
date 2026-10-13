@@ -23,3 +23,6 @@
 .approval-progress li{padding:14px;border:1px solid var(--border,#64748b);border-radius:10px}
 .approval-progress .stage-approved{border-color:#22c55e}
 .approval-progress .stage-current{border-width:2px;border-color:#38bdf8}
+
+.zfi-filter-links{flex-wrap:wrap}.zfi-filter-links a{border:1px solid #cbd5e1;border-radius:8px;padding:8px 12px;font-size:13px;overflow-wrap:anywhere}.zfi-filter-links a[aria-current="true"]{background:#111827;border-color:#111827;color:#fff;font-weight:700}.zfi-filter-links a:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
+.zfi-table{overflow-x:auto}.zfi-table table{min-width:900px}
