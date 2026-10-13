@@ -1,4 +1,6 @@
 {
+  "Search imported records": "检索导入记录",
+  "Matches all words across version, Excel reference, software, customer, project, release UUID and approval number.": "按版本、Excel 编号、软件、客户、项目、发布 UUID 和审批编号检索；各关键词均需匹配。",
   ". File fields and policies below are compared independently.": "。以下文件字段和政策分别进行比较。",
   "A delta label is a recorded declaration. The SSR component version appears only when a matching base component link is stored.": "差异标签是已记录的声明。仅在保存了匹配的基础组件关联时，才显示 SSR 组件版本。",
   "A link to a DVP item is a verification assignment; its execution history is shown on the item page.": "关联 DVP 项目表示验证分配；执行历史请在项目详情中查看。",

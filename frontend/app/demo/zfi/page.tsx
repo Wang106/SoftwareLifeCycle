@@ -13,6 +13,8 @@ const pageSize = 10;
 export default async function Page(props: {searchParams?: Promise<Query>}) {
   const query = await props?.searchParams || {};
   const single = (key: string) => typeof query[key] === 'string' ? query[key] as string : '';
+  const search = single('q').trim();
+  const words = search.toLowerCase().split(/\s+/u).filter(Boolean);
   const type = ['STANDARD', 'APPLICATION'].includes(single('type')) ? single('type') : '';
   const customer = single('customer');
   const statuses = ['APPROVED', 'PENDING', 'RETURNED', 'REJECTED', 'CANCELLED'];
@@ -22,15 +24,17 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
   const items = data?.initialized ? data.items : [];
   const customers = [...new Set(items.map(row => row.customer).filter((value): value is string => value !== null && value !== ''))].sort();
   const matched = items.filter(row => (!type || row.release_type === type) && (!customer || row.customer === customer)
-    && (!status || (status === 'UNRECORDED' ? row.approval_status === null : row.approval_status === status)));
+    && (!status || (status === 'UNRECORDED' ? row.approval_status === null : row.approval_status === status))
+    && words.every(word => [row.version, row.source_ref, row.product, row.customer, row.project_code, row.release_id, row.approval_no]
+      .some(value => value?.toLowerCase().includes(word))));
   const pageCount = Math.max(1, Math.ceil(matched.length / pageSize));
   const requestedPage = /^[1-9]\d{0,8}$/.test(single('page')) ? Number(single('page')) : 1;
   const page = Math.min(requestedPage, pageCount);
   const visible = matched.slice((page - 1) * pageSize, page * pageSize);
   function href(overrides: Partial<Record<'type' | 'customer' | 'status' | 'page', string>> = {}) {
-    const values = {type, customer, status, page: '1', ...overrides};
+    const values = {type, customer, status, q: search, page: '1', ...overrides};
     const params = new URLSearchParams();
-    for (const key of ['type', 'customer', 'status', 'page'] as const) {
+    for (const key of ['type', 'customer', 'status', 'q', 'page'] as const) {
       if (values[key] && !(key === 'page' && values[key] === '1')) params.set(key, values[key]);
     }
     return '/demo/zfi' + (params.size ? '?' + params.toString() : '');
@@ -57,6 +61,16 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
           </section>
           <section className="panel">
             <h2 id="zfi-filters"><Localized>{'Filter imported records'}</Localized></h2>
+            <form className="zfi-search" action="/demo/zfi" method="get" role="search">
+              <label htmlFor="zfi-search"><Localized>{'Search imported records'}</Localized>
+                <input id="zfi-search" aria-describedby="zfi-search-help" name="q" type="search" defaultValue={search}/>
+              </label>
+              {type && <input type="hidden" name="type" value={type}/>}
+              {customer && <input type="hidden" name="customer" value={customer}/>}
+              {status && <input type="hidden" name="status" value={status}/>}
+              <button type="submit"><Localized>{'Search'}</Localized></button>
+              <p id="zfi-search-help" className="muted"><Localized>{'Matches all words across version, Excel reference, software, customer, project, release UUID and approval number.'}</Localized></p>
+            </form>
             <nav aria-labelledby="zfi-filters">
               <h3 id="zfi-type"><Localized>{'Release type'}</Localized></h3>
               <div className="actions zfi-filter-links" role="group" aria-labelledby="zfi-type">

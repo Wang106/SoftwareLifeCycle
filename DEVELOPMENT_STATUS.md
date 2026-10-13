@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-13 Excel 总览文字检索（Codex / ChatGPT Work）
+
+基线真实 main `41082521da876a384977d8b6dd095f6b7484771b`（PR62真实merged），开放PR为0。本轮独立核对主线CI38398333766三个必需job success，Cloudflare生产check115299850651/build1afa373c-4d4b-40d7-9858-c3962fd0ce5a success。PR62最终记录2262后端/228真实PG cases无skip、1365前端/Next/OpenNext；这些是基线证据，本包精确head另验。Actions deploy38399512846/continuation38399512936 skipped。
+
+/demo/zfi 新增本站GET文字检索：版本、Excel编号、软件、客户、项目、发布UUID、审批编号；不区分大小写，多关键词全部匹配，原记录/链接/全家族统计不改。检索与三类筛选取交集；检索重置页码且保留筛选，筛选/翻页保留关键词，清除筛选移除关键词；空结果不补造其他客户。标签/说明中英双语，语义label与帮助关联，输入/按钮键盘焦点，窄屏换行。仅读取原单个固定家族API，不增加后端请求或扫描。
+
+新增16项回归，旧实现13failed/3passed，新实现与既有总览/筛选/发布证据/全站本地化共169passed/0failed/0skipped。两处既有“无任何form”断言按实际新增GET检索语义改为仅一个固定本站GET search，追加禁止POST，原业务命令/operation拒绝检查及证据断言保持；未以删除测试掩盖写入。首次断言误假设React属性顺序，修正为属性无关检查后169通过。进度--check通过。本地Worker配置检查因wrangler缺失未完成；Next/OpenNext/完整前端/后端/真实PG以本包精确现有CI验收，不借基线成功替代。
+
+当前目录为空/GitHub DNS不可解析，独立复制上一轮可读前端快照并按固定main Git blob核验；仅发布本包白名单路径，以远端完整tree为base，保留缺失本地后台/其他文件。Codex直接在ChatGPT Work开发并通过已授权GitHub连接发布，不启动独立用户CLI/付费API、不上传登录缓存。Render已授权My Workspace复用，既有free服务srv-datm6o6k1f9s738r19gg，最新dep-db5sl1fgfhjc73eva640仍live在旧main9dba7e9；不改提供方配置/秘密/身份/后端/迁移/Seed/依赖/CI。API0.18.43/schema0024代码不变；本轮未重新证明live健康/样例数据。
+
+36/44=82%；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0，业务验收增量0。公共只读/OIDC/真实提交关闭；公司内网未部署。第四轮仍in_progress，既往403/1010不绕过或重试；桌面/手机/中英真实浏览器链路验收、当前API/schema现场验收待完成。下一步本包精确CI成功后受保护合并及独立main/provider核对，再按检索筛选→精确SSR/ASR→四级审批→当前Snapshot/Readiness/Decision/Passport核对。Excel固件/测试未提供不合成；不扩大Impact提交/身份/内网范围。最终head/PR/CI/合并/生产证据记录本包PR。
+
 ## 2026-10-13 Excel 总览组合筛选与分页（Codex / ChatGPT Work）
 
 基线真实 main `1d134dada149ceb2b70a9f18e46c04c7a826366e`（PR61已合并），开放PR为0。独立main CI38260714118三必需job success已核对：2262后端、228 PostgreSQL-module cases/no skips、1344前端及Next/OpenNext/disabled auth SSR；Cloudflare生产build23c53e09-d4c9-4b5f-bf76-28b8b64757eb success。Actions deploy/wake均skipped，不能称Actions部署启用。本包精确head/main CI及生产证据由本包PR最终记录独立核对，不复用基线。
