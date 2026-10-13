@@ -44,7 +44,8 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
       <p className="muted"><Localized>{'Desensitized Excel records with synthetic approval history. Read-only; no real personnel approval or firmware delivery.'}</Localized></p></div></div>
     <p><Link href="/releases/standard"><Localized>{'Standard Releases'}</Localized></Link> <Localized>{' · '}</Localized>
       <Link href="/releases/application"><Localized>{'Application Releases'}</Localized></Link> <Localized>{' · '}</Localized>
-      <Link href="/demo/releases"><Localized>{'Release evidence demonstration'}</Localized></Link></p>
+      <Link href="/demo/releases"><Localized>{'Release evidence demonstration'}</Localized></Link> <Localized>{' · '}</Localized>
+      <Link href="/demo/status" prefetch={false}><Localized>{'Demonstration status'}</Localized></Link></p>
     {!data ? <section className="panel"><h2><Localized>{'Excel import API unavailable'}</Localized></h2>
       <p><Localized>{'No sample evidence is fabricated when the API is unavailable.'}</Localized></p></section>
       : !data.initialized ? <section className="panel"><h2><Localized>{'Excel sample family incomplete or not installed'}</Localized></h2>

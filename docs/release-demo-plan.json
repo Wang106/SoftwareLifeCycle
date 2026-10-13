@@ -84,7 +84,12 @@
         "filter_merge_sha": "41082521da876a384977d8b6dd095f6b7484771b",
         "filter_main_ci": 38398333766,
         "filter_cloudflare_build": "1afa373c-4d4b-40d7-9858-c3962fd0ce5a",
-        "overview_text_search": "implemented_pending_exact_head_ci"
+        "overview_text_search": "completed_code",
+        "text_search_pr": 63,
+        "text_search_merge_sha": "e1ef6f8dd81e8c7aeab4da85fc8f30b2b1efd387",
+        "text_search_main_ci": 38407375978,
+        "text_search_cloudflare_build": "9db8308a-1981-4f13-b308-b506b214063a",
+        "demo_status_page": "implemented_pending_exact_head_ci"
       }
     }
   ],
