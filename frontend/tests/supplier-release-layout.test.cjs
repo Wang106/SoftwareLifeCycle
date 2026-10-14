@@ -31,6 +31,7 @@ test('supplier identity grouping, default disclosure and exact release links pre
  for(const id of ['s1','s2','s3'])assert.ok(links(html).includes('/releases/standard/'+id));
  assert.ok(links(html).includes('/releases/application/new'));
  assert.ok(html.indexOf('ASR 2.0')<html.indexOf('ASR 10.0'));
+ assert.ok(links(html).includes('/demo/releases')&&links(html).includes('/demo/zfi'));
  assert.equal(calls.length,4);assert.ok(calls.slice(1).every(x=>x.endsWith('limit=10')));
 });
 test('child pagination retains catalog filters, opens selected card only and never reads arbitrary parent',async()=>{

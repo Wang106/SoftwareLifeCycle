@@ -75,6 +75,7 @@ export default async function SupplierReleaseCatalog({ search }: {
     return <Localized>
     <div className="top"><div><h1><Localized>{"Standard Releases"}</Localized></h1><p className="muted"><Localized>{"Recorded supplier software baselines used by application releases."}</Localized></p></div></div>
     <p><Link href="/releases/application"><Localized>{"Application Releases →"}</Localized></Link></p>
+    <p><Link href="/demo/releases"><Localized>{"Release evidence demonstration"}</Localized></Link><Localized>{" · "}</Localized><Link href="/demo/zfi"><Localized>{"Excel demonstration overview"}</Localized></Link></p>
     <section className="panel"><form method="get" className="filters">
       <label><Localized>{"Search "}</Localized><input name="q" maxLength={200} defaultValue={query.get('q') ?? ''}/></label>
       <label><Localized>{"Status "}</Localized><input name="status" maxLength={30} defaultValue={query.get('status') ?? ''}/></label>
