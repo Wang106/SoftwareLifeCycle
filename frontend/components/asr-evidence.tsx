@@ -35,7 +35,7 @@ export async function AsrEvidence({ releaseId, search }: { releaseId: string; se
   const path = `/releases/application/${encodeURIComponent(releaseId)}`;
   const pageLink = (offsetKey: string, offset: number) => {
     const q = new URLSearchParams({ evidence_snapshot_id: snapshot.id });
-    for (const key of ['evidence_limit', 'artifact_offset', 'execution_offset']) if (search[key] !== undefined) q.set(key, typeof search[key] === 'string' ? search[key] as string : 'invalid');
+    for (const key of ['evidence_limit', 'artifact_offset', 'execution_offset', 'approval_offset']) if (search[key] !== undefined) q.set(key, typeof search[key] === 'string' ? search[key] as string : 'invalid');
     q.set(offsetKey, String(offset));
     return `${path}?${q}`;
   };
@@ -50,7 +50,7 @@ export async function AsrEvidence({ releaseId, search }: { releaseId: string; se
       <p><Localized>{"Execution records on other snapshots: "}</Localized><Localized>{summary.other_snapshot_executions}</Localized></p>
       <Link href={path}><Localized>{"Read latest evidence →"}</Localized></Link>
     </section>
-    <section className="panel tablewrap"><h2><Localized>{"Frozen artifact manifest"}</Localized></h2>
+    <section className="panel tablewrap"><h2><Localized>{"Software files"}</Localized></h2><p className="muted"><Localized>{"Frozen artifact manifest"}</Localized></p>
       <p><Localized>{"Recorded count"}</Localized><Localized>{": "}</Localized><Localized>{summary.artifact_count}</Localized></p>
       {artifacts ? <><table><thead><tr>{['Component', 'Filename', 'Type', 'SHA-256', 'Classification', 'Distribution', 'AI Policy'].map(label => <th key={label}><Localized>{label}</Localized></th>)}</tr></thead>
         <tbody>{artifacts.items.map(row => <tr key={row.id}><td><Localized>{row.component_code}</Localized> <Localized>{row.component_version || '—'}</Localized></td><td><Localized>{row.filename}</Localized></td><td><Localized>{row.artifact_type}</Localized></td><td><code>{row.sha256}</code></td><td><Localized>{row.classification}</Localized></td><td><Localized>{row.distribution_level}</Localized></td><td><Localized>{row.ai_access_policy}</Localized></td></tr>)}</tbody></table>

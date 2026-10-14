@@ -74,8 +74,8 @@
         "overview_merge_sha": "1d134dada149ceb2b70a9f18e46c04c7a826366e",
         "overview_main_ci": 38260714118,
         "overview_cloudflare_build": "23c53e09-d4c9-4b5f-bf76-28b8b64757eb",
-        "latest_main_verified_at": "2026-10-13",
-        "current_render_verification": "free_service_live_old_main_verified_health_dns_blocked",
+        "latest_main_verified_at": "2026-10-14",
+        "current_render_verification": "free_service_live_old_main_verified_health_read_timeout",
         "overview_filter_pagination": "completed_code",
         "render_workspace_id": "tea-datl248u01pc739j09eg",
         "render_service_id": "srv-datm6o6k1f9s738r19gg",
@@ -89,7 +89,12 @@
         "text_search_merge_sha": "e1ef6f8dd81e8c7aeab4da85fc8f30b2b1efd387",
         "text_search_main_ci": 38407375978,
         "text_search_cloudflare_build": "9db8308a-1981-4f13-b308-b506b214063a",
-        "demo_status_page": "implemented_pending_exact_head_ci"
+        "demo_status_page": "completed_code",
+        "demo_status_pr": 64,
+        "demo_status_merge_sha": "c8503fe116eaa8299e2b41f83ae4361d4eb16da4",
+        "demo_status_main_ci": 38491157105,
+        "demo_status_cloudflare_build": "8d33e64f-137f-41dd-abdd-29dfbba37ad0",
+        "supplier_release_layout": "implemented_pending_exact_head_ci"
       }
     }
   ],

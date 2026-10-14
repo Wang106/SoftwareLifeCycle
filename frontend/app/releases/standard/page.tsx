@@ -1,5 +1,5 @@
-import ReleaseCatalog, { type ReleaseSearch } from "../../../components/release-catalog";
-
+import SupplierReleaseCatalog from '../../../components/supplier-release-catalog';
+import type { ReleaseSearch } from '../../../components/release-catalog';
 export default async function Page({searchParams}: {searchParams: Promise<ReleaseSearch>}) {
-  return ReleaseCatalog({kind: "standard", search: await searchParams});
+  return SupplierReleaseCatalog({search: await searchParams});
 }

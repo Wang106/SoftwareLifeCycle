@@ -28,3 +28,22 @@
 .zfi-table{overflow-x:auto}.zfi-table table{min-width:900px}
 .demo-status-value{overflow-wrap:anywhere}
 .zfi-search{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:20px}.zfi-search label{display:flex;flex:1 1 240px;min-width:0;flex-direction:column;gap:6px;font-size:13px}.zfi-search input[type=search]{width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:8px;padding:10px;font:inherit}.zfi-search p{flex-basis:100%;margin:0;overflow-wrap:anywhere}.zfi-search input:focus-visible,.zfi-search button:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
+
+/* Supplier → standard baseline → application version disclosure hierarchy. */
+.supplier-release-card { border: 1px solid #d6dce5; border-radius: 12px; margin: 16px 0; background: #fff; }
+.supplier-release-card > summary, .standard-software-card > summary { cursor: pointer; padding: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.supplier-release-card > summary { background: #f0f4f9; border-radius: 12px; }
+.supplier-release-content { padding: 4px 16px 16px; }
+.standard-software-card { border: 1px solid #d6dce5; border-radius: 8px; margin-top: 12px; }
+.standard-software-card > summary a { text-decoration: underline; flex: 1 1 240px; }
+.standard-software-content { border-top: 1px solid #d6dce5; padding: 0 18px 12px; }
+.disclosure-open, .disclosure-closed { font-size: 12px; color: #42526a; margin-left: auto; }
+details > summary .disclosure-open { display: none; }
+details[open] > summary .disclosure-open { display: inline; }
+details[open] > summary .disclosure-closed { display: none; }
+.supplier-release-card summary:focus-visible, .supplier-release-card a:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.application-version-list { list-style: none; padding: 0; }
+.application-version-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e1e6ee; }
+.release-record-table { overflow-x: auto; }
+.file-hash { overflow-wrap: anywhere; display: block; min-width: 160px; max-width: 320px; }
+@media (max-width: 600px) { .supplier-release-content { padding: 0 8px 8px; } .standard-software-card > summary { padding: 12px; } }
