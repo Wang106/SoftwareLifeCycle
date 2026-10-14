@@ -1,5 +1,20 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-14 标准发布供应商折叠布局与详情文件/审批（Codex / ChatGPT Work）
+
+用户最新范围：只改页面显示，不改数据库。以真实main c8503fe116eaa8299e2b41f83ae4361d4eb16da4（PR64）为基线，独立分支 codex/standard-release-supplier-layout。PR64精确feature34f7acb1/CI38411209993、main CI38491157105及Cloudflare build8d33e64f-137f-41dd-abdd-29dfbba37ad0/version80de571e-cea0-4021-b566-4a0309799178 success已核对，覆盖旧pending；此包CI与provider另核验，最终完整SHA/PR/结果记录于本包PR。
+
+标准发布改为竖向供应商方格，默认展开；内层每个原SSR UUID为独立标准软件方格，显示软件名称及SSR版本，默认收缩。供应商按原code分组，不合并同名供应商或同版本发布。展开列出该精确基线关联ASR，保留API created_at倒序（不按版本字符串重排）；标准软件名称和应用版本名称链接原UUID详情。保留GET筛选/父分页；每个软件10条ASR分页，显式翻页后只展开对应软件。分组仅覆盖当前筛选页面，不称全库供应商总数；每页最多100个SSR，关联读取并发上限4，不扫描所有子页。
+
+标准详情直接显示现有Snapshot文件清单；应用详情复用原冻结清单并标为软件文件。两种详情直接显示原审批记录、提交者/时间/步骤/操作数量，并链接完整审批详情。文件分页固定snapshot UUID/编号和release UUID，审批精确target/release校验；独立分页保留文件快照和原页面参数。无文件/无审批与不可用分开显示，不伪造文件、下载链接、审批结果或正式发布。新增中英标签、原生details键盘折叠、窄屏换行及横向表格滚动。
+
+新增8项目录/详情/分页/外来UUID/有界并发/实际双语回归；既有SSR collections测试仅增加新子组件mock，原断言保持。完整本地前端最终1428passed/0failed/0skipped（新增8项行为回归及2项全站覆盖检查）；首次测试中修正测试loader未指定ES2021导致Map展开为空及新增双语标签缺失，未删除或弱化断言。Next/OpenNext、Worker配置、disabled-auth SSR均通过。真实生产Next SSR接本地mock：中文/英文默认折叠、精确链接、样例顺序、内联文件/审批均通过，20次GET/0写入；不是实际浏览器点击或现场数据验收。当前容器缺少Playwright浏览器可执行文件，未完成桌面/手机真实点击验收；不绕过先前Cloudflare访问拒绝。
+
+无backend/迁移/Seed/依赖/锁文件/CI/认证/提供方配置修改，API0.18.43/schema0024不变。原状态页读取超时测试单独保留，不混入本包。Render仅只读复核既有free服务旧main9dba7e9 live；现场health/ready和两个家族GET均超时，未取得响应不能推断0记录。未重启、升级或更改服务。
+
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，业务验收增量0。公共只读/OIDC及真实提交关闭，内网未部署；第四轮仍in_progress。下一步本包精确CI通过后受保护合并，并核对独立main CI/provider；正常授权浏览器后检查桌面/手机/中英文供应商→软件→详情文件/审批，再继续状态页超时工作。最终发布证据以本包PR为准。
+
+
 ## 2026-10-13 双语只读演示状态页（Codex / ChatGPT Work）
 
 基线真实main `e1ef6f8dd81e8c7aeab4da85fc8f30b2b1efd387`（PR63已合并），开放PR为0。上一包精确feature60d75d61/CI38405929302及独立main CI38407375978三必需job success已核对：2262后端、228真实PG-module cases/no skips、1381前端/Next/OpenNext/disabled-auth SSR。Cloudflare生产check115331189126/build9db8308a-1981-4f13-b308-b506b214063a/version0147762a-f02e-46d6-b610-9c89a4daa87d success，精确同main。Actions deployment38408642852/continuation38408644370 skipped。较新PR63最终证据覆盖旧文字检索pending；本包精确CI/main/provider必须另验。

@@ -14,6 +14,7 @@ function load(file,api,collections){
   if(name==='next/link')return ({href,children})=>React.createElement('a',{href},children);
   if(name.endsWith('/lib/api'))return {apiGet:api};
   if(name.endsWith('/localized'))return {Localized:({children})=>React.createElement(React.Fragment,null,children)};
+  if(name.endsWith('/release-review-records'))return {ReleaseReviewRecords:async()=>null};
   if(name.endsWith('/standard-release-collections'))return {StandardReleaseCollections:collections};
   return require(name);
  };

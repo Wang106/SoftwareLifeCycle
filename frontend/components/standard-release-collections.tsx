@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ReleaseReviewRecords } from './release-review-records';
 import { apiGet } from '../lib/api';
 import { Localized } from './localized';
 
@@ -26,7 +27,7 @@ export async function StandardReleaseCollections({ releaseId, search, componentC
   const components = valid(componentResponse), applications = valid(applicationResponse);
   const pageLink = (offsetKey: string, offset: number) => {
     const q = new URLSearchParams();
-    for (const key of ['release_limit', 'component_offset', 'application_offset']) {
+    for (const key of ['release_limit', 'component_offset', 'application_offset', 'files_snapshot_no', 'files_snapshot_id', 'files_offset', 'approval_offset']) {
       if (search[key] !== undefined) q.set(key, typeof search[key] === 'string' ? search[key] as string : 'invalid');
     }
     q.set(offsetKey, String(offset));
@@ -36,7 +37,9 @@ export async function StandardReleaseCollections({ releaseId, search, componentC
     <Link href={pageLink(offsetKey, 0)}><Localized>{"First page"}</Localized></Link>
     {next !== null && <Link href={pageLink(offsetKey, next)}><Localized>{" Next page →"}</Localized></Link>}
   </p></Localized>;
+  const review = await ReleaseReviewRecords({releaseId, kind: 'standard', search});
   return <Localized><>
+    {review}
     <p className="muted"><Localized>{"Recorded declarations and baseline links are read observations, not frozen evidence or approval. Counts and pages may change between reads."}</Localized></p>
     <section className="panel tablewrap"><h2><Localized>{"Recorded components"}</Localized></h2>
       <p><Localized>{"Recorded count"}</Localized><Localized>{": "}</Localized><Localized>{componentCount}</Localized></p>
