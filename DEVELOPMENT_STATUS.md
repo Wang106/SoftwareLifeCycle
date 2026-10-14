@@ -1,5 +1,19 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-13 双语只读演示状态页（Codex / ChatGPT Work）
+
+基线真实main `e1ef6f8dd81e8c7aeab4da85fc8f30b2b1efd387`（PR63已合并），开放PR为0。上一包精确feature60d75d61/CI38405929302及独立main CI38407375978三必需job success已核对：2262后端、228真实PG-module cases/no skips、1381前端/Next/OpenNext/disabled-auth SSR。Cloudflare生产check115331189126/build9db8308a-1981-4f13-b308-b506b214063a/version0147762a-f02e-46d6-b610-9c89a4daa87d success，精确同main。Actions deployment38408642852/continuation38408644370 skipped。较新PR63最终证据覆盖旧文字检索pending；本包精确CI/main/provider必须另验。
+
+新增 /demo/status：当前前端API配置下并发读取固定GET /health/ready、/api/v1/demo/zfi-import、/api/v1/demo/release-evidence；force-dynamic和原apiGet no-store，不自动轮询、安装Seed、重试或写入。不暴露API配置地址/秘密/原始异常，不查询私有身份。UTC读取时间、手动普通GET重新读取、API预期与观察版本/schema、Excel和独立合成家族分开呈现；两个总览有明确入口且禁用该入口预取。数据确认不等于真实浏览器验收、实际审批或正式发布。
+
+严格检查API0.18.43/schema0024、20固定Excel UUID/原编号/类型/原审批/合成与导入标记，以及3独立证据UUID/原版本/类型。缺失、异常、不完整、契约不匹配分别显示；不因initialized或同版本字符串把外来/重复行计为完整，不用独立家族补Excel固件/测试。三次观察不是同一数据库事务，不保证后来状态；刷新重新观察，不产生正式治理结论。预期健康契约与后端声明、固定UUID与后端namespace有交叉校验。
+
+新增36项检查器/页面/响应/双语回归；初始旧能力缺失31failed/0passed，补充严格健康类型、命名空间与长度回归后，本地与总览/筛选/检索/发布证据/全站本地化共206passed/0failed/0skipped。检查器strict TypeScript/JSON模块编译及进度--check通过。原既有测试/断言未修改；本地依赖仍只够React/TypeScript定向验证，完整前端/Next/OpenNext/后台/真实PG由本包精确现有CI验收，成功后才普通受保护合并。无后台/迁移/Seed/依赖/锁文件/CI/身份/门控/提供方配置修改，API代码0.18.43/schema0024不变。
+
+Codex直接在ChatGPT Work编写，通过已授权GitHub连接发布；复用独立前端快照，12个白名单文件从远端完整tree构建，不覆盖缺失本地后台或旧差异。无付费模型API/用户登录缓存上传，不启动用户本机常驻CLI。上包Render已授权My Workspace核验既有free服务/旧main9dba7e9 live；当前网络GET及备用公开读取仍未取得live健康/家族数据，不能把新状态页代码称为现场验收。此前Cloudflare403/1010不绕过或重试。
+
+36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，业务验收增量0。四轮账本第四轮仍in_progress。公共样例只读/OIDC/真实提交关闭，公司内网未部署，未提供Excel固件/测试不合成。下一步精确CI/受保护合并/独立main-provider，再由正常授权访问读取状态页和总览→SSR/ASR→四级审批→当前Snapshot/Readiness/Decision/Passport，在桌面/手机/中英文核对；若读取失败，保留未确认状态并按配置/网络/就绪逐项定位，不推断失败原因。更广身份/Impact提交/内网范围不扩大。最终head/PR/CI/合并/生产证据记录本包PR。
+
 ## 2026-10-13 Excel 总览文字检索（Codex / ChatGPT Work）
 
 基线真实 main `41082521da876a384977d8b6dd095f6b7484771b`（PR62真实merged），开放PR为0。本轮独立核对主线CI38398333766三个必需job success，Cloudflare生产check115299850651/build1afa373c-4d4b-40d7-9858-c3962fd0ce5a success。PR62最终记录2262后端/228真实PG cases无skip、1365前端/Next/OpenNext；这些是基线证据，本包精确head另验。Actions deploy38399512846/continuation38399512936 skipped。

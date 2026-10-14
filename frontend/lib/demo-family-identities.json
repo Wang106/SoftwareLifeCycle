@@ -1,0 +1,31 @@
+{
+  "api_version": "0.18.43",
+  "database_revision": "0024_release_customer_scope",
+  "excel": {
+    "SSR01": "e7cbf097-cdc4-56ee-8281-86718c5fa5e3",
+    "SSR02": "b78afe2c-1d16-5d56-ad2b-b9e8314547e3",
+    "SSR03": "4a9fe124-1f41-5ec3-8d23-14c97de5bcca",
+    "SSR04": "b4d43635-8c28-55b1-bf2b-462a6cb05b98",
+    "ASR01": "fddaea0b-f3ef-5c03-babe-927b642bdcf5",
+    "ASR02": "2ee43017-2b4b-5260-99b2-19c38f88c674",
+    "ASR03": "8f31202d-88bc-5a4c-ab89-4bb5c50cd625",
+    "ASR04": "7fc11649-e83f-5470-8e8a-220b471a9f68",
+    "ASR05": "afeacf88-38d5-5b07-961f-ade19a3c64e8",
+    "ASR06": "ba5544a1-7624-5497-a870-24c3904ee7b5",
+    "ASR07": "97edac9f-7337-535a-8480-0a30a303fca0",
+    "ASR08": "aa102e59-1259-59a8-8dc9-7208cffad13d",
+    "ASR09": "6d16fe97-e8b1-5013-b1ec-924ee9b42995",
+    "ASR10": "6a38a578-3a87-53c8-a767-3582ea620149",
+    "ASR11": "7d4b914d-f6b1-580a-b410-39dccff29b57",
+    "ASR12": "260ce4dd-1018-5878-a656-a6b28ffae7c2",
+    "ASR13": "8ce1f789-0511-505a-956d-1626eea303da",
+    "ASR14": "ee66b700-d4e8-5734-a23d-55f8ad43165c",
+    "ASR15": "e93a6043-5903-598b-9121-c0a2347e2927",
+    "ASR16": "528e4b1a-f6b9-517d-80ee-0979d8ab2dd0"
+  },
+  "evidence": {
+    "DEMO-EVIDENCE-SSR-2.0": "e9703dc2-b0dd-5ac9-ad29-61eb0a84563b",
+    "DEMO-EVIDENCE-ASR-A-2.0": "edc4e355-4446-5dc7-921a-03be5475f0b3",
+    "DEMO-EVIDENCE-ASR-B-2.0": "f4083d6d-96bc-500d-989b-efcc5657dba4"
+  }
+}
