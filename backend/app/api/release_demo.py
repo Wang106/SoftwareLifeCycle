@@ -9,6 +9,7 @@ from app.models.snapshot import ReleaseSnapshot
 from app.models.approval import ApprovalRequest, ReleaseDecision
 from app.api.dashboard import _readiness_for_release
 from app.seed_release_evidence import key, VERSIONS, PRODUCT_CODE
+from app.services.release_decision import effective_release_decision
 
 router = APIRouter(prefix='/api/v1/demo', tags=['read-only sample evidence'])
 
@@ -49,8 +50,7 @@ def evidence(db: Session = Depends(get_db)):
         ready = _readiness_for_release(release, db, bounded=True)
         snapshot_id = ready['coverage']['snapshot_id']
         snapshot = db.get(ReleaseSnapshot, uuid.UUID(snapshot_id)) if snapshot_id else None
-        decision = db.scalar(select(ReleaseDecision).where(ReleaseDecision.release_id == release.id)
-            .order_by(ReleaseDecision.decided_at.desc(), ReleaseDecision.decision_no.desc(), ReleaseDecision.id.desc()).limit(1))
+        decision = effective_release_decision(db, release.id)
         approval = db.get(ApprovalRequest, decision.approval_request_id) if decision and decision.approval_request_id else None
         approval_bound = bool(approval and approval.target_type == 'RELEASE' and approval.target_id == release.id
             and snapshot and approval.snapshot_id == snapshot.id)

@@ -1,6 +1,6 @@
 {
-  "api_version": "0.18.43",
-  "database_revision": "0024_release_customer_scope",
+  "api_version": "0.18.44",
+  "database_revision": "0025_release_decision_supersession",
   "excel": {
     "SSR01": "e7cbf097-cdc4-56ee-8281-86718c5fa5e3",
     "SSR02": "b78afe2c-1d16-5d56-ad2b-b9e8314547e3",

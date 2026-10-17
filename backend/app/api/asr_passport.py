@@ -10,6 +10,7 @@ from app.models.core import Release, ApplicationReleaseDetail, SoftwareProduct, 
 from app.models.snapshot import ReleaseSnapshot
 from app.models.approval import ReleaseDecision, ApprovalRequest
 from app.models.distribution import DeliveryPackage, Distribution, SoftwareAuthorization
+from app.services.release_decision import effective_release_decision
 
 router = APIRouter(prefix='/api/v1/releases/application/id', tags=['application passport'])
 Pin = uuid.UUID | Literal['none']
@@ -46,7 +47,8 @@ def selection(db, release_id, filters):
             return row
         return db.scalar(select(model).where(model.release_id == release_id).order_by(*order).limit(1))
     snapshot = resolve(ReleaseSnapshot, filters.snapshot_id, [ReleaseSnapshot.snapshot_number.desc(), ReleaseSnapshot.id.desc()])
-    decision = resolve(ReleaseDecision, filters.decision_id, [ReleaseDecision.decided_at.desc(), ReleaseDecision.decision_no.desc(), ReleaseDecision.id.desc()])
+    decision = (effective_release_decision(db, release_id) if filters.decision_id is None else
+        resolve(ReleaseDecision, filters.decision_id, [ReleaseDecision.decided_at.desc(), ReleaseDecision.id.desc()]))
     return release, snapshot, decision
 
 
@@ -70,7 +72,9 @@ def decision_row(d, s, a, selected_id):
         'decided_at': d.decided_at, 'snapshot_id': str(d.snapshot_id), 'snapshot_no': s.snapshot_no if s else None,
         'snapshot_content_hash': s.content_hash if s else None, 'is_selected_snapshot': d.snapshot_id == selected_id,
         'context_consistent': bool(s and s.status == 'FROZEN' and a),
-        'approval_no': a.approval_no if a else None, 'approval_status': a.status if a else None}
+        'approval_no': a.approval_no if a else None, 'approval_status': a.status if a else None,
+        'supersedes_id': str(d.supersedes_id) if d.supersedes_id else None,
+        'correction_reason': d.correction_reason}
 
 
 def statements(release_id, decision):
@@ -89,8 +93,8 @@ def summary(release_id: uuid.UUID, filters: Annotated[Selection, Query()], db: S
     release, snapshot, decision = selection(db, release_id, filters)
     latest_snapshot = db.scalar(select(ReleaseSnapshot.id).where(ReleaseSnapshot.release_id == release_id)
         .order_by(ReleaseSnapshot.snapshot_number.desc(), ReleaseSnapshot.id.desc()).limit(1))
-    latest_decision = db.scalar(select(ReleaseDecision.id).where(ReleaseDecision.release_id == release_id)
-        .order_by(ReleaseDecision.decided_at.desc(), ReleaseDecision.decision_no.desc(), ReleaseDecision.id.desc()).limit(1))
+    effective = effective_release_decision(db, release_id)
+    latest_decision = effective.id if effective else None
     detail = db.get(ApplicationReleaseDetail, release_id)
     software = db.get(SoftwareProduct, release.software_id)
     customer = db.get(Customer, detail.customer_id) if detail else None
@@ -101,6 +105,7 @@ def summary(release_id: uuid.UUID, filters: Annotated[Selection, Query()], db: S
         d, s, a = db.execute(decision_rows(release_id).where(ReleaseDecision.id == decision.id)).one()
         row = decision_row(d, s, a, snapshot.id if snapshot else None)
         row['is_latest_decision'] = decision.id == latest_decision
+        row['effective'] = decision.id == latest_decision
         row['is_current_snapshot'] = bool(snapshot and snapshot.id == latest_snapshot and d.snapshot_id == snapshot.id)
     return {'release_id': str(release_id), 'selection': pins(snapshot, decision),
         'profile': {'id': str(release.id), 'version': release.version, 'status': release.status, 'release_notes': release.release_notes,

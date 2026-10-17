@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-18 ReleaseDecision 追加式替代后端与统一读取（Codex / ChatGPT Work）
+
+从真实远端 `main` `16c791d11f59315f655d57d0314207f581dedb1c`（PR68）创建独立分支 `codex/release-decision-supersession-backend-read`；启动时开放 PR 为 0，未发现同名实现分支。新增 `0025_release_decision_supersession`：正式决策增加同 Release/同 Snapshot 复合前驱、唯一后继、成对非空更正原因、自指拒绝、有效读取索引和 PostgreSQL UPDATE/DELETE 拒绝 trigger；存在替代历史时 downgrade 明确拒绝。API 更新为 `0.18.44`，required schema 为 `0025_release_decision_supersession`。
+
+既有 `POST /api/v1/approvals/{approval_no}/release-decision` 以可选成对字段 `supersedes_id`/`correction_reason` 支持显式 SUPERSEDE：保持 Release→Approval 锁序，只允许替代当前有效决策、同冻结 Snapshot 和新的 APPROVED ApprovalRequest；原请求全正文/可信 actor/原审计重放保持稳定，审计动作 `DECISION_SUPERSEDED` 与新旧绑定同事务写入。普通 DECIDE 兼容。共享有界 SQL resolver 已接入 Delivery、Dashboard 当前决策、ASR 护照、演示状态和旧版发布详情；治理目录、详情、Dashboard 历史和生产来源保留全部旧行并显示前驱、后继、更正原因和效力。Seed 的 RD-0081 改为缺失插入、存在精确验证、冲突失败，不再更新正式历史。
+
+前端 ReleaseDecision 详情新增双语只读历史关系；不新增浏览器提交入口，公共样例仍只读。本地 1641 后端通过/626 真实 PostgreSQL 模块因无 `TEST_POSTGRES_URL` 跳过；针对性 93 通过/4 PG skip；Alembic 0001→0025 离线 SQL 成功；前端 1453/1453 通过，Next 15.5.24 与 OpenNext Cloudflare bundle 成功。精确 PR head 真实 PostgreSQL CI、合并后 main/Cloudflare/Render 证据在本包 PR 验收后补充。当前 Render 只读核验仍是旧 live deploy `dep-db5sl1fgfhjc73eva640`/commit `9dba7e9`，未触发部署，不能称本包在线。
+
+业务验收仍 36/44=82%；七模块仍为 100/100演示/100演示/100/89/60/17；七计划仍为 100/100/20/33/40/20/0。代码完成不替代真实提供方多用户/浏览器验收。下一包为独立默认关闭的 `release-decision-supersession-browser-protocol`；之后另行定义发布/分发/授权撤销与生产更正，不能把本包 HOLD 替代称为既有实物撤回。
+
 ## 2026-10-17 ReleaseDecision 追加式历史替代设计审查（Codex / ChatGPT Work）
 
 从已合并 PR67 的真实远端 `main` `daa14183197eecb5590f973f45817be79f695444` 创建独立分支 `codex/release-review-history-design-review`。PR67 精确 head `8a254b93b449a470973932cdb9ebecd8dad061c6` 的 CI `39007389782` 三个必需 job 成功：2262 后端、228 PostgreSQL-module cases 无 skip、1453 前端及 Next/OpenNext/disabled-auth SSR；合并后 main CI `39010669503` 三 job 成功，Cloudflare production build `b5ad9937-094a-482a-9e7e-cd6cc6c7ee98` 成功。Actions deploy `39011070086` 与 continuation `39011070091` 均 skipped，不称 Actions 部署成功。

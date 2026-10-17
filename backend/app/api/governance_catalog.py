@@ -3,8 +3,8 @@ import uuid
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import func,or_,select,and_
-from sqlalchemy.orm import Session
+from sqlalchemy import exists,func,or_,select,and_
+from sqlalchemy.orm import Session,aliased
 from app.core.db import get_db
 from app.models.approval import ApprovalRequest,ApprovalStep,ApprovalAction,ReleaseDecision
 from app.models.core import Release
@@ -47,7 +47,30 @@ def decision_row(d,a,r,s):
     return {'id':str(d.id),'decision_no':d.decision_no,'decision':d.decision,'readiness_status':d.readiness_status,
         'decided_by':d.decided_by,'decided_at':d.decided_at,'decision_notes':d.decision_notes,
         'release_id':str(d.release_id),'snapshot_id':str(d.snapshot_id),**references(r,s),'context_consistent':match,
-        'approval':{'id':str(a.id),'approval_no':a.approval_no,'status':a.status} if a else None}
+        'approval':{'id':str(a.id),'approval_no':a.approval_no,'status':a.status} if a else None,
+        'supersedes_id':str(d.supersedes_id) if d.supersedes_id else None,
+        'correction_reason':d.correction_reason}
+
+
+def add_successors(db, rows):
+    ids=[uuid.UUID(item['id']) for item in rows]
+    successors=db.scalars(select(ReleaseDecision).where(ReleaseDecision.supersedes_id.in_(ids))).all() if ids else []
+    by_predecessor={str(item.supersedes_id):item for item in successors}
+    releases={uuid.UUID(item['release_id']) for item in rows}
+    child=aliased(ReleaseDecision)
+    leaves=select(
+        ReleaseDecision.id.label('id'),
+        func.row_number().over(partition_by=ReleaseDecision.release_id,
+            order_by=(ReleaseDecision.decided_at.desc(),ReleaseDecision.id.desc())).label('position'),
+    ).where(ReleaseDecision.release_id.in_(releases),
+        ~exists(select(1).where(child.supersedes_id==ReleaseDecision.id))).subquery()
+    effective_ids=set(db.scalars(select(leaves.c.id).where(leaves.c.position==1)).all()) if releases else set()
+    for item in rows:
+        successor=by_predecessor.get(item['id'])
+        item['successor_id']=str(successor.id) if successor else None
+        item['successor_decision_no']=successor.decision_no if successor else None
+        item['effective']=uuid.UUID(item['id']) in effective_ids
+    return rows
 
 
 def apply_filters(stmt,filters,state,release_id,snapshot_id,search):
@@ -95,14 +118,14 @@ def decision_catalog(filters: Annotated[Filters,Query()],db: Session=Depends(get
     stmt=apply_filters(decision_stmt(),filters,d.decision,d.release_id,d.snapshot_id,[d.decision_no,d.decided_by,a.approval_no,Release.version,ReleaseSnapshot.snapshot_no])
     if filters.approval_id:stmt=stmt.where(d.approval_request_id==filters.approval_id)
     rows,result=paged(db,stmt,filters,'decision',[d.decision_no,d.id])
-    return {**result,'items':[decision_row(*row) for row in rows]}
+    return {**result,'items':add_successors(db,[decision_row(*row) for row in rows])}
 
 
 @router.get('/decisions/{decision_no}')
 def decision_profile(decision_no: str,db: Session=Depends(get_db)):
     row=db.execute(decision_stmt().where(ReleaseDecision.decision_no==decision_no)).first()
     if not row:raise HTTPException(404,'release decision not found')
-    return decision_row(*row)
+    return add_successors(db,[decision_row(*row)])[0]
 
 
 def _approval_profile(approval_no, db, include_steps=True):

@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://slc:slc_dev_password@localhost:5432/software_lifecycle"
     cors_origins: str = "http://localhost:3000,https://softwarelifecycle.whf969.com"
-    required_db_revision: str = "0024_release_customer_scope"
+    required_db_revision: str = "0025_release_decision_supersession"
     read_only_mode: bool = False
     auth_mode: Literal["disabled", "oidc"] = "disabled"
     admin_operator_enabled: bool = False

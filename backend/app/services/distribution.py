@@ -9,6 +9,7 @@ from app.models.snapshot_policy import SnapshotArtifactDistributionRule
 from app.actor import ActorContext
 from app.services.audit import commit_with_audit
 from app.services.command_retry import atomic_command, retry_result
+from app.services.release_decision import effective_release_decision
 
 
 class DistributionError(ValueError):
@@ -24,12 +25,7 @@ class DistributionService:
             .with_for_update().execution_options(populate_existing=True))
 
     def _latest_release_decision(self, release_id):
-        return self.db.scalars(
-            select(ReleaseDecision)
-            .where(ReleaseDecision.release_id == release_id)
-            .order_by(ReleaseDecision.decided_at.desc(), ReleaseDecision.id.desc())
-            .execution_options(populate_existing=True)
-        ).first()
+        return effective_release_decision(self.db, release_id)
 
     def create_delivery(self, release_id, package_no, revision, recipient_type, recipient_code, purpose,
                 snapshot_artifact_ids, created_by=None, actor_context=None, request_id=None):

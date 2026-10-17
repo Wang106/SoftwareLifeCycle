@@ -115,10 +115,16 @@ def test_parent_identity_map_is_refreshed_before_checks(chain,kind,stale):
         db.commit()
         with Session(engine) as writer:
             row=writer.get(type(cached),cached.id)
-            if stale=='decision':row.decision='HOLD'
+            if stale=='decision':
+                snapshot=writer.get(ReleaseSnapshot,row.snapshot_id)
+                replacement_approval=ApprovalRequest(approval_no='APR-REPLACEMENT',target_type='RELEASE',
+                    target_id=row.release_id,snapshot_id=snapshot.id,status='APPROVED')
+                writer.add(replacement_approval);writer.commit()
+                ApprovalService(writer).create_release_decision('APR-REPLACEMENT','RD-HOLD','Manager','READY','HOLD',
+                    request_id=uuid.uuid4(),supersedes_id=row.id,correction_reason='Corrected formal decision')
             elif kind=='authorization' and stale=='package':row.purpose='TEST'
             else:row.status='CANCELLED'
-            writer.commit()
+            if stale!='decision':writer.commit()
         before=counts(db)
         with pytest.raises(DistributionError):run(db,kind,ids,uuid.uuid4())
         assert not db.in_transaction() and counts(db)==before

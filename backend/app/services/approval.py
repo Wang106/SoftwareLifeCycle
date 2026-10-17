@@ -11,6 +11,7 @@ from app.models.snapshot import ReleaseSnapshot
 from app.actor import ActorContext
 from app.services.audit import commit_with_audit
 from app.services.command_retry import atomic_command, retry_result
+from app.services.release_decision import effective_release_decision
 
 
 class ApprovalError(ValueError):
@@ -149,13 +150,17 @@ class ApprovalService:
         notes: str | None = None,
         actor_context: ActorContext | None = None,
         request_id=None,
+        supersedes_id=None,
+        correction_reason: str | None = None,
     ):
         with atomic_command(self.db, ApprovalError):
             return self._create_release_decision(approval_no, decision_no, decided_by,
-                readiness_status, decision, notes, actor_context, request_id)
+                readiness_status, decision, notes, actor_context, request_id,
+                supersedes_id, correction_reason)
 
     def _create_release_decision(self, approval_no, decision_no, decided_by,
-                                 readiness_status, decision, notes, actor_context, request_id):
+                                 readiness_status, decision, notes, actor_context, request_id,
+                                 supersedes_id, correction_reason):
         resolved_actor = actor_context or ActorContext.legacy(decided_by)
         # Release precedes ApprovalRequest: delivery/authorization latest-decision
         # checks share this lock, while actions only acquire ApprovalRequest.
@@ -173,6 +178,8 @@ class ApprovalService:
         request_content = {
             "approval_no": approval_no, "decision_no": decision_no, "decided_by": decided_by,
             "readiness_status": readiness_status, "decision": decision, "notes": notes,
+            "supersedes_id": str(supersedes_id) if supersedes_id else None,
+            "correction_reason": correction_reason,
         }
         existing = retry_result(self.db, ReleaseDecision, request_id, "EVT-RD-",
                                 request_content, resolved_actor, ApprovalError)
@@ -190,6 +197,21 @@ class ApprovalService:
         snapshot = self.db.get(ReleaseSnapshot, approval.snapshot_id)
         if not release or not snapshot or snapshot.release_id != release.id:
             raise ApprovalError("Approval target snapshot does not match release")
+        if (supersedes_id is None) != (correction_reason is None):
+            raise ApprovalError("supersedes_id and correction_reason must be supplied together")
+        if correction_reason is not None:
+            correction_reason = correction_reason.strip()
+            if not correction_reason or len(correction_reason) > 4000:
+                raise ApprovalError("correction_reason must contain 1 to 4000 characters")
+            if request_id is not None and supersedes_id == request_id:
+                raise ApprovalError("A release decision cannot supersede itself")
+            current = effective_release_decision(self.db, release.id)
+            if current is None or current.id != supersedes_id:
+                raise ApprovalError("supersedes_id is not the current effective release decision")
+            if current.snapshot_id != snapshot.id:
+                raise ApprovalError("Supersession must retain the predecessor snapshot")
+            if current.approval_request_id == approval.id:
+                raise ApprovalError("Supersession requires a new approved request")
 
         existing = self.db.scalars(
             select(ReleaseDecision).where(ReleaseDecision.decision_no == decision_no)
@@ -206,13 +228,16 @@ class ApprovalService:
             decision=decision,
             decided_by=resolved_actor.name,
             decision_notes=notes,
+            supersedes_id=supersedes_id,
+            correction_reason=correction_reason,
             decided_at=datetime.now(timezone.utc),
         )
         if request_id is not None:
             row.id = request_id
         self.db.add(row)
         commit_with_audit(self.db, lambda: dict(
-            event_no=f"EVT-RD-{row.id.hex}", event_type="RELEASE", action="DECISION_RECORDED",
+            event_no=f"EVT-RD-{row.id.hex}", event_type="RELEASE",
+            action="DECISION_SUPERSEDED" if row.supersedes_id else "DECISION_RECORDED",
             entity_type="RELEASE_DECISION", entity_id=row.id, entity_ref=row.decision_no,
             **resolved_actor.audit_fields(),
             summary="Release decision recorded", detail=notes,
@@ -221,6 +246,8 @@ class ApprovalService:
                 "release_id": str(row.release_id), "snapshot_id": str(row.snapshot_id),
                 "snapshot_no": snapshot.snapshot_no, "content_hash": snapshot.content_hash,
                 "approval_id": str(approval.id), "approval_no": approval.approval_no,
+                "supersedes_id": str(row.supersedes_id) if row.supersedes_id else None,
+                "correction_reason": row.correction_reason,
                 "actor_source": resolved_actor.source,
                 "request": request_content if request_id is not None else None},
         ))

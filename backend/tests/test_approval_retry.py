@@ -155,6 +155,65 @@ def test_decision_numbers_keep_history_and_duplicate_rejection(controlled):
     assert later.decision == 'HOLD' and counts(db)[ReleaseDecision] == 2
 
 
+def test_release_decision_supersession_is_append_only_effective_history(controlled):
+    db, release, snapshot, approval, *_ = controlled
+    approve(controlled)
+    first = ApprovalService(db).create_release_decision(**decision_args())
+    replacement_approval = ApprovalRequest(
+        approval_no='APR-REVIEW-2', target_type='RELEASE', target_id=release.id,
+        snapshot_id=snapshot.id, status='APPROVED',
+    )
+    db.add(replacement_approval); db.commit()
+    key = uuid.uuid4()
+    args = decision_args(
+        approval_no='APR-REVIEW-2', decision_no='RD-HOLD', decision='HOLD',
+        request_id=key, supersedes_id=first.id, correction_reason='Incorrect release conclusion',
+    )
+    replacement = ApprovalService(db).create_release_decision(**args)
+    assert replacement.supersedes_id == first.id
+    assert replacement.correction_reason == 'Incorrect release conclusion'
+    assert db.get(ReleaseDecision, first.id).decision == 'RELEASE'
+    event = db.scalar(select(AuditEvent).where(AuditEvent.event_no == f'EVT-RD-{key.hex}'))
+    assert event.action == 'DECISION_SUPERSEDED'
+    assert event.payload_json['supersedes_id'] == str(first.id)
+    assert ApprovalService(db).create_release_decision(**args).id == replacement.id
+
+
+def test_release_decision_supersession_rejects_stale_pair_and_same_approval(controlled):
+    db, release, snapshot, *_ = controlled
+    approve(controlled)
+    first = ApprovalService(db).create_release_decision(**decision_args())
+    with pytest.raises(ApprovalError, match='new approved request'):
+        ApprovalService(db).create_release_decision(**decision_args(
+            decision_no='RD-INVALID', supersedes_id=first.id, correction_reason='retry review'))
+    second_approval = ApprovalRequest(
+        approval_no='APR-REVIEW-2', target_type='RELEASE', target_id=release.id,
+        snapshot_id=snapshot.id, status='APPROVED',
+    )
+    db.add(second_approval); db.commit()
+    replacement = ApprovalService(db).create_release_decision(**decision_args(
+        approval_no='APR-REVIEW-2', decision_no='RD-HOLD', decision='HOLD',
+        supersedes_id=first.id, correction_reason='Corrected conclusion'))
+    third_approval = ApprovalRequest(
+        approval_no='APR-REVIEW-3', target_type='RELEASE', target_id=release.id,
+        snapshot_id=snapshot.id, status='APPROVED',
+    )
+    db.add(third_approval); db.commit()
+    with pytest.raises(ApprovalError, match='current effective'):
+        ApprovalService(db).create_release_decision(**decision_args(
+            approval_no='APR-REVIEW-3', decision_no='RD-STALE',
+            supersedes_id=first.id, correction_reason='Stale predecessor'))
+    assert replacement.decision == 'HOLD'
+
+
+def test_release_decision_request_requires_paired_supersession_fields():
+    values = dict(decision_no='RD', decided_by='Manager', readiness_status='READY', decision='RELEASE')
+    with pytest.raises(ValidationError):
+        ReleaseDecisionRequest(**values, supersedes_id=uuid.uuid4())
+    with pytest.raises(ValidationError):
+        ReleaseDecisionRequest(**values, correction_reason='reason')
+
+
 @pytest.mark.parametrize('kind', ['action', 'decision'])
 @pytest.mark.parametrize('failure', ['validation', 'flush', 'audit_after_flush', 'commit'])
 def test_every_failure_rolls_back_and_key_can_be_reused(controlled, monkeypatch, kind, failure):
