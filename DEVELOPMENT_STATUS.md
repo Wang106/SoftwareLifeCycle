@@ -1,5 +1,16 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-17 演示状态页读取超时保护（Codex / ChatGPT Work）
+
+从真实 main `774f03bbd6c7df73ed2c1bae55133222fcf33f4c`（PR65已合并）开始，开放PR为0，独立分支 `codex/demo-status-read-timeout`。基线完整CI38569904417三个必需job success；Cloudflare生产build2eca89ad-a010-4617-82eb-10cf5ad5a0d2/versiond04dda23-ea8b-4fe7-a35a-64ba0d26e4fa success。Actions deploy/wake skipped。本包精确head完整CI、合并main和生产检查必须另核验，最终结果记录本包PR，不能用基线代替。
+
+承接PR65交接中的状态页超时工作：仅 /demo/status 的三个固定并发GET各设置10000ms读取上限，覆盖响应头与JSON正文；超时返回原有未确认/不可用状态并取消请求，已成功的其他观察保留。即使上游取消后未及时settle，Promise竞争也释放页面；迟到响应不能改成成功，迟到拒绝有处理。每次人工重新读取各请求一次，无自动重试/轮询，不把超时推断成空库、未导入、配置错误或数据库故障。共享apiGet仅新增可选参数，其他调用保留原有行为；不修改后端/数据库/迁移/Seed/身份/门控/依赖/CI或提供方配置。
+
+新增8项行为回归：卡住的响应头、正文、迟到成功/拒绝、成功/HTTP/网络/JSON失败清理、无配置、无效时限、原调用兼容及真实状态页与共享读取组合。定向44项通过；完整前端1436 passed/0 failed/0 skipped；Worker配置、进度--check和diff检查通过。Next/OpenNext生产构建和disabled-auth SSR/实际禁用路由检查通过，精确云端最终结果见本包PR。未在本地重跑后台/真实PG；完整云端CI需独立成功后才受保护合并。模拟超时/SSR不算电脑或手机真实浏览器验收，也不证明线上API就绪。
+
+业务验收仍36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。公共只读/OIDC及真实提交关闭，内网未部署。第四轮仍in_progress：待正常授权浏览器完成桌面/手机/中英文供应商→软件→详情文件/审批和总览→当前发布证据链验收；不重试或绕过此前Cloudflare拒绝访问。Excel固件/测试未提供不合成，不扩大Impact撤销提交、身份或内网范围。本包成功后继续核对当前API/schema/样例读取；无法取得响应就保留未确认状态。
+
+
 ## 2026-10-14 标准发布供应商折叠布局与详情文件/审批（Codex / ChatGPT Work）
 
 用户最新范围：只改页面显示，不改数据库。以真实main c8503fe116eaa8299e2b41f83ae4361d4eb16da4（PR64）为基线，独立分支 codex/standard-release-supplier-layout。PR64精确feature34f7acb1/CI38411209993、main CI38491157105及Cloudflare build8d33e64f-137f-41dd-abdd-29dfbba37ad0/version80de571e-cea0-4021-b566-4a0309799178 success已核对，覆盖旧pending；此包CI与provider另核验，最终完整SHA/PR/结果记录于本包PR。
