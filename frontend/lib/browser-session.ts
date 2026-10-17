@@ -1,4 +1,5 @@
 import type {ImpactCorrectionCommand} from './impact-correction-transport';
+import type {ImpactWithdrawalCommand} from './impact-withdrawal-transport';
 import {parseAcceptanceCorrectionCommand,acceptanceCorrectionPath,acceptanceCorrectionEvent,type AcceptanceCorrectionCommand} from './acceptance-correction-transport';
 import {projectAcceptanceCorrectionAudit} from './acceptance-correction-audit';
 import {parseEvidenceCommand,evidencePath,evidenceEvent,type EvidenceCommand} from './evidence-command-transport';
@@ -850,5 +851,26 @@ export async function executeImpactCorrectionCommand(config: SessionConfig, cook
   if (!audit || audit.status !== 200) return unknown;
   const receipt = await projectImpactCorrectionAudit(audit.value, command, identity.principal.id);
   return receipt ? { status: 200, value: receipt } : unknown;
+}
+
+export async function executeImpactWithdrawalCommand(config:SessionConfig,cookie:string|undefined,input:ImpactWithdrawalCommand,
+  mode:'submit'|'recover',fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}>{
+  const {parseImpactWithdrawalCommand,impactWithdrawalPath,impactWithdrawalEvent}=await import('./impact-withdrawal-transport');
+  const {projectImpactWithdrawalAudit}=await import('./impact-withdrawal-audit');
+  const command=parseImpactWithdrawalCommand(input);if(!command||!['submit','recover'].includes(mode))return{status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);if(!identity)return{status:401,value:{error:'session_required'}};
+  if(mode==='submit'&&identity.read_only_mode)return{status:403,value:{error:'read_only_mode'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;const unknown={status:502,value:{error:'outcome_unknown'}};
+  if(mode==='submit'){
+    const result=await privateRequest(config,impactWithdrawalPath(command),envelope.token,fetcher,{method:'POST',body:JSON.stringify(command.body)},envelope.sid);
+    if(!result)return unknown;if(![200,201].includes(result.status)){
+      const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',422:'invalid_request'};
+      if(denied[result.status])return{status:result.status,value:{error:denied[result.status]}};
+      if(result.status===409){const detail=result.value&&typeof result.value==='object'?(result.value as Record<string,unknown>).detail:null;return{status:409,value:{error:typeof detail==='string'&&/^request_id already used/.test(detail)?'request_conflict':'submission_conflict'}};}return unknown;
+    }
+  }
+  const audit=await privateRequest(config,'/api/v1/activity/'+impactWithdrawalEvent(command),envelope.token,fetcher,{},envelope.sid);
+  if(!audit||audit.status!==200)return unknown;const receipt=await projectImpactWithdrawalAudit(audit.value,command,identity.principal.id);
+  return receipt?{status:200,value:receipt}:unknown;
 }
 

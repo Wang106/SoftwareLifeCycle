@@ -10,6 +10,15 @@
 
 业务验收仍36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。公共只读/OIDC及真实提交关闭，内网未部署。第四轮仍in_progress：待正常授权浏览器完成桌面/手机/中英文供应商→软件→详情文件/审批和总览→当前发布证据链验收；不重试或绕过此前Cloudflare拒绝访问。Excel固件/测试未提供不合成，不扩大Impact撤销提交、身份或内网范围。本包成功后继续核对当前API/schema/样例读取；无法取得响应就保留未确认状态。
 
+## 2026-10-17 Impact 撤销受控界面与手动恢复（Codex / ChatGPT Work）
+
+从真实 `main` `774f03bbd6c7df73ed2c1bae55133222fcf33f4c`（PR65）清洁分支继续；发布时main已前进到PR66 merge `e5601a1b73042414589113450cfd2660d3cd50f7`，本包无损重放后重新完整验收，不覆盖其状态页超时保护。先核对 Render：free API 服务最后部署 `9dba7e9` 为 live、PostgreSQL18.6可读且近7天无错误/失败事件；现场 `/health/ready` 返回 API0.18.43/schema0024，两个样例家族和 Cloudflare `/demo/status` 均成功，状态页确认20条Excel家族和3条独立证据。此前超时当前不可复现，未重启/升级/改配置或为此制造代码变更；免费实例响应约6–11秒，真实浏览器仍另验。
+
+本包为已实现追加式 Impact WITHDRAW 后台增加独立 `impact-withdrawal` 浏览器协议、默认关闭Node代理、双语确认/原结果、精确历史入口以及同站点手动导出/仅查询原审计恢复。撤销正文没有decision/evidence，不等于NOT_AFFECTED、不复活旧独立判断、不授权发布。独立三个环境变量不借Impact SUPERSEDE或普通ASSESS门控启用；唯一当前token-bound USER、只读拒写但允许本人原审计GET、CSRF/JSON/字节/同源/私有缓存边界保留。HTTP写成功不是证明，只有匹配原子审计全字段、actor、上下文序号、null证据摘要和原冻结Snapshot才能确认。unknown冻结原ID/字节，显式重试不改正文；导入零网络且无send方法。
+
+新增17项回归：5传输/审计/恢复、7真实OIDC代理场景及4组件行为，并扩展1个既有history行为；重放PR66后完整前端1453 passed/0failed/0skipped，TypeScript、Next、OpenNext、Worker配置、disabled-auth生产SSR和进度检查通过。初次全套因新checkout未安装依赖导致65个测试文件模块加载失败，`npm ci`后同一套完整通过；代码调试中严格目标尾空格和测试中不应固定context_seq的假设分别修正，未放宽业务契约。首次SSR检查对包含普通Impact工作台的整页使用了过宽字段排除，已移除该重复断言；撤销正文无decision/evidence由严格解析、代理与组件测试独立证明。PR67首个完整CI39007229476因把已由远端证据覆盖的Plus队列pending记录直接改为completed，违反既有52项队列固定恢复契约而在业务/PG测试前失败；已保留旧队列记录、继续由AGENTS/HANDOFF最新证据防重复，最终新head须重跑完整CI。
+
+无backend/schema/迁移/Seed/依赖/锁文件/CI/调度/真实身份或提供方配置变化，API0.18.43/schema0024及14业务命令计数不变；新增的是Impact撤销专用控制协议，不计作第15类普通业务命令。公共环境继续只读、OIDC/真实提交关闭，内网未部署。业务验收仍36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。判断关系里程碑仍需release-review历史替代及批准提供方多用户真实验收，不能因模拟协议测试提前完成。下一独立包审查release-review历史替代范围；分发/授权撤销、生产更正、真实身份和运营迁移仍分开，VIN最后。
 
 ## 2026-10-14 标准发布供应商折叠布局与详情文件/审批（Codex / ChatGPT Work）
 

@@ -4,6 +4,8 @@
 
 2026-10-11更新：A已在PR50验收合并，main0c622c54c4db9f7b1581752b44713192370759a0的完整CI与Cloudflare生产成功；用户10:19“继续”推进本文件已切分的B。B仅现有SUPERSEDE双语确认/原结果/手动恢复，契约docs/impact-correction-ui-recovery.md；C撤销/模型/数据库迁移仍先独立审查，不启用宽泛队列或实际写入。本条覆盖下文早期B待授权的历史状态。
 
+2026-10-17更新：C设计审查PR54、后台与统一读取PR55均已完成；本次后续包实现独立Impact WITHDRAW受控浏览器协议、双语确认及同站点audit-only恢复，契约为docs/impact-withdrawal-ui-recovery.md。实际OIDC/写入门控、真实多用户浏览器、release-review及其他下游更正规则仍未完成；下文旧时态保留为范围形成记录。
+
 状态：用户于2026-10-10 21:40（Asia/Shanghai）确认仅方案A继续，规划PR49经精确head完整CI成功后合并。A由Codex在Work直接开发；B双语界面与C撤销/数据库迁移仍待后续具体授权。docs/automation/tasks.json 的宽泛任务enabled/auto_merge不变，不启用付费API调度或实际业务写入。下文保留范围基准，A协议交付契约见docs/impact-correction-submission.md；不能以A授权覆盖B/C及全部下游政策。
 
 ## 已核对基线
@@ -13,7 +15,7 @@
 - 后端 IssueImpactAssessment 已有 supersedes_id、correction_reason、同上下文复合自外键、唯一后继和非自引用检查；0021 已实现 SUPERSEDE，当前迁移头为 0022。
 - record_assessment 持有 Issue 行锁，要求原关系是同 Issue/Release/FROZEN Snapshot 的当前有效判断；原行及原审计不修改。新请求 201、原请求/actor/审计完全相同重放 200，否则冲突。
 - 原审计 EVT-IMPACT-{request_id} 是 ISSUE_IMPACT/SUPERSEDE；payload 包含原判断 ID、Release/Snapshot、原 snapshot_no、新 decision、supersedes_id、previous_decision、correction_reason、版本化 nullable evidence_ref 摘要及 actor_source。
-- 普通 Impact 的 ASSESS 准备/回执/导入协议继续拒绝更正字段。withdrawal 未实现；不能将 NOT_AFFECTED 或 NEEDS_REVIEW 当作撤销。
+- 普通 Impact 的 ASSESS 准备/回执/导入协议继续拒绝更正字段。WITHDRAW使用独立命令、后台入口与恢复格式；不能将 NOT_AFFECTED 或 NEEDS_REVIEW 当作撤销。
 - 公共样例只读、OIDC/实际提交门控关闭；69页面/API0.18.40/schema0022、14业务/2自身会话/6管理员/离线操作分计不变。
 
 以上依据当前代码 backend/app/models/impact.py、backend/app/services/impact_assessment.py、backend/app/services/impact_history.py、backend/alembic/versions/0021_impact_supersession.py 与 docs/impact-judgment-corrections.md；不是对未来功能的完成声明。
@@ -70,7 +72,7 @@ A 的协议验收后另切一包：只读历史的准确前驱入口、独立更
 
 ## 执行顺序和后续限制
 
-推荐 A → B → C 的模型/迁移审查 → 撤销后端与所有有效读取 → 撤销受控界面/恢复 → 发布评审/分发/授权/批次的下游更正规则。离线部署及运营迁移需 OS/CPU/安装条件和真实身份明确；VIN最后。
+A → B → C模型/迁移审查 → 撤销后端与所有有效读取 → 撤销受控界面/恢复已依次完成；下一步是发布评审，再分别审查分发/授权/批次的下游更正规则。离线部署及运营迁移需 OS/CPU/安装条件和真实身份明确；VIN最后。
 
 当前所有后续任务仍 disabled，auto_merge=false；不修改账户/角色/秘密，不开启付费 API 自动调度，不解除 main PR/严格CI/管理员保护。
 评审本文件后只授权具体的一包及必要路径；下一包开始仍需核对最新main、开放PR、实际任务状态与精确CI/provider证据。

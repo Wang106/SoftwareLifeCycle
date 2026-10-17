@@ -20,7 +20,7 @@ export default function ImpactCorrectionHistory({ judgment, issueNo }: { judgmen
     {judgment.superseded_by_id && <p><Localized>{'Explicitly superseded by'}</Localized>: <code>{judgment.superseded_by_id}</code>
       <Localized>{' · '}</Localized><Link href={audit(judgment.superseded_by_id)} target="_blank" rel="noopener noreferrer" prefetch={false}><Localized>{'Open replacement audit'}</Localized></Link></p>}
     {canPrepare&&<p><Link href={'/commands?'+new URLSearchParams({operation:'impact-correction',target:issueNo!,release:judgment.release_id!,snapshot:judgment.snapshot_id!,predecessor:judgment.id!,previous_decision:judgment.decision!})}>
-      <Localized>{'Prepare replacement of this judgment →'}</Localized></Link></p>}
+      <Localized>{'Prepare replacement of this judgment →'}</Localized></Link><Localized>{' · '}</Localized><Link href={'/commands?'+new URLSearchParams({operation:'impact-withdrawal',target:issueNo!,release:judgment.release_id!,snapshot:judgment.snapshot_id!,predecessor:judgment.id!,previous_decision:judgment.decision!})}><Localized>{'Prepare withdrawal of this judgment →'}</Localized></Link></p>}
     {canPrepare&&<p><Localized>{'The API rechecks the current predecessor and frozen context. This history link does not grant permission or confirm an operation.'}</Localized></p>}
     <p><Localized>{'Correction history preserves original judgments. It does not prove test success or release permission.'}</Localized></p>
   </div></Localized>;

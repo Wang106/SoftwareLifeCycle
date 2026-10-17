@@ -3715,3 +3715,12 @@ Codex直接在ChatGPT Work编写，通过已授权GitHub连接发布；复用独
 新增8项行为回归：卡住的响应头、正文、迟到成功/拒绝、成功/HTTP/网络/JSON失败清理、无配置、无效时限、原调用兼容及真实状态页与共享读取组合。定向44项通过；完整前端1436 passed/0 failed/0 skipped；Worker配置、进度--check和diff检查通过。Next/OpenNext生产构建和disabled-auth SSR/实际禁用路由检查通过，精确云端最终结果见本包PR。未在本地重跑后台/真实PG；完整云端CI需独立成功后才受保护合并。模拟超时/SSR不算电脑或手机真实浏览器验收，也不证明线上API就绪。
 
 业务验收仍36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。公共只读/OIDC及真实提交关闭，内网未部署。第四轮仍in_progress：待正常授权浏览器完成桌面/手机/中英文供应商→软件→详情文件/审批和总览→当前发布证据链验收；不重试或绕过此前Cloudflare拒绝访问。Excel固件/测试未提供不合成，不扩大Impact撤销提交、身份或内网范围。本包成功后继续核对当前API/schema/样例读取；无法取得响应就保留未确认状态。
+## 2026-10-17 Impact 撤销受控界面与手动恢复（Codex / ChatGPT Work）
+
+真实起点main `774f03bbd6c7df73ed2c1bae55133222fcf33f4c`，分支 `codex/impact-withdrawal-browser-protocol`，开始无未提交用户修改。发布时main已前进到PR66 merge `e5601a1b73042414589113450cfd2660d3cd50f7`，本包重放后重新验收，保留状态页超时保护。Render只读复核确认服务live、PG18.6可读、无近7天错误/失败；现场health返回API0.18.43/schema0024，两个家族GET及Cloudflare状态页成功，20 Excel/3独立证据均确认。旧超时当前不可复现，未重启、升级、改配置或数据库。
+
+新增独立默认关闭Impact撤销浏览器协议、两个Node代理路由、双语确认/结果、精确历史撤销入口、手动导出及同站点audit-only导入恢复。命令严格无decision/evidence；WITHDRAW不等于NOT_AFFECTED、不复活旧判断、不授予发布许可。独立环境开关、唯一当前token-bound USER、只读拒写/本人原审计可查、原字节重试、unknown保留、发送/查询互锁、原子审计全字段绑定和凭据隔离均落实；普通ASSESS和SUPERSEDE协议不接受撤销包。契约 `docs/impact-withdrawal-ui-recovery.md`。
+
+新增17项回归并保留既有断言；重放PR66后前端完整1453 passed/0failed/0skipped，TypeScript、Next、OpenNext、Worker配置、disabled-auth真实生产SSR及进度--check通过。首次完整测试仅因依赖未安装导致65个文件加载失败，npm ci后重跑全绿；不把环境失败说成业务失败。首次SSR检查对同页普通Impact工作台使用了过宽的字段排除，撤销正文边界继续由严格解析、代理及组件回归证明。PR67首个完整CI39007229476在业务/PG前因Plus队列pending被直接改completed而违反52项固定恢复契约失败；已恢复旧队列记录，最新完成证据继续由AGENTS/HANDOFF覆盖，最终新head须重新完整验收。不能复用PR65/66成功。
+
+无backend/迁移/Seed/依赖/锁文件/CI/调度/真实配置变更，API0.18.43/schema0024及14业务命令计数不变；公共只读/OIDC/真实提交关闭、内网未部署。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。判断关系里程碑仍因release-review历史替代和批准提供方多用户真实验收未完成；下一包先审查release-review历史替代精确范围，随后分发/授权撤销、生产更正、真实身份/内网与运营迁移，VIN最后。
