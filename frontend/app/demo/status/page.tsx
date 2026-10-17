@@ -15,9 +15,9 @@ const labels = {
 export default async function Page() {
   const observedAt = new Date().toISOString();
   const [health, excel, evidence] = await Promise.all([
-    apiGet<unknown>('/health/ready'),
-    apiGet<unknown>('/api/v1/demo/zfi-import'),
-    apiGet<unknown>('/api/v1/demo/release-evidence'),
+    apiGet<unknown>('/health/ready', {timeoutMs: 10000}),
+    apiGet<unknown>('/api/v1/demo/zfi-import', {timeoutMs: 10000}),
+    apiGet<unknown>('/api/v1/demo/release-evidence', {timeoutMs: 10000}),
   ]);
   const result = inspectDemoStatus(health, excel, evidence);
   return <Localized>
