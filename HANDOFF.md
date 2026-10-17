@@ -3721,6 +3721,6 @@ Codex直接在ChatGPT Work编写，通过已授权GitHub连接发布；复用独
 
 新增独立默认关闭Impact撤销浏览器协议、两个Node代理路由、双语确认/结果、精确历史撤销入口、手动导出及同站点audit-only导入恢复。命令严格无decision/evidence；WITHDRAW不等于NOT_AFFECTED、不复活旧判断、不授予发布许可。独立环境开关、唯一当前token-bound USER、只读拒写/本人原审计可查、原字节重试、unknown保留、发送/查询互锁、原子审计全字段绑定和凭据隔离均落实；普通ASSESS和SUPERSEDE协议不接受撤销包。契约 `docs/impact-withdrawal-ui-recovery.md`。
 
-新增17项回归并保留既有断言；重放PR66后前端完整1453 passed/0failed/0skipped，TypeScript、Next、OpenNext、Worker配置、disabled-auth真实生产SSR及进度--check通过。首次完整测试仅因依赖未安装导致65个文件加载失败，npm ci后重跑全绿；不把环境失败说成业务失败。首次SSR检查对同页普通Impact工作台使用了过宽的字段排除，撤销正文边界继续由严格解析、代理及组件回归证明。精确head CI/合并/main/provider仍待随后记录，不能复用PR65/66成功。
+新增17项回归并保留既有断言；重放PR66后前端完整1453 passed/0failed/0skipped，TypeScript、Next、OpenNext、Worker配置、disabled-auth真实生产SSR及进度--check通过。首次完整测试仅因依赖未安装导致65个文件加载失败，npm ci后重跑全绿；不把环境失败说成业务失败。首次SSR检查对同页普通Impact工作台使用了过宽的字段排除，撤销正文边界继续由严格解析、代理及组件回归证明。PR67首个完整CI39007229476在业务/PG前因Plus队列pending被直接改completed而违反52项固定恢复契约失败；已恢复旧队列记录，最新完成证据继续由AGENTS/HANDOFF覆盖，最终新head须重新完整验收。不能复用PR65/66成功。
 
 无backend/迁移/Seed/依赖/锁文件/CI/调度/真实配置变更，API0.18.43/schema0024及14业务命令计数不变；公共只读/OIDC/真实提交关闭、内网未部署。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。判断关系里程碑仍因release-review历史替代和批准提供方多用户真实验收未完成；下一包先审查release-review历史替代精确范围，随后分发/授权撤销、生产更正、真实身份/内网与运营迁移，VIN最后。
