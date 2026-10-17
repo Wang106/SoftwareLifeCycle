@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-17 ReleaseDecision 追加式历史替代设计审查（Codex / ChatGPT Work）
+
+从已合并 PR67 的真实远端 `main` `daa14183197eecb5590f973f45817be79f695444` 创建独立分支 `codex/release-review-history-design-review`。PR67 精确 head `8a254b93b449a470973932cdb9ebecd8dad061c6` 的 CI `39007389782` 三个必需 job 成功：2262 后端、228 PostgreSQL-module cases 无 skip、1453 前端及 Next/OpenNext/disabled-auth SSR；合并后 main CI `39010669503` 三 job 成功，Cloudflare production build `b5ad9937-094a-482a-9e7e-cd6cc6c7ee98` 成功。Actions deploy `39011070086` 与 continuation `39011070091` 均 skipped，不称 Actions 部署成功。
+
+Render 技能只读复核 `My Workspace` 中既有 free 服务 `softwarelifecycle-api-test`：仍为 main/自动部署、最近部署 `dep-db5sl1fgfhjc73eva640` live 在后端提交 `9dba7e9`；没有触发部署、重启、升级或配置变化。日志在休眠前连续 `/health/ready` 200，免费实例停机后首个 30 秒请求超时，第二次冷启动成功返回 API `0.18.43`、schema `0024_release_customer_scope`。该旧后端部署与当前前端 main 分开记录。
+
+设计 `docs/release-decision-replacement-design-review.md` 将“release-review 历史替代”收窄为正式 `ReleaseDecision` 的显式 SUPERSEDE：精确当前前驱、同 Release/冻结 Snapshot、新 APPROVED ApprovalRequest、全量新决策和独立更正原因；原决策、审批步骤/动作及原审计不修改。WITHDRAW、既有交付/分发/授权撤销和物理回滚明确不在同一包，避免把未来写入阻断误称历史实物撤回。推荐下一实现包使用拟议 0025、append-only trigger、复合同上下文前驱、唯一后继、Release 锁和共享有效决策 resolver，统一 Distribution、治理目录、护照、演示状态及来源消费者；Seed 改为存在即精确验证而非修补历史。
+
+本包只改设计/状态/进度/交接文档，不实现后端、迁移、Seed、前端提交、依赖、CI、身份或提供方配置；拟议 revision 不是现有 schema。业务验收仍 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。下一包 `release-decision-supersession-backend-read`；随后独立浏览器协议、发布/分发/授权撤销、生产更正、真实身份/浏览器、内网和运营迁移，VIN 最后。
+
 ## 2026-10-17 演示状态页读取超时保护（Codex / ChatGPT Work）
 
 从真实 main `774f03bbd6c7df73ed2c1bae55133222fcf33f4c`（PR65已合并）开始，开放PR为0，独立分支 `codex/demo-status-read-timeout`。基线完整CI38569904417三个必需job success；Cloudflare生产build2eca89ad-a010-4617-82eb-10cf5ad5a0d2/versiond04dda23-ea8b-4fe7-a35a-64ba0d26e4fa success。Actions deploy/wake skipped。本包精确head完整CI、合并main和生产检查必须另核验，最终结果记录本包PR，不能用基线代替。

@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-17 ReleaseDecision 追加式历史替代设计审查（Codex / ChatGPT Work）
+
+真实基线为 PR67 merge `daa14183197eecb5590f973f45817be79f695444`，独立分支 `codex/release-review-history-design-review`。PR67 最终 head `8a254b93b449a470973932cdb9ebecd8dad061c6`、CI `39007389782` 三 job success；独立 main CI `39010669503` 三 job success，Cloudflare production build `b5ad9937-094a-482a-9e7e-cd6cc6c7ee98` success。Actions deploy `39011070086`/continuation `39011070091` skipped。
+
+Render 只读检查复用已授权 My Workspace：free API 服务仍绑定 main，最新 live deploy `dep-db5sl1fgfhjc73eva640`/commit `9dba7e9`；未触发部署、重启、升级或配置写入。日志显示休眠前连续 health 200；首个 30 秒冷启动请求超时，第二次约 20 秒返回 200、API0.18.43/schema0024。该服务后端部署落后于当前前端 main，不能把现场健康响应称为 PR67 后端部署。
+
+新增 `docs/release-decision-replacement-design-review.md`，只定义正式 ReleaseDecision 的追加式 SUPERSEDE。更正必须引用同 Release/同冻结 Snapshot 的当前全局有效前驱，使用新 request/decision_no、匹配的 APPROVED ApprovalRequest、完整新 decision/readiness/notes 和独立 correction_reason；原正式决策、ApprovalRequest/Step/Action 与原审计不修改。WITHDRAW 以及已有 Delivery/Distribution/Authorization/Deployment/Changeover/Batch 的撤销不在本包，留给计划6的独立下游政策，不能把 HOLD 或未来新写拒绝说成既有实物回滚。
+
+下一实现建议：确认 Alembic head 后新增拟议0025；supersedes_id/correction_reason paired、同上下文复合FK、唯一后继、禁止自指、append-only trigger及有历史时拒绝降级；保持 Release→Approval 锁序；原重放全正文/actor/审计绑定；共享有界有效决策 resolver 覆盖 Approval、Distribution、governance、dashboard、passport、demo、production/activity；普通DECIDE兼容。现有主Seed须改为缺失插入/存在精确验证/碰撞失败，不能在append-only后修补旧决策。真实PG需覆盖双替代、替代与交付/授权提交顺序、原子回滚、迁移往返/trigger/长历史。
+
+本包仅设计/状态/进度/交接文档，无业务代码、迁移、Seed、依赖、CI、调度、身份、门控或提供方配置变化；0025只是提案。公共样例只读、OIDC和真实提交关闭、内网未部署。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，增量0。下一包 `release-decision-supersession-backend-read`，之后单独受控浏览器替代协议，再处理发布/分发/授权撤销、生产更正、真实身份/浏览器、内网与运营迁移，VIN最后。
+
 ## 2026-10-13 Excel 总览组合筛选与分页（Codex / ChatGPT Work）
 
 基线真实 main `1d134dada149ceb2b70a9f18e46c04c7a826366e`（PR61已合并），开放PR为0。独立main CI38260714118三必需job success已核对：2262后端、228 PostgreSQL-module cases/no skips、1344前端及Next/OpenNext/disabled auth SSR；Cloudflare生产build23c53e09-d4c9-4b5f-bf76-28b8b64757eb success。Actions deploy/wake均skipped，不能称Actions部署启用。本包精确head/main CI及生产证据由本包PR最终记录独立核对，不复用基线。
