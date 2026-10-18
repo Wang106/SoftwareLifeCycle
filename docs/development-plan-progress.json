@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.44",
-  "baseline_commit": "ec12176a23dac49af752d0cfd974b69c956d6973",
+  "baseline_commit": "e45089d7e1df71aa14b1a064c5b6bedc317b2b7a",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
