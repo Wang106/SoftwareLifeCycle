@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-19 发布链永久撤销后端与统一读取（Codex / ChatGPT Work）
+
+从远端最新 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba` 创建独立分支 `codex/release-chain-revocation-backend-read`；启动时开放 PR 为 0，未发现前序未完成实现。远端实现提交 `74bddd2915cc6caa626a8f902f359aa00b399f21` 新增唯一迁移 `0026_release_chain_revocation` 与 API `0.18.45`：四目标 XOR 追加式撤销账本、每目标唯一撤销、UPDATE/DELETE 拒绝、存在历史拒绝降级，以及针对 ReleaseDecision、DeliveryPackage、Distribution、SoftwareAuthorization、Deployment、ProductionBatch 的数据库旧写者 insert guard。
+
+新增四个受范围授权的后台撤销端点和统一治理读取，严格绑定 `request_id=id`、`EVT-RCR-{request_id}`、原 actor/请求正文精确重放和同事务审计。服务统一采用 Release→Package→Distribution→Authorization 根到叶锁序；自身撤销显示 `REVOKED`，祖先撤销显示 `BLOCKED_BY_ANCESTOR`，原 `recorded_status` 与历史事实不改。新 ReleaseDecision、交付、分发、授权、Deployment 和 Batch 被阻断；actual report/更正与 Changeover 仍可记录物理事实。现有交付、分发、授权及 Deployment 详情增加只读 governance 投影，历史链断裂时 fail-closed 为 `UNRESOLVED`。公共环境仍只读，不增加浏览器提交能力。
+
+本地验证：新增/相关回归 224 passed、1 skipped；完整后端 1643 passed、629 skipped（本地未提供 `TEST_POSTGRES_URL`，真实 PostgreSQL 用例留给 CI，未把 skip 当作通过）；前端 1462/1462 passed；Next/OpenNext Cloudflare build 成功；Alembic 单一 head 为 `0026_release_chain_revocation`。精确 PR head CI、真实 PostgreSQL、合并 main、Cloudflare Preview/Production 与 Render 部署证据尚待 PR 后核验，不复用旧证据。
+
+业务验收仍为 36/44=82%；七模块仍为 100/100演示/100演示/100/89/60/17；七计划仍为 100/100/20/33/40/20/0。该里程碑继续保持未完成，待双语浏览器只读展示、默认关闭受控提交/原审计恢复和批准提供方多用户验收。下一独立包建议 `release-chain-revocation-browser-read-only`，只做双语只读可视化与有界历史，不启用提交。
+
 ## 2026-10-18 发布链追加式撤销设计验收闭环（Codex / ChatGPT Work）
 
 PR72 最终 head `2ce160adebeeb6e18aba561cb507cc14326fec6d` 已合入当时最新 main，精确 head CI `39131206270` 的后端/PostgreSQL、前端/Cloudflare build、CI acceptance 三项必需检查全部成功。受保护合并提交为 `7e18b9a6e4cc59fb4434187bf3c5b30de26420f9`；独立 main CI `39131785281` 同样三项成功。精确测试证据为后端 2267 passed、PostgreSQL module 230 cases no skips、迁移单一 head `0025_release_decision_supersession` 往返通过、前端 1462/1462 passed，Next/OpenNext build 成功。

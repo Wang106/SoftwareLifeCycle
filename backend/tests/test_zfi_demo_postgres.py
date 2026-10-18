@@ -54,7 +54,7 @@ def test_refuse_downgrade_identity_loss(pg):
     with pytest.raises(Exception,match='customer-scoped release identities'):
         command.downgrade(Config('alembic.ini'),'0023_impact_withdrawal_history')
     with Session(engine) as db:
-        assert db.scalar(text('SELECT version_num FROM alembic_version'))=='0025_release_decision_supersession'
+        assert db.scalar(text('SELECT version_num FROM alembic_version'))=='0026_release_chain_revocation'
         verify(db)
 
 

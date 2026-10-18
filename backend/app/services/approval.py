@@ -12,6 +12,7 @@ from app.actor import ActorContext
 from app.services.audit import commit_with_audit
 from app.services.command_retry import atomic_command, retry_result
 from app.services.release_decision import effective_release_decision
+from app.services.revocation import ensure_chain_active
 
 
 class ApprovalError(ValueError):
@@ -186,6 +187,7 @@ class ApprovalService:
         if existing is not None:
             self.db.commit()
             return existing
+        ensure_chain_active(self.db, "RELEASE", approval.target_id, ApprovalError)
         if approval.target_type != "RELEASE":
             raise ApprovalError("Approval target is not a release")
         if approval.status != "APPROVED":

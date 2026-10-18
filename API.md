@@ -1,8 +1,19 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.40`; readiness requires `0022_acceptance_history`. This is the code contract, not verified Render deployment metadata.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.45`; readiness requires `0026_release_chain_revocation`. This is the code contract, not verified Render deployment metadata.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
+
+## Release-chain revocation (0.18.45)
+
+Four backend-only POST routes permanently revoke an exact Release, DeliveryPackage,
+Distribution or SoftwareAuthorization. Every request requires a UUID `request_id`
+and nonblank `reason`; the UUID becomes the ledger ID and `EVT-RCR-{request_id}`
+audit key. Exact actor/body replay returns the original row. Governance reads return
+the stored status separately from `ACTIVE`, `REVOKED` or `BLOCKED_BY_ANCESTOR` and
+`eligible_for_new_work`. Revocation blocks new permission-bearing records without
+rewriting existing distribution or production facts. Public read-only mode still
+blocks every POST and there is no browser submission path.
 
 ## Acceptance–DVP relationship history (0.18.40)
 
@@ -74,6 +85,10 @@ The detailed security/consistency review is maintained in [docs/write-contracts.
 | POST | `/api/v1/changes/{request_no}/acceptance-dvp-links` | Append an acceptance/test assignment |
 | POST | `/api/v1/testing/releases` | Create a purpose-limited test release |
 | POST | `/api/v1/resources` | Append an external resource reference |
+| POST | `/api/v1/releases/{target_id}/revocations` | Permanently revoke a release chain |
+| POST | `/api/v1/deliveries/{target_id}/revocations` | Permanently revoke a delivery package |
+| POST | `/api/v1/distributions/{target_id}/revocations` | Permanently revoke a distribution |
+| POST | `/api/v1/authorizations/{target_id}/revocations` | Permanently revoke an authorization |
 
 ## Safety and consistency rules
 

@@ -122,7 +122,7 @@ for(const locale of ['zh','en'])test('status page uses only three fixed reads an
   assert.ok(html.includes(translation.translateText(label,locale)),label);
   if(locale==='zh')assert.notEqual(translation.translateText(label,locale),label);
  }
- assert.ok(html.includes('0.18.44')&&html.includes('0025_release_decision_supersession'));
+ assert.ok(html.includes('0.18.45')&&html.includes('0026_release_chain_revocation'));
  assert.ok(html.includes('SSR: 4')&&html.includes('ASR: 16'));
  assert.match(html,/<time dateTime="\d{4}-\d{2}-\d{2}T[^"]+Z">/);
  assert.ok(html.includes('/demo/zfi')&&html.includes('/demo/releases')&&html.includes('href="/demo/status"'));

@@ -19,8 +19,18 @@ from app.authorization import (
     authorize_release,
 )
 from app.actor import resolve_actor
+from app.services.revocation import RevocationError, governance_state
 
 router = APIRouter(prefix="/api/v1", tags=["distribution"])
+
+
+def _governance(db: Session, kind: str, target_id):
+    try:
+        return governance_state(db, kind, target_id)
+    except RevocationError:
+        return {"recorded_status": None, "governance_state": "UNRESOLVED",
+                "eligible_for_new_work": False, "self_revocation": None,
+                "ancestor_revocations": []}
 
 
 class DeliveryCreate(BaseModel):
@@ -74,7 +84,7 @@ def _delivery_detail(db: Session, package: DeliveryPackage, *, include_children:
         .where(Distribution.delivery_package_id == package.id)
         .order_by(Distribution.distribution_no)
     ).all() if include_children else []
-    return {
+    result = {
         "id": str(package.id),
         "package_no": package.package_no,
         "revision": package.revision,
@@ -120,6 +130,8 @@ def _delivery_detail(db: Session, package: DeliveryPackage, *, include_children:
             for row in distributions
         ],
     }
+    result["governance"] = _governance(db, "DELIVERY_PACKAGE", package.id) if isinstance(db, Session) else None
+    return result
 
 
 def _distribution_detail(db: Session, row: Distribution, *, include_history: bool = True):
@@ -131,7 +143,7 @@ def _distribution_detail(db: Session, row: Distribution, *, include_history: boo
         .where(SoftwareAuthorization.distribution_id == row.id)
         .order_by(SoftwareAuthorization.authorization_no)
     ).all() if include_history else []
-    return {
+    result = {
         "id": str(row.id),
         "distribution_no": row.distribution_no,
         "status": row.status,
@@ -155,6 +167,8 @@ def _distribution_detail(db: Session, row: Distribution, *, include_history: boo
             "line_code": authorization.line_code,
         } for authorization in authorizations],
     }
+    result["governance"] = _governance(db, "DISTRIBUTION", row.id) if isinstance(db, Session) else None
+    return result
 
 
 def _authorization_detail(db: Session, row: SoftwareAuthorization, *, include_history: bool = True):
@@ -172,7 +186,7 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization, *, include_hi
         select(ProductionBatch).where(ProductionBatch.authorization_id == row.id)
         .order_by(ProductionBatch.batch_no)
     ).all() if include_history else []
-    return {
+    result = {
         "id": str(row.id),
         "authorization_no": row.authorization_no,
         "status": row.status,
@@ -220,6 +234,8 @@ def _authorization_detail(db: Session, row: SoftwareAuthorization, *, include_hi
         "batches": [{"batch_no": batch.batch_no, "status": batch.status}
                     for batch in batches],
     }
+    result["governance"] = _governance(db, "AUTHORIZATION", row.id) if isinstance(db, Session) else None
+    return result
 
 
 def list_deliveries(db: Session = Depends(get_db)):

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.44",
-  "baseline_commit": "7e18b9a6e4cc59fb4434187bf3c5b30de26420f9",
+  "as_of_api": "0.18.45",
+  "baseline_commit": "f571f296fcd61daad2cfe2da49f9baf1902503ba",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -489,7 +489,18 @@
           "id": "distribution-revocation",
           "label": "发布/分发/授权更正撤销",
           "complete": false,
-          "evidence": []
+          "evidence": [
+            "docs/release-distribution-revocation-design-review.md",
+            "backend/alembic/versions/0026_release_chain_revocation.py",
+            "backend/app/models/revocation.py",
+            "backend/app/services/revocation.py",
+            "backend/app/api/revocations.py",
+            "backend/tests/test_release_chain_revocation.py",
+            "backend/tests/test_release_chain_revocation_postgres.py"
+          ],
+          "acceptance_pending": [
+            "Permanent backend revocation ledger, four scoped commands, unified governance reads and old-writer guards implemented; bilingual browser presentation, controlled submission/recovery protocol and approved-provider multi-user acceptance remain pending"
+          ]
         },
         {
           "id": "production-correction",

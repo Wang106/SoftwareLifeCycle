@@ -49,12 +49,13 @@ from app.api.resources import router as resources_router
 from app.api.distribution_catalog import router as distribution_catalog_router
 from app.api.production_catalog import router as production_catalog_router
 from app.api.governance_catalog import router as governance_catalog_router
+from app.api.revocations import router as revocations_router
 from app.core.config import settings
 from app.core.db import engine
 from app.auth import AuthenticationError, authenticate_write_request
 from app.authorization import AuthorizationError
 
-APP_VERSION = "0.18.44"
+APP_VERSION = "0.18.45"
 
 app = FastAPI(title="SoftwareLifeCycle API", version=APP_VERSION)
 app.add_middleware(
@@ -107,6 +108,7 @@ app.include_router(resources_router)
 app.include_router(distribution_catalog_router)
 app.include_router(production_catalog_router)
 app.include_router(governance_catalog_router)
+app.include_router(revocations_router)
 app.include_router(current_identity_router)
 app.include_router(browser_sessions_router)
 app.include_router(membership_admin_router)

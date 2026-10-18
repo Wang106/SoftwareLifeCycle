@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-19 发布链永久撤销后端与统一读取（Codex / ChatGPT Work）
+
+真实基线为远端 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba`，分支 `codex/release-chain-revocation-backend-read`，远端实现提交 `74bddd2915cc6caa626a8f902f359aa00b399f21`。API 已提升至 `0.18.45`，Alembic 唯一 head 为 `0026_release_chain_revocation`。新增不可变 `release_chain_revocations` 账本、四类永久撤销 POST、统一 governance GET/详情投影、根到叶锁序、旧写者数据库 guard、原子审计和精确重放。撤销不改原 status、不制造子撤销、不删除既有 Deployment/Changeover/Batch；许可型新写入阻断，actual/Changeover 事实记录保留。
+
+本地结果：相关回归 224 passed/1 skipped；完整后端 1643 passed/629 skipped，跳过项因没有真实 PostgreSQL 地址，必须以 PR CI 的 PostgreSQL job 为准；前端 1462 passed；Next/OpenNext build 成功；迁移单一 head 已确认。PR、精确 head CI、合并 main、Cloudflare 与 Render 尚未产生，因此当前不能称已部署或已完成真实 PostgreSQL 验收。
+
+安全边界未变：公共演示只读；OIDC、真实身份/业务写入、公司内网和生产配置关闭；未修改身份、密钥、凭据、计费、CI、调度器或部署权限。36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。下一包 `release-chain-revocation-browser-read-only`：为四类治理状态和有界撤销历史提供中英文只读显示；不要开放提交。之后另包设计默认关闭受控提交与原审计恢复，再做批准提供方/多用户验收。
+
 ## 2026-10-18 发布链追加式撤销设计验收闭环（Codex / ChatGPT Work）
 
 PR72 最终 head `2ce160adebeeb6e18aba561cb507cc14326fec6d`，精确 head CI `39131206270` 三项必需检查成功；受保护合并 main `7e18b9a6e4cc59fb4434187bf3c5b30de26420f9`，独立 main CI `39131785281` 三项成功。两轮均确认后端 2267 passed、真实 PostgreSQL 模块 230 cases 无 skip、迁移单一 head `0025_release_decision_supersession` 往返成功、前端 1462/1462 passed，以及 Next/OpenNext build 成功。

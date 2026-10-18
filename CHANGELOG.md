@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.45 — 2026-10-19
+- 新增 `0026_release_chain_revocation` 永久追加式账本，四类目标严格 XOR/唯一、不可更新删除且有历史时拒绝降级。
+- 新增 Release、DeliveryPackage、Distribution、SoftwareAuthorization 四类后台撤销命令与统一 `ACTIVE`/`REVOKED`/`BLOCKED_BY_ANCESTOR` 读取。
+- 统一根到叶锁序、原子审计/精确 request 重放，并以数据库旧写者 guard 阻止撤销链继续产生许可型记录。
+- 原状态和既有生产事实不重写；actual/Changeover 事实记录保持可用；公共只读和身份/提交门禁不变。
+
 ## 0.18.40 — 2026-10-10
 - Acceptance更正/撤销增加独立默认关闭提交与原审计恢复协议、前驱绑定回执及冻结控制器；双语更正UI/导出导入待下一包，后端/schema不变。
 - Acceptance–DVP现有命令支持原关系绑定的追加式替代与撤销，旧关系/审计不修改。
