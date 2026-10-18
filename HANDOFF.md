@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-18 发布链追加式撤销设计审查（Codex / ChatGPT Work）
+
+真实基线为已合并 PR70 的 `main` `b1097a97c80cc27f58699d9606020ad93ab48b61`，启动开放 PR 0；独立分支 `codex/release-distribution-revocation-design-review`。本轮只新增 `docs/release-distribution-revocation-design-review.md` 并更新状态/进度/交接，不实现后端、迁移、Seed、界面提交、依赖、CI、身份、门控或提供方配置。
+
+审查推荐独立 `release_chain_revocations` 追加式账本，以四个真实 nullable FK+XOR 约束精确撤销 Release、DeliveryPackage 修订、Distribution 或 SoftwareAuthorization。撤销不改原 status，不自动撤销后代，不删除或重写既有生产事实；统一 resolver 分开返回 recorded status、自身撤销、祖先阻断和未来写入资格。Release/包/分发/授权撤销分别阻断后续许可链；已有 Deployment/Changeover/Batch 及 actual report 保留，actual/Changeover 事实仍可补录但不能生成生产许可。
+
+下一实现建议 `release-chain-revocation-backend-read`：实现时从实际 0025 后创建唯一 0026，新增四类后台撤销、Release→Package→Distribution→Authorization 统一锁序、数据库旧写者 insert guard、原子审计/精确重放、统一有界读取、双语只读展示和真实 PG 并发/升级降级/长历史测试。该包不开放浏览器提交；受控浏览器协议和原审计恢复另包，生产事实更正再后。当前 API0.18.44/schema0025/Seed 不变。
+
+本设计无业务验收增量：36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。公共样例只读、OIDC/真实提交/内网仍关闭；真实多用户桌面/手机和中英文浏览器验收仍待人工授权环境。本包精确 PR head CI、合并 main、Cloudflare/Render/Actions 证据以 PR 最终记录为准，不复用 PR70 成功。
+
 ## 2026-10-18 ReleaseDecision 追加式替代浏览器协议（Codex / ChatGPT Work）
 
 真实基线为已合并 PR69 的 `main` `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a`，启动开放 PR 0；独立分支 `codex/release-decision-supersession-browser-protocol`。新增严格 transport/audit projector、独立默认关闭同源代理、双语准备/精确确认/结果 UI 和有效决策详情入口。命令固定新审批请求与 UUID、当前前驱、同 Release/冻结 Snapshot、完整新 decision/readiness/notes/correction_reason；代理向既有后端只转发准确业务 body。成功提交后仍以原 `DECISION_SUPERSEDED` 原子审计为唯一确认，不使用当前对象状态推断原结果；网络不确定会锁定请求，只提供 audit-only recovery，后续禁用/拒绝/冲突不能抹除未知状态。

@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-18 发布、交付、分发与授权追加式撤销设计审查（Codex / ChatGPT Work）
+
+从已合并 PR70 的真实远端 `main` `b1097a97c80cc27f58699d9606020ad93ab48b61` 开始，开放 PR 为 0，上一包精确 head 和独立 main 三个必需 CI job 及 Cloudflare 生产构建均已成功。本轮只做 `release-distribution-revocation-design-review`，核对 Release、DeliveryPackage、Distribution、SoftwareAuthorization、Deployment/Batch 的实际模型、写入锁序、审计与全部读取消费者；不修改后端、迁移、Seed、依赖、CI、身份、门控或提供方配置。
+
+新增 `docs/release-distribution-revocation-design-review.md`，推荐一张带四个真实 nullable FK 和严格 XOR 约束的 `release_chain_revocations` 追加式账本。撤销永久终止精确对象的未来许可效力，祖先撤销仅派生 `BLOCKED_BY_ANCESTOR`，不修改原 status、不自动制造子撤销、不删除或重写既有 Delivery/Distribution/Authorization/Deployment/Changeover/Batch，也不声称收回文件或回滚刷写。新 Release/修订/分发/授权使用新 UUID；恢复另行设计。
+
+设计明确统一 Release→Package→Distribution→Authorization 锁序、旧写者数据库 insert guard、原业务行与 AuditEvent 同事务、request/actor/正文精确重放、原审计 GET 恢复、旧库无回填和有记录拒绝降级。Deployment/Batch 属于许可型写入并被阻断；actual report/更正及 Changeover 作为物理事实仍可补录但不能授予权限。统一 resolver 必须覆盖目录/详情、Dashboard、ASR Passport、Search、生产来源、制造视图和 Activity，并保留原 `recorded_status`。
+
+拟议下一包 `release-chain-revocation-backend-read` 使用实现时重新核对后的 `0026`，完成四类后台撤销、统一读取、双语只读展示及真实 PostgreSQL 并发/旧库升降级/原审计/长历史测试；不开放浏览器提交。当前 API 仍为 0.18.44、schema 仍为 0025，Seed 未改且幂等性不受影响。业务验收仍 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。
+
 ## 2026-10-18 ReleaseDecision 追加式替代浏览器协议（Codex / ChatGPT Work）
 
 从已合并 PR69 的真实远端 `main` `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a` 创建独立分支 `codex/release-decision-supersession-browser-protocol`；启动时开放 PR 为 0，旧实现分支仅为已完成历史。本包新增独立的 ReleaseDecision 替代浏览器协议：严格冻结新 APPROVED 请求、当前前驱、同 Release/冻结 Snapshot 与完整新决策；显式双语复核后才允许提交。成功响应不作为证明，必须读取 `EVT-RD-{request_id}` 原子审计并匹配认证主体、原请求、审批、前驱和实际结果；传输不确定后锁定原字节，仅允许查询原审计，不自动重放写入。
