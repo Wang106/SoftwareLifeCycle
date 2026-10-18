@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-18 发布链追加式撤销设计验收闭环（Codex / ChatGPT Work）
+
+PR72 最终 head `2ce160adebeeb6e18aba561cb507cc14326fec6d`，精确 head CI `39131206270` 三项必需检查成功；受保护合并 main `7e18b9a6e4cc59fb4434187bf3c5b30de26420f9`，独立 main CI `39131785281` 三项成功。两轮均确认后端 2267 passed、真实 PostgreSQL 模块 230 cases 无 skip、迁移单一 head `0025_release_decision_supersession` 往返成功、前端 1462/1462 passed，以及 Next/OpenNext build 成功。
+
+Cloudflare exact-head Preview `2a7da6f6-7821-4667-bd24-5d62b8433d89` success；main Production build `1292d2c5-f420-4ad4-a345-1bf930bf6034` success，version `64e580e3-bcbb-4ed4-b871-bf18683bd16a`。Actions deploy `39132510691` 与 continuation `39132510713` 明确 skipped。Render 后端服务未因 docs-only 变更部署；最新 live `dep-dba2n68ae00c739c31j0` 仍对应 `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a`，观察窗口无 error 日志，不能把它称为 PR72/main `7e18b9a` 的部署。
+
+安全门禁未变：公共只读，OIDC/真实提交/内网/生产配置关闭；未修改身份、密钥、计费、CI、调度器或部署权限。36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。下一独立包 `release-chain-revocation-backend-read`；只实现后端、迁移、统一读取和双语只读展示，浏览器受控提交另包。
+
 ## 2026-10-18 发布链追加式撤销设计审查（Codex / ChatGPT Work）
 
 真实基线为已合并 PR70 的 `main` `b1097a97c80cc27f58699d9606020ad93ab48b61`，启动开放 PR 0；独立分支 `codex/release-distribution-revocation-design-review`。本轮只新增 `docs/release-distribution-revocation-design-review.md` 并更新状态/进度/交接，不实现后端、迁移、Seed、界面提交、依赖、CI、身份、门控或提供方配置。

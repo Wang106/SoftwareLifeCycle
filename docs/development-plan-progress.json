@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.44",
-  "baseline_commit": "e45089d7e1df71aa14b1a064c5b6bedc317b2b7a",
+  "baseline_commit": "7e18b9a6e4cc59fb4434187bf3c5b30de26420f9",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -476,7 +476,8 @@
             "frontend/components/release-decision-supersession-workbench.tsx",
             "frontend/tests/release-decision-supersession-transport.test.cjs",
             "frontend/tests/release-decision-supersession-wiring.test.cjs",
-            "docs/release-decision-supersession-verification.md"
+            "docs/release-decision-supersession-verification.md",
+            "docs/release-distribution-revocation-verification.md"
           ],
           "acceptance_pending": [
             "Impact supersession and withdrawal backend, bilingual history, independently disabled controlled submission, exact original-audit recovery and manual audit-only import implemented; approved provider and actual multi-user correction acceptance pending",
