@@ -12,6 +12,7 @@ from app.models.governance import PolicyException
 from app.models.policy import ArtifactDistributionRule
 from app.models.snapshot_policy import SnapshotArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
+from app.services.release_decision import effective_release_decision
 from app.services.artifact_policy import ArtifactPolicyService
 from app.services.traceability import TraceabilityService
 from app.models.audit import AuditEvent
@@ -135,8 +136,7 @@ def application_release_decision(release_id: uuid.UUID, db: Session = Depends(ge
         raise HTTPException(status_code=404, detail="application release not found")
     current_snapshot = db.scalars(select(ReleaseSnapshot).where(ReleaseSnapshot.release_id == release.id)
         .order_by(ReleaseSnapshot.snapshot_number.desc()).limit(1)).first()
-    decision = db.scalars(select(ReleaseDecision).where(ReleaseDecision.release_id == release.id)
-        .order_by(ReleaseDecision.decided_at.desc(), ReleaseDecision.decision_no.desc()).limit(1)).first()
+    decision = effective_release_decision(db, release.id)
     if decision is None:
         return {
             "release_id": str(release.id),
@@ -160,6 +160,9 @@ def application_release_decision(release_id: uuid.UUID, db: Session = Depends(ge
             "is_current_snapshot": bool(current_snapshot and decision.snapshot_id == current_snapshot.id),
             "approval_no": approval.approval_no if approval else None,
             "approval_status": approval.status if approval else None,
+            "supersedes_id": str(decision.supersedes_id) if decision.supersedes_id else None,
+            "correction_reason": decision.correction_reason,
+            "effective": True,
         },
     }
 
@@ -172,6 +175,8 @@ def application_release_decisions(release_id: uuid.UUID, db: Session = Depends(g
         .order_by(ReleaseSnapshot.snapshot_number.desc()).limit(1)).first()
     decisions = db.scalars(select(ReleaseDecision).where(ReleaseDecision.release_id == release.id)
         .order_by(ReleaseDecision.decided_at.desc(), ReleaseDecision.decision_no.desc())).all()
+    successor_by_predecessor = {row.supersedes_id: row for row in decisions if row.supersedes_id}
+    effective = next((row for row in decisions if row.id not in successor_by_predecessor), None)
     rows = []
     for decision in decisions:
         snapshot = db.get(ReleaseSnapshot, decision.snapshot_id)
@@ -189,6 +194,10 @@ def application_release_decisions(release_id: uuid.UUID, db: Session = Depends(g
             "is_current_snapshot": bool(current_snapshot and decision.snapshot_id == current_snapshot.id),
             "approval_no": approval.approval_no if approval else None,
             "approval_status": approval.status if approval else None,
+            "supersedes_id": str(decision.supersedes_id) if decision.supersedes_id else None,
+            "successor_id": str(successor_by_predecessor[decision.id].id) if decision.id in successor_by_predecessor else None,
+            "correction_reason": decision.correction_reason,
+            "effective": bool(effective and decision.id == effective.id),
         })
     return {
         "release_id": str(release.id),
@@ -997,11 +1006,7 @@ def get_release_decision(version: str, db: Session = Depends(get_db)):
     release = _application_release(db, version)
     if not release:
         raise HTTPException(status_code=404, detail="release not found")
-    decision = db.scalars(
-        select(ReleaseDecision)
-        .where(ReleaseDecision.release_id == release.id)
-        .order_by(ReleaseDecision.decided_at.desc())
-    ).first()
+    decision = effective_release_decision(db, release.id)
     if not decision:
         return {"decision": None}
     snapshot = db.get(ReleaseSnapshot, decision.snapshot_id)
@@ -1015,6 +1020,8 @@ def get_release_decision(version: str, db: Session = Depends(get_db)):
             "decision_notes": decision.decision_notes,
             "snapshot_no": snapshot.snapshot_no if snapshot else None,
             "approval_no": approval.approval_no if approval else None,
+            "supersedes_id": str(decision.supersedes_id) if decision.supersedes_id else None,
+            "correction_reason": decision.correction_reason,
         }
     }
 

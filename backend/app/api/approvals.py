@@ -33,6 +33,19 @@ class ReleaseDecisionRequest(BaseModel):
     readiness_status: str
     decision: str
     notes: str | None = None
+    supersedes_id: uuid.UUID | None = None
+    correction_reason: str | None = None
+
+    @model_validator(mode="after")
+    def require_complete_supersession(self):
+        if (self.supersedes_id is None) != (self.correction_reason is None):
+            raise ValueError("supersedes_id and correction_reason must be supplied together")
+        if self.correction_reason is not None:
+            reason = self.correction_reason.strip()
+            if not reason or len(reason) > 4000:
+                raise ValueError("correction_reason must contain 1 to 4000 characters")
+            self.correction_reason = reason
+        return self
 
 
 @router.post("/{approval_no}/actions")
@@ -78,12 +91,15 @@ def create_release_decision(
             notes=payload.notes,
             actor_context=actor,
             request_id=payload.request_id,
+            supersedes_id=payload.supersedes_id,
+            correction_reason=payload.correction_reason,
         )
         return {
             "decision_no": row.decision_no,
             "decision": row.decision,
             "release_id": str(row.release_id),
             "snapshot_id": str(row.snapshot_id),
+            "supersedes_id": str(row.supersedes_id) if row.supersedes_id else None,
         }
     except ApprovalError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc

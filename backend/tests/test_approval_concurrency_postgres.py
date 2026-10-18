@@ -2,7 +2,10 @@
 import uuid
 
 import pytest
-from sqlalchemy import select
+from alembic import command as migration
+from alembic.config import Config
+from sqlalchemy import select, text
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from test_command_concurrency_postgres import pg, count, overlapping_commands
@@ -41,6 +44,14 @@ def ready(engine, ids):
 def decide(db, key=None, approval_no='APR-1', decision_no='RD', notes=None):
     return ApprovalService(db).create_release_decision(approval_no, decision_no, 'Manager',
         'READY', 'RELEASE', notes=notes, request_id=key)
+
+
+def supersede(db, predecessor, key, number):
+    return ApprovalService(db).create_release_decision(
+        'APR-2', number, 'Manager', 'READY', 'HOLD', notes='Corrected record',
+        request_id=key, supersedes_id=predecessor,
+        correction_reason='Release conclusion corrected after review',
+    )
 
 
 @pytest.mark.parametrize('same_key', [False, True])
@@ -109,6 +120,34 @@ def test_concurrent_decision_business_numbers_keep_existing_history_contract(app
     assert first[0] == 'ok' and second[0] == ('ok' if different_number else 'conflict')
     with Session(engine) as db:
         assert count(db, ReleaseDecision) == count(db, AuditEvent, entity_type='RELEASE_DECISION') == (2 if different_number else 1)
+
+
+def test_concurrent_supersession_allows_only_one_current_successor(approvals, monkeypatch):
+    engine, ids = approvals; ready(engine, ids)
+    with Session(engine, expire_on_commit=False) as db:
+        predecessor = decide(db, uuid.uuid4()); predecessor_id = predecessor.id
+    one, two = overlapping_commands(engine, monkeypatch,
+        lambda db: supersede(db, predecessor_id, uuid.uuid4(), 'RD-HOLD-1'),
+        lambda db: supersede(db, predecessor_id, uuid.uuid4(), 'RD-HOLD-2'))
+    assert one[0] == 'ok' and two[0] == 'conflict'
+    assert 'current effective' in two[1] or 'business number' in two[1]
+    with Session(engine) as db:
+        assert count(db, ReleaseDecision) == 2
+        assert count(db, AuditEvent, entity_type='RELEASE_DECISION') == 2
+
+
+def test_release_decision_trigger_and_guarded_downgrade(approvals, monkeypatch):
+    engine, ids = approvals; ready(engine, ids)
+    with Session(engine, expire_on_commit=False) as db:
+        predecessor = decide(db, uuid.uuid4())
+        successor = supersede(db, predecessor.id, uuid.uuid4(), 'RD-HOLD')
+        for sql in ('UPDATE release_decisions SET decision=decision WHERE id=:id',
+                    'DELETE FROM release_decisions WHERE id=:id'):
+            with pytest.raises(DBAPIError, match='append-only'):
+                db.execute(text(sql), {'id': successor.id}); db.commit()
+            db.rollback()
+    with pytest.raises(DBAPIError, match='supersession history would be lost'):
+        migration.downgrade(Config('alembic.ini'), '0024_release_customer_scope')
 
 
 @pytest.mark.parametrize('final_action', ['APPROVED', 'RETURNED', 'REJECTED'])

@@ -281,6 +281,8 @@ def _deployment_provenance(db: Session, deployment: Deployment, *, include_decis
                      "status": package.status, "release_id": str(package.release_id),
                      "snapshot_id": str(package.snapshot_id)} if package else None,
         "release_decisions": [{"decision_no": decision.decision_no, "decision": decision.decision,
+                               "supersedes_id": str(decision.supersedes_id) if decision.supersedes_id else None,
+                               "correction_reason": decision.correction_reason,
                                "approval_no": approvals[decision.approval_request_id].approval_no
                                if decision.approval_request_id in approvals else None}
                               for decision in decisions],

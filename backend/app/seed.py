@@ -400,16 +400,24 @@ def run():
 
     decision = db.query(ReleaseDecision).filter_by(decision_no="RD-0081").first()
     if not decision:
-        decision = ReleaseDecision(decision_no="RD-0081")
+        decision = ReleaseDecision(
+            decision_no="RD-0081", release_id=asr.id, snapshot_id=snap8.id,
+            approval_request_id=approval.id, readiness_status="READY_WITH_EXCEPTION",
+            decision="RELEASE", decided_by="Release Manager",
+            decision_notes="Released with PEX-0018 controlled initial-production restriction.",
+            decided_at=seeded_at,
+        )
         db.add(decision)
-    decision.release_id = asr.id
-    decision.snapshot_id = snap8.id
-    decision.approval_request_id = approval.id
-    decision.readiness_status = "READY_WITH_EXCEPTION"
-    decision.decision = "RELEASE"
-    decision.decided_by = "Release Manager"
-    decision.decision_notes = "Released with PEX-0018 controlled initial-production restriction."
-    decision.decided_at = decision.decided_at or seeded_at
+    else:
+        expected = {
+            "release_id": asr.id, "snapshot_id": snap8.id, "approval_request_id": approval.id,
+            "readiness_status": "READY_WITH_EXCEPTION", "decision": "RELEASE",
+            "decided_by": "Release Manager",
+            "decision_notes": "Released with PEX-0018 controlled initial-production restriction.",
+            "supersedes_id": None, "correction_reason": None,
+        }
+        if any(getattr(decision, name) != value for name, value in expected.items()):
+            raise RuntimeError("Existing RD-0081 conflicts with the immutable demo seed")
     asr.status = "RELEASED"
     db.flush()
 

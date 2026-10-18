@@ -37,7 +37,7 @@ python -m app.seed_release_evidence --sample-only
 
 ## 第四轮：Excel 总览筛选与逐项核对（2026-10-13）
 
-`/demo/zfi` 是 PR60 导入的 Excel 家族；`/demo/releases` 是独立合成发布证据家族。两者不能混用为 Excel 版本真实测试证据。上文 schema0023/API0.18.42 是第三轮历史基线；当前代码 required head 为0024_release_customer_scope/API0.18.43。线上状态仍须现场读取，不根据本脚本推定。
+`/demo/zfi` 是 PR60 导入的 Excel 家族；`/demo/releases` 是独立合成发布证据家族。两者不能混用为 Excel 版本真实测试证据。上文 schema0023/API0.18.42 是第三轮历史基线；当前代码 required head 为0025_release_decision_supersession/API0.18.44。线上状态仍须现场读取，不根据本脚本推定。
 
 1. 正常打开总览，分别切换中文和English；确认完整家族统计、导入回执与各行当前状态。不能按历史固定15/3/1/1计数判断当前状态。
 2. 点击发布类型、客户、审批状态组合；顶部保持完整家族计数，下方明确匹配记录数。STANDARD+客户若无交集，应显示无匹配，不显示其他客户来补位。
@@ -63,7 +63,7 @@ python -m app.seed_release_evidence --sample-only
 
 从两个总览进入 `/demo/status`。页面使用与前端相同的API配置读取健康、Excel家族和独立合成家族，不执行安装、业务写入或后台自动轮询。UTC时间表示本次观察开始时间；三项并发读取不是同一数据库事务，数据变化后可点击“重新读取”发起普通GET。
 
-1. 核对读取到的API版本与schema，当前前端契约为0.18.43/0024_release_customer_scope。就绪接口未取得响应时显示未确认，不推断一定是网络或一定是数据库问题；不公开配置地址/秘密/原始错误。
+1. 核对读取到的API版本与schema，当前前端契约为0.18.44/0025_release_decision_supersession。就绪接口未取得响应时显示未确认，不推断一定是网络或一定是数据库问题；不公开配置地址/秘密/原始错误。
 2. Excel家族需20个原UUID/编号及类型、原审批号、合成和导入标记一致；独立证据家族需3个原UUID/版本/类型。重复、外来或不完整响应不记为完整，两个家族互不替代。
 3. 观察计数来自有效响应；读取失败或响应无效显示未记录，不补造4/16/3。健康不就绪、接口不可用、契约不匹配及资料不完整分别保留。API就绪不等于软件发布就绪。
 4. 数据检查全确认后仍需真实桌面/手机/中英文逐页核对总览、精确SSR/ASR、四级审批、当前Snapshot/Readiness/Decision/Passport。状态页不代表真实人员审批、正式发布或浏览器现场验收。

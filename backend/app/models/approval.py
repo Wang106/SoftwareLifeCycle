@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db import Base
@@ -43,6 +43,22 @@ class ApprovalAction(Base):
 
 class ReleaseDecision(Base):
     __tablename__ = "release_decisions"
+    __table_args__ = (
+        UniqueConstraint("id", "release_id", "snapshot_id", name="uq_release_decision_context"),
+        UniqueConstraint("supersedes_id", name="uq_release_decision_supersedes"),
+        ForeignKeyConstraint(
+            ["supersedes_id", "release_id", "snapshot_id"],
+            ["release_decisions.id", "release_decisions.release_id", "release_decisions.snapshot_id"],
+            name="fk_release_decision_supersedes_context",
+        ),
+        CheckConstraint(
+            "(supersedes_id IS NULL AND correction_reason IS NULL) OR "
+            "(supersedes_id IS NOT NULL AND correction_reason IS NOT NULL "
+            "AND length(trim(correction_reason)) BETWEEN 1 AND 4000)",
+            name="ck_release_decision_supersession_pair",
+        ),
+        CheckConstraint("supersedes_id IS NULL OR supersedes_id <> id", name="ck_release_decision_not_self"),
+    )
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uid)
     decision_no: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     release_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("releases.id"), nullable=False, index=True)
@@ -52,4 +68,6 @@ class ReleaseDecision(Base):
     decision: Mapped[str] = mapped_column(String(30), nullable=False)
     decided_by: Mapped[str] = mapped_column(String(120), nullable=False)
     decision_notes: Mapped[str | None] = mapped_column(Text)
+    supersedes_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    correction_reason: Mapped[str | None] = mapped_column(Text)
     decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

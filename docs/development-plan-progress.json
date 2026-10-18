@@ -456,6 +456,11 @@
             "frontend/tests/acceptance-correction-proxy.test.cjs",
             "docs/impact-withdrawal-ui-recovery.md",
             "docs/release-decision-replacement-design-review.md",
+            "backend/alembic/versions/0025_release_decision_supersession.py",
+            "backend/app/services/release_decision.py",
+            "backend/tests/test_approval_retry.py",
+            "backend/tests/test_approval_concurrency_postgres.py",
+            "frontend/app/release-decisions/[decisionNo]/page.tsx",
             "backend/alembic/versions/0023_impact_withdrawal_history.py",
             "backend/tests/test_impact_withdrawal.py",
             "backend/tests/test_impact_withdrawal_postgres.py",
@@ -469,7 +474,7 @@
           "acceptance_pending": [
             "Impact supersession and withdrawal backend, bilingual history, independently disabled controlled submission, exact original-audit recovery and manual audit-only import implemented; approved provider and actual multi-user correction acceptance pending",
             "Acceptance-to-DVP replacement/withdrawal backend, bilingual read-only history and independently disabled correction submission/original-audit recovery protocol implemented; bilingual confirmation/result/export/import UI and release-review historical replacement pending",
-            "ReleaseDecision supersession scope reviewed; backend/read implementation, controlled browser protocol and approved-provider multi-user correction acceptance pending"
+            "ReleaseDecision supersession backend, append-only schema, unified effective reads and bilingual read-only history implemented; controlled browser protocol, real provider/browser acceptance and broader downstream revocation policy pending"
           ]
         },
         {

@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-18 ReleaseDecision 追加式替代后端/读取实现（Codex / ChatGPT Work）
+
+基线是已合并 PR68 的 `main` `16c791d11f59315f655d57d0314207f581dedb1c`；开放 PR 0，分支 `codex/release-decision-supersession-backend-read`。实现 `0025_release_decision_supersession`、ReleaseDecision append-only trigger、同上下文复合前驱、唯一后继、有历史拒绝降级和共享有效决策 SQL resolver。原 POST 路由增加成对 `supersedes_id`/`correction_reason`，只接受当前有效前驱、同 Snapshot、新 APPROVED ApprovalRequest；原请求/actor/审计重放和业务审计原子性保持。主要当前消费者统一使用 resolver，历史/生产来源保留原记录并暴露 predecessor/successor/effective；RD-0081 Seed 改为精确验证而非更新。API `0.18.44`，schema `0025_release_decision_supersession`。
+
+ReleaseDecision 详情提供中英文只读关系，不开放浏览器提交。当前本地证据：1641 后端 passed、626 PG 模块因无 `TEST_POSTGRES_URL` skipped；针对性 93 passed/4 PG skipped；Alembic 全链离线 SQL成功；前端 1453/1453 passed，Next 15.5.24/OpenNext Cloudflare bundle 成功。远端精确 head 的三个 CI、真实 PG、PR/合并/main/provider 证据必须以本包最终记录为准，不能复用 PR68。Render 启动只读检查仍为旧 live `dep-db5sl1fgfhjc73eva640`/`9dba7e9`；没有手工触发部署。
+
+公共演示只读，OIDC/真实提交/内网仍关闭。本包不撤销已有 Delivery/Distribution/Authorization/Deployment/Changeover/Batch。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。下一包：`release-decision-supersession-browser-protocol`，独立默认关闭、原审计恢复和双语确认；随后再划定发布/分发/授权撤销及生产更正。
+
 ## 2026-10-17 ReleaseDecision 追加式历史替代设计审查（Codex / ChatGPT Work）
 
 真实基线为 PR67 merge `daa14183197eecb5590f973f45817be79f695444`，独立分支 `codex/release-review-history-design-review`。PR67 最终 head `8a254b93b449a470973932cdb9ebecd8dad061c6`、CI `39007389782` 三 job success；独立 main CI `39010669503` 三 job success，Cloudflare production build `b5ad9937-094a-482a-9e7e-cd6cc6c7ee98` success。Actions deploy `39011070086`/continuation `39011070091` skipped。

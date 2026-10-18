@@ -2074,5 +2074,11 @@
   "The latest attempt was rejected, but the earlier uncertain withdrawal may have committed.": "最新尝试被拒绝，但先前结果不确定的撤销可能已经提交。",
   "The original withdrawal was confirmed by its matching atomic audit.": "匹配的原子审计已确认原撤销操作。",
   "This confirms the original withdrawal only. It does not revive older judgments, create a technical judgment or grant release permission.": "这仅确认原撤销操作；不会恢复更旧判断、创建技术判断或授予发布许可。",
-  "In-memory withdrawal recovery is lost on reload. Export original recovery text to restore an audit-only query in a later session.": "重新加载后，内存中的撤销恢复状态会丢失。请导出原恢复文本，以便后续会话仅恢复审计查询。"
+  "In-memory withdrawal recovery is lost on reload. Export original recovery text to restore an audit-only query in a later session.": "重新加载后，内存中的撤销恢复状态会丢失。请导出原恢复文本，以便后续会话仅恢复审计查询。",
+  "Decision history relationship": "决策历史关系",
+  "Current effective decision": "当前有效决策",
+  "Historical decision superseded by a later record": "已被后续记录替代的历史决策",
+  "Supersedes decision UUID": "替代的决策 UUID",
+  "Superseded by": "后续替代记录",
+  "Supersession changes future effective-decision reads; it does not erase prior delivery or production facts.": "替代会改变后续有效决策读取，但不会抹除既有交付或生产事实。"
 }
