@@ -9,7 +9,13 @@
 下一实现建议 `release-chain-revocation-backend-read`：实现时从实际 0025 后创建唯一 0026，新增四类后台撤销、Release→Package→Distribution→Authorization 统一锁序、数据库旧写者 insert guard、原子审计/精确重放、统一有界读取、双语只读展示和真实 PG 并发/升级降级/长历史测试。该包不开放浏览器提交；受控浏览器协议和原审计恢复另包，生产事实更正再后。当前 API0.18.44/schema0025/Seed 不变。
 
 本设计无业务验收增量：36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。公共样例只读、OIDC/真实提交/内网仍关闭；真实多用户桌面/手机和中英文浏览器验收仍待人工授权环境。本包精确 PR head CI、合并 main、Cloudflare/Render/Actions 证据以 PR 最终记录为准，不复用 PR70 成功。
+## 2026-10-18 ReleaseDecision 追加式替代浏览器协议验收闭环（Codex / ChatGPT Work）
 
+PR70 最终 head `6b0400404f9aee69eab98ebdaed12f747480a126`；早期 head `969ef6e` 的本地化覆盖失败后已修复，失败提交未合并。最终精确 head CI `39107462789` 三项必需检查全绿，随后合并为 main `b1097a97c80cc27f58699d9606020ad93ab48b61`，独立 main CI `39108012123` 三项全绿。验收计数：后端 2267 passed、真实 PostgreSQL 模块 230 cases no skips、前端 1462/1462 passed，Next/OpenNext build 成功。
+
+Cloudflare production build `a9bcc79f-187a-466d-b82c-b0a73765ab10` 成功，version `9920621e-153f-4f63-89a1-898919f9c98e`；Actions deploy `39108584069` 与 continuation `39108584068` 均明确 skipped。Render 后端服务因本包为纯前端、服务根目录为 `backend` 而未触发新部署；最新 live `dep-dba2n68ae00c739c31j0` 仍精确对应 `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a`，只读日志持续 health 200。不要把该健康基线表述为 `b1097a9` 已部署到 Render。
+
+安全门禁不变：公共只读，OIDC/真实提交/内网/生产配置关闭；未修改身份、密钥、计费、CI、调度器或部署权限。36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。下一独立包：`release-distribution-revocation-design-review`；先形成追加式撤销/阻断设计审查，再分别实现后端读取与默认关闭浏览器协议。真实提供方与多用户浏览器验收仍需人工授权环境。
 ## 2026-10-18 ReleaseDecision 追加式替代浏览器协议（Codex / ChatGPT Work）
 
 真实基线为已合并 PR69 的 `main` `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a`，启动开放 PR 0；独立分支 `codex/release-decision-supersession-browser-protocol`。新增严格 transport/audit projector、独立默认关闭同源代理、双语准备/精确确认/结果 UI 和有效决策详情入口。命令固定新审批请求与 UUID、当前前驱、同 Release/冻结 Snapshot、完整新 decision/readiness/notes/correction_reason；代理向既有后端只转发准确业务 body。成功提交后仍以原 `DECISION_SUPERSEDED` 原子审计为唯一确认，不使用当前对象状态推断原结果；网络不确定会锁定请求，只提供 audit-only recovery，后续禁用/拒绝/冲突不能抹除未知状态。

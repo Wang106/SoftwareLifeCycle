@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.44",
-  "baseline_commit": "b1097a97c80cc27f58699d9606020ad93ab48b61",
+  "baseline_commit": "e45089d7e1df71aa14b1a064c5b6bedc317b2b7a",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -475,7 +475,8 @@
             "frontend/lib/release-decision-supersession-audit.ts",
             "frontend/components/release-decision-supersession-workbench.tsx",
             "frontend/tests/release-decision-supersession-transport.test.cjs",
-            "frontend/tests/release-decision-supersession-wiring.test.cjs"
+            "frontend/tests/release-decision-supersession-wiring.test.cjs",
+            "docs/release-decision-supersession-verification.md"
           ],
           "acceptance_pending": [
             "Impact supersession and withdrawal backend, bilingual history, independently disabled controlled submission, exact original-audit recovery and manual audit-only import implemented; approved provider and actual multi-user correction acceptance pending",
