@@ -19,6 +19,7 @@ from app.models.production import (
 from app.models.snapshot import ReleaseSnapshot
 from app.services.audit import AuditEventError, commit_with_audit
 from app.services.command_retry import atomic_command, retry_result, timestamp_content
+from app.services.revocation import ensure_chain_active, lock_chain
 
 
 class ProductionError(ValueError):
@@ -60,7 +61,7 @@ class ProductionService:
         request_id=None,
     ):
         actor = actor_context or ActorContext.legacy(None)
-        authorization = self._lock(SoftwareAuthorization, authorization_id)
+        authorization = lock_chain(self.db, "AUTHORIZATION", authorization_id, ProductionError).authorization
         request_content = {"deployment_no": deployment_no,
             "authorization_id": str(authorization_id), "production_line_id": str(production_line_id)}
         existing = retry_result(self.db, Deployment, request_id, "EVT-DPLOY-",
@@ -68,6 +69,9 @@ class ProductionService:
         if existing is not None:
             self.db.commit()
             return existing
+        if not authorization:
+            raise ProductionError("Production authorization not found")
+        ensure_chain_active(self.db, "AUTHORIZATION", authorization.id, ProductionError)
         if self.db.scalars(
             select(Deployment).where(Deployment.deployment_no == deployment_no)
         ).first():
@@ -334,9 +338,9 @@ class ProductionService:
             raise ProductionError("Deployment not found")
         # All deployments sharing this authorization consume one quota. The
         # authorization lock is held through quota evaluation, insert and audit.
-        authorization = self.db.scalar(select(SoftwareAuthorization).where(
-            SoftwareAuthorization.id == deployment.authorization_id)
-            .with_for_update().execution_options(populate_existing=True))
+        authorization = lock_chain(
+            self.db, "AUTHORIZATION", deployment.authorization_id, ProductionError
+        ).authorization
         request_content = {
             "deployment_no": deployment_no, "batch_no": batch_no,
             "changeover_id": str(changeover_id) if changeover_id else None,
@@ -347,6 +351,9 @@ class ProductionService:
         if existing is not None:
             self.db.commit()
             return existing
+        if not authorization:
+            raise ProductionError("Production authorization not found")
+        ensure_chain_active(self.db, "AUTHORIZATION", authorization.id, ProductionError)
         if deployment.status != "MATCH":
             raise ProductionError("Production batch requires matching actual software")
         if self.db.scalars(

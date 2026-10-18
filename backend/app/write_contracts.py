@@ -35,6 +35,34 @@ class WriteContract:
 
 
 WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
+    ("POST", "/api/v1/releases/{target_id}/revocations"): WriteContract(
+        operation="Permanently revoke a release chain",
+        scope="release and effective release decision",
+        actor_source="NONE", audit="ATOMIC_APPEND", idempotency="REQUEST_ID",
+        concurrency="ROW_LOCK", planned_roles=frozenset({"DISTRIBUTION_AUTHORITY"}),
+        known_gap="Browser submission remains disabled; backend command is permanent.",
+    ),
+    ("POST", "/api/v1/deliveries/{target_id}/revocations"): WriteContract(
+        operation="Permanently revoke a delivery package chain",
+        scope="release and delivery package",
+        actor_source="NONE", audit="ATOMIC_APPEND", idempotency="REQUEST_ID",
+        concurrency="ROW_LOCK", planned_roles=frozenset({"DISTRIBUTION_AUTHORITY"}),
+        known_gap="Browser submission remains disabled; backend command is permanent.",
+    ),
+    ("POST", "/api/v1/distributions/{target_id}/revocations"): WriteContract(
+        operation="Permanently revoke a distribution chain",
+        scope="release, delivery package and distribution",
+        actor_source="NONE", audit="ATOMIC_APPEND", idempotency="REQUEST_ID",
+        concurrency="ROW_LOCK", planned_roles=frozenset({"PRODUCTION_AUTHORITY"}),
+        known_gap="Browser submission remains disabled; backend command is permanent.",
+    ),
+    ("POST", "/api/v1/authorizations/{target_id}/revocations"): WriteContract(
+        operation="Permanently revoke a production authorization",
+        scope="release, delivery package, distribution and authorization",
+        actor_source="NONE", audit="ATOMIC_APPEND", idempotency="REQUEST_ID",
+        concurrency="ROW_LOCK", planned_roles=frozenset({"PRODUCTION_AUTHORITY"}),
+        known_gap="Browser submission remains disabled; backend command is permanent.",
+    ),
     ("POST", "/api/v1/releases/{release_id}/create-snapshot"): WriteContract(
         operation="Freeze release snapshot",
         scope="release",

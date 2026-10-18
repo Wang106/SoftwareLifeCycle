@@ -21,9 +21,21 @@ from app.models.snapshot import ReleaseSnapshot
 from app.services.production import ProductionError, ProductionService
 from app.authorization import authorize_authorization, authorize_deployment
 from app.actor import resolve_actor
+from app.services.revocation import RevocationError, governance_state
 
 
 router = APIRouter(prefix="/api/v1", tags=["production"])
+
+
+def _authorization_governance(db: Session, authorization):
+    if authorization is None or not isinstance(db, Session):
+        return None
+    try:
+        return governance_state(db, "AUTHORIZATION", authorization.id)
+    except RevocationError:
+        return {"recorded_status": authorization.status, "governance_state": "UNRESOLVED",
+                "eligible_for_new_work": False, "self_revocation": None,
+                "ancestor_revocations": []}
 
 
 class DeploymentCreate(BaseModel):
@@ -94,7 +106,7 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
         .where(ProductionBatch.deployment_id == deployment.id)
         .order_by(ProductionBatch.started_at)
     ).all() if include_history else []
-    return {
+    result = {
         "id": str(deployment.id),
         "deployment_no": deployment.deployment_no,
         "status": deployment.status,
@@ -157,6 +169,8 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
             for row in batches
         ],
     }
+    result["governance"] = _authorization_governance(db, authorization)
+    return result
 
 
 def list_sites(db: Session = Depends(get_db)):

@@ -10,6 +10,7 @@ from app.actor import ActorContext
 from app.services.audit import commit_with_audit
 from app.services.command_retry import atomic_command, retry_result
 from app.services.release_decision import effective_release_decision
+from app.services.revocation import ensure_chain_active, lock_chain
 
 
 class DistributionError(ValueError):
@@ -61,6 +62,7 @@ class DistributionService:
         if existing is not None:
             self.db.commit()
             return existing
+        ensure_chain_active(self.db, "RELEASE", release.id, DistributionError)
         if not snapshot_artifact_ids:
             raise DistributionError("Delivery package must contain at least one snapshot artifact")
         if len(snapshot_artifact_ids) != len(set(snapshot_artifact_ids)):
@@ -169,7 +171,7 @@ class DistributionService:
         request_id=None,
     ):
         resolved_actor = actor_context or ActorContext.legacy(None)
-        package = self._lock(DeliveryPackage, delivery_package_id)
+        package = lock_chain(self.db, "DELIVERY_PACKAGE", delivery_package_id, DistributionError).package
         if not package:
             raise DistributionError("Delivery package not found")
         request_content = {
@@ -181,6 +183,7 @@ class DistributionService:
         if existing is not None:
             self.db.commit()
             return existing
+        ensure_chain_active(self.db, "DELIVERY_PACKAGE", package.id, DistributionError)
         if package.status not in ("READY", "APPROVED"):
             raise DistributionError("Delivery package is not distributable")
         if package.recipient_type != recipient_type or package.recipient_code != recipient_code:
@@ -267,6 +270,7 @@ class DistributionService:
         if existing is not None:
             self.db.commit()
             return existing
+        ensure_chain_active(self.db, "DISTRIBUTION", distribution.id, DistributionError)
         if batch_limit is not None and batch_limit < 1:
             raise DistributionError("Authorization batch limit must be at least one")
 

@@ -27,6 +27,7 @@ from app.services.approval import ApprovalError
 from app.services.distribution import DistributionError
 from app.services.audit import AuditEventService
 from app.services.production import ProductionError, ProductionService
+from app.services.revocation import RevocationError
 from app.services.snapshot import SnapshotError, SnapshotService
 from test_command_audit import prepare_snapshot_source
 
@@ -105,7 +106,7 @@ def overlapping_commands(engine, monkeypatch, first, second, *, hold_after_audit
             try:
                 row = fn(db)
                 return ('ok', row.id, getattr(row, 'snapshot_number', None))
-            except (ProductionError, SnapshotError, ApprovalError, DistributionError) as exc:
+            except (ProductionError, SnapshotError, ApprovalError, DistributionError, RevocationError) as exc:
                 assert not db.in_transaction(), 'failure must release the transaction'
                 return ('conflict', str(exc), None)
     with ThreadPoolExecutor(max_workers=2) as pool:
