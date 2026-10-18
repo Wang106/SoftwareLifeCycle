@@ -2,7 +2,7 @@
 
 ## 2026-10-19 发布链永久撤销后端与统一读取（Codex / ChatGPT Work）
 
-从远端最新 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba` 创建独立分支 `codex/release-chain-revocation-backend-read`；启动时开放 PR 为 0，未发现前序未完成实现。实现提交 `e9ada029b24ec3fbf57766efa88f2592bc88e5c5` 新增唯一迁移 `0026_release_chain_revocation` 与 API `0.18.45`：四目标 XOR 追加式撤销账本、每目标唯一撤销、UPDATE/DELETE 拒绝、存在历史拒绝降级，以及针对 ReleaseDecision、DeliveryPackage、Distribution、SoftwareAuthorization、Deployment、ProductionBatch 的数据库旧写者 insert guard。
+从远端最新 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba` 创建独立分支 `codex/release-chain-revocation-backend-read`；启动时开放 PR 为 0，未发现前序未完成实现。远端实现提交 `74bddd2915cc6caa626a8f902f359aa00b399f21` 新增唯一迁移 `0026_release_chain_revocation` 与 API `0.18.45`：四目标 XOR 追加式撤销账本、每目标唯一撤销、UPDATE/DELETE 拒绝、存在历史拒绝降级，以及针对 ReleaseDecision、DeliveryPackage、Distribution、SoftwareAuthorization、Deployment、ProductionBatch 的数据库旧写者 insert guard。
 
 新增四个受范围授权的后台撤销端点和统一治理读取，严格绑定 `request_id=id`、`EVT-RCR-{request_id}`、原 actor/请求正文精确重放和同事务审计。服务统一采用 Release→Package→Distribution→Authorization 根到叶锁序；自身撤销显示 `REVOKED`，祖先撤销显示 `BLOCKED_BY_ANCESTOR`，原 `recorded_status` 与历史事实不改。新 ReleaseDecision、交付、分发、授权、Deployment 和 Batch 被阻断；actual report/更正与 Changeover 仍可记录物理事实。现有交付、分发、授权及 Deployment 详情增加只读 governance 投影，历史链断裂时 fail-closed 为 `UNRESOLVED`。公共环境仍只读，不增加浏览器提交能力。
 

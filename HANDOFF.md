@@ -1,11 +1,11 @@
-Warning: truncated output (original token count: 121682)
+Warning: truncated output (original token count: 121683)
 Total output lines: 3786
 
 # SoftwareLifeCycle Development Handoff
 
 ## 2026-10-19 发布链永久撤销后端与统一读取（Codex / ChatGPT Work）
 
-真实基线为远端 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba`，分支 `codex/release-chain-revocation-backend-read`，实现提交 `e9ada029b24ec3fbf57766efa88f2592bc88e5c5`。API 已提升至 `0.18.45`，Alembic 唯一 head 为 `0026_release_chain_revocation`。新增不可变 `release_chain_revocations` 账本、四类永久撤销 POST、统一 governance GET/详情投影、根到叶锁序、旧写者数据库 guard、原子审计和精确重放。撤销不改原 status、不制造子撤销、不删除既有 Deployment/Changeover/Batch；许可型新写入阻断，actual/Changeover 事实记录保留。
+真实基线为远端 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba`，分支 `codex/release-chain-revocation-backend-read`，远端实现提交 `74bddd2915cc6caa626a8f902f359aa00b399f21`。API 已提升至 `0.18.45`，Alembic 唯一 head 为 `0026_release_chain_revocation`。新增不可变 `release_chain_revocations` 账本、四类永久撤销 POST、统一 governance GET/详情投影、根到叶锁序、旧写者数据库 guard、原子审计和精确重放。撤销不改原 status、不制造子撤销、不删除既有 Deployment/Changeover/Batch；许可型新写入阻断，actual/Changeover 事实记录保留。
 
 本地结果：相关回归 224 passed/1 skipped；完整后端 1643 passed/629 skipped，跳过项因没有真实 PostgreSQL 地址，必须以 PR CI 的 PostgreSQL job 为准；前端 1462 passed；Next/OpenNext build 成功；迁移单一 head 已确认。PR、精确 head CI、合并 main、Cloudflare 与 Render 尚未产生，因此当前不能称已部署或已完成真实 PostgreSQL 验收。
 
@@ -1186,7 +1186,7 @@ STANDARD parent returned 404. Harmless empty Snapshot and exact Deployment Batch
 both returned HTTP 403 read_only_mode. No business record was submitted.
 Cloudflare live component UI was verified in Chinese with full counts 2/0; next page
 changed Main Application to Calibration/CAL-32 and retained component_limit=1 plus
-unlinked_offset=1. English switching retained both offsets, counts, raw …21682 tokens truncated…
+unlinked_offset=1. English switching retained both offsets, counts…21683 tokens truncated…
 no growing child arrays or child ORM graph, and preserve stored UUID/Snapshot scope.
 SQLite growth checks compare fixed read-query count before/after120 records;
 PostgreSQL verifies complete aggregates and no audit mutation. Existing downstream
