@@ -18,9 +18,9 @@ export default function ReleaseDecisionSupersessionWorkbench({initialContext={},
   const pending=mode==='send'?controller.current.send(submissionEnabled):controller.current.recover(recoveryEnabled);setResult(controller.current.state);setResult(await pending);}
  function reset(){if(busy||result?.phase==='unknown')return;controller.current=null;setResult(null);setReview(null);setMessage('');setFields({...blank,...initialContext});}
  const input=(name:keyof Fields,label:string,max:number)=><label><Localized>{label}</Localized><input name={name} required maxLength={max} value={fields[name]} onChange={e=>edit(name,e.target.value)}/></label>;
- return <section className="panel"><h2><Localized>{'Replace a release decision'}</Localized></h2>
+ return <Localized><section className="panel"><h2><Localized>{'Replace a release decision'}</Localized></h2>
   <p className="notice"><Localized>{'Replacement appends a new formal decision for a new approved request and the same frozen snapshot. It never edits the predecessor.'}</Localized></p>
-  {!submissionEnabled&&<p><Localized>{'Release decision replacement submission is disabled in this environment.'}</Localized></p>}
+  <Localized>{!submissionEnabled&&<p><Localized>{'Release decision replacement submission is disabled in this environment.'}</Localized></p>}</Localized>
   <form className="commandform" onSubmit={e=>{e.preventDefault();if(controller.current||review)return;
    const command=parseReleaseDecisionSupersessionCommand({operation:'release-decision-supersession',target:fields.target,
     body:{request_id:crypto.randomUUID(),decision_no:fields.decisionNo,decided_by:fields.actor,readiness_status:fields.readiness,
@@ -55,5 +55,5 @@ export default function ReleaseDecisionSupersessionWorkbench({initialContext={},
    <pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{JSON.stringify(current.command,null,2)}</pre></section>}
   {message&&<p className="muted"><Localized>{message}</Localized></p>}{result&&<ReleaseDecisionSupersessionResult state={result}/>}
   {(result?.phase==='confirmed'||result?.phase==='rejected')&&<button type="button" onClick={reset}><Localized>{'Start a new request'}</Localized></button>}
- </section>;
+ </section></Localized>;
 }
