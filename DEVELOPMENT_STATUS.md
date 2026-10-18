@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-18 ReleaseDecision 追加式替代浏览器协议（Codex / ChatGPT Work）
+
+从已合并 PR69 的真实远端 `main` `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a` 创建独立分支 `codex/release-decision-supersession-browser-protocol`；启动时开放 PR 为 0，旧实现分支仅为已完成历史。本包新增独立的 ReleaseDecision 替代浏览器协议：严格冻结新 APPROVED 请求、当前前驱、同 Release/冻结 Snapshot 与完整新决策；显式双语复核后才允许提交。成功响应不作为证明，必须读取 `EVT-RD-{request_id}` 原子审计并匹配认证主体、原请求、审批、前驱和实际结果；传输不确定后锁定原字节，仅允许查询原审计，不自动重放写入。
+
+同源代理只接受有界 JSON POST，且必须同时显式配置 `RELEASE_DECISION_SUPERSESSION_SUBMISSION_MODE=enabled`、精确批准 API base 和 app origin；公开/演示环境默认关闭，read-only 身份只能恢复审计。有效决策详情只为当前有效且上下文完整的记录提供准备入口；不编辑前驱，不撤销已有 Delivery/Distribution/Authorization/Deployment/Changeover/Batch，也不把 HOLD 称为物理回滚或生产发布。新增协议说明及 7 项定向回归，当前 7/7 通过；完整仓库前端、Next/OpenNext、后端和真实 PostgreSQL 由本包精确 PR head CI 验收，未完成前不合并。
+
+业务验收仍 36/44=82%；七模块仍为 100/100演示/100演示/100/89/60/17；七计划仍为 100/100/20/33/40/20/0。代码协议不替代批准提供方、多用户桌面/手机与中英文真实浏览器验收。下一包建议先做 `release-distribution-revocation-design-review`，划清发布/交付/分发/授权撤销与已有生产事实的边界；生产更正另包处理。
+
 ## 2026-10-18 ReleaseDecision 追加式替代后端与统一读取（Codex / ChatGPT Work）
 
 从真实远端 `main` `16c791d11f59315f655d57d0314207f581dedb1c`（PR68）创建独立分支 `codex/release-decision-supersession-backend-read`；启动时开放 PR 为 0，未发现同名实现分支。新增 `0025_release_decision_supersession`：正式决策增加同 Release/同 Snapshot 复合前驱、唯一后继、成对非空更正原因、自指拒绝、有效读取索引和 PostgreSQL UPDATE/DELETE 拒绝 trigger；存在替代历史时 downgrade 明确拒绝。API 更新为 `0.18.44`，required schema 为 `0025_release_decision_supersession`。

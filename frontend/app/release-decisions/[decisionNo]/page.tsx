@@ -22,8 +22,10 @@ export default async function Page({params}:{params:Promise<{decisionNo:string}>
       <Localized>{row.successor_decision_no&&<p><Localized>{"Superseded by"}</Localized><Localized>{": "}</Localized><Link href={`/release-decisions/${encodeURIComponent(row.successor_decision_no)}`}>{row.successor_decision_no}</Link></p>}</Localized>
       <Localized>{row.correction_reason&&<p><Localized>{"Correction reason"}</Localized><Localized>{": "}</Localized><Localized>{row.correction_reason}</Localized></p>}</Localized>
       <p className="muted"><Localized>{"Supersession changes future effective-decision reads; it does not erase prior delivery or production facts."}</Localized></p>
+      <Localized>{row.effective&&row.release&&row.snapshot&&<p><Link href={`/commands?${new URLSearchParams({operation:'decision-supersession',predecessor:row.id,release:row.release.id,snapshot:row.snapshot.id,previous_decision_no:row.decision_no,previous_decision:row.decision,previous_readiness:row.readiness_status})}`}><Localized>{"Prepare an append-only replacement →"}</Localized></Link></p>}</Localized>
     </section>
     <section className="panel"><h2><Localized>{"Decision record"}</Localized></h2><p><Localized>{"Declared actor: "}</Localized><Localized>{row.decided_by}</Localized></p><p><Localized>{row.decided_at}</Localized></p><p><Localized>{row.decision_notes||'No notes recorded.'}</Localized></p><p className="muted"><Localized>{"Actor identity and physical software are not established by this record. Existing delivery and production rules continue to apply."}</Localized></p></section>
     <p><Link href={`/activity?${new URLSearchParams({entity_type: 'RELEASE_DECISION', entity_id: row.id})}`}><Localized>{"Audit history for this decision →"}</Localized></Link></p><Link href="/release-decisions"><Localized>{"All decisions →"}</Localized></Link>
   </>;
 }
+

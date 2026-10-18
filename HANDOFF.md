@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-18 ReleaseDecision 追加式替代浏览器协议（Codex / ChatGPT Work）
+
+真实基线为已合并 PR69 的 `main` `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a`，启动开放 PR 0；独立分支 `codex/release-decision-supersession-browser-protocol`。新增严格 transport/audit projector、独立默认关闭同源代理、双语准备/精确确认/结果 UI 和有效决策详情入口。命令固定新审批请求与 UUID、当前前驱、同 Release/冻结 Snapshot、完整新 decision/readiness/notes/correction_reason；代理向既有后端只转发准确业务 body。成功提交后仍以原 `DECISION_SUPERSEDED` 原子审计为唯一确认，不使用当前对象状态推断原结果；网络不确定会锁定请求，只提供 audit-only recovery，后续禁用/拒绝/冲突不能抹除未知状态。
+
+开关要求 mode、批准 API base、批准 app origin 三项精确匹配；提交还要求非只读认证会话，公开演示仍禁用。没有修改后端、数据库、迁移、Seed、依赖、CI、身份、秘密、调度或部署配置；也没有触发真实业务写入。新增协议文档和 7 项定向测试，当前 7/7 passed；完整前端/Next/OpenNext、后端/真实 PG 必须由本包精确 PR head 三个 CI job 成功证明。PR、精确提交、合并后 main、Cloudflare 与 Render 证据在本包最终验收记录中补齐，不能复用 PR69 基线证据。
+
+公共只读、OIDC/真实提交/内网仍关闭。36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。下一小包建议 `release-distribution-revocation-design-review`：只定义发布、交付、分发和授权的追加式撤销/阻断语义，明确不改写历史生产事实；之后才分别实现后端/读取、浏览器协议和生产更正。真实提供方多用户、桌面/手机、中英文验收仍待人工授权环境。
+
 ## 2026-10-18 ReleaseDecision 追加式替代后端/读取实现（Codex / ChatGPT Work）
 
 基线是已合并 PR68 的 `main` `16c791d11f59315f655d57d0314207f581dedb1c`；开放 PR 0，分支 `codex/release-decision-supersession-backend-read`。实现 `0025_release_decision_supersession`、ReleaseDecision append-only trigger、同上下文复合前驱、唯一后继、有历史拒绝降级和共享有效决策 SQL resolver。原 POST 路由增加成对 `supersedes_id`/`correction_reason`，只接受当前有效前驱、同 Snapshot、新 APPROVED ApprovalRequest；原请求/actor/审计重放和业务审计原子性保持。主要当前消费者统一使用 resolver，历史/生产来源保留原记录并暴露 predecessor/successor/effective；RD-0081 Seed 改为精确验证而非更新。API `0.18.44`，schema `0025_release_decision_supersession`。
