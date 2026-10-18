@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-18 发布链追加式撤销设计验收闭环（Codex / ChatGPT Work）
+
+PR72 最终 head `2ce160adebeeb6e18aba561cb507cc14326fec6d` 已合入当时最新 main，精确 head CI `39131206270` 的后端/PostgreSQL、前端/Cloudflare build、CI acceptance 三项必需检查全部成功。受保护合并提交为 `7e18b9a6e4cc59fb4434187bf3c5b30de26420f9`；独立 main CI `39131785281` 同样三项成功。精确测试证据为后端 2267 passed、PostgreSQL module 230 cases no skips、迁移单一 head `0025_release_decision_supersession` 往返通过、前端 1462/1462 passed，Next/OpenNext build 成功。
+
+Cloudflare 精确 PR head Preview deployment `2a7da6f6-7821-4667-bd24-5d62b8433d89` 成功；main production build `1292d2c5-f420-4ad4-a345-1bf930bf6034` 成功，对应 version `64e580e3-bcbb-4ed4-b871-bf18683bd16a`。Actions deploy `39132510691` 与 continuation `39132510713` 均为 skipped。Render 因本包仅修改文档且服务 `rootDir=backend` 未触发新部署；最新 live 仍为 `dep-dba2n68ae00c739c31j0`，精确后端 commit `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a`，验收窗口无 error 日志。该状态不能表述为 Render 已部署 PR72。
+
+本包不增加业务验收点：36/44=82%；七模块仍为 100/100演示/100演示/100/89/60/17；七计划仍为 100/100/20/33/40/20/0。公共演示保持只读，OIDC、真实业务写入、内网部署与生产配置仍关闭。下一包为 `release-chain-revocation-backend-read`，按已审查语义实现 0026、四类后台撤销、统一有效读取和双语只读展示；不开放浏览器提交。
+
 ## 2026-10-18 发布、交付、分发与授权追加式撤销设计审查（Codex / ChatGPT Work）
 
 从已合并 PR70 的真实远端 `main` `b1097a97c80cc27f58699d9606020ad93ab48b61` 开始，开放 PR 为 0，上一包精确 head 和独立 main 三个必需 CI job 及 Cloudflare 生产构建均已成功。本轮只做 `release-distribution-revocation-design-review`，核对 Release、DeliveryPackage、Distribution、SoftwareAuthorization、Deployment/Batch 的实际模型、写入锁序、审计与全部读取消费者；不修改后端、迁移、Seed、依赖、CI、身份、门控或提供方配置。
