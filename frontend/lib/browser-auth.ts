@@ -2,6 +2,8 @@ import {parseImpactCorrectionCommand} from './impact-correction-transport';
 import {executeImpactCorrectionCommand} from './browser-session';
 import {parseImpactWithdrawalCommand} from './impact-withdrawal-transport';
 import {executeImpactWithdrawalCommand} from './browser-session';
+import {parseReleaseDecisionSupersessionCommand} from './release-decision-supersession-transport';
+import {executeReleaseDecisionSupersessionCommand} from './browser-session';
 import {parseAcceptanceCorrectionCommand} from './acceptance-correction-transport';
 import {executeAcceptanceCorrectionCommand} from './browser-session';
 import {parseEvidenceCommand} from './evidence-command-transport';
@@ -691,5 +693,33 @@ export async function handleImpactWithdrawal(request: Request, env: Environment,
   const result=await executeImpactWithdrawalCommand(config.session,readCookie(request,SESSION_COOKIE),command,mode,fetcher);
   return Response.json(result.value,{status:result.status,headers:privateHeaders});
 }
+
+export function releaseDecisionSupersessionSubmissionConfigured(env:Environment,config:AuthConfig|null):boolean{
+  return env.RELEASE_DECISION_SUPERSESSION_SUBMISSION_MODE==='enabled'&&!!config&&
+    env.RELEASE_DECISION_SUPERSESSION_APPROVED_API_BASE_URL===config.session.apiBase&&
+    env.RELEASE_DECISION_SUPERSESSION_APPROVED_APP_ORIGIN===config.session.origin;
+}
+export async function handleReleaseDecisionSupersession(request:Request,env:Environment,
+  mode:'submit'|'recover',fetcher:typeof fetch=fetch):Promise<Response>{
+  if(!['submit','recover'].includes(mode))return json('invalid_request',400);
+  if(request.method!=='POST'){const response=json('method_not_allowed',405);response.headers.set('Allow','POST');return response;}
+  if(env.RELEASE_DECISION_SUPERSESSION_SUBMISSION_MODE!=='enabled')return json('release_decision_supersession_disabled',503);
+  let config:AuthConfig|null;
+  try{config=await authConfig(env);}catch{return json('release_decision_supersession_disabled',503);}
+  if(!config||!releaseDecisionSupersessionSubmissionConfigured(env,config))return json('release_decision_supersession_disabled',503);
+  if(!sameOrigin(request,config))return json('cross_origin_request',403);
+  if(request.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')return json('json_required',415);
+  if(Number(request.headers.get('content-length')||'0')>8192)return json('request_too_large',413);
+  const reader=request.body?.getReader();if(!reader)return json('invalid_request',400);let value:unknown;
+  try{const chunks:Uint8Array[]=[];let size=0;for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;
+      if(size>8192){await reader.cancel();return json('request_too_large',413);}chunks.push(part.value);}
+    const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
+    value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}
+  catch{return json('invalid_request',400);}finally{reader.releaseLock();}
+  const command=parseReleaseDecisionSupersessionCommand(value);if(!command)return json('invalid_request',400);
+  const result=await executeReleaseDecisionSupersessionCommand(config.session,readCookie(request,SESSION_COOKIE),command,mode,fetcher);
+  return Response.json(result.value,{status:result.status,headers:privateHeaders});
+}
+
 
 

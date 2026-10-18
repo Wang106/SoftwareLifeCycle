@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured, evidenceSubmissionConfigured, resourceSubmissionConfigured, acceptanceCorrectionSubmissionConfigured, impactCorrectionSubmissionConfigured, impactWithdrawalSubmissionConfigured } from '../../lib/browser-auth';
+import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured, evidenceSubmissionConfigured, resourceSubmissionConfigured, acceptanceCorrectionSubmissionConfigured, impactCorrectionSubmissionConfigured, impactWithdrawalSubmissionConfigured, releaseDecisionSupersessionSubmissionConfigured } from '../../lib/browser-auth';
 import { resolveSession, SESSION_COOKIE } from '../../lib/browser-session';
 
 import { Localized, LocalizedAttributes } from "../../components/localized";
@@ -27,14 +27,17 @@ export default async function Page({ searchParams }: {
   const resourceConfigured = resourceSubmissionConfigured(process.env, config);
   const impactCorrectionContextRequested = query.operation === 'impact-correction';
   const impactWithdrawalContextRequested = query.operation === 'impact-withdrawal';
-  const correctionContextRequested = !impactCorrectionContextRequested && !impactWithdrawalContextRequested && (query.predecessor !== undefined || query.correction_action !== undefined);
+  const decisionSupersessionContextRequested = query.operation === 'decision-supersession';
+  const correctionContextRequested = !impactCorrectionContextRequested && !impactWithdrawalContextRequested && !decisionSupersessionContextRequested && (query.predecessor !== undefined || query.correction_action !== undefined);
   const correctionConfigured = correctionContextRequested && acceptanceCorrectionSubmissionConfigured(process.env, config);
   const AcceptanceCorrectionWorkbench = correctionContextRequested ? (await import('../../components/acceptance-correction-workbench')).default : null;
   const impactCorrectionConfigured = impactCorrectionContextRequested && impactCorrectionSubmissionConfigured(process.env, config);
   const ImpactCorrectionWorkbench = impactCorrectionContextRequested ? (await import('../../components/impact-correction-workbench')).default : null;
   const impactWithdrawalConfigured = impactWithdrawalContextRequested && impactWithdrawalSubmissionConfigured(process.env, config);
   const ImpactWithdrawalWorkbench = impactWithdrawalContextRequested ? (await import('../../components/impact-withdrawal-workbench')).default : null;
-  const anyConfigured = configured || governanceConfigured || distributionConfigured || productionConfigured || evidenceConfigured || resourceConfigured || correctionConfigured || impactCorrectionConfigured || impactWithdrawalConfigured;
+  const decisionSupersessionConfigured = decisionSupersessionContextRequested && releaseDecisionSupersessionSubmissionConfigured(process.env, config);
+  const ReleaseDecisionSupersessionWorkbench = decisionSupersessionContextRequested ? (await import('../../components/release-decision-supersession-workbench')).default : null;
+  const anyConfigured = configured || governanceConfigured || distributionConfigured || productionConfigured || evidenceConfigured || resourceConfigured || correctionConfigured || impactCorrectionConfigured || impactWithdrawalConfigured || decisionSupersessionConfigured;
   const values = anyConfigured ? (await cookies()).getAll(SESSION_COOKIE) : [];
   const identity = anyConfigured && config && values.length === 1 ? await resolveSession(config.session, values[0].value) : null;
   const recoveryEnabled = configured && identity !== null;
@@ -63,7 +66,12 @@ export default async function Page({ searchParams }: {
     {ImpactWithdrawalWorkbench && <ImpactWithdrawalWorkbench initialContext={{target,release:bounded('release'),snapshot:bounded('snapshot'),predecessor:bounded('predecessor'),previousDecision:bounded('previous_decision',20)}}
       submissionEnabled={impactWithdrawalConfigured && identity !== null && identity.read_only_mode === false}
       recoveryEnabled={impactWithdrawalConfigured && identity !== null}/> }
-    <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} productionSubmissionEnabled={productionSubmissionEnabled} productionRecoveryEnabled={productionRecoveryEnabled} evidenceSubmissionEnabled={evidenceSubmissionEnabled} evidenceRecoveryEnabled={evidenceRecoveryEnabled} resourceSubmissionEnabled={resourceSubmissionEnabled} resourceRecoveryEnabled={resourceRecoveryEnabled} />
+    {ReleaseDecisionSupersessionWorkbench && <ReleaseDecisionSupersessionWorkbench initialContext={{target,release:bounded('release'),snapshot:bounded('snapshot'),
+      predecessor:bounded('predecessor'),previousNo:bounded('previous_decision_no',50),previousDecision:bounded('previous_decision',30),previousReadiness:bounded('previous_readiness',30)}}
+      submissionEnabled={decisionSupersessionConfigured && identity !== null && identity.read_only_mode === false}
+      recoveryEnabled={decisionSupersessionConfigured && identity !== null}/> }
+    {!decisionSupersessionContextRequested && <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} productionSubmissionEnabled={productionSubmissionEnabled} productionRecoveryEnabled={productionRecoveryEnabled} evidenceSubmissionEnabled={evidenceSubmissionEnabled} evidenceRecoveryEnabled={evidenceRecoveryEnabled} resourceSubmissionEnabled={resourceSubmissionEnabled} resourceRecoveryEnabled={resourceRecoveryEnabled} />}
   </>;
 }
+
 

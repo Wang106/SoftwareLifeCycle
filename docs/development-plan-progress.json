@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.40",
+  "as_of_api": "0.18.44",
   "baseline_commit": "ec12176a23dac49af752d0cfd974b69c956d6973",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
@@ -469,12 +469,18 @@
             "backend/alembic/versions/0022_acceptance_history.py",
             "backend/tests/test_acceptance_history.py",
             "backend/tests/test_acceptance_history_postgres.py",
-            "frontend/tests/change-coverage-views.test.cjs"
+            "frontend/tests/change-coverage-views.test.cjs",
+            "docs/release-decision-supersession-browser-protocol.md",
+            "frontend/lib/release-decision-supersession-transport.ts",
+            "frontend/lib/release-decision-supersession-audit.ts",
+            "frontend/components/release-decision-supersession-workbench.tsx",
+            "frontend/tests/release-decision-supersession-transport.test.cjs",
+            "frontend/tests/release-decision-supersession-wiring.test.cjs"
           ],
           "acceptance_pending": [
             "Impact supersession and withdrawal backend, bilingual history, independently disabled controlled submission, exact original-audit recovery and manual audit-only import implemented; approved provider and actual multi-user correction acceptance pending",
             "Acceptance-to-DVP replacement/withdrawal backend, bilingual read-only history and independently disabled correction submission/original-audit recovery protocol implemented; bilingual confirmation/result/export/import UI and release-review historical replacement pending",
-            "ReleaseDecision supersession backend, append-only schema, unified effective reads and bilingual read-only history implemented; controlled browser protocol, real provider/browser acceptance and broader downstream revocation policy pending"
+            "ReleaseDecision supersession backend, append-only schema, unified effective reads, bilingual read-only history and independently default-off controlled browser protocol/original-audit recovery implemented; approved provider, actual multi-user browser acceptance and broader downstream revocation policy pending"
           ]
         },
         {
