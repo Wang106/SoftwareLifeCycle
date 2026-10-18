@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-18 ReleaseDecision 追加式替代浏览器协议验收闭环（Codex / ChatGPT Work）
+
+PR70 最终 head `6b0400404f9aee69eab98ebdaed12f747480a126` 已包含当时最新 `main`；首个 head `969ef6e` 因本地化覆盖失败未合并，修复后精确 head CI `39107462789` 的后端/PostgreSQL、前端/Cloudflare build、CI acceptance 三项必需检查全部成功。合并提交为 `b1097a97c80cc27f58699d9606020ad93ab48b61`；其独立 main CI `39108012123` 同样三项成功。精确结果为后端 2267 passed、PostgreSQL module 230 cases no skips、前端 1462/1462 passed，Next/OpenNext build 成功。
+
+Cloudflare production build `a9bcc79f-187a-466d-b82c-b0a73765ab10` 成功，对应 version `9920621e-153f-4f63-89a1-898919f9c98e`；Actions deploy `39108584069` 与 continuation `39108584068` 均为 skipped，不能称其执行成功。Render 因本包仅修改前端且服务 `rootDir=backend` 未触发新部署；最新 live 仍为 `dep-dba2n68ae00c739c31j0`，精确 commit `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a`，只读健康日志持续返回 200。该状态说明后端内容未变化且健康，不等同于 Render 已部署 `b1097a9`。
+
+公共演示继续只读；OIDC、真实业务写入、内网部署与生产级配置保持关闭。本次验收不替代批准提供方、多用户桌面/手机和中英文真实浏览器人工验收。业务验收仍 36/44=82%；七模块仍为 100/100演示/100演示/100/89/60/17；七计划仍为 100/100/20/33/40/20/0。下一包为 `release-distribution-revocation-design-review`，只做发布、交付、分发与授权撤销/阻断边界设计，不改写既有生产事实。
+
 ## 2026-10-18 ReleaseDecision 追加式替代浏览器协议（Codex / ChatGPT Work）
 
 从已合并 PR69 的真实远端 `main` `aad807cd1ec16afccdf1cb3bb124c22dec0cc90a` 创建独立分支 `codex/release-decision-supersession-browser-protocol`；启动时开放 PR 为 0，旧实现分支仅为已完成历史。本包新增独立的 ReleaseDecision 替代浏览器协议：严格冻结新 APPROVED 请求、当前前驱、同 Release/冻结 Snapshot 与完整新决策；显式双语复核后才允许提交。成功响应不作为证明，必须读取 `EVT-RD-{request_id}` 原子审计并匹配认证主体、原请求、审批、前驱和实际结果；传输不确定后锁定原字节，仅允许查询原审计，不自动重放写入。
