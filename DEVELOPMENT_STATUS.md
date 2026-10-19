@@ -6,7 +6,9 @@
 
 新增四个受范围授权的后台撤销端点和统一治理读取，严格绑定 `request_id=id`、`EVT-RCR-{request_id}`、原 actor/请求正文精确重放和同事务审计。服务统一采用 Release→Package→Distribution→Authorization 根到叶锁序；自身撤销显示 `REVOKED`，祖先撤销显示 `BLOCKED_BY_ANCESTOR`，原 `recorded_status` 与历史事实不改。新 ReleaseDecision、交付、分发、授权、Deployment 和 Batch 被阻断；actual report/更正与 Changeover 仍可记录物理事实。现有交付、分发、授权及 Deployment 详情增加只读 governance 投影，历史链断裂时 fail-closed 为 `UNRESOLVED`。公共环境仍只读，不增加浏览器提交能力。
 
-本地验证：新增/相关回归 224 passed、1 skipped；完整后端 1643 passed、629 skipped（本地未提供 `TEST_POSTGRES_URL`，真实 PostgreSQL 用例留给 CI，未把 skip 当作通过）；前端 1462/1462 passed；Next/OpenNext Cloudflare build 成功；Alembic 单一 head 为 `0026_release_chain_revocation`。精确 PR head CI、真实 PostgreSQL、合并 main、Cloudflare Preview/Production 与 Render 部署证据尚待 PR 后核验，不复用旧证据。
+本地验证：新增/相关回归 224 passed、1 skipped；完整后端 1643 passed、629 skipped（本地未提供 `TEST_POSTGRES_URL`，未把 skip 当作通过）；前端 1462/1462 passed；Next/OpenNext Cloudflare build 成功；Alembic 单一 head 为 `0026_release_chain_revocation`。PR74 最终 head `f32de3c8d4b0c0df737a62bffa5d76717a9270d7` 的精确 CI `39154785266` 三项必需检查全部成功，记录 2272 backend passed、233 PostgreSQL-module cases/no skips、1462/1462 frontend passed 与 Next/OpenNext build 成功。受保护合并提交为 `943a342d80f3d229a790c93ae646dac76410ed86`；独立 main CI `39155649606` 同样三项成功并记录相同计数。
+
+Cloudflare exact-head Preview deployment `d23b3bea-9e94-42a8-9e43-c7225939e995` 成功；main Production build `061e181b-3551-4814-b7cf-9da6cf6818f5` 成功并精确绑定 `943a342d`。Render 自动部署 `dep-dbah7n942hec73dkdv90` 已为 live，精确对应同一 main 提交，验收窗口无 error 日志；未触发手工部署、重启、升级或配置写入。Actions deployment `39156415283` 与 continuation `39156415252` 明确 skipped，不能称其执行成功。完整回执见 `docs/release-chain-revocation-verification.md`。
 
 业务验收仍为 36/44=82%；七模块仍为 100/100演示/100演示/100/89/60/17；七计划仍为 100/100/20/33/40/20/0。该里程碑继续保持未完成，待双语浏览器只读展示、默认关闭受控提交/原审计恢复和批准提供方多用户验收。下一独立包建议 `release-chain-revocation-browser-read-only`，只做双语只读可视化与有界历史，不启用提交。
 
