@@ -11,10 +11,22 @@ from app.models.production_history import DeploymentActualBaseline, DeploymentAc
 from app.services.production import ProductionService
 
 
-def report(db, dep, release_id, snapshot_id, key):
+@pytest.fixture
+def clean(pg):
+    """Reset all deployments to unreported so first reports start at version 0."""
+    engine, ids = pg
+    with Session(engine) as db:
+        for dep in db.scalars(select(Deployment)):
+            dep.actual_release_id = dep.actual_snapshot_id = dep.deployed_at = None
+            dep.status = 'PENDING'
+        db.commit()
+    return engine, ids
+
+
+def report(db, dep, release_id, snapshot_id, key, **kw):
     return ProductionService(db).report_actual(
         deployment_no=dep.deployment_no, actual_release_id=release_id,
-        actual_snapshot_id=snapshot_id, request_id=key, expected_version=0)
+        actual_snapshot_id=snapshot_id, request_id=key, expected_version=0, **kw)
 
 
 def test_upgrade_captures_existing_reported_deployments(pg):
@@ -35,8 +47,8 @@ def test_upgrade_captures_existing_reported_deployments(pg):
         assert baseline is not None and baseline.source == 'LEGACY_CURRENT'
 
 
-def test_downgrade_blocks_with_correction_history(pg):
-    engine, ids = pg
+def test_downgrade_blocks_with_correction_history(clean):
+    engine, ids = clean
     with Session(engine) as db:
         dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
         report(db, dep, ids['release'], dep.expected_snapshot_id, uuid.uuid4())
@@ -47,20 +59,30 @@ def test_downgrade_blocks_with_correction_history(pg):
         command.downgrade(config, '0026_release_chain_revocation')
 
 
-def test_downgrade_allows_pure_import_baseline(pg):
-    engine, ids = pg
+def test_downgrade_allows_pure_legacy_baseline(clean):
+    engine, ids = clean
+    with Session(engine) as db:
+        dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
+        # Directly set a legacy reported value WITHOUT any correction and without
+        # a FIRST_REPORT baseline (simulates an imported/legacy row captured by
+        # the migration's LEGACY_CURRENT backfill).
+        dep.actual_release_id = ids['release']
+        dep.actual_snapshot_id = dep.expected_snapshot_id
+        dep.status = 'MATCH'
+        db.commit()
     config = Config('alembic.ini')
-    # With no corrections and no FIRST_REPORT baseline, downgrade is permitted.
+    # Pure LEGACY_CURRENT baseline (no correction, no FIRST_REPORT) permits downgrade.
     command.downgrade(config, '0026_release_chain_revocation')
     command.upgrade(config, 'head')
     with Session(engine) as db:
         dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
-        assert db.scalar(select(DeploymentActualBaseline).where(
-            DeploymentActualBaseline.deployment_id == dep.id)) is None
+        baseline = db.scalar(select(DeploymentActualBaseline).where(
+            DeploymentActualBaseline.deployment_id == dep.id))
+        assert baseline is not None and baseline.source == 'LEGACY_CURRENT'
 
 
-def test_first_report_baseline_blocks_downgrade(pg):
-    engine, ids = pg
+def test_first_report_baseline_blocks_downgrade(clean):
+    engine, ids = clean
     with Session(engine) as db:
         dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
         report(db, dep, ids['release'], dep.expected_snapshot_id, uuid.uuid4())

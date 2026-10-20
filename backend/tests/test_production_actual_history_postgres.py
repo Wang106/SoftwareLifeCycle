@@ -5,7 +5,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import select, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from test_command_concurrency_postgres import pg, count, overlapping_commands
 from app.models.production import Deployment
@@ -67,24 +67,24 @@ def test_correction_does_not_mutate_baseline(actual):
 
 
 def test_append_only_trigger_rejects_mutation(actual):
-    engine, _ = actual
+    engine, ids = actual
     with Session(engine) as db:
-        report(db, {'release': _['release'], 'snapshot': _['snapshot']}, uuid.uuid4())
+        report(db, ids, uuid.uuid4())
         baseline = db.scalar(select(DeploymentActualBaseline))
         baseline_id = baseline.id
         db.commit()
     with Session(engine) as db:
-        with pytest.raises(IntegrityError):
+        # Append-only triggers raise an ObjectNotInPrerequisiteState (ERRCODE 55000),
+        # surfaced by psycopg/SQLAlchemy as OperationalError.
+        with pytest.raises(OperationalError):
             db.execute(text(
                 "UPDATE deployment_actual_baselines SET source='FIRST_REPORT' "
                 "WHERE id=:id"), {'id': baseline_id})
-            db.commit()
         db.rollback()
         # DELETE is also rejected by the append-only trigger.
-        with pytest.raises(IntegrityError):
+        with pytest.raises(OperationalError):
             db.execute(text("DELETE FROM deployment_actual_baselines WHERE id=:id"),
                        {'id': baseline_id})
-            db.commit()
         db.rollback()
         assert db.scalar(select(DeploymentActualBaseline)) is not None
 
