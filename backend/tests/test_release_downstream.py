@@ -30,6 +30,11 @@ class Session:
         entity = statement.column_descriptions[0]["entity"]
         return Rows(self.rows.get(entity, []))
 
+    def execute(self, statement):
+        # The append-only projection resolves to empty baseline/correction sets
+        # for this pure-structure test; effective actual falls back to physical.
+        return Rows([])
+
 
 def test_downstream_keeps_direct_links_and_actual_mismatch_visible():
     release = Release(id=uuid.uuid4(), software_id=uuid.uuid4(), release_type="APPLICATION", version="2.3.4")

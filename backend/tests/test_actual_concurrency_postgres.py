@@ -5,11 +5,12 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import select, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 from test_command_concurrency_postgres import pg, count, overlapping_commands
 from app.models.audit import AuditEvent
 from app.models.production import Deployment, ProductionBatch
+from app.models.production_history import DeploymentActualBaseline, DeploymentActualCorrection
 from app.services.production import ProductionService, ProductionError
 from app.services.audit import AuditEventService
 
@@ -19,8 +20,19 @@ def actual(pg):
     with Session(engine) as db:
         dep = db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1'))
         ids = {**ids,'snapshot':dep.expected_snapshot_id}
-        for dep in db.scalars(select(Deployment)):
-            dep.actual_release_id=dep.actual_snapshot_id=dep.deployed_at=None;dep.status='PENDING'
+        deployments = db.scalars(select(Deployment)).all()
+        # Reset already-reported samples to unreported: drop the append-only
+        # history first (corrections reference baselines), then clear the
+        # physical columns that the write guard otherwise freezes.
+        db.query(DeploymentActualCorrection).filter(
+            DeploymentActualCorrection.deployment_id.in_([d.id for d in deployments])
+        ).delete(synchronize_session=False)
+        db.query(DeploymentActualBaseline).filter(
+            DeploymentActualBaseline.deployment_id.in_([d.id for d in deployments])
+        ).delete(synchronize_session=False)
+        db.flush()
+        for dep in deployments:
+            dep.actual_release_id=dep.actual_snapshot_id=dep.deployed_at=None;dep.status='PENDING';dep.actual_version=0
         db.commit()
     return engine, ids
 
@@ -145,5 +157,5 @@ def test_migration_preserves_existing_actual_state_and_initializes_zero(pg):
         assert connection.execute(text('SELECT actual_version FROM deployments')).scalars().all()==[0,0]
     with Session(engine) as db:
         dep=db.scalar(select(Deployment));dep.actual_version=-1
-        with pytest.raises(IntegrityError):db.commit()
+        with pytest.raises((IntegrityError, OperationalError)):db.commit()
         db.rollback();assert dep.actual_version==0

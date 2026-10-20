@@ -18,6 +18,9 @@ from app.models.audit import AuditEvent
 from app.models.core import Release
 from app.models.distribution import DeliveryPackage,Distribution,SoftwareAuthorization
 from app.models.production import Deployment,ProductionBatch,SoftwareChangeover
+from app.services.production import ProductionService
+from app.services.snapshot import SnapshotService
+from test_command_audit import prepare_snapshot_source
 
 @pytest.fixture
 def asr(production):
@@ -120,8 +123,13 @@ def test_migrated_postgres_aggregates_filter_and_no_audit_write(pg):
     engine,ids=pg
     with Session(engine) as db:
         r=db.get(Release,ids['release']);r.release_type='APPLICATION';other=Release(software_id=r.software_id,release_type='STANDARD',version='other');db.add(other);db.flush()
-        dep=db.scalars(select(Deployment).order_by(Deployment.deployment_no)).first();dep.actual_release_id=other.id
-        db.add_all([ProductionBatch(batch_no='MISMATCH',deployment_id=dep.id,authorization_id=ids['authorization'],release_id=other.id,snapshot_id=dep.actual_snapshot_id),SoftwareChangeover(changeover_no='HISTORY',deployment_id=dep.id,authorization_id=ids['authorization'],from_release_id=r.id,to_release_id=other.id)]);db.commit()
+        prepare_snapshot_source(db, other)
+        other_snapshot = SnapshotService().create(db, other.id)
+        dep=db.scalars(select(Deployment).order_by(Deployment.deployment_no)).first()
+        ProductionService(db).report_actual(deployment_no=dep.deployment_no, actual_release_id=other.id,
+            actual_snapshot_id=other_snapshot.id, request_id=uuid.uuid4(), expected_version=0,
+            correction_reason='Correct to other application release')
+        db.add_all([ProductionBatch(batch_no='MISMATCH',deployment_id=dep.id,authorization_id=ids['authorization'],release_id=other.id,snapshot_id=other_snapshot.id),SoftwareChangeover(changeover_no='HISTORY',deployment_id=dep.id,authorization_id=ids['authorization'],from_release_id=r.id,to_release_id=other.id)]);db.commit()
         before=db.scalar(select(func.count()).select_from(AuditEvent));result=application_release_downstream_summary(r.id,db)
         assert result['history_counts']=={'deliveries':0,'distributions':0,'authorizations':1,'deployments':2,'changeovers':1,'batches':1}
         assert result['actual_release_observations']=={'same_release':1,'different_release':1,'not_reported':0} and result['batch_release_observations']=={'same_release':0,'different_release':1}

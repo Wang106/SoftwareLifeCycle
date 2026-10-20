@@ -15,6 +15,7 @@ from app.models.snapshot import ReleaseSnapshot
 from app.models.distribution import SoftwareAuthorization as Authorization
 from app.models.production import ManufacturingSite as Site, ProductionLine as Line, Deployment, ProductionBatch as Batch, SoftwareChangeover as Changeover
 from app.models.audit import AuditEvent
+from app.models.production_history import DeploymentActualBaseline
 from test_impact_assessments import context
 from test_command_concurrency_postgres import pg
 
@@ -34,6 +35,12 @@ def seed(db):
             expected_release_id=r.id,expected_snapshot_id=s.id,status='PENDING' if n==1 else 'MATCH',
             actual_release_id=r.id if n==0 else None,actual_snapshot_id=s.id if n==0 else None,created_at=datetime(2026,1,1))
         db.add(dep);db.flush();deps.append(dep)
+        if n==0:
+            db.add(DeploymentActualBaseline(
+                deployment_id=dep.id, actual_release_id=dep.actual_release_id,
+                actual_snapshot_id=dep.actual_snapshot_id, recorded_status=dep.status,
+                recorded_actual_version=dep.actual_version, recorded_deployed_at=dep.deployed_at,
+                source='IMPORTED_CURRENT'))
     db.add(Deployment(deployment_no='MV-OLD',production_line_id=lines[0].id,authorization_id=a.id,
         expected_release_id=r.id,expected_snapshot_id=s.id,status='MISMATCH',created_at=datetime(2025,1,1)))
     for n in range(2):
