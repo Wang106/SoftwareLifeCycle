@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产追溯事实更正设计审查（DeepSeek）
+
+起点 main `8dbc24cb7474988146a6798ae69690fa98dbab1e`（PR84 已合并），开放 PR 0，无未完成开发。main CI `39460162355` 三 job 全绿。独立分支 `codex/production-trace-correction-design-review`。旧候选 `release-decision-supersession-backend-read` 已被 PR68/69/70 覆盖，不重复；按最新 HANDOFF 选 `production-trace-correction-design-review`。
+
+本包只产出设计审查 `docs/production-trace-correction-design-review.md`，无后端/迁移/Seed/界面/依赖/CI/调度/身份/提供方配置变更。审查现有 `Deployment.actual` 原地覆盖式更正（`actual_version+=1`，历史值仅存审计 before）、`Changeover`/`Batch` 无更正命令、三表无 append-only trigger 三处缺口；推荐追加式更正账本（三张独立表 + UPDATE/DELETE 拒绝 trigger），`deployments.actual_*` 保留首次值、后续更正只追加、统一 resolver 派生"当前生效值"；不开放浏览器提交、不撤销已发生物理事实。详见设计文档 §1–§9。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。API0.18.45/schema0026 不变。精确提交/PR head CI/合并/main/provider 证据记录本包 PR。下一候选 `production-trace-correction-backend-read`（后端 + 迁移 + 追加式更正账本 + 统一只读投影，不开放浏览器提交）；其后默认关闭浏览器提交/原审计恢复、真实身份/内网验收、运营迁移，VIN 最后。
+
 ## 2026-10-21 发布链撤销双语确认与原审计恢复（Codex / ChatGPT Work）
 
 当前包 `release-chain-revocation-ui-recovery`，独立分支 `codex/release-chain-revocation-ui-recovery-reviewed`，基线main `8eb25f4b90b506910837faf3b74690f27b66e9c1`（PR83）。开放PR0，PR80/81关闭、PR82/83合并；复用PR81草案并审查，未重复守卫或另启后台。精确实现提交/PR/CI/合并/main及provider结果追加在本包PR，后续会话必须先核对真实PR，不能凭本文pending重复开发。
