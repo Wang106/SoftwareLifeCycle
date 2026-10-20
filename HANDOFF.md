@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-20 撤销审核上下文后台绑定（Codex / ChatGPT Work）
+
+起点远端main `91ef88765d2bf666c6239b0359e8368a42efbc41`（PR77），开放PR 0、无同包远端分支；独立 `codex/release-chain-revocation-review-binding-backend`。已核对PR77/main CI39425287506三个job成功、Cloudflare生产961463a0-6c41-439e-8f1a-6429c6987422成功，Render既有live dep-dbah7n942hec73dkdv90仍对应后台943a342d；Actions39426311122/39426310917 skipped。旧候选ReleaseDecision实现已完成，不重做。
+
+本包在现有四POST增加可省略但不可显式null的严格v1 expected_context；锁内精确比较审核决策/冻结Snapshot身份及完整父链。原actor/原正文重放先于当前资格检查，legacy审计不补写。新增protocol_version/review_context原子审计、专用GET精确target/context，以及严格字段/四角色范围/公共只读/长历史有界和真实PG竞态/重放/回滚回归。初次完整本地回归发现Deployment详情不应加载决策，已将审核读取限制在专用GET，原测试保留并重新验证。无新migration、Seed或浏览器能力，API0.18.45/schema0026不变；不修改0026、真实身份/开关/秘密/计费/CI/调度/部署权限。实现与验证说明见 `docs/release-chain-revocation-submission-design-review.md`；本地与精确PR/main/provider最终证据记录对应PR，不把PG skip算通过。
+
+本地最终完整后端1671 passed/638 skipped（无真实PG地址）；撤销/Deployment定向41 passed。唯一head0026、离线SQL、进度和diff通过。真实PG并发/迁移及完整前端/Next/OpenNext由本包精确head CI证明；合并后main/provider另核验，最终精确提交/PR与证据记录PR。
+
+业务36/44=82%；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/20/0。公共只读/OIDC和真实写入关闭，内网未部署，多用户/真实浏览器仍未验收。下一独立包 `release-chain-revocation-browser-protocol`：新增严格transport/audit projector及两条固定同源代理、独立默认关闭开关、unknown只查原审计；依据本设计新增v1字段，不能从当前治理状态确认原结果，不降级legacy审计为v1证明。再后 `release-chain-revocation-ui-recovery`，不在本包提前实施。
+
 ## 2026-10-20 发布链撤销受控提交设计审查（Codex / ChatGPT Work）
 
 真实基线 main `74fa2e694c56da7ea7eeb4e0f0d080cde4a2fb21`（PR76），开放PR 0；独立分支 `codex/release-chain-revocation-submission-design-review`。PR76 main CI39421592004三个job成功，Cloudflare生产2925a4b4-b0e2-4486-8940-845bb48fad25成功；Render既有live dep-dbah7n942hec73dkdv90仍为后端943a342d，不是PR76部署；Actions39422865320/39422865279 skipped。已完成前序核验，没有重做撤销后台/只读页面。

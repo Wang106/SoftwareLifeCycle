@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-20 撤销审核上下文后台绑定（Codex / ChatGPT Work）
+
+基线远端main `91ef88765d2bf666c6239b0359e8368a42efbc41`（PR77），开放PR 0、相关远端分支无未完成同包。独立 `codex/release-chain-revocation-review-binding-backend`。启动核对main CI39425287506三项成功、Cloudflare生产961463a0-6c41-439e-8f1a-6429c6987422成功；Render既有live dep-dbah7n942hec73dkdv90仍对应后台943a342d；Actions39426311122/39426310917 skipped，未当成部署成功。
+
+四类既有撤销POST增加可选严格v1 expected_context；根到叶锁内核对审核过的Release/Snapshot/有效决策/精确包修订UUID及父链。完整原请求与actor精确重放优先，之后祖先撤销/决策替代不覆盖原结果；旧三字段审计/重放保留。v1审计与账本同事务，保存审核上下文；专用治理GET回显精确target及可审核context，无有效RELEASE/不完整链/已撤销不提供context。既有详情/许可检查不加载审核决策，保留原查询契约。增加真实PG同key、父子许可和决策竞争、原审计重放与失败原子性测试，扩展四类范围授权/只读/严格字段/长历史有界回归。初次本地完整回归发现Deployment详情查询契约失败，已将审核查询限制在专用GET，保留原测试并重新验证。
+
+本地最终完整后端1671 passed/638 skipped（无TEST_POSTGRES_URL，不计PG通过）；撤销及Deployment定向41 passed。Alembic唯一head0026、离线SQL、进度和diff检查通过。精确PR完整CI必须证明真实PG无skip及前端/Next/OpenNext；最终结果另记PR。
+
+仅后台API/service、对应测试、设计说明与状态/交接/进度变更；API0.18.45/schema0026不变，无migration/Seed变更，幂等性不受影响。无前端或真实身份/写入/计费/CI/调度/部署权限配置变更。完整本地与精确PR/main CI、provider最终证据在本包PR记录，不把基线当成本包验证。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，真实验收未完成故不提升。下一包 `release-chain-revocation-browser-protocol`：严格原审计projector、同源默认关闭提交及audit-only恢复；双语确认/导入UI随后独立实现。
+
 ## 2026-10-20 发布链撤销受控提交设计审查（Codex / ChatGPT Work）
 
 本轮从真实 main `74fa2e694c56da7ea7eeb4e0f0d080cde4a2fb21`（PR76）创建独立 `codex/release-chain-revocation-submission-design-review`，开放PR 0。已核对 main CI `39421592004` 三项成功、Cloudflare生产 build `2925a4b4-b0e2-4486-8940-845bb48fad25` 成功；Render既有live `dep-dbah7n942hec73dkdv90` 对应后端 `943a342d80f3d229a790c93ae646dac76410ed86`，并非PR76重新部署。Actions deploy `39422865320`/continuation `39422865279` 为skipped。

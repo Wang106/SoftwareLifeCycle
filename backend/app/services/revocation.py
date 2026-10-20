@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 import uuid
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -18,12 +21,59 @@ class RevocationError(ValueError):
     pass
 
 
+class RevocationReviewContext(BaseModel):
+    """Versioned, exact reviewed identities; legacy requests omit this entirely."""
+    model_config = ConfigDict(extra="forbid")
+    version: Literal[1]
+    release_id: uuid.UUID
+    snapshot_id: uuid.UUID
+    release_decision_id: uuid.UUID
+    delivery_package_id: uuid.UUID | None
+    distribution_id: uuid.UUID | None
+    authorization_id: uuid.UUID | None
+
+    @field_validator("version", mode="before")
+    @classmethod
+    def exact_version(cls, value):
+        if type(value) is not int or value != 1:
+            raise ValueError("version must be integer 1")
+        return value
+
+    @field_validator("release_id", "snapshot_id", "release_decision_id",
+                     "delivery_package_id", "distribution_id", "authorization_id", mode="before")
+    @classmethod
+    def canonical_uuid(cls, value):
+        if value is not None and not isinstance(value, uuid.UUID):
+            if not isinstance(value, str) or str(uuid.UUID(value)) != value:
+                raise ValueError("context UUIDs must use canonical lowercase form")
+        return value
+
+
 @dataclass(frozen=True)
 class ChainContext:
     release: Release
     package: DeliveryPackage | None
     distribution: Distribution | None
     authorization: SoftwareAuthorization | None
+
+
+def _review_context(chain, kind, target_id, decision):
+    if decision is None or decision.decision != "RELEASE":
+        return None
+    nodes = [chain.release, chain.package, chain.distribution, chain.authorization]
+    depth = ["RELEASE", "DELIVERY_PACKAGE", "DISTRIBUTION", "AUTHORIZATION"].index(kind)
+    if any(node is None for node in nodes[:depth + 1]) or nodes[depth].id != target_id:
+        return None
+    if ((chain.package and chain.package.release_id != chain.release.id)
+            or (chain.distribution and chain.distribution.delivery_package_id != chain.package.id)
+            or (chain.authorization and (chain.authorization.distribution_id != chain.distribution.id
+                                        or chain.authorization.release_id != chain.release.id))):
+        return None
+    return {"version": 1, "release_id": str(chain.release.id),
+            "snapshot_id": str(decision.snapshot_id), "release_decision_id": str(decision.id),
+            "delivery_package_id": str(chain.package.id) if chain.package else None,
+            "distribution_id": str(chain.distribution.id) if chain.distribution else None,
+            "authorization_id": str(chain.authorization.id) if chain.authorization else None}
 
 
 def _chain(db: Session, kind: str, target_id, *, lock: bool = False) -> ChainContext:
@@ -53,7 +103,7 @@ def _chain(db: Session, kind: str, target_id, *, lock: bool = False) -> ChainCon
     return ChainContext(release, package, distribution, authorization)
 
 
-def governance_state(db: Session, kind: str, target_id) -> dict:
+def governance_state(db: Session, kind: str, target_id, *, include_review: bool = False) -> dict:
     chain = _chain(db, kind, target_id)
     target_column = {
         "RELEASE": ReleaseChainRevocation.release_id,
@@ -84,6 +134,11 @@ def governance_state(db: Session, kind: str, target_id) -> dict:
     ancestors = [row for row in rows if row is not own]
     state = "REVOKED" if own else "BLOCKED_BY_ANCESTOR" if ancestors else "ACTIVE"
     return {
+        "target_kind": kind,
+        "target_id": str(target_id),
+        **({"review_context": _review_context(chain, kind, target_id,
+            effective_release_decision(db, chain.release.id)) if state == "ACTIVE" else None}
+            if include_review else {}),
         "recorded_status": getattr(chain.authorization or chain.distribution or chain.package or chain.release, "status", None),
         "governance_state": state,
         "eligible_for_new_work": state == "ACTIVE",
@@ -118,11 +173,12 @@ class RevocationService:
     def __init__(self, db: Session):
         self.db = db
 
-    def revoke(self, kind: str, target_id, reason: str, actor_context=None, request_id=None):
+    def revoke(self, kind: str, target_id, reason: str, actor_context=None, request_id=None,
+               expected_context: RevocationReviewContext | None = None):
         with atomic_command(self.db, RevocationError):
-            return self._revoke(kind, target_id, reason, actor_context, request_id)
+            return self._revoke(kind, target_id, reason, actor_context, request_id, expected_context)
 
-    def _revoke(self, kind, target_id, reason, actor_context, request_id):
+    def _revoke(self, kind, target_id, reason, actor_context, request_id, expected_context):
         if kind not in {"RELEASE", "DELIVERY_PACKAGE", "DISTRIBUTION", "AUTHORIZATION"}:
             raise RevocationError("Unsupported revocation target")
         reason = reason.strip()
@@ -133,6 +189,12 @@ class RevocationService:
         context = _chain(self.db, kind, target_id)
         context = _chain(self.db, kind, target_id, lock=True)
         request_content = {"target_kind": kind, "target_id": str(target_id), "reason": reason}
+        reviewed = None
+        if expected_context is not None:
+            if request_id is None:
+                raise RevocationError("Reviewed revocations require request_id")
+            reviewed = RevocationReviewContext.model_validate(expected_context).model_dump(mode="json")
+            request_content["expected_context"] = reviewed
         existing = retry_result(self.db, ReleaseChainRevocation, request_id, "EVT-RCR-",
                                 request_content, actor, RevocationError,
                                 event_entity_id=target_id)
@@ -144,6 +206,8 @@ class RevocationService:
         decision = effective_release_decision(self.db, context.release.id)
         if not decision or decision.decision != "RELEASE":
             raise RevocationError("Revocation requires an effective RELEASE decision")
+        if reviewed is not None and reviewed != _review_context(context, kind, target_id, decision):
+            raise RevocationError("Reviewed revocation context has changed or does not match the target")
         target_values = {"release_id": None, "delivery_package_id": None,
                          "distribution_id": None, "authorization_id": None}
         target_values[{"RELEASE": "release_id", "DELIVERY_PACKAGE": "delivery_package_id",
@@ -165,6 +229,7 @@ class RevocationService:
             "payload": {"revocation_id": str(row.id), "release_id": str(context.release.id),
                         "snapshot_id": str(row.snapshot_id), "release_decision_id": str(decision.id),
                         "reason": reason, "actor_source": actor.source,
+                        **({"protocol_version": 1, "review_context": reviewed} if reviewed is not None else {}),
                         "request": request_content if request_id is not None else None},
         })
         self.db.refresh(row)

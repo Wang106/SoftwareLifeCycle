@@ -1,28 +1,38 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy.orm import Session
 
 from app.actor import resolve_actor
 from app.authorization import (authorize_authorization, authorize_delivery_package,
                                authorize_distribution, authorize_release)
 from app.core.db import get_db
-from app.services.revocation import RevocationError, RevocationService, governance_state
+from app.services.revocation import (RevocationError, RevocationReviewContext,
+                                    RevocationService, governance_state)
 
 
 router = APIRouter(prefix="/api/v1", tags=["release-chain-revocation"])
 
 
 class RevocationCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     request_id: uuid.UUID
     reason: str = Field(min_length=1, max_length=4000)
+    expected_context: RevocationReviewContext | None = None
+
+    @model_validator(mode="after")
+    def omitted_or_versioned_context(self):
+        if "expected_context" in self.model_fields_set and self.expected_context is None:
+            raise ValueError("expected_context must be omitted for legacy requests or contain version 1")
+        return self
 
 
 def _run(kind, target_id, payload, db, actor):
     try:
         row = RevocationService(db).revoke(kind, target_id, payload.reason,
-                                           actor_context=actor, request_id=payload.request_id)
+                                           actor_context=actor, request_id=payload.request_id,
+                                           expected_context=payload.expected_context)
         return {"id": str(row.id), "revocation_no": row.revocation_no,
                 "target_kind": row.target_kind, "governance": governance_state(db, kind, target_id)}
     except RevocationError as exc:
@@ -59,6 +69,6 @@ def read_governance(kind: str, target_id: uuid.UUID, db: Session = Depends(get_d
     if normalized not in {"RELEASE", "DELIVERY_PACKAGE", "DISTRIBUTION", "AUTHORIZATION"}:
         raise HTTPException(status_code=404, detail="unsupported governance target")
     try:
-        return governance_state(db, normalized, target_id)
+        return governance_state(db, normalized, target_id, include_review=True)
     except RevocationError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

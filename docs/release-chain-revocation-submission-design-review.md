@@ -1,5 +1,11 @@
 # 发布链撤销受控提交与原审计恢复设计审查
 
+## 2026-10-20 后台审核绑定实现说明
+
+`release-chain-revocation-review-binding-backend` 在四个既有 POST 增加可选严格 `expected_context`，省略保留 legacy 请求；显式 null、额外字段、非规范 context UUID/协议版本拒绝。服务在根到叶锁内先查原 actor/完整正文重放，再比较新请求的当前有效 RELEASE 决策和完整父链。v1 原子审计保存 protocol_version、review_context 及原 request；legacy 三字段 request 不变、不补写历史。精确 governance GET 新增 target_kind/target_id/review_context；非 ACTIVE、无有效 RELEASE 决策或不完整链不提供可审核上下文。既有详情和许可检查只增加目标身份回显，不加载审核决策，保留生产详情的查询契约。观察不是写入许可，POST 仍锁内验证。原状态/永久撤销/生产事实语义不变。
+
+本包没有新增 migration、Seed、浏览器代理/表单或真实开关，API 版本仍0.18.45，schema仍0026。该版本号不代替精确 commit/CI/部署证据。新增后端与真实PG回归覆盖严格字段、角色/只读拒绝、原审计、legacy重放、长历史有界、同key竞态、祖先撤销/下游分发及决策替代竞争、审计失败回滚。完整执行结果与精确PR/main/provider证据在对应PR中记录；本地没有PG服务的skip不算真实PG通过。以下审查正文保留决策依据，下一包为默认关闭浏览器协议，真实身份/业务写入仍不启用。
+
 本审查基于 main `74fa2e694c56da7ea7eeb4e0f0d080cde4a2fb21`（PR76），API `0.18.45`，唯一迁移头 `0026_release_chain_revocation`。只定义后续实现契约，不增加路由、迁移、提交入口或配置，不代表真实提供方/多用户验收。公共演示只读，OIDC、真实提交和公司部署保持关闭。
 
 ## 1. 实际实现与缺口
