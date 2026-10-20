@@ -96,14 +96,14 @@ def _release_ref(db: Session, release_id, snapshot_id):
     }
 
 
-def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50):
+def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50, effective=None):
     """Bounded, read-only actual history for a Deployment.
 
     The physical columns preserve the first report; the baseline and correction
     ledger resolve the effective append-only history. Returns a compact
     shape suitable for detail/profile responses; never loads the full audit.
     """
-    eff = effective_actual(db, deployment)
+    eff = effective or effective_actual(db, deployment)
     baseline = db.scalar(
         select(DeploymentActualBaseline)
         .where(DeploymentActualBaseline.deployment_id == deployment.id)
@@ -233,7 +233,7 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
         ],
     }
     result["governance"] = _authorization_governance(db, authorization)
-    result["actual_history"] = _actual_history(db, deployment)
+    result["actual_history"] = _actual_history(db, deployment, effective=effective)
     return result
 
 

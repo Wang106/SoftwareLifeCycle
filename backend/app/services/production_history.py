@@ -1,6 +1,7 @@
 """Effective-value projection for immutable Deployment actual history."""
 import uuid
 from dataclasses import dataclass
+from datetime import timezone
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 from app.models.audit import AuditEvent
@@ -26,6 +27,9 @@ def _history_state(baseline, head, proof_time):
     prefix = ("LEGACY" if baseline.source == "LEGACY_CURRENT" else
               "IMPORTED" if baseline.source == "IMPORTED_CURRENT" else "FIRST_REPORT")
     return f"{prefix}_CORRECTED" if head is not None else prefix
+
+def _utc(value):
+    return value.replace(tzinfo=value.tzinfo or timezone.utc) if value is not None else None
 
 def _derive_status(deployment, release_id, snapshot_id):
     if release_id is None and snapshot_id is None:
@@ -65,7 +69,7 @@ def effective_actual(db: Session, deployment: Deployment) -> EffectiveActual:
         deployment.id, release_id, snapshot_id,
         _derive_status(deployment, release_id, snapshot_id),
         baseline.recorded_actual_version + revision,
-        proof_time if head is not None else baseline.recorded_deployed_at,
+        _utc(proof_time) if head is not None else _utc(baseline.recorded_deployed_at),
         _history_state(baseline, head, proof_time), correction_count)
 
 def effective_actual_map(db: Session, deployments) -> dict:
@@ -115,6 +119,6 @@ def effective_actual_map(db: Session, deployments) -> dict:
             deployment.id, release_id, snapshot_id,
             _derive_status(deployment, release_id, snapshot_id),
             baseline.recorded_actual_version + revision,
-            proof_time if head is not None else baseline.recorded_deployed_at,
+            _utc(proof_time) if head is not None else _utc(baseline.recorded_deployed_at),
             _history_state(baseline, head, proof_time), count)
     return result

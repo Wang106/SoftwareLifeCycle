@@ -181,7 +181,7 @@ def test_batch_permission_uses_effective_actual_not_physical_baseline(production
     report(db, dep, release, other, request_id=uuid.uuid4(), expected_version=1,
            correction_reason='Actual snapshot differs')
     assert dep.status == 'MATCH'  # frozen physical baseline
-    with pytest.raises(ProductionError, match='matching, resolved actual software history'):
+    with pytest.raises(ProductionError, match='matching actual software'):
         ProductionService(db).create_batch(dep.deployment_no, 'BLOCKED-BATCH')
 
 

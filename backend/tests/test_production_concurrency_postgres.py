@@ -66,7 +66,7 @@ def test_global_unique_races_across_independent_parents(production,monkeypatch,k
 def test_audit_failure_full_rollback_and_lock_release(production,monkeypatch,kind):
     engine,ids=production;key=uuid.uuid4();original=AuditEventService.record
     def call(db):
-        if kind=='actual':return ProductionService(db).report_actual('DEP-1',ids['release'],ids['snapshot'])
+        if kind=='actual':return ProductionService(db).report_actual('DEP-1',ids['release'],ids['snapshot'],request_id=key,expected_version=0,correction_reason='Correct actual')
         return run(db,kind,ids,key)
     def fail(*a,**kw):original(*a,**kw);raise RuntimeError('after audit flush')
     with Session(engine) as db:
@@ -106,26 +106,30 @@ def test_actual_reports_serialize_and_audit_before_state_is_not_stale(production
     with Session(engine) as db:
         previous_snapshot=ReleaseSnapshot(release_id=ids['previous'],snapshot_no='PREVIOUS',snapshot_number=1,content_hash='a'*64,status='FROZEN');db.add(previous_snapshot);db.commit();snapshot_id=previous_snapshot.id
     first,second=overlapping_commands(engine,monkeypatch,
-        lambda db:ProductionService(db).report_actual('DEP-1',ids['previous'],snapshot_id),
-        lambda db:ProductionService(db).report_actual('DEP-1',ids['release'],ids['snapshot']))
-    assert first[0]==second[0]=='ok'
+        lambda db:ProductionService(db).report_actual('DEP-1',ids['previous'],snapshot_id,
+            request_id=uuid.uuid4(),expected_version=0,correction_reason='First correction'),
+        lambda db:ProductionService(db).report_actual('DEP-1',ids['release'],ids['snapshot'],
+            request_id=uuid.uuid4(),expected_version=0,correction_reason='Second correction'))
+    assert sorted([first[0],second[0]])==['conflict','ok']
     with Session(engine) as db:
-        events=db.scalars(select(AuditEvent).where(AuditEvent.action=='ACTUAL_REPORTED').order_by(AuditEvent.created_at)).all()
-        assert len(events)==2 and events[1].payload_json['before']==events[0].payload_json['after']
-        assert events[1].payload_json['before']['status']=='MISMATCH' and events[1].payload_json['after']['status']=='MATCH'
+        events=db.scalars(select(AuditEvent).where(AuditEvent.action=='ACTUAL_CORRECTED').order_by(AuditEvent.created_at)).all()
+        assert len(events)==1 and events[0].payload_json['before']['status']=='MATCH'
+        dep=db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1'))
+        assert dep.actual_version==0 and effective_actual(db,dep).actual_version==1
 
 @pytest.mark.parametrize('first_actual',[True,False])
 def test_actual_and_batch_share_deployment_ordering(production,monkeypatch,first_actual):
     engine,ids=production
     with Session(engine) as db:
         snapshot=ReleaseSnapshot(release_id=ids['previous'],snapshot_no='PREVIOUS',snapshot_number=1,content_hash='a'*64,status='FROZEN');db.add(snapshot);db.commit();snapshot_id=snapshot.id
-    actual=lambda db:ProductionService(db).report_actual('DEP-1',ids['previous'],snapshot_id)
+    actual=lambda db:ProductionService(db).report_actual('DEP-1',ids['previous'],snapshot_id,request_id=uuid.uuid4(),expected_version=0,correction_reason='Correct actual')
     batch=lambda db:ProductionService(db).create_batch('DEP-1','B',request_id=uuid.uuid4())
     first,second=overlapping_commands(engine,monkeypatch,actual if first_actual else batch,batch if first_actual else actual)
     assert first[0]=='ok' and second[0]==('conflict' if first_actual else 'ok')
     with Session(engine) as db:
         assert count(db,ProductionBatch)==(0 if first_actual else 1)
-        assert db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1')).status=='MISMATCH'
+        dep=db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1'))
+        assert dep.status=='MATCH' and effective_actual(db,dep).status=='MISMATCH'
 
 def test_batch_then_duplicate_deployment_creation_does_not_reverse_lock_order(production,monkeypatch):
     engine,ids=production
@@ -138,7 +142,7 @@ def test_batch_then_duplicate_deployment_creation_does_not_reverse_lock_order(pr
 def test_changeover_orders_with_other_deployment_commands(production,monkeypatch,kind):
     engine,ids=production
     def second(db):
-        if kind=='actual':return ProductionService(db).report_actual('DEP-1',ids['release'],ids['snapshot'])
+        if kind=='actual':return ProductionService(db).report_actual('DEP-1',ids['release'],ids['snapshot'],request_id=uuid.uuid4(),expected_version=0,correction_reason='Correct actual')
         return ProductionService(db).create_batch('DEP-1','B',request_id=uuid.uuid4())
     results=overlapping_commands(engine,monkeypatch,lambda db:run(db,'changeover',ids,uuid.uuid4()),second)
     assert all(r[0]=='ok' for r in results)
