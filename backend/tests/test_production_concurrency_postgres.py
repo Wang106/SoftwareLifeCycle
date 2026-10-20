@@ -11,6 +11,7 @@ from app.models.production import Deployment,ManufacturingSite,ProductionLine,So
 from app.models.snapshot import ReleaseSnapshot
 from app.models.audit import AuditEvent
 from app.services.production import ProductionService,ProductionError
+from app.services.production_history import effective_actual
 from app.services.audit import AuditEventService
 
 KINDS=('deployment','changeover')
