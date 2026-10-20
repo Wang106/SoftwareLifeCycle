@@ -62,6 +62,8 @@ def upgrade():
                             name="uq_deployment_actual_corr_revision"),
         sa.UniqueConstraint("baseline_id", "revision",
                             name="uq_deployment_actual_corr_baseline_revision"),
+        sa.UniqueConstraint("deployment_id", "id",
+                            name="uq_deployment_actual_corr_target_id"),
         sa.CheckConstraint("revision >= 1",
                            name="ck_deployment_actual_corr_revision_positive"),
         sa.CheckConstraint("(actual_release_id IS NULL) = (actual_snapshot_id IS NULL)",

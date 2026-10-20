@@ -94,6 +94,8 @@ class DeploymentActualCorrection(Base):
     __table_args__ = (
         UniqueConstraint("deployment_id", "revision", name="uq_deployment_actual_corr_revision"),
         UniqueConstraint("baseline_id", "revision", name="uq_deployment_actual_corr_baseline_revision"),
+        # Referenced by the composite predecessor FK (deployment_id, id).
+        UniqueConstraint("deployment_id", "id", name="uq_deployment_actual_corr_target_id"),
         Index("ix_deployment_actual_corr_target_revision", "deployment_id", "revision"),
         CheckConstraint("revision >= 1", name="ck_deployment_actual_corr_revision_positive"),
         CheckConstraint(
