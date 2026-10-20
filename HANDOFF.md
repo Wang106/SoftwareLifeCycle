@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产事实更正设计契约补齐（Codex / ChatGPT Work）
+
+当前包 `production-trace-correction-design-hardening`，独立分支 `codex/production-trace-correction-design-hardening`，基线main `c148c96a50a07167b714bf6b7649a55d96bd5eed`（PR85）。启动开放PR0；PR85的精确head36c7c0aa03854f4990882237b2392786b310c082、PR CI39464541840及main CI39465908034三项成功，已完成上一包核验，不重复设计初稿或ReleaseDecision实现。PR85的较新审查指出三处契约缺口，本轮只补四个文档文件。
+
+设计统一旧库LEGACY_CURRENT与真正FIRST_REPORT，冻结基线不改旧审计；更正有显式前驱/revision及唯一链约束，重放原请求/actor/audit先于当前头；无键覆盖收紧、旧写者数据库拒绝、旧库部分/缺失证据和拒绝降级明确。§6逐个定位真实消费者及SQL聚合；§8覆盖真实PG并发双顺序、旧0026升级/原审计恢复、事务失败/降级/长历史/Seed更正后重跑。本轮不修改后端、Migration、Seed、界面、既有测试、依赖、CI、身份或提供方配置。API0.18.45/唯一head0026、Seed不变。
+
+本地仅文档路径、进度和diff等必要检查，完整三项CI必须由本包精确PR证明，提交/PR/测试/合并/main/Cloudflare/Render/Actions最终证据追加本包PR；后续先核验真实PR，不因本文pending重复实现。启动Cloudflare生产aacb9481-5ed8-4030-b0c4-e5c14b5007f7/version f76d640f-6d7c-4487-ba2b-a8fd55c398df成功，Actions39467348427/39467348464 skipped；不是本包部署证据。
+
+下一小包 `production-actual-history-backend-read` 只实施Actual基线、追加更正、所有actual读取/聚合和双语只读历史，精确路径/兼容收紧/PG验收见设计§9。Changeover/Batch更正再分包；不开新浏览器发送通道。先确认实际迁移仍0026，再新增唯一revision并同步配置，不照旧初稿批量实现三表。发现任一消费者仍读物理基线作当前值或Seed会重写正式行则不发布。业务36/44=82%；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/20/0不变。公共只读，OIDC/真实提交关闭，内网未部署，真实多用户/浏览器验收待批准环境。
+
 ## 2026-10-21 生产追溯事实更正设计审查（DeepSeek）
 
 起点 main `8dbc24cb7474988146a6798ae69690fa98dbab1e`（PR84 已合并），开放 PR 0，无未完成开发。main CI `39460162355` 三 job 全绿。独立分支 `codex/production-trace-correction-design-review`。旧候选 `release-decision-supersession-backend-read` 已被 PR68/69/70 覆盖，不重复；按最新 HANDOFF 选 `production-trace-correction-design-review`。
