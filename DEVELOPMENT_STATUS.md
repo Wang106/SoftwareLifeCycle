@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-20 发布链撤销受控提交设计审查（Codex / ChatGPT Work）
+
+本轮从真实 main `74fa2e694c56da7ea7eeb4e0f0d080cde4a2fb21`（PR76）创建独立 `codex/release-chain-revocation-submission-design-review`，开放PR 0。已核对 main CI `39421592004` 三项成功、Cloudflare生产 build `2925a4b4-b0e2-4486-8940-845bb48fad25` 成功；Render既有live `dep-dbah7n942hec73dkdv90` 对应后端 `943a342d80f3d229a790c93ae646dac76410ed86`，并非PR76重新部署。Actions deploy `39422865320`/continuation `39422865279` 为skipped。
+
+新增 `docs/release-chain-revocation-submission-design-review.md`：按实际四路由/角色、原审计和重放顺序核对缺口，选择先补锁内审核上下文绑定与版本化审计，再实现独立默认关闭的窄提交/恢复协议，最后做双语确认和audit-only导入。明确旧三字段审计不能伪装新审核证明、201/current governance不是原回执、unknown不自动重发、中文正文按字节有界、真实PG竞态及兼容矩阵。仅文档/状态/交接/进度四文件变更；API0.18.45/唯一迁移0026/Seed不变。本包检查与精确PR/main/provider最终证据记录于PR，不复用基线作为本包通过。
+
+业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，文档不提高验收。下一小包 `release-chain-revocation-review-binding-backend`，精确路径与验收见设计末节；公共只读、OIDC/真实提交关闭、内网未部署、真实多用户验收未完成。
+
 ## 2026-10-20 发布链撤销双语只读展示（Codex / ChatGPT Work）
 
 基线为真实 main `b2e40426148bb4d3166effef417b9052ce5fa6f9`（PR75），开放 PR 为 0；独立分支 `codex/release-chain-revocation-browser-read-only`。启动前已独立核对 PR75/main CI `39418506472` 三项成功、2272 backend/233 PG cases 无 skip/1462 frontend、Cloudflare Production build `3fe95c2a-99c6-4397-b19d-8bd6a7368ae4` 成功；Render 仍为后端提交 `943a342d` 的既有 live。该证据是基线，本包精确 PR head 与合并后的 CI/provider 须分别核验。
