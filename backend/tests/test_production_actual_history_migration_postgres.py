@@ -24,9 +24,10 @@ def clean(pg):
 
 
 def report(db, dep, release_id, snapshot_id, key, **kw):
+    kw.setdefault('expected_version', 0)
     return ProductionService(db).report_actual(
         deployment_no=dep.deployment_no, actual_release_id=release_id,
-        actual_snapshot_id=snapshot_id, request_id=key, expected_version=0, **kw)
+        actual_snapshot_id=snapshot_id, request_id=key, **kw)
 
 
 def test_upgrade_captures_existing_reported_deployments(pg):
