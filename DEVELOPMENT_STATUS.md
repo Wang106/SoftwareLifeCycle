@@ -1,5 +1,13 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-21 生产追溯事实更正设计审查（DeepSeek）
+
+从真实 main `8dbc24cb7474988146a6798ae69690fa98dbab1e`（PR84 已合并 `release-chain-revocation-ui-recovery`）建立独立 `codex/production-trace-correction-design-review`。启动时开放 PR 为 0，main CI `39460162355` 三 job（Backend/PostgreSQL、Frontend/Cloudflare build、CI acceptance）全绿，分支保护要求 backend + frontend 两项必需检查。无未完成开发，故按最新 HANDOFF 选择下一候选 `production-trace-correction-design-review`（旧候选 `release-decision-supersession-backend-read` 已被 PR68/69/70 覆盖，不重复）。
+
+本包只产出设计审查 `docs/production-trace-correction-design-review.md` 并更新状态/交接/进度，不修改后端、迁移、Seed、界面、依赖、CI、调度、身份、密钥或提供方配置。审查结论：现有 `Deployment.actual` 的更正（`expected_version`+`correction_reason`）是原地 UPDATE，历史实际值不可结构化查询；`Changeover`/`Batch` 无任何更正命令；三表均无 append-only 防护。推荐统一为追加式更正账本（`deployment_actual_corrections`/`changeover_corrections`/`batch_corrections` 三张独立账本 + UPDATE/DELETE 拒绝 trigger），`deployments.actual_*` 保留首次报告值，后续更正只追加，统一 resolver 返回"首次值 + 当前更正链 + 最新生效值"。不新增浏览器提交，不开放真实提交。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0，验收增量 0。公共只读/OIDC/真实提交关闭、内网未部署。API0.18.45/schema0026 不变，无迁移/Seed 变更。精确提交/PR head CI/合并/main/provider 最终证据记录本包 PR。下一候选 `production-trace-correction-backend-read`（后端 + 迁移 + 追加式更正账本 + 统一只读投影），不开放浏览器提交。
+
 ## 2026-10-21 发布链撤销双语确认与原审计恢复（Codex / ChatGPT Work）
 
 从真实 main `8eb25f4b90b506910837faf3b74690f27b66e9c1`（PR83）建立独立 `codex/release-chain-revocation-ui-recovery-reviewed`。启动时开放PR为0；PR80/81均已关闭，PR82/83已合并，故不重复 uncertain 守卫修复。复用PR81未合并界面草案并重新审查，使用main的PR82守卫；修正缺省目标类型与unknown提示，增加独立commands入口、严格同源规范恢复、未知结果锁定和双击/401等行为回归。详见 `docs/release-chain-revocation-ui-recovery.md`。
