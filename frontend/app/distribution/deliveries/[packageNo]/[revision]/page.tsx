@@ -43,6 +43,7 @@ export default async function Page({ params, searchParams }: {
   const next = new URLSearchParams(query);
   if (artifacts?.next_offset !== null && artifacts?.next_offset !== undefined) next.set('offset', String(artifacts.next_offset));
   return <>
+    <p><Link prefetch={false} href={`/governance/delivery_package/${delivery.id}`}><Localized>{'View current authority and revocation records →'}</Localized></Link></p>
     <div className="top"><div><div className="eyebrow"><Localized>{"DELIVERY · "}</Localized><Localized>{delivery.package_no}</Localized></div>
       <h1><Localized>{"Delivery Package Rev"}</Localized><Localized>{delivery.revision}</Localized></h1>
       <p className="muted"><Localized>{"Artifacts and policy decisions recorded for this exact revision."}</Localized></p></div>

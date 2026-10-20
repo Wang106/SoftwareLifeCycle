@@ -46,6 +46,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
     {label: 'Batch', count: downstream.history_counts.batches, href: `/production/batches?${productionScope}`},
   ] : [];
   return <>
+    <p><Link prefetch={false} href={`/governance/release/${profile.id}`}><Localized>{'View current authority and revocation records →'}</Localized></Link></p>
     <section className="panel"><h2><Localized>{"Customer application release"}</Localized></h2>
       <p><Localized>{"This customer release derives from one exact standard baseline. Component declarations explain inheritance and customer-specific changes."}</Localized></p>
       <p><b><Localized>{"Demo review template"}</Localized></b><Localized>{": "}</Localized><Localized>{"Application Engineer → Application Manager → Systems Engineer → Project Manager"}</Localized></p>

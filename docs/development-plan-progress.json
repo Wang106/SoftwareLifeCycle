@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.45",
-  "baseline_commit": "943a342d80f3d229a790c93ae646dac76410ed86",
+  "baseline_commit": "b2e40426148bb4d3166effef417b9052ce5fa6f9",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -497,10 +497,14 @@
             "backend/app/api/revocations.py",
             "backend/tests/test_release_chain_revocation.py",
             "backend/tests/test_release_chain_revocation_postgres.py",
-            "docs/release-chain-revocation-verification.md"
+            "docs/release-chain-revocation-verification.md",
+            "frontend/app/governance/[kind]/[targetId]/page.tsx",
+            "frontend/lib/release-chain-governance.ts",
+            "frontend/tests/release-chain-governance-read.test.cjs",
+            "docs/release-chain-revocation-browser-read-only.md"
           ],
           "acceptance_pending": [
-            "Permanent backend revocation ledger, four scoped commands, unified governance reads and old-writer guards implemented; bilingual browser presentation, controlled submission/recovery protocol and approved-provider multi-user acceptance remain pending"
+            "Permanent backend revocation ledger, four scoped commands, unified governance reads, old-writer guards and bilingual read-only authority-path history implemented; controlled submission/recovery protocol and approved-provider multi-user acceptance remain pending"
           ]
         },
         {

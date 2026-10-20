@@ -24,6 +24,7 @@ export default async function Page({ params }: { params: Promise<{ distributionN
     <Link href="/distribution/distributions"><Localized>{"← All distributions"}</Localized></Link></section>;
 
   return <>
+    <p><Link prefetch={false} href={`/governance/distribution/${record.id}`}><Localized>{'View current authority and revocation records →'}</Localized></Link></p>
     <div className="top"><div><div className="eyebrow"><Localized>{"DISTRIBUTION"}</Localized></div><h1><Localized>{record.distribution_no}</Localized></h1>
       <p className="muted"><Localized>{"Recipient acknowledgment and linked production authorizations."}</Localized></p></div>
       <span className={'status ' + (record.status === 'ACKNOWLEDGED' ? 'pass' : 'warning')}><Localized>{record.status}</Localized></span></div>

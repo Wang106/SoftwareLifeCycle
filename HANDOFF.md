@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-20 发布链撤销只读页面（Codex / ChatGPT Work）
+
+从PR75合并 main `b2e40426148bb4d3166effef417b9052ce5fa6f9` 创建 `codex/release-chain-revocation-browser-read-only`，无开放PR。基线main CI39418506472三个job、Cloudflare生产3fe95c2a-99c6-4397-b19d-8bd6a7368ae4成功已核对；Render既有live仍943a342d。新增四类精确UUID `/governance/{kind}/{targetId}`双语只读页和SSR/ASR/Delivery revision/Distribution/Authorization入口；一次固定GET/10秒超时、最多四节点，分清原status、自身撤销、祖先阻断、无法解析。未知/矛盾/重复/越界响应拒绝，原原因和记录者转义但不翻译；原审计链接使用UUID hex。不存在提交表单、浏览器发送协议或新身份配置。
+
+本地完整前端1475 passed，新增12行为测试及自动新增1页面本地化覆盖；Next/OpenNext build成功。首次定向本地化仅缺Audit中文词条，补齐后重验。后台/PG本地未执行，不借基线成功作为本包验证；本包精确PR head完整CI、合并/main/provider最终证据在PR记录。无后端/API/schema/Migration/Seed/依赖/CI/调度/提供方变更，API0.18.45/schema0026，Seed幂等性不变。历史交接完整保留。
+
+业务36/44=82%；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/20/0。公共只读/OIDC与真实提交关闭，内网未部署，真实桌面/手机多用户验收未完成。下一候选 `release-chain-revocation-submission-design-review`：独立默认关闭提交/原审计/未知结果恢复的设计审查；不直接开放实际写入，不更正已有生产事实。
+
 ## 2026-10-19 发布链永久撤销后端与统一读取（Codex / ChatGPT Work）
 
 真实起点为远端 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba`，分支 `codex/release-chain-revocation-backend-read`，PR74 最终 head `f32de3c8d4b0c0df737a62bffa5d76717a9270d7`，受保护合并 main `943a342d80f3d229a790c93ae646dac76410ed86`。API 已提升至 `0.18.45`，Alembic 唯一 head 为 `0026_release_chain_revocation`。新增不可变 `release_chain_revocations` 账本、四类永久撤销 POST、统一 governance GET/详情投影、根到叶锁序、旧写者数据库 guard、原子审计和精确重放。撤销不改原 status、不制造子撤销、不删除既有 Deployment/Changeover/Batch；许可型新写入阻断，actual/Changeover 事实记录保留。
