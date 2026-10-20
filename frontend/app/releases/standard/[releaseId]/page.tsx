@@ -18,6 +18,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const profile = await apiGet<Profile>(`/api/v1/releases/standard/id/${encodeURIComponent(releaseId)}/summary`);
   if (!profile || profile.id !== releaseId) return <section className="panel"><h1><Localized>{"Standard release unavailable"}</Localized></h1><p className="muted"><Localized>{"The release was not found or the API could not be reached."}</Localized></p><Link href="/releases/standard"><Localized>{"Back to standard releases →"}</Localized></Link></section>;
   return <>
+    <p><Link prefetch={false} href={`/governance/release/${profile.id}`}><Localized>{'View current authority and revocation records →'}</Localized></Link></p>
     <section className="panel"><h2><Localized>{"Standard baseline and application releases"}</Localized></h2>
       <p><Localized>{"A standard release records the supplier baseline. Customer application releases link to one exact standard release."}</Localized></p>
       <p><b><Localized>{"Demo review template"}</Localized></b><Localized>{": "}</Localized><Localized>{"Electronics Engineer → Electronics Manager → Systems Engineer → R&D Director"}</Localized></p>

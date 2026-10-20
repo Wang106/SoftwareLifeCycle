@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-20 发布链撤销双语只读展示（Codex / ChatGPT Work）
+
+基线为真实 main `b2e40426148bb4d3166effef417b9052ce5fa6f9`（PR75），开放 PR 为 0；独立分支 `codex/release-chain-revocation-browser-read-only`。启动前已独立核对 PR75/main CI `39418506472` 三项成功、2272 backend/233 PG cases 无 skip/1462 frontend、Cloudflare Production build `3fe95c2a-99c6-4397-b19d-8bd6a7368ae4` 成功；Render 仍为后端提交 `943a342d` 的既有 live。该证据是基线，本包精确 PR head 与合并后的 CI/provider 须分别核验。
+
+新增 `/governance/{kind}/{targetId}` 双语只读页面，复用四类精确对象 GET，一次请求、10秒上限、不预取/轮询。SSR/ASR、精确 Delivery revision、Distribution、Authorization 详情用原 UUID 进入。原记录状态与 ACTIVE/REVOKED/BLOCKED_BY_ANCESTOR/UNRESOLVED 分开显示；自身撤销与祖先阻断分开，最多四节点历史，并链接精确 `EVT-RCR-{UUID hex}` 原审计。缺失、异常、矛盾、越界响应不显示有效许可，UNRESOLVED 不伪装成空历史；原因/记录者保留原文并转义。当前观察不等于审批、发布就绪、写入许可或提交回执。契约见 `docs/release-chain-revocation-browser-read-only.md`。
+
+新增12项定向行为回归及1项自动页面本地化覆盖；本地完整前端1475 passed/0failed/0skipped，Next15.5.24/OpenNext1.20.6 build成功；进度/Worker/禁用认证SSR/diff检查按本包验证记录执行。初次定向本地化检查发现 Audit 中文词条缺失，已补齐；未削弱既有测试。后台/真实PG本地未重跑，完整三项CI必须由本包精确提交证明。本包无后台、API/schema、Migration、Seed、依赖、CI、调度、身份或提供方配置变更；API0.18.45/schema0026，Seed幂等性不受影响。最终提交/PR/合并/main/provider记录于本包PR。
+
+业务仍36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0。公共只读、OIDC/真实提交关闭、内网未部署；真实多用户桌面/手机浏览器验收尚未完成。下一包 `release-chain-revocation-submission-design-review`：审查独立默认关闭受控提交、精确原审计证明与不确定结果恢复，生产事实更正继续另包。
+
 ## 2026-10-19 发布链永久撤销后端与统一读取（Codex / ChatGPT Work）
 
 从远端最新 `main` `f571f296fcd61daad2cfe2da49f9baf1902503ba` 创建独立分支 `codex/release-chain-revocation-backend-read`；启动时开放 PR 为 0，未发现前序未完成实现。远端实现提交 `74bddd2915cc6caa626a8f902f359aa00b399f21` 新增唯一迁移 `0026_release_chain_revocation` 与 API `0.18.45`：四目标 XOR 追加式撤销账本、每目标唯一撤销、UPDATE/DELETE 拒绝、存在历史拒绝降级，以及针对 ReleaseDecision、DeliveryPackage、Distribution、SoftwareAuthorization、Deployment、ProductionBatch 的数据库旧写者 insert guard。

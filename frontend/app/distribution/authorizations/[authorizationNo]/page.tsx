@@ -27,6 +27,7 @@ export default async function Page({ params }: { params: Promise<{ authorization
   const deliveryHref = distribution?.package_no && distribution.package_revision
     ? `/distribution/deliveries/${encodeURIComponent(distribution.package_no)}/${distribution.package_revision}` : null;
   return <>
+    <p><Link prefetch={false} href={`/governance/authorization/${authorization.id}`}><Localized>{'View current authority and revocation records →'}</Localized></Link></p>
     <div className="top"><div><div className="eyebrow"><Localized>{"PRODUCTION GOVERNANCE"}</Localized></div><h1><Localized>{authorization.authorization_no}</Localized></h1>
       <p className="muted"><Localized>{"Authorization for a specified release, snapshot, customer, site and line."}</Localized></p></div>
       <span className={'status ' + (authorization.status === 'APPROVED' ? 'pass' : 'warning')}><Localized>{authorization.status}</Localized></span></div>
