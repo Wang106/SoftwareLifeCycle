@@ -1,5 +1,19 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
+
+基线远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78 已合并），开放 PR 0、无同包未完成分支。独立 `codex/release-chain-revocation-browser-protocol`。已核对 PR78/main CI 三项成功、Render 既有 live 与 Cloudflare 生产成功（基线证据，本包精确 head 另验）。
+
+新增 `frontend/lib/release-chain-revocation-transport.ts`：严格 discriminated command `operation=release-chain-revocation`、四类 `target_kind`、`target_id` 与 `expected_context` v1（version 固定整数 1、七个 canonical lowercase UUID、按目标深度强制可空/非空且 target_id 等于对应节点）。reason 1–4000、禁控制字符与孤立代理项，完整 envelope 按真实字节 24KiB 上限（不照抄 8192 使合法中文边界无法提交）。四类固定路径映射 `/releases|deliveries|distributions|authorizations/{target_id}/revocations` 与四类 action `RELEASE|DELIVERY|DISTRIBUTION|AUTHORIZATION_REVOKED`。Submission 状态机 idle→sending→checking→confirmed/rejected/unknown，lost 响应锁原字节、recover 仅查询审计、禁用/拒绝不抹除未知结果。
+
+新增 `frontend/lib/release-chain-revocation-audit.ts`：严格 `EVT-RCR-{request_id.hex}` projector，校验 event_type/entity_type/entity_ref/action/detail、payload.revocation_id/release_id/snapshot_id/release_decision_id/reason/protocol_version=1/review_context/request 及 actor_principal_id 绑定与 declared_actor_name=null，不借当前治理状态推断原结果、不把 legacy 三字段审计升级为 v1 回执。
+
+新增两条同源代理 `/auth/release-chain-revocation`（submit）与 `/auth/release-chain-revocation-receipt`（recover），仅 POST；`browser-auth.ts` 新增三开关精确匹配的 `releaseChainRevocationSubmissionConfigured` 与 `handleReleaseChainRevocation`（24KiB 请求上限），`browser-session.ts` 新增 `executeReleaseChainRevocationCommand`（submit 一次 POST 后经 `/api/v1/activity/EVT-RCR-...` 原审计确认，审计响应独立 64KiB 上限；recover 允许只读会话查询）。`check-browser-auth.cjs` 增补两条路由的禁用检查与三项环境变量。
+
+本地前端完整 1483 passed/0 failed/0 skipped（原 1475 新增 8 项定向 transport/wiring 回归），TypeScript `--noEmit` 通过。本机 Next/OpenNext 构建与 `auth:check` 因执行环境沙箱拦截 `.next` 深层目录写入未在本地完成，必须由本包精确 PR head 的 frontend job（npm test + cf:build + auth:check）证明，不以本地部分通过代替。无后端/API/schema/Migration/Seed/依赖/CI/调度/身份/提供方配置变更，API0.18.45/schema0026、Seed 幂等性不变。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0，验收增量 0。公共只读/OIDC/真实提交关闭、内网未部署；真实多用户桌面/手机与中英文验收未完成。下一包 `release-chain-revocation-ui-recovery`：双语确认/结果 workbench、精确 governance 页入口、i18n 与 audit-only 导入/导出，不启用真实开关。精确 PR head 完整 CI、受保护合并及 main/Cloudflare/Render 证据记录本包 PR。
+
 ## 2026-10-20 撤销审核上下文后台绑定（Codex / ChatGPT Work）
 
 基线远端main `91ef88765d2bf666c6239b0359e8368a42efbc41`（PR77），开放PR 0、相关远端分支无未完成同包。独立 `codex/release-chain-revocation-review-binding-backend`。启动核对main CI39425287506三项成功、Cloudflare生产961463a0-6c41-439e-8f1a-6429c6987422成功；Render既有live dep-dbah7n942hec73dkdv90仍对应后台943a342d；Actions39426311122/39426310917 skipped，未当成部署成功。
