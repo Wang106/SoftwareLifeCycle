@@ -50,10 +50,26 @@ test('lost response locks the original bytes and recovery only queries its audit
   await submission.recover(true,async(url,init)=>{assert.equal(url,'/auth/release-chain-revocation-receipt');bodies.push(init.body);return Response.json(f.receipt(c));});
   assert.equal(submission.state.phase,'confirmed');assert.equal(new Set(bodies).size,1);
 });
+test('an uncertain outcome blocks a second submit and only recovery may run',async()=>{
+  // Regression: the first send that loses its response must lock the exact request so a
+  // second send can never POST the business proxy again (transport contract, not UI guard).
+  const c=f.command('DISTRIBUTION'),submission=new Submission(confirm(c,true));let posts=0,recovers=0;
+  await submission.send(true,async()=>{posts++;throw Error('lost');});
+  assert.equal(submission.state.phase,'unknown');assert.equal(posts,1);
+  // A second submit, even with the switch enabled, must not reach the proxy.
+  await submission.send(true,async()=>{posts++;return Response.json(f.receipt(c));});
+  assert.equal(posts,1);assert.equal(submission.state.phase,'unknown');
+  // Only an explicit audit-only recovery may query.
+  await submission.recover(true,async(url)=>{assert.equal(url,'/auth/release-chain-revocation-receipt');recovers++;return Response.json(f.receipt(c));});
+  assert.equal(recovers,1);assert.equal(submission.state.phase,'confirmed');
+});
 test('disabled and rejected attempts cannot erase an uncertain original outcome',async()=>{
   const submission=new Submission(confirm(f.command('RELEASE'),true));await submission.send(true,async()=>{throw Error('lost');});
   await submission.send(false);assert.equal(submission.state.phase,'unknown');
+  // A rejected denial after the outcome became uncertain must not downgrade it to rejected.
+  const rejected=new Submission(confirm(f.command('RELEASE'),true));let first=true;
   for(const[status,error]of [[403,'submission_forbidden'],[409,'submission_conflict'],[503,'release_chain_revocation_disabled']]){
-    await submission.send(true,async()=>Response.json({error},{status}));assert.equal(submission.state.phase,'unknown');
+    await rejected.send(true,async()=>{if(first){first=false;throw Error('lost');}return Response.json({error},{status});});
+    assert.equal(rejected.state.phase,'unknown');
   }
 });
