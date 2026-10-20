@@ -1,6 +1,6 @@
 """Append-only Deployment actual history: baseline, correction ledger and projection."""
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import pytest
 from sqlalchemy import select, func
 from test_production_retry import production, counts
@@ -61,6 +61,11 @@ def test_keyed_correction_appends_ledger_and_keeps_baseline(production):
     assert corrections[0].actual_snapshot_id == other.id
     assert corrections[0].correction_reason == 'Corrected snapshot'
     assert corrections[0].predecessor_id is None
+    # The physical Deployment remains the immutable first-report baseline.
+    db.refresh(dep)
+    assert dep.actual_snapshot_id == snapshot.id
+    assert dep.actual_version == 1
+    assert effective_actual(db, dep).actual_snapshot_id == other.id
 
 
 def test_correction_chain_is_sequential_with_predecessors(production):
@@ -90,16 +95,40 @@ def test_correction_chain_is_sequential_with_predecessors(production):
     assert eff.correction_count == 2
 
 
-def test_legacy_no_key_overwrite_does_not_create_correction(production):
+def test_no_key_first_report_is_allowed_but_overwrite_is_rejected(production):
     db = production[0]; dep = production[5]; release = production[6]; snapshot = production[7]
-    # Legacy no-key first report then a second no-key overwrite (behavior preserved).
     assert report(db, dep, release, snapshot, request_id=None, expected_version=None).actual_version == 1
-    assert report(db, dep, release, snapshot, request_id=None, expected_version=None).actual_version == 2
-    # No correction rows: legacy no-key overwrite is not a keyed correction.
+    with pytest.raises(ProductionError, match='requires request_id'):
+        report(db, dep, release, snapshot, request_id=None, expected_version=None)
     assert db.scalar(select(func.count()).select_from(DeploymentActualCorrection)) == 0
     baseline = db.scalar(select(DeploymentActualBaseline).where(
         DeploymentActualBaseline.deployment_id == dep.id))
     assert baseline is not None and baseline.source == 'FIRST_REPORT'
+    db.refresh(dep)
+    assert dep.actual_version == 1
+
+
+def test_correction_occurrence_comes_from_original_audit_and_replays(production):
+    db = production[0]; dep = production[5]; release = production[6]; snapshot = production[7]
+    first_at = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    corrected_at = datetime(2026, 1, 2, tzinfo=timezone.utc)
+    report(db, dep, release, snapshot, deployed_at=first_at,
+           request_id=uuid.uuid4(), expected_version=0)
+    key = uuid.uuid4()
+    result = report(db, dep, release, snapshot, deployed_at=corrected_at,
+                    request_id=key, expected_version=1,
+                    correction_reason='Correct occurrence time')
+    assert result.deployed_at == corrected_at
+    effective = effective_actual(db, db.get(Deployment, dep.id))
+    assert effective.deployed_at == corrected_at
+    assert effective.actual_version == 2
+    # Physical time remains the first report, while replay returns the original correction.
+    db.refresh(dep)
+    assert dep.deployed_at == first_at and dep.actual_version == 1
+    replay = report(db, dep, release, snapshot, deployed_at=corrected_at,
+                    request_id=key, expected_version=1,
+                    correction_reason='Correct occurrence time')
+    assert replay.deployed_at == corrected_at and replay.actual_version == 2
 
 
 def test_seeded_imported_value_is_not_first_report(production):
@@ -139,6 +168,21 @@ def test_baseline_and_correction_are_append_only(production, monkeypatch):
     report(db, dep, release, snapshot, request_id=uuid.uuid4(), expected_version=2,
            correction_reason='Second correction')
     assert db.scalar(select(func.count()).select_from(DeploymentActualCorrection)) == before + 1
+
+
+
+def test_batch_permission_uses_effective_actual_not_physical_baseline(production):
+    db = production[0]; dep = production[5]; release = production[6]; snapshot = production[7]
+    report(db, dep, release, snapshot, request_id=uuid.uuid4(), expected_version=0)
+    from app.models.snapshot import ReleaseSnapshot
+    other = ReleaseSnapshot(release_id=release.id, snapshot_no='SNAP-MISMATCH',
+                            snapshot_number=99, content_hash='d' * 64, status='FROZEN')
+    db.add(other); db.commit()
+    report(db, dep, release, other, request_id=uuid.uuid4(), expected_version=1,
+           correction_reason='Actual snapshot differs')
+    assert dep.status == 'MATCH'  # frozen physical baseline
+    with pytest.raises(ProductionError, match='matching, resolved actual software history'):
+        ProductionService(db).create_batch(dep.deployment_no, 'BLOCKED-BATCH')
 
 
 def test_correction_requires_reason_and_matches_expected_version(production):
