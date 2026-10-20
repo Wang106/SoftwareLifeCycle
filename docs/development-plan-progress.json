@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.45",
-  "baseline_commit": "91ef88765d2bf666c6239b0359e8368a42efbc41",
+  "baseline_commit": "8eb25f4b90b506910837faf3b74690f27b66e9c1",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -508,10 +508,15 @@
             "frontend/app/auth/release-chain-revocation/route.ts",
             "frontend/app/auth/release-chain-revocation-receipt/route.ts",
             "frontend/tests/release-chain-revocation-transport.test.cjs",
-            "frontend/tests/release-chain-revocation-wiring.test.cjs"
+            "frontend/tests/release-chain-revocation-wiring.test.cjs",
+            "docs/release-chain-revocation-ui-recovery.md",
+            "frontend/components/release-chain-revocation-workbench.tsx",
+            "frontend/components/release-chain-revocation-result.tsx",
+            "frontend/lib/release-chain-revocation-recovery.ts",
+            "frontend/tests/release-chain-revocation-ui.test.cjs"
           ],
           "acceptance_pending": [
-            "Permanent backend revocation ledger, four scoped commands, unified governance reads, old-writer guards, bilingual read-only authority-path history and an independently default-off controlled submission/audit-only recovery proxy implemented; bilingual confirmation/audit-only recovery UI and approved-provider multi-user acceptance remain pending"
+            "Permanent backend revocation ledger, four scoped commands, unified governance reads, old-writer guards, bilingual read-only authority-path history, independently default-off controlled submission, bilingual confirmation/result UI and manual canonical origin-bound audit-only recovery implemented; approved-provider multi-user desktop/mobile bilingual acceptance remains pending"
           ]
         },
         {

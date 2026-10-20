@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 发布链撤销双语确认与原审计恢复（Codex / ChatGPT Work）
+
+当前包 `release-chain-revocation-ui-recovery`，独立分支 `codex/release-chain-revocation-ui-recovery-reviewed`，基线main `8eb25f4b90b506910837faf3b74690f27b66e9c1`（PR83）。开放PR0，PR80/81关闭、PR82/83合并；复用PR81草案并审查，未重复守卫或另启后台。精确实现提交/PR/CI/合并/main及provider结果追加在本包PR，后续会话必须先核对真实PR，不能凭本文pending重复开发。
+
+新增双语workbench/result、精确同源规范恢复封装与行为测试；commands独立入口 `/commands?operation=release-chain-revocation`。四类UUID/审核上下文/reason/request_id确认后才可发送；默认关闭。准备/勾选/复制/导入不联网，import无send能力，unknown锁原命令仅查原审计，401/重复点击不二次POST；原原因转义显示，actor/时间通过精确原审计链接读取。修正PR81缺省kind与unknown提示。governance保持只读，详见 `docs/release-chain-revocation-ui-recovery.md`。
+
+本地完整前端1494 passed/0 failed/0 skipped，Next/OpenNext、auth:check、cf:check成功；本地未重跑后台/真实PG，由精确PR完整三项CI证明，不伪造本地证据。API0.18.45/唯一迁移0026/Seed不变，幂等性不受影响，无CI/依赖/真实开关/权限/秘密/费用配置修改。进度与diff检查随本包执行。
+
+基线main CI39455082138成功；GitHub Cloudflare检查证实生产build `f3928426-9756-42c5-aef5-a9c8910180cc`、Worker `4e1800ca-653a-4d18-a964-6ed6a081070b` 成功，旧“无token未验证”已补齐。Render既有live dep-dbbn73l9fdbs73ed2340为后台f221bdddc0e110fe61c9d72694408d78a64989b5；Actions39457194877/39457194880 skipped。这些是基线，不能复用为本包成功。
+
+业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，不因UI/文档提升验收。公共只读、OIDC/真实提交关闭、内网未部署，批准环境真实多用户/桌面/手机/中英文验收仍待完成。下一候选 `production-trace-correction-design-review` 只审查Deployment/Changeover/Batch现有历史、消费者、锁/原子审计、旧库兼容和PG矩阵后划定实施包，实际身份/生产配置继续不触碰。
+
 ## 2026-10-20 发布链撤销 uncertain 后二次提交守卫（DeepSeek）
 
 起点远端 main `489df90966a9a97ea76a67de005f602eee6fb64c`（PR79），开放 draft 检查点 PR80（记录 PR79 transport 反例，未合并）。独立 `codex/release-chain-revocation-unknown-submit-guard`。恢复 PR80 指出的 `release-chain-revocation-unknown-submit-guard` 优先任务，不并发 UI 包。
