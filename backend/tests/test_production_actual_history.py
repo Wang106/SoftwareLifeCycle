@@ -123,8 +123,9 @@ def test_correction_occurrence_comes_from_original_audit_and_replays(production)
     assert effective.deployed_at == corrected_at
     assert effective.actual_version == 2
     # Physical time remains the first report, while replay returns the original correction.
+    # SQLite does not persist tzinfo on DateTime(timezone=True), so normalize before compare.
     db.refresh(dep)
-    assert dep.deployed_at == first_at and dep.actual_version == 1
+    assert dep.deployed_at.replace(tzinfo=timezone.utc) == first_at and dep.actual_version == 1
     replay = report(db, dep, release, snapshot, deployed_at=corrected_at,
                     request_id=key, expected_version=1,
                     correction_reason='Correct occurrence time')
