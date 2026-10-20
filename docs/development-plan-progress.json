@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.47",
-  "baseline_commit": "a82a3076ee13badbb9cdab94013d6444eb214bfc",
+  "as_of_api": "0.18.48",
+  "baseline_commit": "7bb4f58b5b88ff7a7e03d9573869c336aa69f598",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -527,11 +527,16 @@
             "docs/production-trace-correction-design-review.md",
             "backend/app/models/production_history.py",
             "backend/app/services/production_history.py",
-            "backend/tests/test_production_actual_history.py"
+            "backend/tests/test_production_actual_history.py",
+            "backend/alembic/versions/0028_deployment_actual_guard.py",
+            "backend/app/api/production_catalog.py",
+            "backend/tests/test_production_actual_history_postgres.py",
+            "backend/tests/test_production_actual_history_migration_postgres.py",
+            "backend/tests/test_production_catalog.py"
           ],
           "acceptance_pending": [
-            "Actual baseline/correction ledger exists; application-layer repair freezes physical first report, rejects no-key replacement, uses original audit occurrence and routes deployment/batch detail plus batch permission through the effective projection",
-            "Database old-writer guards, complete production catalog projection, bilingual history UI, real PostgreSQL concurrency/upgrade/downgrade/long-history matrix and approved-provider multi-user acceptance remain pending"
+            "Actual baseline/correction ledger, application-layer atomic reporting, database old-writer guards and all three production catalog effective projections are implemented",
+            "Bilingual bounded history UI, approved-provider multi-user browser acceptance, and separate Changeover/Batch correction semantics remain pending"
           ]
         },
         {

@@ -152,8 +152,8 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50, eff
     }
 
 
-def _deployment_detail(db: Session, deployment: Deployment, *, include_history: bool = True):
-    effective = effective_actual(db, deployment)
+def _deployment_detail(db: Session, deployment: Deployment, *, include_history: bool = True, effective=None):
+    effective = effective or effective_actual(db, deployment)
     authorization = db.get(SoftwareAuthorization, deployment.authorization_id)
     line = db.get(ProductionLine, deployment.production_line_id)
     site = db.get(ManufacturingSite, line.site_id) if line else None
@@ -373,7 +373,8 @@ def deployment_profile(deployment_no: str, db: Session = Depends(get_db)):
     row = db.scalars(select(Deployment).where(Deployment.deployment_no == deployment_no)).first()
     if row is None:
         raise HTTPException(status_code=404, detail="deployment not found")
-    detail = _deployment_detail(db, row, include_history=False)
+    effective = effective_actual(db, row)
+    detail = _deployment_detail(db, row, include_history=False, effective=effective)
     detail.pop("changeovers")
     detail.pop("batches")
     provenance = _deployment_provenance(db, row, include_decisions=False)
@@ -385,7 +386,7 @@ def deployment_profile(deployment_no: str, db: Session = Depends(get_db)):
     }
     # Keep stored status separate from the observed UUID pair comparison.
     from app.api.production_catalog import observed
-    detail["software_observation"] = observed(row)
+    detail["software_observation"] = observed(row, effective)
     detail["notice"] = "Counts cover recorded deployment history. Review bounded catalogs for records; observations do not authorize production or prove physical flashing."
     return detail
 

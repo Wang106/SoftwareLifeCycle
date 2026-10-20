@@ -15,11 +15,15 @@ from app.services.production import ProductionService
 def clean(pg):
     """Reset all deployments to unreported so first reports start at version 0."""
     engine, ids = pg
+    config = Config('alembic.ini')
+    command.downgrade(config, '0026_release_chain_revocation')
     with Session(engine) as db:
         for dep in db.scalars(select(Deployment)):
             dep.actual_release_id = dep.actual_snapshot_id = dep.deployed_at = None
             dep.status = 'PENDING'
+            dep.actual_version = 0
         db.commit()
+    command.upgrade(config, 'head')
     return engine, ids
 
 
@@ -32,14 +36,14 @@ def report(db, dep, release_id, snapshot_id, key, **kw):
 
 def test_upgrade_captures_existing_reported_deployments(pg):
     engine, ids = pg
+    config = Config('alembic.ini')
+    command.downgrade(config, '0026_release_chain_revocation')
     with Session(engine) as db:
         dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
         dep.actual_release_id = ids['release']
         dep.actual_snapshot_id = dep.expected_snapshot_id
         dep.status = 'MATCH'
         db.commit()
-    config = Config('alembic.ini')
-    command.downgrade(config, '0026_release_chain_revocation')
     command.upgrade(config, 'head')
     with Session(engine) as db:
         dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
@@ -60,18 +64,18 @@ def test_downgrade_blocks_with_correction_history(clean):
         command.downgrade(config, '0026_release_chain_revocation')
 
 
-def test_downgrade_allows_pure_legacy_baseline(clean):
-    engine, ids = clean
+def test_downgrade_allows_pure_legacy_baseline(pg):
+    engine, ids = pg
+    config = Config('alembic.ini')
+    command.downgrade(config, '0026_release_chain_revocation')
     with Session(engine) as db:
         dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
-        # Directly set a legacy reported value WITHOUT any correction and without
-        # a FIRST_REPORT baseline (simulates an imported/legacy row captured by
-        # the migration's LEGACY_CURRENT backfill).
+        # Simulate a legacy row before the history migration captures it.
         dep.actual_release_id = ids['release']
         dep.actual_snapshot_id = dep.expected_snapshot_id
         dep.status = 'MATCH'
         db.commit()
-    config = Config('alembic.ini')
+    command.upgrade(config, 'head')
     # Pure LEGACY_CURRENT baseline (no correction, no FIRST_REPORT) permits downgrade.
     command.downgrade(config, '0026_release_chain_revocation')
     command.upgrade(config, 'head')

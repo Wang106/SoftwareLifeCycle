@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, and_
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -18,6 +18,8 @@ from app.services.traceability import TraceabilityService
 from app.models.audit import AuditEvent
 from app.models.distribution import DeliveryPackage, Distribution, SoftwareAuthorization
 from app.models.production import Deployment, ProductionBatch, SoftwareChangeover
+from app.models.production_history import DeploymentActualBaseline, DeploymentActualCorrection
+from app.services.production_history import effective_actual_map
 
 router = APIRouter(prefix="/api/v1", tags=["dashboard"])
 
@@ -335,11 +337,34 @@ def application_release_downstream_summary(release_id: uuid.UUID, db: Session = 
     def observed_count(predicate):
         return func.coalesce(func.sum(case((predicate, 1), else_=0)), 0)
 
+    # Effective actual release resolves the append-only projection (head correction
+    # > baseline > frozen physical column) in SQL so observations stay bounded and
+    # never load rows or build ID lists.
+    head_revision = select(
+        DeploymentActualCorrection.deployment_id,
+        func.max(DeploymentActualCorrection.revision).label("revision"),
+    ).where(DeploymentActualCorrection.deployment_id.in_(deployment_ids)).group_by(
+        DeploymentActualCorrection.deployment_id
+    ).subquery()
+    effective_release = func.coalesce(
+        DeploymentActualCorrection.actual_release_id,
+        DeploymentActualBaseline.actual_release_id,
+        Deployment.actual_release_id,
+    )
     deployments = db.execute(select(
-        func.count(), observed_count(Deployment.actual_release_id == release_id),
-        observed_count(Deployment.actual_release_id != release_id),
-        observed_count(Deployment.actual_release_id.is_(None)),
-    ).select_from(Deployment).where(Deployment.authorization_id.in_(authorization_ids))).one()
+        func.count(),
+        observed_count(effective_release == release_id),
+        observed_count(effective_release != release_id),
+        observed_count(effective_release.is_(None)),
+    ).select_from(Deployment)
+     .outerjoin(DeploymentActualBaseline,
+                DeploymentActualBaseline.deployment_id == Deployment.id)
+     .outerjoin(head_revision, head_revision.c.deployment_id == Deployment.id)
+     .outerjoin(DeploymentActualCorrection, and_(
+         DeploymentActualCorrection.deployment_id == Deployment.id,
+         DeploymentActualCorrection.revision == head_revision.c.revision,
+     ))
+     .where(Deployment.authorization_id.in_(authorization_ids))).one()
     batches = db.execute(select(
         func.count(), observed_count(ProductionBatch.release_id == release_id),
         observed_count(ProductionBatch.release_id != release_id),
@@ -377,6 +402,7 @@ def application_release_downstream(release_id: uuid.UUID, db: Session = Depends(
     deployments = db.scalars(select(Deployment).where(Deployment.authorization_id.in_(authorization_ids))
         .order_by(Deployment.created_at, Deployment.deployment_no)).all() if authorization_ids else []
     deployment_ids = [row.id for row in deployments]
+    effective_actuals = effective_actual_map(db, deployments)
     changeovers = db.scalars(select(SoftwareChangeover).where(SoftwareChangeover.deployment_id.in_(deployment_ids))
         .order_by(SoftwareChangeover.changeover_no)).all() if deployment_ids else []
     batches = db.scalars(select(ProductionBatch).where(ProductionBatch.deployment_id.in_(deployment_ids))
@@ -386,7 +412,8 @@ def application_release_downstream(release_id: uuid.UUID, db: Session = Depends(
     # treated as proof of a matching actual deployment or production batch.
     snapshot_ids = {row.snapshot_id for row in packages + authorizations + batches}
     snapshot_ids.update(row.expected_snapshot_id for row in deployments)
-    snapshot_ids.update(row.actual_snapshot_id for row in deployments if row.actual_snapshot_id)
+    snapshot_ids.update(effective_actuals[row.id].actual_snapshot_id for row in deployments
+                        if effective_actuals[row.id].actual_snapshot_id)
     snapshots = {row.id: row.snapshot_no for row in db.scalars(
         select(ReleaseSnapshot).where(ReleaseSnapshot.id.in_(snapshot_ids))
     ).all()} if snapshot_ids else {}
@@ -409,8 +436,9 @@ def application_release_downstream(release_id: uuid.UUID, db: Session = Depends(
         "deployments": [{"id": str(row.id), "deployment_no": row.deployment_no, "status": row.status,
                          "authorization_no": next(auth.authorization_no for auth in authorizations if auth.id == row.authorization_id),
                          "expected_snapshot_no": snapshots.get(row.expected_snapshot_id),
-                         "actual_snapshot_no": snapshots.get(row.actual_snapshot_id),
-                         "actual_release_matches": row.actual_release_id == release_id if row.actual_release_id else None}
+                         "actual_snapshot_no": snapshots.get(effective_actuals[row.id].actual_snapshot_id),
+                         "actual_release_matches": effective_actuals[row.id].actual_release_id == release_id
+                         if effective_actuals[row.id].actual_release_id else None}
                         for row in deployments],
         "changeovers": [{"id": str(row.id), "changeover_no": row.changeover_no, "status": row.status,
                          "deployment_no": next(dep.deployment_no for dep in deployments if dep.id == row.deployment_id)}
