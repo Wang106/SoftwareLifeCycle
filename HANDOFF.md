@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-20 发布链撤销 uncertain 后二次提交守卫（DeepSeek）
+
+起点远端 main `489df90966a9a97ea76a67de005f602eee6fb64c`（PR79），开放 draft 检查点 PR80（记录 PR79 transport 反例，未合并）。独立 `codex/release-chain-revocation-unknown-submit-guard`。恢复 PR80 指出的 `release-chain-revocation-unknown-submit-guard` 优先任务，不并发 UI 包。
+
+修复 `ReleaseChainRevocationSubmission.run`：`mode==='submit' && this.uncertain` 时锁定原 command/字节并直接返回当前状态，绝不二次业务 POST；后续 disabled/rejected/冲突不清除、不重发 uncertain 原请求；recover 保持只读原审计查询。新增独立反例测试（首次 lost 后二次 send 不再 POST、仅 recover 查询），调整 disabled/rejected 用例体现 uncertain 优先。红绿：移除守卫后反例 posts=2 失败，恢复后 6/6 通过。
+
+本地前端完整 1484 passed/0 failed/0 skipped（新增 1 反例），tsc --noEmit 通过；本机 Next/OpenNext 构建与 auth:check 由精确 head frontend job 证明。无后端/API/schema/Migration/Seed/依赖/CI/调度/身份/提供方配置变更，API0.18.45/schema0026、Seed 幂等性不变。精确 PR/合并/main/Cloudflare/Render 最终证据记录本包 PR。
+
+业务 36/44=82%；模块 100/100演示/100演示/100/89/60/17；计划 100/100/20/33/40/20/0。公共只读/OIDC/真实提交关闭。下一包 `release-chain-revocation-ui-recovery`：双语确认/结果 workbench、audit-only 导入/导出、i18n 与 commands 页独立入口，不启用真实开关；生产事实更正与 OIDC 提供方/多用户验收继续独立待定。
+
 ## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
 
 起点远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78），开放PR 0、无同包远端分支；独立 `codex/release-chain-revocation-browser-protocol`。已核对PR78/main CI三项成功（基线证据，本包精确head另验）。

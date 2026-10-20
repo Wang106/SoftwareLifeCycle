@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-20 发布链撤销 uncertain 后二次提交守卫（DeepSeek）
+
+基线远端 main `489df90966a9a97ea76a67de005f602eee6fb64c`（PR79 已合并），开放 PR 为 draft 检查点 PR80（记录 PR79 验收发现的 transport 反例，未合并、未实现）。独立 `codex/release-chain-revocation-unknown-submit-guard`。恢复 PR80 的 `release-chain-revocation-unknown-submit-guard` 优先任务。
+
+问题：PR79 的 `ReleaseChainRevocationSubmission` 在第一次 send 丢响应进入 unknown 后，再次 send 仍会调用业务代理 POST，违反设计审查第 4 节"unknown 锁住原字节、仅允许 audit-only recovery、绝不二次 POST"契约。PR80 用纯本地反例（观察 2 次 POST、期望 1 次）证明该缺陷，且未用按钮禁用或 request_id 幂等代替 transport 契约。
+
+修复：`frontend/lib/release-chain-revocation-transport.ts` 的 `run` 在 `mode==='submit' && this.uncertain` 时直接返回当前状态，锁定原 command/字节，后续 disabled/rejected/冲突不得抹除或重发 uncertain 原请求；recover 保持只读原审计查询。新增独立反例 `an uncertain outcome blocks a second submit and only recovery may run`（首次 lost 后二次 send 不得再 POST、仅 recover 查询），并调整 `disabled and rejected attempts...` 用例以准确反映 uncertain 优先语义。红绿验证：临时移除守卫后反例失败（posts=2），恢复后 6/6 通过。
+
+本地前端完整 1484 passed/0 failed/0 skipped（新增 1 项反例），TypeScript `--noEmit` 通过；本机 Next/OpenNext 构建与 auth:check 由精确 head frontend job 证明。无后端/API/schema/Migration/Seed/依赖/CI/调度/身份/提供方配置变更，API0.18.45/schema0026、Seed 幂等性不变。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0，验收增量 0。公共只读/OIDC/真实提交关闭。精确 PR head 完整 CI、受保护合并及 main/Cloudflare/Render 证据记录本包 PR。UI 包 `release-chain-revocation-ui-recovery` 在守卫修复后另行推进。
+
 ## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
 
 基线远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78 已合并），开放 PR 0、无同包未完成分支。独立 `codex/release-chain-revocation-browser-protocol`。已核对 PR78/main CI 三项成功、Render 既有 live 与 Cloudflare 生产成功（基线证据，本包精确 head 另验）。

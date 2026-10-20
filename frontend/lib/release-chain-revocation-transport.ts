@@ -94,7 +94,12 @@ export class ReleaseChainRevocationSubmission{
   send(enabled:boolean,fetcher:typeof fetch=fetch){return this.run('submit',enabled,fetcher);}
   recover(enabled:boolean,fetcher:typeof fetch=fetch){return this.run('recover',enabled,fetcher);}
   private async run(mode:'submit'|'recover',enabled:boolean,fetcher:typeof fetch):Promise<ReleaseChainRevocationState>{
-    if(['sending','checking','confirmed'].includes(this.current.phase))return this.current;if(mode==='recover')this.uncertain=true;
+    if(['sending','checking','confirmed'].includes(this.current.phase))return this.current;
+    // Once the original outcome is uncertain, the exact request is locked: only an explicit
+    // audit-only recovery may run, never a second business POST. A later disabled/rejected
+    // attempt must not erase or resend an uncertain original submission.
+    if(mode==='submit'&&this.uncertain)return this.current;
+    if(mode==='recover')this.uncertain=true;
     if(enabled!==true)return this.update(this.uncertain?'unknown':'rejected','release_chain_revocation_disabled');
     this.update(mode==='submit'?'sending':'checking',null);
     try{const response=await fetcher(mode==='submit'?'/auth/release-chain-revocation':'/auth/release-chain-revocation-receipt',
