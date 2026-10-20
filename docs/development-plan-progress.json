@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.45",
-  "baseline_commit": "b2e40426148bb4d3166effef417b9052ce5fa6f9",
+  "baseline_commit": "74fa2e694c56da7ea7eeb4e0f0d080cde4a2fb21",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -501,7 +501,8 @@
             "frontend/app/governance/[kind]/[targetId]/page.tsx",
             "frontend/lib/release-chain-governance.ts",
             "frontend/tests/release-chain-governance-read.test.cjs",
-            "docs/release-chain-revocation-browser-read-only.md"
+            "docs/release-chain-revocation-browser-read-only.md",
+            "docs/release-chain-revocation-submission-design-review.md"
           ],
           "acceptance_pending": [
             "Permanent backend revocation ledger, four scoped commands, unified governance reads, old-writer guards and bilingual read-only authority-path history implemented; controlled submission/recovery protocol and approved-provider multi-user acceptance remain pending"

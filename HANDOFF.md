@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-20 发布链撤销受控提交设计审查（Codex / ChatGPT Work）
+
+真实基线 main `74fa2e694c56da7ea7eeb4e0f0d080cde4a2fb21`（PR76），开放PR 0；独立分支 `codex/release-chain-revocation-submission-design-review`。PR76 main CI39421592004三个job成功，Cloudflare生产2925a4b4-b0e2-4486-8940-845bb48fad25成功；Render既有live dep-dbah7n942hec73dkdv90仍为后端943a342d，不是PR76部署；Actions39422865320/39422865279 skipped。已完成前序核验，没有重做撤销后台/只读页面。
+
+本包只新增 `docs/release-chain-revocation-submission-design-review.md` 并更新状态/本交接/进度。核对实际四路由、角色、锁序、精确actor/请求重放、activity原审计读取和既有浏览器模式，识别审核上下文尚未绑定与旧审计字段不足；选择版本化expected_context锁内比较→默认关闭窄浏览器协议→双语确认/audit-only恢复三小包。旧请求重放保持，旧审计不得升级伪造审核证明，unknown不重发，无实际配置写入。完整测试矩阵及后续精确路径在设计中。本地验证、精确发布提交/PR、CI与合并后provider最终证据以本包PR记录为准，未把基线通过当本包结果。
+
+API0.18.45/schema0026/Seed幂等性不变；业务36/44=82%；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/20/0。下一包 `release-chain-revocation-review-binding-backend`：四类撤销strict body、可选legacy兼容的v1审核context、锁内比较、完整原审计、精确治理context与真实PG回归；不开放浏览器写入，不改0026。后续 `release-chain-revocation-browser-protocol`、`release-chain-revocation-ui-recovery` 逐包推进。公共只读/OIDC与真实提交关闭，内网及批准提供方多用户验收未完成。
+
 ## 2026-10-20 发布链撤销只读页面（Codex / ChatGPT Work）
 
 从PR75合并 main `b2e40426148bb4d3166effef417b9052ce5fa6f9` 创建 `codex/release-chain-revocation-browser-read-only`，无开放PR。基线main CI39418506472三个job、Cloudflare生产3fe95c2a-99c6-4397-b19d-8bd6a7368ae4成功已核对；Render既有live仍943a342d。新增四类精确UUID `/governance/{kind}/{targetId}`双语只读页和SSR/ASR/Delivery revision/Distribution/Authorization入口；一次固定GET/10秒超时、最多四节点，分清原status、自身撤销、祖先阻断、无法解析。未知/矛盾/重复/越界响应拒绝，原原因和记录者转义但不翻译；原审计链接使用UUID hex。不存在提交表单、浏览器发送协议或新身份配置。
