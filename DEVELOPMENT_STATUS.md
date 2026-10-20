@@ -1,5 +1,11 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-20 撤销浏览器协议验收阻塞（Codex / ChatGPT Work）
+
+最新main489df90966a9a97ea76a67de005f602eee6fb64c已含PR79；本轮仅恢复核验，不重做协议。PR CI39443378916/main CI39445167814三job成功，两轮2309 backend/242PG无skip/1483frontend及构建/迁移成功；Cloudflare生产eaeb2b3a-af57-4c88-8c14-d08c3e462e36成功。Render仍f221bddd的既有live，ready/API0.18.45/schema0026；Actions部署与接力skipped，详见 `docs/release-chain-revocation-protocol-verification.md`。
+
+独立本地反例直接加载实际TS状态机：模拟第一次send丢响应进入unknown，再次send仍调用业务代理，调用数2而应为1，断言失败。没有真实POST。已有CI未覆盖该设计要求，不能称协议完整验收通过。按测试失败停止要求，保存独立文档分支检查点、不合并、不推进UI；未修改协议实现/既有测试/依赖/门控。下一包优先 `release-chain-revocation-unknown-submit-guard`，精确范围与反例矩阵见验收文档，修复完整验证后才进入UI。API/schema/Seed不变；业务82%，七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/20/0。公共只读、真实身份/提交关闭、内网和真实多用户验收未完成。
+
 ## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
 
 基线远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78 已合并），开放 PR 0、无同包未完成分支。独立 `codex/release-chain-revocation-browser-protocol`。已核对 PR78/main CI 三项成功、Render 既有 live 与 Cloudflare 生产成功（基线证据，本包精确 head 另验）。
