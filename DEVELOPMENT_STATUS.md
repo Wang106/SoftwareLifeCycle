@@ -12,6 +12,10 @@
 
 业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0，验收增量 0。公共只读/OIDC/真实提交关闭。精确 PR head 完整 CI、受保护合并及 main/Cloudflare/Render 证据记录本包 PR。UI 包 `release-chain-revocation-ui-recovery` 在守卫修复后另行推进。
 
+### 本包精确验收证据（PR82）
+
+精确 PR head CI `39449893219` 三必需 job 全绿：Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance。受保护 squash 合并为 `d444c9ae3e034fd81754745793a5d59d05828d54`（PR82）；独立 main CI `39451566237` 三 job 同样成功。前端测试 1484 passed/0 failed/0 skipped。Cloudflare 前端 `softwarelifecycle.whf969.com` HTTP 200 可达，但本地无 CLOUDFLARE_API_TOKEN 无法确认 Workers 生产已切到 `d444c9ae`（部署：未验收，非成功）。Render 后端 health ready 0.18.45/0026，本包纯前端未触发后端重部署（符合预期，非"已部署 d444c9ae"）。Actions deployment `39453032788` 与 continuation `39453032728` 明确 skipped（SLC_DEPLOY_ENABLED 未启用，不能称 Actions 部署成功）。
+
 ## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
 
 基线远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78 已合并），开放 PR 0、无同包未完成分支。独立 `codex/release-chain-revocation-browser-protocol`。已核对 PR78/main CI 三项成功、Render 既有 live 与 Cloudflare 生产成功（基线证据，本包精确 head 另验）。

@@ -10,6 +10,10 @@
 
 业务 36/44=82%；模块 100/100演示/100演示/100/89/60/17；计划 100/100/20/33/40/20/0。公共只读/OIDC/真实提交关闭。下一包 `release-chain-revocation-ui-recovery`：双语确认/结果 workbench、audit-only 导入/导出、i18n 与 commands 页独立入口，不启用真实开关；生产事实更正与 OIDC 提供方/多用户验收继续独立待定。
 
+### 本包精确验收证据（PR82）
+
+PR head CI `39449893219` 三 job 全绿，squash 合并 `d444c9ae3e034fd81754745793a5d59d05828d54`（PR82），main CI `39451566237` 三 job 成功，前端 1484 passed/0 fail/0 skip。Cloudflare 前端 HTTP 200 可达但本地无 token 未确认 Workers 已切 `d444c9ae`（未验收）；Render health ready 0.18.45/0026（纯前端未触发后端重部署）；Actions deployment `39453032788`/continuation `39453032728` skipped。
+
 ## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
 
 起点远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78），开放PR 0、无同包远端分支；独立 `codex/release-chain-revocation-browser-protocol`。已核对PR78/main CI三项成功（基线证据，本包精确head另验）。
