@@ -10,6 +10,10 @@
 
 本地：后端 1679 passed / 646 skipped（PG 用例需 CI 真实 PG），前端 1494 passed / 0 fail / 0 skip，tsc --noEmit 通过，Alembic 唯一 head 0027，进度 --check 通过。业务 36/44=82% 不变（追加账本/只读投影不提高真实验收）；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。精确提交/PR head CI/合并/main/provider 证据记录本包 PR。
 
+### 本包精确验收证据（PR87）
+
+实现提交 `ada23cc`（+ FK 修复 `99f5ef1`、测试修复 `4e3e074`/`ef8d00e`），PR#87 最终 head `ef8d00e3cdda451ad1a199d3b9674e74cb9e553d`。PR head CI `39482340255` 三 job 全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance），check-runs 含 `Workers Builds: softwarelifecycle` success；后端 2324 passed / 无 skip。受保护 squash 合并为 `3a33a1d8bb5edfddcbfa846e00407d7343b621cc`（PR#87）。main CI `39484008902` 三 job 成功。Render 后端 `/health/ready` 返回 `ready`、version 0.18.46、schema 0027（合并触发重部署成功）；Cloudflare 前端 `softwarelifecycle.whf969.com` HTTP 200。Actions deployment `39485336857`/continuation `39485336931` skipped（SLC_DEPLOY_ENABLED 未启用）。
+
 ## 2026-10-21 生产事实更正设计契约补齐（Codex / ChatGPT Work）
 
 基线真实main `c148c96a50a07167b714bf6b7649a55d96bd5eed`（PR85），开放PR0、无同包未完成分支；独立 `codex/production-trace-correction-design-hardening`。已读取最新需求/状态/交接并核对PR85精确head `36c7c0aa03854f4990882237b2392786b310c082`、PR CI39464541840及main CI39465908034三项success；生产Cloudflare build aacb9481-5ed8-4030-b0c4-e5c14b5007f7/version f76d640f-6d7c-4487-ba2b-a8fd55c398df成功，Actions39467348427/39467348464 skipped。以上为启动基线，本包另验精确提交。
