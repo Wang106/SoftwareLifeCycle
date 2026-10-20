@@ -1,12 +1,18 @@
 # DEVELOPMENT_STATUS
 
-## 2026-10-21 生产实装旧写入保护与目录统一读取（Codex）
+## 2026-10-21 生产实装旧写入保护与目录统一读取（DeepSeek，核验恢复并合并 PR#91）
 
-基线 main `7bb4f58b5b88ff7a7e03d9573869c336aa69f598`，开放 PR 0；本轮独立包 `production-actual-old-writer-guard-catalog-read`。新增 Alembic `0028_deployment_actual_guard`：数据库在首次上报后拒绝 Deployment 物理 actual 五元组的非空覆盖与删除，仅允许完整首次上报，并用延迟约束要求同事务 immutable baseline；`FIRST_REPORT` 还必须绑定同一 Deployment、正文一致的 `ACTUAL_REPORTED` 原审计。迁移不改写 0027，downgrade 只移除本轮 guard，不删除历史账本。
+基线 main `7bb4f58b5b88ff7a7e03d9573869c336aa69f598`，启动时开放 PR#91 `codex/production-actual-old-writer-guard-catalog-read`（前序运行遗留、CI 反复卡死/失败）。本轮未新建重复工作，核验并补齐该包到可合并状态，最终 squash 合并 `dd2438d9c8edd029b36a816f35865e63ddc62c23`（PR#91），main 推进到 `dd2438d9`。
 
-`/api/v1/production/catalog/{deployments|changeovers|batches}` 三类消费者统一从 `effective_actual_map` 读取实际 release/snapshot/status/version/time/history_state，changeover 与 batch binding 也以追加式更正后的有效值判断，不再把冻结物理基线误作当前值。真实 PostgreSQL 覆盖旧写覆盖/删除、无 baseline 首次写入回滚、迁移升降级与原服务首次上报；目录单测覆盖三类消费者在 correction 后的一致投影。API 目标 `0.18.48`，唯一 schema 目标 `0028_deployment_actual_guard`；Seed 未改，幂等性不受影响。
+本包内容：Alembic `0028_deployment_actual_guard` 冻结 Deployment 物理 actual 五元组（首次上报后拒绝非 no-op 覆盖/删除，`FIRST_REPORT` 须绑定同事务 immutable baseline 与一致 `ACTUAL_REPORTED` 原审计）；三个 production catalog 与 dashboard 的 `application_release_downstream_summary`/`application_release_downstream` 统一读取 effective 追加式投影（head correction > baseline > 冻结物理列），不再把物理基线误作当前值。API 0.18.48 / 唯一 schema head `0028_deployment_actual_guard`。
 
-本包不开放浏览器写入，不实现 Changeover/Batch 自身更正账本，不配置身份、秘密、计费、CI 或部署权限。公共样例仍只读，OIDC/真实提交关闭，内网未部署。完整本地/精确 PR head 三项 CI、受保护合并、main CI 与 Cloudflare/Render/Actions 结果以本包 PR 和最终核验为准，不复用旧证据。业务验收仍 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。本轮代码补齐保护与一致读取但不替代双语浏览器和批准提供方真实验收。下一候选 `production-actual-history-ui-read`：双语只读历史与长历史有界矩阵；Changeover/Batch 更正仍须单独设计。
+本轮补齐（前序未闭环）：(1) `dashboard.py` 两处仍读物理列，summary 改用 SQL effective 投影保持有界 count 契约（7 查询不变），downstream 改用 `effective_actual_map`；(2) `production.py::deployment_profile` 复用单次 `effective_actual` 并把 `observed()` 改为接收有效值；(3) 五个测试文件适配 guard/append-only——`test_actual_concurrency_postgres` 改用全新未报告 `DEP-A`/`DEP-B`（append-only trigger 禁止 reset 共享 fixture 的已报告行）、`test_manufacturing_views` seed 捕获 `IMPORTED_CURRENT` 基线、`test_release_downstream_summary` 用 keyed correction 构造 different_release、`test_security_model` schema head 断言 0028、迁移测试接受 guard 的 `OperationalError`(ERRCODE 55000)。
+
+### 精确验收证据（PR#91）
+
+PR#91 最终 head `4381b4a7b6cce460efad0989aa6ea87b3af5969d`；PR head CI `39515785419` 三 job 全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance），后端 2318 passed / 无 skip。受保护 squash 合并 `dd2438d9c8edd029b36a816f35865e63ddc62c23`。main CI `39516930782` 三 job 成功。Render `/health/ready` ready、version 0.18.48、schema 0028（合并触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200；Actions deployment `39517821123`/continuation `39517821137` skipped（SLC_DEPLOY_ENABLED 未启用）。本地后端 SQLite 1682 passed / 648 skipped。
+
+未完成边界：双语只读历史界面、真实 PostgreSQL 长历史（10000）有界矩阵与批准供应商真实验收；Changeover/Batch 自身更正账本仍须单独设计。下一包 `production-actual-history-ui-read`。业务验收 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。
 
 ## 2026-10-21 生产实绩历史一致性修复：核验、修测试并合并（DeepSeek）
 

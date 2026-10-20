@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.48",
-  "baseline_commit": "7bb4f58b5b88ff7a7e03d9573869c336aa69f598",
+  "baseline_commit": "dd2438d9c8edd029b36a816f35865e63ddc62c23",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -532,7 +532,11 @@
             "backend/app/api/production_catalog.py",
             "backend/tests/test_production_actual_history_postgres.py",
             "backend/tests/test_production_actual_history_migration_postgres.py",
-            "backend/tests/test_production_catalog.py"
+            "backend/tests/test_production_catalog.py",
+            "backend/app/api/dashboard.py",
+            "backend/tests/test_actual_concurrency_postgres.py",
+            "backend/tests/test_manufacturing_views.py",
+            "backend/tests/test_release_downstream_summary.py"
           ],
           "acceptance_pending": [
             "Actual baseline/correction ledger, application-layer atomic reporting, database old-writer guards and all three production catalog effective projections are implemented",
