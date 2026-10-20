@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产实装旧写入保护与目录统一读取（Codex）
+
+基线 main `7bb4f58b5b88ff7a7e03d9573869c336aa69f598`，开放 PR 0；本轮独立包 `production-actual-old-writer-guard-catalog-read`。新增 Alembic `0028_deployment_actual_guard`：数据库在首次上报后拒绝 Deployment 物理 actual 五元组的非空覆盖与删除，仅允许完整首次上报，并用延迟约束要求同事务 immutable baseline；`FIRST_REPORT` 还必须绑定同一 Deployment、正文一致的 `ACTUAL_REPORTED` 原审计。迁移不改写 0027，downgrade 只移除本轮 guard，不删除历史账本。
+
+`/api/v1/production/catalog/{deployments|changeovers|batches}` 三类消费者统一从 `effective_actual_map` 读取实际 release/snapshot/status/version/time/history_state，changeover 与 batch binding 也以追加式更正后的有效值判断，不再把冻结物理基线误作当前值。真实 PostgreSQL 覆盖旧写覆盖/删除、无 baseline 首次写入回滚、迁移升降级与原服务首次上报；目录单测覆盖三类消费者在 correction 后的一致投影。API 目标 `0.18.48`，唯一 schema 目标 `0028_deployment_actual_guard`；Seed 未改，幂等性不受影响。
+
+本包不开放浏览器写入，不实现 Changeover/Batch 自身更正账本，不配置身份、秘密、计费、CI 或部署权限。公共样例仍只读，OIDC/真实提交关闭，内网未部署。完整本地/精确 PR head 三项 CI、受保护合并、main CI 与 Cloudflare/Render/Actions 结果以本包 PR 和最终核验为准，不复用旧证据。业务验收仍 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。本轮代码补齐保护与一致读取但不替代双语浏览器和批准提供方真实验收。下一候选 `production-actual-history-ui-read`：双语只读历史与长历史有界矩阵；Changeover/Batch 更正仍须单独设计。
+
 ## 2026-10-21 生产实绩历史一致性修复：核验、修测试并合并（DeepSeek）
 
 基线 main `64b658919d614db169ffeb1578b63aaafa7c0efc`，核验并恢复上一轮开放 PR#89 `codex/production-actual-history-consistency-repair`（未新建重复工作）。启动核验发现两项未闭环并已修复：(1) PR head CI 卡死成僵尸 run、mergeable_state=blocked；(2) 两个真实测试缺陷——`test_production_actual_history.py` 的 SQLite 时区断言（`dep.deployed_at` 读回丢 tzinfo）与 `test_production_concurrency_postgres.py` 缺失 `effective_actual` import（真实 PG CI 下 `NameError`）。本轮追加两 commit `019430f`（时区归一化）、`158906d`（补 import），本地后端 SQLite 全量 1681 passed / 396 skipped。

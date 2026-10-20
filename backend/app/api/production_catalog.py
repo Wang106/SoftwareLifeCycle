@@ -43,11 +43,11 @@ def software(releases,snapshots,release_id,snapshot_id=None):
         'version':r.version if r else None,'type':r.release_type if r else None,'snapshot_no':s.snapshot_no if s else None}
 
 
-def observed(deployment):
+def observed(deployment, actual):
     if not deployment: return 'DEPLOYMENT_MISSING'
-    if not deployment.actual_release_id and not deployment.actual_snapshot_id: return 'NOT_RECORDED'
-    if not deployment.actual_release_id or not deployment.actual_snapshot_id: return 'PARTIAL'
-    return 'MATCH' if (deployment.actual_release_id, deployment.actual_snapshot_id)==(deployment.expected_release_id,deployment.expected_snapshot_id) else 'MISMATCH'
+    if not actual or (not actual.actual_release_id and not actual.actual_snapshot_id): return 'NOT_RECORDED'
+    if not actual.actual_release_id or not actual.actual_snapshot_id: return 'PARTIAL'
+    return 'MATCH' if (actual.actual_release_id, actual.actual_snapshot_id)==(deployment.expected_release_id,deployment.expected_snapshot_id) else 'MISMATCH'
 
 
 @router.get('/{kind}')
@@ -73,12 +73,13 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
     status_counts=dict(db.execute(select(sub.c.status,func.count()).group_by(sub.c.status)).all())
     rows=db.scalars(stmt.order_by(getattr(model,number),model.id).limit(filters.limit).offset(filters.offset)).all()
     deployments={r.id:r for r in rows} if kind=='deployments' else objects(db,d,[r.deployment_id for r in rows])
+    effective_actuals=effective_actual_map(db,list(deployments.values())) if deployments else {}
     auth_ids=[r.authorization_id for r in rows]+[r.authorization_id for r in deployments.values()]
     auths=objects(db,a,auth_ids);lines=objects(db,l,[r.production_line_id for r in deployments.values()])
     sites=objects(db,s,[r.site_id for r in lines.values()]);customers=objects(db,Customer,[r.customer_id for r in sites.values()])
     projects=objects(db,Project,[r.project_id for r in sites.values()])
-    release_ids=[i for r in deployments.values() for i in [r.expected_release_id,r.actual_release_id]]+[r.release_id for r in auths.values()]
-    snapshot_ids=[i for r in deployments.values() for i in [r.expected_snapshot_id,r.actual_snapshot_id]]+[r.snapshot_id for r in auths.values()]
+    release_ids=[i for r in deployments.values() for i in [r.expected_release_id,effective_actuals[r.id].actual_release_id]]+[r.release_id for r in auths.values()]
+    snapshot_ids=[i for r in deployments.values() for i in [r.expected_snapshot_id,effective_actuals[r.id].actual_snapshot_id]]+[r.snapshot_id for r in auths.values()]
     if kind=='batches':release_ids.extend(r.release_id for r in rows);snapshot_ids.extend(r.snapshot_id for r in rows)
     if kind=='changeovers':release_ids.extend(i for r in rows for i in [r.from_release_id,r.to_release_id])
     releases=objects(db,Release,release_ids);snapshots=objects(db,ReleaseSnapshot,snapshot_ids)
@@ -87,13 +88,10 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
     if kind=='deployments' and rows:
         for child in [SoftwareChangeover,ProductionBatch]:
             counts[child]=dict(db.execute(select(child.deployment_id,func.count()).where(child.deployment_id.in_(deployments)).group_by(child.deployment_id)).all())
-    history_state={}
-    if kind=='deployments' and rows:
-        history_state=effective_actual_map(db, list(deployments.values()))
-        history_state={d_id: eff.history_state for d_id, eff in history_state.items()}
     items=[]
     for row in rows:
         dep=deployments.get(row.id if kind=='deployments' else row.deployment_id)
+        effective=effective_actuals.get(dep.id) if dep else None
         auth=auths.get(row.authorization_id);line=lines.get(dep.production_line_id) if dep else None
         site=sites.get(line.site_id) if line else None;customer=customers.get(site.customer_id) if site else None;project=projects.get(site.project_id) if site else None
         flags=[]
@@ -110,27 +108,28 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
         co=row if kind=='changeovers' else changeovers.get(row.changeover_id) if kind=='batches' and row.changeover_id else None
         if kind=='changeovers':check(bool(releases.get(row.from_release_id)),'from_release_missing')
         if co:
-            check(bool(dep and co.deployment_id==dep.id and co.authorization_id==row.authorization_id and co.to_release_id==dep.expected_release_id and co.to_release_id==dep.actual_release_id),'changeover_binding')
+            check(bool(dep and co.deployment_id==dep.id and co.authorization_id==row.authorization_id and co.to_release_id==dep.expected_release_id and effective and co.to_release_id==effective.actual_release_id),'changeover_binding')
         if kind=='batches':
             check(bool(auth and (row.release_id,row.snapshot_id)==(auth.release_id,auth.snapshot_id)),'batch_authorization_binding')
-            check(bool(dep and (row.release_id,row.snapshot_id)==(dep.actual_release_id,dep.actual_snapshot_id)),'batch_actual_binding')
+            check(bool(effective and (row.release_id,row.snapshot_id)==(effective.actual_release_id,effective.actual_snapshot_id)),'batch_actual_binding')
             snap=snapshots.get(row.snapshot_id)
             check(bool(releases.get(row.release_id) and snap and snap.release_id==row.release_id and snap.status=='FROZEN'),'batch_snapshot_binding')
             if row.changeover_id:check(co is not None,'changeover_missing')
-        items.append({'id':str(row.id),'record_no':getattr(row,number),'status':row.status,'binding_flags':flags,'context_consistent':not flags,
-            'deployment':{'id':str(dep.id),'deployment_no':dep.deployment_no,'status':dep.status} if dep else None,
+        items.append({'id':str(row.id),'record_no':getattr(row,number),'status':effective.status if kind=='deployments' and effective else row.status,'binding_flags':flags,'context_consistent':not flags,
+            'deployment':{'id':str(dep.id),'deployment_no':dep.deployment_no,'status':effective.status,'actual_version':effective.actual_version} if dep and effective else None,
             'authorization':{'id':str(auth.id),'authorization_no':auth.authorization_no,'status':auth.status} if auth else None,
             'customer':{'id':str(customer.id),'code':customer.code} if customer else None,'project':{'id':str(project.id),'code':project.project_code} if project else None,
             'site':{'site_code':site.site_code} if site else None,'line':{'line_code':line.line_code} if line else None,
             'expected':software(releases,snapshots,dep.expected_release_id,dep.expected_snapshot_id) if dep else None,
-            'actual':software(releases,snapshots,dep.actual_release_id,dep.actual_snapshot_id) if dep and (dep.actual_release_id or dep.actual_snapshot_id) else None,'software_observation':observed(dep),
+            'actual':software(releases,snapshots,effective.actual_release_id,effective.actual_snapshot_id) if effective and (effective.actual_release_id or effective.actual_snapshot_id) else None,'software_observation':observed(dep,effective),
             'recorded':software(releases,snapshots,row.release_id,row.snapshot_id) if kind=='batches' else software(releases,snapshots,row.to_release_id) if kind=='changeovers' else None,
             'from_release':software(releases,snapshots,row.from_release_id) if kind=='changeovers' else None,
             'changeover':{'changeover_no':co.changeover_no,'status':co.status} if co else None,
             'changeover_linked':bool(row.changeover_id) if kind=='batches' else None,
             'changeover_count':counts.get(SoftwareChangeover,{}).get(row.id,0) if kind=='deployments' else None,
             'batch_count':counts.get(ProductionBatch,{}).get(row.id,0) if kind=='deployments' else None,
-            'history_state':history_state.get(row.id) if kind=='deployments' else None,
-            'recorded_at':row.deployed_at if kind=='deployments' else row.changed_at if kind=='changeovers' else row.started_at})
+            'history_state':effective.history_state if effective else None,
+            'actual_version':effective.actual_version if effective else None,
+            'recorded_at':effective.deployed_at if kind=='deployments' and effective else row.changed_at if kind=='changeovers' else row.started_at})
     return {'total':total,'status_counts':status_counts,'next_offset':filters.offset+filters.limit if filters.offset+filters.limit<total else None,
         'items':items,'notice':'Binding checks and actual-software observations do not grant production permission. Changeovers have no stored snapshot; their snapshot filter scopes the deployment expected snapshot.'}

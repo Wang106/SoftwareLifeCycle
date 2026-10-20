@@ -22,6 +22,7 @@ from app.models.audit import AuditEvent
 from app.models.core import Customer, Project, Release, SoftwareProduct, Supplier
 from app.models.distribution import SoftwareAuthorization
 from app.models.production import Deployment, ManufacturingSite, ProductionBatch, ProductionLine
+from app.models.production_history import DeploymentActualBaseline
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.services.approval import ApprovalError
 from app.services.distribution import DistributionError
@@ -73,7 +74,17 @@ def pg(monkeypatch):
             deployments = [Deployment(deployment_no=f'DEP-{n}', authorization_id=authorization.id,
                 production_line_id=line.id, expected_release_id=release.id, expected_snapshot_id=snapshot.id,
                 actual_release_id=release.id, actual_snapshot_id=snapshot.id, status='MATCH') for n in (1, 2)]
-            db.add_all(deployments); db.commit()
+            db.add_all(deployments); db.flush()
+            db.add_all([DeploymentActualBaseline(
+                deployment_id=deployment.id,
+                actual_release_id=deployment.actual_release_id,
+                actual_snapshot_id=deployment.actual_snapshot_id,
+                recorded_status=deployment.status,
+                recorded_actual_version=deployment.actual_version,
+                recorded_deployed_at=deployment.deployed_at,
+                source='IMPORTED_CURRENT',
+            ) for deployment in deployments])
+            db.commit()
             ids = {'release': release.id, 'authorization': authorization.id}
         yield engine, ids
     finally:
@@ -243,7 +254,13 @@ def test_batch_refreshes_scope_state_loaded_before_lock(pg, stale):
         db.commit()  # identity map deliberately retains the original values
         with Session(engine) as writer:
             if stale == 'deployment':
-                row = writer.get(Deployment, deployment.id); row.status = 'MISMATCH'
+                source = writer.get(Release, ids['release'])
+                replacement = Release(
+                    software_id=source.software_id, release_type='STANDARD',
+                    version='stale-expected-' + uuid.uuid4().hex)
+                writer.add(replacement); writer.flush()
+                row = writer.get(Deployment, deployment.id)
+                row.expected_release_id = replacement.id
             else:
                 row = writer.get(SoftwareAuthorization, authorization.id); row.batch_limit = 0
             writer.commit()

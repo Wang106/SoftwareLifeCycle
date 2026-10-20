@@ -6,6 +6,8 @@ from test_impact_assessments import context
 from test_distribution_catalog import chain
 from app.main import app
 from app.models.production import Deployment,SoftwareChangeover,ManufacturingSite,ProductionLine,ProductionBatch
+from app.models.production_history import DeploymentActualBaseline
+from app.services.production import ProductionService
 from app.api.production_catalog import ProductionFilters,production_catalog
 
 @pytest.fixture
@@ -31,6 +33,32 @@ def test_exact_history_and_optional_changeover(production):
     assert batch['changeover']['changeover_no']=='CO-1' and not catalog(db,'batches')['items'][1]['changeover_linked']
     change=catalog(db,'changeovers')['items'][0]
     assert change['recorded']['release_id']==str(release.id) and change['recorded']['snapshot_id'] is None and change['context_consistent']
+
+
+def test_all_catalog_consumers_use_corrected_effective_actual(production):
+    db,release,snapshot,old,auth,dep,pending,co,batches,site,line=production
+    db.add(DeploymentActualBaseline(
+        deployment_id=dep.id, actual_release_id=dep.actual_release_id,
+        actual_snapshot_id=dep.actual_snapshot_id, recorded_status=dep.status,
+        recorded_actual_version=dep.actual_version,
+        recorded_deployed_at=dep.deployed_at, source='IMPORTED_CURRENT'))
+    db.commit()
+    ProductionService(db).report_actual(
+        dep.deployment_no, release.id, snapshot.id,
+        request_id=uuid.uuid4(), expected_version=0,
+        correction_reason='Correct demo deployment actual snapshot')
+    deployment=catalog(db,'deployments',deployment_id=dep.id)['items'][0]
+    changeover=catalog(db,'changeovers',deployment_id=dep.id)['items'][0]
+    batch=catalog(db,'batches',deployment_id=dep.id)['items'][0]
+    for item in (deployment,changeover,batch):
+        assert item['actual']['snapshot_id']==str(snapshot.id)
+        assert item['history_state']=='IMPORTED_CORRECTED'
+        assert item['actual_version']==1
+        assert item['deployment']['status']=='MISMATCH'
+    assert deployment['status']=='MISMATCH'
+    assert deployment['software_observation']=='MISMATCH'
+    assert 'batch_actual_binding' in batch['binding_flags']
+    assert 'changeover_binding' not in changeover['binding_flags']
 
 @pytest.mark.parametrize('kind,total',[('deployments',2),('changeovers',1),('batches',2)])
 def test_filters_counts_and_paging(production,kind,total):
