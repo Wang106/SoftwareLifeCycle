@@ -502,10 +502,16 @@
             "frontend/lib/release-chain-governance.ts",
             "frontend/tests/release-chain-governance-read.test.cjs",
             "docs/release-chain-revocation-browser-read-only.md",
-            "docs/release-chain-revocation-submission-design-review.md"
+            "docs/release-chain-revocation-submission-design-review.md",
+            "frontend/lib/release-chain-revocation-transport.ts",
+            "frontend/lib/release-chain-revocation-audit.ts",
+            "frontend/app/auth/release-chain-revocation/route.ts",
+            "frontend/app/auth/release-chain-revocation-receipt/route.ts",
+            "frontend/tests/release-chain-revocation-transport.test.cjs",
+            "frontend/tests/release-chain-revocation-wiring.test.cjs"
           ],
           "acceptance_pending": [
-            "Permanent backend revocation ledger, four scoped commands, unified governance reads, old-writer guards and bilingual read-only authority-path history implemented; controlled submission/recovery protocol and approved-provider multi-user acceptance remain pending"
+            "Permanent backend revocation ledger, four scoped commands, unified governance reads, old-writer guards, bilingual read-only authority-path history and an independently default-off controlled submission/audit-only recovery proxy implemented; bilingual confirmation/audit-only recovery UI and approved-provider multi-user acceptance remain pending"
           ]
         },
         {

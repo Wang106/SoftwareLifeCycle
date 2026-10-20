@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
+
+起点远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78），开放PR 0、无同包远端分支；独立 `codex/release-chain-revocation-browser-protocol`。已核对PR78/main CI三项成功（基线证据，本包精确head另验）。
+
+本包实现严格 discriminated 撤销命令 `frontend/lib/release-chain-revocation-transport.ts`：四类 target_kind、expected_context v1（version 整数1、七 canonical lowercase UUID、按目标深度强制可空/非空且 target_id 等于对应节点）、reason 1–4000、envelope 按真实字节 24KiB 上限、四类固定路径与 action、Submission 状态机 lost 锁原字节/audit-only recover。`release-chain-revocation-audit.ts` 严格校验 `EVT-RCR-{hex}` 的 event_type/entity_type/entity_ref/action/detail/payload（revocation_id、三身份 UUID、reason、protocol_version=1、review_context、request）与 actor 绑定、declared_actor_name=null，不借当前状态推断原结果、不把 legacy 审计升级为 v1 回执。
+
+新增两条同源代理 `/auth/release-chain-revocation`（submit）/`-receipt`（recover），仅 POST；`browser-auth.ts` 增三开关精确匹配 `releaseChainRevocationSubmissionConfigured` 与 `handleReleaseChainRevocation`（24KiB），`browser-session.ts` 增 `executeReleaseChainRevocationCommand`（一次 POST 后经原审计确认，审计响应 64KiB 上限，recover 允许只读会话）。`check-browser-auth.cjs` 增补两条路由禁用检查与环境变量。
+
+本地前端完整 1483 passed/0 failed/0 skipped（新增 8 项），TypeScript `--noEmit` 通过；本机 Next/OpenNext 构建与 auth:check 因沙箱拦截 `.next` 写入未本地完成，须由本包精确 head frontend job 证明。无后端/API/schema/Migration/Seed/依赖/CI/调度/身份/提供方配置变更，API0.18.45/schema0026、Seed 幂等性不变。契约见 `docs/release-chain-revocation-submission-design-review.md`；精确 PR/合并/main/Cloudflare/Render 最终证据记录本包 PR。
+
+业务 36/44=82%；模块 100/100演示/100演示/100/89/60/17；计划 100/100/20/33/40/20/0。公共只读/OIDC/真实提交关闭、内网未部署、真实多用户验收未完成。下一独立包 `release-chain-revocation-ui-recovery`：双语确认/结果 workbench、governance 页入口、i18n 与 audit-only 导入/导出，不启用真实开关；生产事实更正、OIDC 提供方/多用户验收继续独立待定。
+
 ## 2026-10-20 撤销审核上下文后台绑定（Codex / ChatGPT Work）
 
 起点远端main `91ef88765d2bf666c6239b0359e8368a42efbc41`（PR77），开放PR 0、无同包远端分支；独立 `codex/release-chain-revocation-review-binding-backend`。已核对PR77/main CI39425287506三个job成功、Cloudflare生产961463a0-6c41-439e-8f1a-6429c6987422成功，Render既有live dep-dbah7n942hec73dkdv90仍对应后台943a342d；Actions39426311122/39426310917 skipped。旧候选ReleaseDecision实现已完成，不重做。

@@ -1,6 +1,7 @@
 import type {ImpactCorrectionCommand} from './impact-correction-transport';
 import type {ImpactWithdrawalCommand} from './impact-withdrawal-transport';
 import type {ReleaseDecisionSupersessionCommand} from './release-decision-supersession-transport';
+import type {ReleaseChainRevocationCommand} from './release-chain-revocation-transport';
 import {parseAcceptanceCorrectionCommand,acceptanceCorrectionPath,acceptanceCorrectionEvent,type AcceptanceCorrectionCommand} from './acceptance-correction-transport';
 import {projectAcceptanceCorrectionAudit} from './acceptance-correction-audit';
 import {parseEvidenceCommand,evidencePath,evidenceEvent,type EvidenceCommand} from './evidence-command-transport';
@@ -904,6 +905,40 @@ export async function executeReleaseDecisionSupersessionCommand(config:SessionCo
     envelope.token,fetcher,{},envelope.sid);
   if(!audit||audit.status!==200)return unknown;
   const receipt=await projectReleaseDecisionSupersessionAudit(audit.value,command,identity.principal.id);
+  return receipt?{status:200,value:receipt}:unknown;
+}
+
+export async function executeReleaseChainRevocationCommand(config:SessionConfig,cookie:string|undefined,
+  input:ReleaseChainRevocationCommand,mode:'submit'|'recover',fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}>{
+  const {parseReleaseChainRevocationCommand,releaseChainRevocationPath,releaseChainRevocationEvent}=
+    await import('./release-chain-revocation-transport');
+  const {projectReleaseChainRevocationAudit}=await import('./release-chain-revocation-audit');
+  const command=parseReleaseChainRevocationCommand(input);
+  if(!command||!['submit','recover'].includes(mode))return{status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);if(!identity)return{status:401,value:{error:'session_required'}};
+  if(mode==='submit'&&identity.read_only_mode)return{status:403,value:{error:'read_only_mode'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const unknown={status:502,value:{error:'outcome_unknown'}};
+  if(mode==='submit'){
+    const result=await privateRequest(config,releaseChainRevocationPath(command),envelope.token,fetcher,
+      {method:'POST',body:JSON.stringify(command.body)},envelope.sid);
+    if(!result)return unknown;
+    if(![200,201].includes(result.status)){
+      const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',422:'invalid_request'};
+      if(denied[result.status])return{status:result.status,value:{error:denied[result.status]}};
+      if(result.status===409){
+        const detail=result.value&&typeof result.value==='object'?(result.value as Record<string,unknown>).detail:null;
+        return{status:409,value:{error:typeof detail==='string'&&/^request_id already used/.test(detail)?'request_conflict':'submission_conflict'}};
+      }
+      return unknown;
+    }
+  }
+  // The audit response may carry a full review context and original request, so it is bounded
+  // independently and larger than the legacy 16KiB response limit.
+  const audit=await privateRequest(config,'/api/v1/activity/'+releaseChainRevocationEvent(command),
+    envelope.token,fetcher,{},envelope.sid,65536);
+  if(!audit||audit.status!==200)return unknown;
+  const receipt=await projectReleaseChainRevocationAudit(audit.value,command,identity.principal.id);
   return receipt?{status:200,value:receipt}:unknown;
 }
 
