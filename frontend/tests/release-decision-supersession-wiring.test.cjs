@@ -20,6 +20,6 @@ test('effective decision detail exposes preparation only and commands page keeps
  const detail=read('app/release-decisions/[decisionNo]/page.tsx'),commands=read('app/commands/page.tsx');
  assert.match(detail,/row\.effective&&row\.release&&row\.snapshot/);
  assert.match(detail,/operation:'decision-supersession'/);
- assert.match(commands,/releaseDecisionSupersessionSubmissionConfigured/);
- assert.match(commands,/!decisionSupersessionContextRequested && <CommandWorkbench/);
+  assert.match(commands,/releaseDecisionSupersessionSubmissionConfigured/);
+  assert.match(commands,/!decisionSupersessionContextRequested && !releaseChainRevocationContextRequested && <CommandWorkbench/);
 });

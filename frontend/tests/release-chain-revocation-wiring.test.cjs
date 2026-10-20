@@ -27,3 +27,19 @@ test('four revocation targets map to their fixed API paths and actions',()=>{
   assert.match(source,/DISTRIBUTION_REVOKED/);
   assert.match(source,/AUTHORIZATION_REVOKED/);
 });
+test('recovery export/import is canonical, origin-bound and audit-only',()=>{
+  const source=read('lib/release-chain-revocation-recovery.ts');
+  assert.match(source,/slc-release-chain-revocation-recovery/);
+  assert.match(source,/validOrigin\(origin\)/);
+  assert.match(source,/new ReleaseChainRevocationSubmission\(confirmReleaseChainRevocation\(c,true\)\)/);
+  assert.match(source,/void controller\.recover\(false\)/);
+  assert.match(source,/queried=true/);
+});
+test('commands page exposes a separate revocation workbench and governance stays read-only',()=>{
+  const commands=read('app/commands/page.tsx'),governance=read('app/governance/[kind]/[targetId]/page.tsx');
+  assert.match(commands,/releaseChainRevocationSubmissionConfigured/);
+  assert.match(commands,/ReleaseChainRevocationWorkbench/);
+  assert.match(commands,/!releaseChainRevocationContextRequested && <CommandWorkbench/);
+  assert.match(commands,/query\.operation === 'release-chain-revocation'/);
+  assert.doesNotMatch(governance,/\/commands/);
+});

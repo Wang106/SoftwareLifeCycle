@@ -508,7 +508,11 @@
             "frontend/app/auth/release-chain-revocation/route.ts",
             "frontend/app/auth/release-chain-revocation-receipt/route.ts",
             "frontend/tests/release-chain-revocation-transport.test.cjs",
-            "frontend/tests/release-chain-revocation-wiring.test.cjs"
+            "frontend/tests/release-chain-revocation-wiring.test.cjs",
+            "frontend/lib/release-chain-revocation-recovery.ts",
+            "frontend/components/release-chain-revocation-workbench.tsx",
+            "frontend/components/release-chain-revocation-result.tsx",
+            "frontend/tests/release-chain-revocation-ui.test.cjs"
           ],
           "acceptance_pending": [
             "Permanent backend revocation ledger, four scoped commands, unified governance reads, old-writer guards, bilingual read-only authority-path history and an independently default-off controlled submission/audit-only recovery proxy implemented; bilingual confirmation/audit-only recovery UI and approved-provider multi-user acceptance remain pending"

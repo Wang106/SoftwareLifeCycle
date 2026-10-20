@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-20 发布链撤销双语确认/结果与审计恢复 UI（DeepSeek）
+
+起点远端 main `489df90966a9a97ea76a67de005f602eee6fb64c`（PR79），开放PR 0、无同包远端分支；独立 `codex/release-chain-revocation-ui-recovery`。已核对 main CI `39445167814` 三项成功、Cloudflare 生产与 Render 既有 live（基线证据，本包精确 head 另验）。
+
+本包在上一包 transport/audit/proxy 之上补齐双语 UI 与 audit-only 恢复，不启用真实开关。新增 `frontend/lib/release-chain-revocation-recovery.ts`：`slc-release-chain-revocation-recovery` 版本化导出/导入，仅携带原 command 与 expected_context，origin 精确绑定、49KiB 字节上限、canonical 往返；导入恒 audit-only（只读 Submission + recover(false)），永不还原为可发送草稿。新增 `release-chain-revocation-workbench.tsx`（四类 kind/精确 target/reason/完整 expected_context 准备→确认→一次发送；copy request/recovery text 与 audit-only 导入分离；unknown 锁原字节仅 recover）与 `release-chain-revocation-result.tsx`（仅白名单原审计回执，不透传 token/当前状态）。`commands/page.tsx` 增加独立默认关闭的 `operation=release-chain-revocation` 入口；governance 只读页保持纯只读、不加提交入口（不削弱既有只读门禁）；`zh.json` 新增 33 词条。
+
+本地前端完整 1491 passed/0 failed/0 skipped（新增 8 项 UI/wiring），`tsc --noEmit` 与 `report_development_plan_progress.py --check` 通过；本机 Next/OpenNext 构建与 auth:check 由精确 head frontend job 证明。无后端/API/schema/Migration/Seed/依赖/CI/调度/身份/提供方配置变更，API0.18.45/schema0026、Seed 幂等性不变。契约见 `docs/release-chain-revocation-submission-design-review.md`；精确 PR/合并/main/Cloudflare/Render 最终证据记录本包 PR。
+
+业务 36/44=82%；模块 100/100演示/100演示/100/89/60/17；计划 100/100/20/33/40/20/0。公共只读/OIDC/真实提交关闭、内网未部署、真实多用户验收未完成。撤销链路 UI 至此完成四类确认/结果/恢复；后续独立待定：生产事实更正（Deployment/Changeover/Batch）、OIDC 提供方/真实多用户中英文浏览器验收，均需批准提供方环境，不提前混入。下一候选 `production-correction` 设计审查或真实提供方验收，视批准环境而定。
+
 ## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
 
 起点远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78），开放PR 0、无同包远端分支；独立 `codex/release-chain-revocation-browser-protocol`。已核对PR78/main CI三项成功（基线证据，本包精确head另验）。

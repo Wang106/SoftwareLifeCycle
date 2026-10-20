@@ -1,5 +1,19 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-20 发布链撤销双语确认/结果与审计恢复 UI（DeepSeek）
+
+基线远端 main `489df90966a9a97ea76a67de005f602eee6fb64c`（PR79 已合并），开放 PR 0、无同包未完成分支。独立 `codex/release-chain-revocation-ui-recovery`。启动已核对 main CI `39445167814` 三项成功、Cloudflare 生产与 Render 既有 live（基线证据，本包精确 head 另验）。
+
+新增 `frontend/lib/release-chain-revocation-recovery.ts`：版本化 `slc-release-chain-revocation-recovery` 导出/导入，仅携带原 command（operation/target_kind/target_id/body 含 expected_context），origin 精确绑定、49KiB 字节上限、canonical 往返校验；导入恒为 audit-only（构造只读 Submission 并 `recover(false)`），永不还原成可发送草稿、不自动 POST/重试/查询。
+
+新增 `frontend/components/release-chain-revocation-workbench.tsx`：四类 target_kind 选择、精确 target_id、reason（≤4000）与完整 expected_context（release/snapshot/decision + 按深度强制 delivery/distribution/authorization）准备表单；确认复核、发送一次、`Copy confirmed request`、`Copy recovery text` 与 audit-only 导入区分离；imported 只读提示、unknown 锁原字节仅 audit-only recover、关闭开关/失权后原 command 保留。新增 `release-chain-revocation-result.tsx` 仅白名单渲染原审计回执（revocation_no/target_kind/reason/原审计链接），不透传 token 或当前状态。
+
+`commands/page.tsx` 增加独立默认关闭的 `operation=release-chain-revocation` 入口（四类 kind/target/context query 预填，与 CommandWorkbench 分离）；governance 只读页保持不变（无提交入口，不削弱既有只读门禁）。`zh.json` 新增 33 条双语词条。
+
+本地前端完整 1491 passed/0 failed/0 skipped（原 1483 新增 8 项：4 UI + 2 wiring + 2 recovery/wiring），TypeScript `--noEmit` 通过；`report_development_plan_progress.py --check` 通过。本机 Next/OpenNext 构建与 `auth:check` 因沙箱拦截 `.next` 写入未本地完成，由本包精确 PR head 的 frontend job 证明。无后端/API/schema/Migration/Seed/依赖/CI/调度/身份/提供方配置变更，API0.18.45/schema0026、Seed 幂等性不变。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0，验收增量 0。公共只读/OIDC/真实提交关闭、内网未部署；真实多用户桌面/手机与中英文验收未完成。精确 PR head 完整 CI、受保护合并及 main/Cloudflare/Render 证据记录本包 PR。
+
 ## 2026-10-20 发布链撤销受控提交浏览器协议（DeepSeek）
 
 基线远端 main `f221bdddc0e110fe61c9d72694408d78a64989b5`（PR78 已合并），开放 PR 0、无同包未完成分支。独立 `codex/release-chain-revocation-browser-protocol`。已核对 PR78/main CI 三项成功、Render 既有 live 与 Cloudflare 生产成功（基线证据，本包精确 head 另验）。
