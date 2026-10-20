@@ -1,5 +1,12 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-21 生产实绩历史一致性修复（Codex / ChatGPT Work）
+
+基线真实 main `64b658919d614db169ffeb1578b63aaafa7c0efc`（PR88 已合并），恢复既有独立分支 `codex/production-actual-history-consistency-repair`，未新建重复工作。本包只修应用层一致性：Deployment 首次 Actual 报告写物理列并建立不可变基线；此后无键覆盖返回冲突，带 `request_id + expected_version + correction_reason` 的更正仅追加账本与原子审计，不再重写物理事实。有效历史投影用基线、按 Deployment 聚合的最大 revision 及对应原审计事件有界读取；更正发生时间取原审计 `occurred_at`。Deployment 详情、Batch 详情及批次创建校验统一使用有效 Actual。新增单元回归覆盖物理冻结、无键覆盖拒绝、原审计时间重放及批次按有效历史拒绝不匹配软件。API 0.18.47，schema 仍为 0027，无 migration、Seed 或依赖改动。
+
+本包不扩大到数据库层旧写者 trigger、完整 production catalog 投影、双语历史界面或真实多用户验收；这些仍为后续独立包。公共演示只读，OIDC/真实提交关闭，内网未部署。当前环境无本地 shell/依赖，未伪造本地验证；以本 PR 精确 head 的 Backend/PostgreSQL、Frontend/Cloudflare build、CI acceptance 三项结果为合并门槛。业务 36/44=82% 与七模块 100/100演示/100演示/100/89/60/17、七计划 100/100/20/33/40/20/0 暂不提升。
+
+
 ## 2026-10-21 生产实际历史追加账本与只读投影（DeepSeek）
 
 基线真实 main `27f9b2470065bb8358f5db532868583b64c241ce`（PR86 已合并），开放 PR 0、无同包未完成分支；独立 `codex/production-actual-history-backend-read`。已核对 PR86 main CI `39473062703` 三 job（Backend/PostgreSQL、Frontend/Cloudflare build、CI acceptance）全绿、部署 `39474452277`/continuation `39474452450` skipped；旧候选 `release-decision-supersession-backend-read` 已被覆盖，按最新 HANDOFF 选 `production-actual-history-backend-read`（设计 §9）。

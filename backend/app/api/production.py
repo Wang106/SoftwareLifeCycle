@@ -18,6 +18,7 @@ from app.models.production import (
     SoftwareChangeover,
 )
 from app.models.snapshot import ReleaseSnapshot
+from app.models.audit import AuditEvent
 from app.models.production_history import (
     DeploymentActualBaseline,
     DeploymentActualCorrection,
@@ -95,14 +96,14 @@ def _release_ref(db: Session, release_id, snapshot_id):
     }
 
 
-def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50):
+def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50, effective=None):
     """Bounded, read-only actual history for a Deployment.
 
-    The physical columns hold the current effective value; the baseline and
-    correction ledger hold the immutable append-only history. Returns a compact
+    The physical columns preserve the first report; the baseline and correction
+    ledger resolve the effective append-only history. Returns a compact
     shape suitable for detail/profile responses; never loads the full audit.
     """
-    eff = effective_actual(db, deployment)
+    eff = effective or effective_actual(db, deployment)
     baseline = db.scalar(
         select(DeploymentActualBaseline)
         .where(DeploymentActualBaseline.deployment_id == deployment.id)
@@ -113,6 +114,14 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50):
         .order_by(DeploymentActualCorrection.revision.desc())
         .limit(limit)
     ).all()
+    correction_times = dict(db.execute(
+        select(AuditEvent.event_no, AuditEvent.occurred_at).where(
+            AuditEvent.event_no.in_([row.audit_event_no for row in corrections]),
+            AuditEvent.entity_type == "DEPLOYMENT",
+            AuditEvent.entity_id == deployment.id,
+            AuditEvent.action == "ACTUAL_CORRECTED",
+        )
+    ).all()) if corrections else {}
     return {
         "history_state": eff.history_state,
         "recorded_baseline": {
@@ -122,6 +131,7 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50):
                 db, baseline.actual_release_id, baseline.actual_snapshot_id
             ) if baseline.actual_release_id or baseline.actual_snapshot_id else None,
             "recorded_status": baseline.recorded_status,
+            "deployed_at": baseline.recorded_deployed_at,
             "recorded_at": baseline.recorded_at,
         } if baseline else None,
         "correction_count": eff.correction_count,
@@ -133,6 +143,7 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50):
                 if row.actual_release_id or row.actual_snapshot_id else None,
                 "correction_reason": row.correction_reason,
                 "actor_name": row.actor_name,
+                "deployed_at": correction_times.get(row.audit_event_no),
                 "recorded_at": row.recorded_at,
                 "audit_event_no": row.audit_event_no,
             }
@@ -142,6 +153,7 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50):
 
 
 def _deployment_detail(db: Session, deployment: Deployment, *, include_history: bool = True):
+    effective = effective_actual(db, deployment)
     authorization = db.get(SoftwareAuthorization, deployment.authorization_id)
     line = db.get(ProductionLine, deployment.production_line_id)
     site = db.get(ManufacturingSite, line.site_id) if line else None
@@ -160,7 +172,7 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
     result = {
         "id": str(deployment.id),
         "deployment_no": deployment.deployment_no,
-        "status": deployment.status,
+        "status": effective.status,
         "authorization": {
             "id": str(authorization.id),
             "authorization_no": authorization.authorization_no,
@@ -190,10 +202,10 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
             db, deployment.expected_release_id, deployment.expected_snapshot_id
         ),
         "actual": _release_ref(
-            db, deployment.actual_release_id, deployment.actual_snapshot_id
-        ) if deployment.actual_release_id and deployment.actual_snapshot_id else None,
-        "deployed_at": deployment.deployed_at,
-        "actual_version": deployment.actual_version,
+            db, effective.actual_release_id, effective.actual_snapshot_id
+        ) if effective.actual_release_id and effective.actual_snapshot_id else None,
+        "deployed_at": effective.deployed_at,
+        "actual_version": effective.actual_version,
         "changeovers": [
             {
                 "id": str(row.id),
@@ -221,7 +233,7 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
         ],
     }
     result["governance"] = _authorization_governance(db, authorization)
-    result["actual_history"] = _actual_history(db, deployment)
+    result["actual_history"] = _actual_history(db, deployment, effective=effective)
     return result
 
 
@@ -391,15 +403,16 @@ def get_batch(batch_no: str, db: Session = Depends(get_db)):
     if batch is None:
         raise HTTPException(status_code=404, detail="production batch not found")
     deployment = db.get(Deployment, batch.deployment_id)
+    actual = effective_actual(db, deployment) if deployment else None
     authorization = db.get(SoftwareAuthorization, batch.authorization_id)
     changeover = db.get(SoftwareChangeover, batch.changeover_id) if batch.changeover_id else None
     return {
         "id": str(batch.id), "batch_no": batch.batch_no, "status": batch.status,
         "started_at": batch.started_at, "ended_at": batch.ended_at, "note": batch.note,
         "software": _release_ref(db, batch.release_id, batch.snapshot_id),
-        "deployment": {"deployment_no": deployment.deployment_no, "status": deployment.status,
-                       "actual": _release_ref(db, deployment.actual_release_id, deployment.actual_snapshot_id)
-                       if deployment.actual_release_id or deployment.actual_snapshot_id else None}
+        "deployment": {"deployment_no": deployment.deployment_no, "status": actual.status,
+                       "actual": _release_ref(db, actual.actual_release_id, actual.actual_snapshot_id)
+                       if actual.actual_release_id or actual.actual_snapshot_id else None}
                       if deployment else None,
         "authorization": {"authorization_no": authorization.authorization_no, "status": authorization.status,
                           "batch_limit": authorization.batch_limit} if authorization else None,
@@ -408,10 +421,10 @@ def get_batch(batch_no: str, db: Session = Depends(get_db)):
         "matches": {
             "authorized_release": batch.release_id == authorization.release_id if authorization else None,
             "authorized_snapshot": batch.snapshot_id == authorization.snapshot_id if authorization else None,
-            "deployed_release": batch.release_id == deployment.actual_release_id
-            if deployment and deployment.actual_release_id else None,
-            "deployed_snapshot": batch.snapshot_id == deployment.actual_snapshot_id
-            if deployment and deployment.actual_snapshot_id else None,
+            "deployed_release": batch.release_id == actual.actual_release_id
+            if actual and actual.actual_release_id else None,
+            "deployed_snapshot": batch.snapshot_id == actual.actual_snapshot_id
+            if actual and actual.actual_snapshot_id else None,
             "changeover_deployment": changeover.deployment_id == batch.deployment_id if changeover else None,
         },
     }

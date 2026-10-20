@@ -1,8 +1,21 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.46`; readiness requires `0027_production_actual_history`. This is the code contract, not verified Render deployment metadata.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.47`; readiness requires `0027_production_actual_history`. This is the code contract, not verified Render deployment metadata.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
+
+## Production actual history consistency (0.18.47)
+
+Deployment Actual is a write-once physical fact after the first report. A later report
+must provide `request_id`, `expected_version` and `correction_reason`; it appends
+a correction ledger row and audit event without rewriting the original deployment
+columns. Effective Actual reads use the immutable baseline plus the highest correction
+revision, with correction occurrence time recovered from the original atomic audit
+event. Deployment detail, batch detail and batch-creation authorization consume this
+effective projection. A request without an id may create the first report only; it
+cannot replace an existing report. Schema remains `0027_production_actual_history`.
+Database-level guards for legacy writers and complete catalog projection remain a
+separate bounded package, so this version does not claim the full correction milestone.
 
 ## Release-chain revocation (0.18.45)
 

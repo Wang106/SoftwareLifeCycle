@@ -7,6 +7,7 @@ from app.api.production import get_batch, list_batches
 from app.models.core import Release
 from app.models.distribution import SoftwareAuthorization
 from app.models.production import Deployment, ProductionBatch, SoftwareChangeover
+from app.models.production_history import DeploymentActualBaseline, DeploymentActualCorrection
 from app.models.snapshot import ReleaseSnapshot
 
 
@@ -29,6 +30,12 @@ class Session:
     def scalars(self, statement):
         assert statement.column_descriptions[0]["entity"] is ProductionBatch
         return Rows(self.batches)
+
+    def scalar(self, statement):
+        entity = statement.column_descriptions[0].get("entity")
+        if entity in (DeploymentActualBaseline, DeploymentActualCorrection):
+            return None
+        return 0
 
     def get(self, model, identifier):
         return self.objects.get((model, identifier))

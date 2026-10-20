@@ -108,12 +108,13 @@ def test_failure_rolls_back_and_key_reusable(actual,monkeypatch,failure,correcti
     assert not db.in_transaction() and counts(db)==before and state(actual)==current
     assert run(actual,data).actual_version==(2 if correction else 1)
 
-def test_legacy_overwrite_advances_version(actual):
+def test_no_key_first_report_cannot_be_overwritten(actual):
     data=values(actual,request_id=None,expected_version=None)
     assert run(actual,data).actual_version==1
-    before=counts(actual[0][0]);assert run(actual,data).actual_version==2
-    assert counts(actual[0][0])[AuditEvent]==before[AuditEvent]+1
-    with pytest.raises(ProductionError,match='actual_version'):run(actual,{**data,'expected_version':1})
+    before=counts(actual[0][0])
+    with pytest.raises(ProductionError,match='requires request_id'):run(actual,data)
+    assert counts(actual[0][0])==before and actual[0][5].actual_version==1
+    with pytest.raises(ProductionError,match='requires request_id'):run(actual,{**data,'expected_version':1})
 
 def test_legacy_baseline_requires_reason_at_version_zero(production):
     db=production[0];data=dict(deployment_no='DEP',actual_release_id=production[6].id,actual_snapshot_id=production[7].id,request_id=uuid.uuid4(),expected_version=0)

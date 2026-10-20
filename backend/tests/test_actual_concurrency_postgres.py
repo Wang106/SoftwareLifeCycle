@@ -66,17 +66,19 @@ def test_cached_deployment_version_is_refreshed_before_conflict(actual):
         with Session(engine) as db:assert db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1')).actual_version==1
 
 
-def test_replay_original_result_after_correction_and_legacy_write(actual):
+def test_replay_original_result_after_correction_and_no_key_rejection(actual):
     engine,ids=actual;key=uuid.uuid4()
     with Session(engine) as db:first=report(db,ids,key,deployed_at=datetime(2026,1,1))
     assert first.deployed_at==datetime(2026,1,1,tzinfo=timezone.utc)
     with Session(engine) as db:report(db,ids,uuid.uuid4(),expected_version=1,correction_reason='Correct timestamp',deployed_at=datetime(2026,1,2))
-    with Session(engine) as db:report(db,ids,None,expected_version=None)
+    with Session(engine) as db:
+        with pytest.raises(ProductionError,match='requires request_id'):
+            report(db,ids,None,expected_version=None)
     with Session(engine) as db:
         before=count(db,AuditEvent)
         assert report(db,ids,key,deployed_at=datetime(2026,1,1))==first
         assert count(db,AuditEvent)==before
-        assert db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1')).actual_version==3
+        assert db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1')).actual_version==1
 
 
 @pytest.mark.parametrize('failure',['audit_after_flush','commit'])
@@ -119,7 +121,7 @@ def test_correction_competition_same_expected_version(actual,monkeypatch):
         events=db.scalars(select(AuditEvent).where(AuditEvent.entity_ref=='DEP-1').order_by(AuditEvent.created_at)).all()
         assert len(events)==2 and events[1].action=='ACTUAL_CORRECTED'
         assert events[1].payload_json['before']==events[0].payload_json['after']
-        assert db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1')).actual_version==2
+        assert db.scalar(select(Deployment).where(Deployment.deployment_no=='DEP-1')).actual_version==1
 
 
 def test_actual_then_batch_observes_committed_match(actual,monkeypatch):

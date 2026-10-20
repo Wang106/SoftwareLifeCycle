@@ -1,5 +1,12 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产实绩历史一致性修复（Codex / ChatGPT Work）
+
+基线 main `64b658919d614db169ffeb1578b63aaafa7c0efc`，恢复分支 `codex/production-actual-history-consistency-repair`。范围严格限定为应用层：首次 Actual 写物理列并建立基线；后续无键覆盖拒绝；带幂等键/期望版本/原因的更正只追加 `DeploymentActualCorrection` 与同事务审计。有效读取以基线 + 每 Deployment 最大 revision + 对应原审计事件为有界投影，更正时间由原审计 `occurred_at` 恢复；Deployment/Batch 详情和批次创建许可使用同一有效值。新增物理冻结、无键拒绝、原审计重放、下游批次拒绝回归。API 0.18.47 / schema 0027；无 migration、Seed、依赖、身份、CI 或部署权限改动。
+
+未完成边界：数据库层旧写者 guard、production catalog 全消费者统一、双语只读历史界面、真实 PostgreSQL 并发/旧库升级降级/长历史及批准供应商验收。当前运行无本地测试环境，以 PR 精确 head 三项必需 CI 为准。下一包在本包合并后应为 `production-actual-old-writer-guard-catalog-read`，不得直接开始 Changeover/Batch 更正账本。业务及七项百分比保持 36/44=82%；模块 100/100演示/100演示/100/89/60/17；计划 100/100/20/33/40/20/0。
+
+
 ## 2026-10-21 生产实际历史追加账本与只读投影（DeepSeek）
 
 基线 main `27f9b2470065bb8358f5db532868583b64c241ce`（PR86），开放 PR 0。独立分支 `codex/production-actual-history-backend-read`。旧候选 `release-decision-supersession-backend-read` 已被 PR68/69/70 覆盖；按设计 §9 收窄为仅 Actual 基线+追加更正+只读投影，Changeover/Batch 自身更正账本另包。

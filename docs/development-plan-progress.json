@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.46",
-  "baseline_commit": "c148c96a50a07167b714bf6b7649a55d96bd5eed",
+  "as_of_api": "0.18.47",
+  "baseline_commit": "64b658919d614db169ffeb1578b63aaafa7c0efc",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -524,11 +524,14 @@
           "label": "部署/更换/批次更正规则",
           "complete": false,
           "evidence": [
-            "docs/production-trace-correction-design-review.md"
+            "docs/production-trace-correction-design-review.md",
+            "backend/app/models/production_history.py",
+            "backend/app/services/production_history.py",
+            "backend/tests/test_production_actual_history.py"
           ],
           "acceptance_pending": [
-            "Design hardening specifies legacy-current versus first-report provenance, explicit correction predecessors/revisions, old-writer guards, original-audit replay, complete actual consumers and PostgreSQL upgrade/concurrency/long-history matrix; no backend or migration implemented",
-            "Next bounded implementation is production-actual-history-backend-read; Changeover/Batch correction ledgers follow separately; approved-provider real multi-user acceptance remains pending"
+            "Actual baseline/correction ledger exists; application-layer repair freezes physical first report, rejects no-key replacement, uses original audit occurrence and routes deployment/batch detail plus batch permission through the effective projection",
+            "Database old-writer guards, complete production catalog projection, bilingual history UI, real PostgreSQL concurrency/upgrade/downgrade/long-history matrix and approved-provider multi-user acceptance remain pending"
           ]
         },
         {
