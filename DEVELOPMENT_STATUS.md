@@ -1,10 +1,18 @@
 # DEVELOPMENT_STATUS
 
-## 2026-10-21 生产实绩历史一致性修复（Codex / ChatGPT Work）
+## 2026-10-21 生产实绩历史一致性修复：核验、修测试并合并（DeepSeek）
 
-基线真实 main `64b658919d614db169ffeb1578b63aaafa7c0efc`（PR88 已合并），恢复既有独立分支 `codex/production-actual-history-consistency-repair`，未新建重复工作。本包只修应用层一致性：Deployment 首次 Actual 报告写物理列并建立不可变基线；此后无键覆盖返回冲突，带 `request_id + expected_version + correction_reason` 的更正仅追加账本与原子审计，不再重写物理事实。有效历史投影用基线、按 Deployment 聚合的最大 revision 及对应原审计事件有界读取；更正发生时间取原审计 `occurred_at`。Deployment 详情、Batch 详情及批次创建校验统一使用有效 Actual。新增单元回归覆盖物理冻结、无键覆盖拒绝、原审计时间重放及批次按有效历史拒绝不匹配软件。API 0.18.47，schema 仍为 0027，无 migration、Seed 或依赖改动。
+基线真实 main `64b658919d614db169ffeb1578b63aaafa7c0efc`（PR88 已合并），恢复既有开放 PR#89 `codex/production-actual-history-consistency-repair`，未新建重复工作。启动核验发现上一轮 PR#89 遗留两项未闭环：(1) PR head CI 卡死 8 小时成僵尸 run（后端 "Run complete backend suite with real PostgreSQL" 挂起、日志 blob 已消失），mergeable_state=blocked；(2) 代码本体有两个真实测试缺陷——`test_production_actual_history.py::test_correction_occurrence_comes_from_original_audit_and_replays` 在 SQLite 下断言 `dep.deployed_at == first_at` 因 `DateTime(timezone=True)` 读回丢 tzinfo 而失败；`test_production_concurrency_postgres.py` 引用了 `effective_actual` 却未 import（真实 PG CI 下 `NameError`，3 例失败）。
 
-本包不扩大到数据库层旧写者 trigger、完整 production catalog 投影、双语历史界面或真实多用户验收；这些仍为后续独立包。公共演示只读，OIDC/真实提交关闭，内网未部署。当前环境无本地 shell/依赖，未伪造本地验证；以本 PR 精确 head 的 Backend/PostgreSQL、Frontend/Cloudflare build、CI acceptance 三项结果为合并门槛。业务 36/44=82% 与七模块 100/100演示/100演示/100/89/60/17、七计划 100/100/20/33/40/20/0 暂不提升。
+本轮修复：将时区断言归一化为 `dep.deployed_at.replace(tzinfo=timezone.utc) == first_at`（commit `019430f`），补齐 `from app.services.production_history import effective_actual`（commit `158906d`）。本地验证：后端 SQLite 全量 1681 passed / 396 skipped（PG 用例需 CI 真实 PG），collect-only 无 import 错误。推送后取消旧僵尸 run 并由 concurrency 自动清理。
+
+应用层一致性语义（PR#89 本体，前轮已写）：Deployment 首次 Actual 报告写物理列并建立不可变基线；此后无键覆盖返回冲突，带 `request_id + expected_version + correction_reason` 的更正仅追加账本与原子审计，不再重写物理事实；有效历史投影用基线、按 Deployment 聚合的最大 revision 及对应原审计事件有界读取；更正发生时间取原审计 `occurred_at`；Deployment/Batch 详情与批次创建校验统一使用有效 Actual。API 0.18.47 / schema 0027，无 migration、Seed 或依赖改动。
+
+本包不扩大到数据库层旧写者 trigger、完整 production catalog 投影、双语历史界面或真实多用户验收。公共演示只读，OIDC/真实提交关闭，内网未部署。业务 36/44=82% 与七模块 100/100演示/100演示/100/89/60/17、七计划 100/100/20/33/40/20/0 不变（测试修复不提高真实验收）。
+
+### 本包精确验收证据（PR89）
+
+PR#89 最终 head `158906de30954437b391e330559d358d3aba4e4f`；PR head CI `39497922487` 三 job 全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance），后端 2327 passed / 无 skip。受保护 squash 合并为 `a82a3076ee13badbb9cdab94013d6444eb214bfc`（PR#89）。main CI `39499341572` 三 job 成功。Render 后端 `/health/ready` 返回 `ready`、version 0.18.47、schema 0027（合并触发重部署成功）；Cloudflare 前端 `softwarelifecycle.whf969.com` HTTP 200 可达；Actions deployment `39500744981`/continuation `39500745083` skipped（SLC_DEPLOY_ENABLED 未启用）。
 
 
 ## 2026-10-21 生产实际历史追加账本与只读投影（DeepSeek）
