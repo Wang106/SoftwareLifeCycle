@@ -1,6 +1,6 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.45`; readiness requires `0026_release_chain_revocation`. This is the code contract, not verified Render deployment metadata.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.46`; readiness requires `0027_production_actual_history`. This is the code contract, not verified Render deployment metadata.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
 

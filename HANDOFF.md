@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产实际历史追加账本与只读投影（DeepSeek）
+
+基线 main `27f9b2470065bb8358f5db532868583b64c241ce`（PR86），开放 PR 0。独立分支 `codex/production-actual-history-backend-read`。旧候选 `release-decision-supersession-backend-read` 已被 PR68/69/70 覆盖；按设计 §9 收窄为仅 Actual 基线+追加更正+只读投影，Changeover/Batch 自身更正账本另包。
+
+实现：新模型 `deployment_actual_baselines`（每已报告 Deployment 一行，source 区分 LEGACY_CURRENT/IMPORTED_CURRENT/FIRST_REPORT，recorded_actual_version/status/deployed_at）+ `deployment_actual_corrections`（id=request_id、target FK、predecessor_id、正整数 revision、完整替代值、correction_reason 1..2000、actor、request_json、audit_event_no、recorded_at，含 (deployment_id,revision)/(baseline_id,revision) 唯一与前驱唯一索引）。迁移 0027：升级捕获旧已报告行为 LEGACY_CURRENT；两表 UPDATE/DELETE 拒绝 trigger；降级仅在无更正且无 FIRST_REPORT 基线时允许。`_report_actual`：首次报告建 FIRST_REPORT（或 IMPORTED_CURRENT，若物理列已有值）基线 + 写物理列 + 原子审计；keyed 更正（request_id+expected_version+correction_reason）追加账本行、revision=前驱+1、物理列仍为当前值镜像。新增 `services/production_history.py::effective_actual`/`effective_actual_map`：有效值=baseline.recorded_actual_version + head revision，history_state 区分 NOT_RECORDED/LEGACY/IMPORTED/FIRST_REPORT(+_CORRECTED)/UNRESOLVED。详情/目录增 `actual_history`（history_state、recorded_baseline、correction_count、有界 corrections）与目录 `history_state`；前端 `production.ts` 增只读类型。Seed 对 DEP-0081 已报告行 insert-only 并建 IMPORTED_CURRENT 基线。API 0.18.46 / schema 0027。
+
+边界：无键 legacy 覆盖本轮不变（设计「本轮尚未改变行为」），旧写者冻结 trigger 与无键 409 收紧留待后续 API 版本；未新增浏览器提交/身份/秘密/CI/调度/部署权限。下一包 `production-changeover-batch-history`（Changeover/Batch 自身更正账本 + 冻结），随后默认关闭浏览器提交、真实身份/内网验收、运营迁移、VIN。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。精确 commit/PR head CI/合并/main/provider 证据追加本包 PR。
+
 ## 2026-10-21 生产事实更正设计契约补齐（Codex / ChatGPT Work）
 
 当前包 `production-trace-correction-design-hardening`，独立分支 `codex/production-trace-correction-design-hardening`，基线main `c148c96a50a07167b714bf6b7649a55d96bd5eed`（PR85）。启动开放PR0；PR85的精确head36c7c0aa03854f4990882237b2392786b310c082、PR CI39464541840及main CI39465908034三项成功，已完成上一包核验，不重复设计初稿或ReleaseDecision实现。PR85的较新审查指出三处契约缺口，本轮只补四个文档文件。

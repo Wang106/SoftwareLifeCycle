@@ -141,7 +141,7 @@ WRITE_CONTRACTS: dict[tuple[str, str], WriteContract] = {
         idempotency="REQUEST_ID",
         concurrency="ROW_LOCK",
         planned_roles=frozenset({"PRODUCTION_OPERATOR"}),
-        known_gap="Keyed reports require expected_version and correction reasons; legacy no-key overwrites remain compatible.",
+        known_gap="Keyed corrections append to an immutable ledger; legacy no-key overwrite remains compatible this round.",
     ),
     ("POST", "/api/v1/deployments/{deployment_no}/changeovers"): WriteContract(
         operation="Record software changeover",

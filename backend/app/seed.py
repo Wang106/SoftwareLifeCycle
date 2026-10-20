@@ -13,6 +13,7 @@ from app.models.policy import ArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distribution, SoftwareAuthorization
 from app.models.production import Deployment, ManufacturingSite, ProductionBatch, ProductionLine, SoftwareChangeover
+from app.models.production_history import DeploymentActualBaseline
 from app.models.audit import AuditEvent
 
 def h(name):
@@ -522,11 +523,30 @@ def run():
     deployment.production_line_id = line.id
     deployment.expected_release_id = asr.id
     deployment.expected_snapshot_id = snap8.id
-    deployment.actual_release_id = asr.id
-    deployment.actual_snapshot_id = snap8.id
-    deployment.status = "MATCH"
-    deployment.deployed_at = deployment.deployed_at or seeded_at
+    # Insert-only for reported actual software: once recorded, a re-seed must
+    # not overwrite the physical columns or the append-only correction ledger.
+    if deployment.actual_release_id is None and deployment.actual_snapshot_id is None:
+        deployment.actual_release_id = asr.id
+        deployment.actual_snapshot_id = snap8.id
+        deployment.status = "MATCH"
+        deployment.deployed_at = deployment.deployed_at or seeded_at
     db.flush()
+
+    # Capture a single IMPORTED_CURRENT baseline for the seeded deployment so
+    # read projection can distinguish imported sample state from a genuine
+    # operator first report. Idempotent across re-seeds.
+    if not db.query(DeploymentActualBaseline).filter_by(
+        deployment_id=deployment.id
+    ).first():
+        db.add(DeploymentActualBaseline(
+            deployment_id=deployment.id,
+            actual_release_id=deployment.actual_release_id,
+            actual_snapshot_id=deployment.actual_snapshot_id,
+            recorded_status=deployment.status,
+            recorded_actual_version=deployment.actual_version,
+            recorded_deployed_at=deployment.deployed_at,
+            source="IMPORTED_CURRENT",
+        ))
 
     changeover = db.query(SoftwareChangeover).filter_by(
         changeover_no="CO-0032"

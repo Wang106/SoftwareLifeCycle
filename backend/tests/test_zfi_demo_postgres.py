@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from test_command_concurrency_postgres import pg
 from test_zfi_demo import verify, rows
 from app.seed_zfi_demo import seed_zfi_demo,key
+from app.core.config import settings
 from app.models.core import Release,ApplicationReleaseDetail
 
 
@@ -54,7 +55,7 @@ def test_refuse_downgrade_identity_loss(pg):
     with pytest.raises(Exception,match='customer-scoped release identities'):
         command.downgrade(Config('alembic.ini'),'0023_impact_withdrawal_history')
     with Session(engine) as db:
-        assert db.scalar(text('SELECT version_num FROM alembic_version'))=='0026_release_chain_revocation'
+        assert db.scalar(text('SELECT version_num FROM alembic_version'))==settings.required_db_revision
         verify(db)
 
 
