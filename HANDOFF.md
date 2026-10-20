@@ -8,6 +8,10 @@
 
 边界：无键 legacy 覆盖本轮不变（设计「本轮尚未改变行为」），旧写者冻结 trigger 与无键 409 收紧留待后续 API 版本；未新增浏览器提交/身份/秘密/CI/调度/部署权限。下一包 `production-changeover-batch-history`（Changeover/Batch 自身更正账本 + 冻结），随后默认关闭浏览器提交、真实身份/内网验收、运营迁移、VIN。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。精确 commit/PR head CI/合并/main/provider 证据追加本包 PR。
 
+### 本包精确验收证据（PR87）
+
+实现提交 `ada23cc`（FK 修复 `99f5ef1`、测试修复 `4e3e074`/`ef8d00e`），PR#87 最终 head `ef8d00e3cdda451ad1a199d3b9674e74cb9e553d`；PR head CI `39482340255` 三 job 全绿，后端 2324 passed / 无 skip。受保护 squash 合并 `3a33a1d8bb5edfddcbfa846e00407d7343b621cc`；main CI `39484008902` 三 job 成功。Render `/health/ready` ready 0.18.46/0027（合并触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200；Actions deployment `39485336857`/continuation `39485336931` skipped。
+
 ## 2026-10-21 生产事实更正设计契约补齐（Codex / ChatGPT Work）
 
 当前包 `production-trace-correction-design-hardening`，独立分支 `codex/production-trace-correction-design-hardening`，基线main `c148c96a50a07167b714bf6b7649a55d96bd5eed`（PR85）。启动开放PR0；PR85的精确head36c7c0aa03854f4990882237b2392786b310c082、PR CI39464541840及main CI39465908034三项成功，已完成上一包核验，不重复设计初稿或ReleaseDecision实现。PR85的较新审查指出三处契约缺口，本轮只补四个文档文件。
