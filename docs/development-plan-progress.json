@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.45",
-  "baseline_commit": "8eb25f4b90b506910837faf3b74690f27b66e9c1",
+  "baseline_commit": "c148c96a50a07167b714bf6b7649a55d96bd5eed",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -523,7 +523,13 @@
           "id": "production-correction",
           "label": "部署/更换/批次更正规则",
           "complete": false,
-          "evidence": []
+          "evidence": [
+            "docs/production-trace-correction-design-review.md"
+          ],
+          "acceptance_pending": [
+            "Design hardening specifies legacy-current versus first-report provenance, explicit correction predecessors/revisions, old-writer guards, original-audit replay, complete actual consumers and PostgreSQL upgrade/concurrency/long-history matrix; no backend or migration implemented",
+            "Next bounded implementation is production-actual-history-backend-read; Changeover/Batch correction ledgers follow separately; approved-provider real multi-user acceptance remains pending"
+          ]
         },
         {
           "id": "correction-e2e",
