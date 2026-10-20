@@ -5,6 +5,29 @@ export type ReleaseReference = {
   snapshot_no: string | null;
 };
 
+export type ActualCorrection = {
+  id: string;
+  revision: number;
+  actual: ReleaseReference | null;
+  correction_reason: string;
+  actor_name: string;
+  recorded_at: string;
+  audit_event_no: string;
+};
+
+export type ActualHistory = {
+  history_state: string;
+  recorded_baseline: {
+    source: string;
+    recorded_actual_version: number;
+    actual: ReleaseReference | null;
+    recorded_status: string;
+    recorded_at: string;
+  } | null;
+  correction_count: number;
+  corrections: ActualCorrection[];
+};
+
 export type DeploymentDetail = {
   id: string;
   deployment_no: string;
@@ -18,6 +41,7 @@ export type DeploymentDetail = {
   expected: ReleaseReference;
   actual: ReleaseReference | null;
   deployed_at: string | null;
+  actual_history?: ActualHistory;
   changeovers: {
     id: string;
     changeover_no: string;

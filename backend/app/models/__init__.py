@@ -14,3 +14,4 @@ from app.models.acceptance import *
 from app.models.resource import *
 from app.models.security import *
 from app.models.revocation import *
+from app.models.production_history import *

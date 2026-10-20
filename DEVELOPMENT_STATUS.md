@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-21 生产实际历史追加账本与只读投影（DeepSeek）
+
+基线真实 main `27f9b2470065bb8358f5db532868583b64c241ce`（PR86 已合并），开放 PR 0、无同包未完成分支；独立 `codex/production-actual-history-backend-read`。已核对 PR86 main CI `39473062703` 三 job（Backend/PostgreSQL、Frontend/Cloudflare build、CI acceptance）全绿、部署 `39474452277`/continuation `39474452450` skipped；旧候选 `release-decision-supersession-backend-read` 已被覆盖，按最新 HANDOFF 选 `production-actual-history-backend-read`（设计 §9）。
+
+本包实现 Actual 追加式更正账本与只读投影：新增 `backend/app/models/production_history.py`（`deployment_actual_baselines` 不可变基线 + `deployment_actual_corrections` 追加式更正，前驱/revision/唯一链约束），迁移 `0027_production_actual_history`（升级捕获旧已报告行作 LEGACY_CURRENT 基线、两表 UPDATE/DELETE 拒绝 trigger、存在更正或 FIRST_REPORT 基线时拒绝降级）；`services/production.py::_report_actual` 首次报告建 FIRST_REPORT/IMPORTED_CURRENT 基线、keyed 更正追加账本行（前驱链、revision 递增），保留 `ActualReportResult` 与 POST 三字段响应；新增 `services/production_history.py` 有效值投影（baseline.recorded_actual_version + head revision，区分 NOT_RECORDED/LEGACY/IMPORTED/FIRST_REPORT/UNRESOLVED 及 CORRECTED）。详情/目录增 `actual_history`（history_state、recorded_baseline、correction_count、有界 corrections 列表），目录 deployments 增 `history_state`；前端 `production.ts` 增只读 `ActualHistory`/`ActualCorrection` 类型。Seed 改为对已报告正式行 insert-only（不再覆盖 actual_*/status/deployed_at）并建 IMPORTED_CURRENT 基线。API 0.18.46 / schema 0027 更新。
+
+无键 legacy 覆盖行为本轮保持不变（设计 §4「本轮尚未改变行为」），旧写者冻结 trigger 与无键 409 收紧留待后续 API 版本；Changeover/Batch 自身更正账本仍为下一独立包。公共只读，OIDC/真实提交关闭，内网未部署，不开放浏览器提交。
+
+本地：后端 1679 passed / 646 skipped（PG 用例需 CI 真实 PG），前端 1494 passed / 0 fail / 0 skip，tsc --noEmit 通过，Alembic 唯一 head 0027，进度 --check 通过。业务 36/44=82% 不变（追加账本/只读投影不提高真实验收）；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。精确提交/PR head CI/合并/main/provider 证据记录本包 PR。
+
 ## 2026-10-21 生产事实更正设计契约补齐（Codex / ChatGPT Work）
 
 基线真实main `c148c96a50a07167b714bf6b7649a55d96bd5eed`（PR85），开放PR0、无同包未完成分支；独立 `codex/production-trace-correction-design-hardening`。已读取最新需求/状态/交接并核对PR85精确head `36c7c0aa03854f4990882237b2392786b310c082`、PR CI39464541840及main CI39465908034三项success；生产Cloudflare build aacb9481-5ed8-4030-b0c4-e5c14b5007f7/version f76d640f-6d7c-4487-ba2b-a8fd55c398df成功，Actions39467348427/39467348464 skipped。以上为启动基线，本包另验精确提交。

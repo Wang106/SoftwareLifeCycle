@@ -17,6 +17,10 @@ from app.models.production import (
     SoftwareChangeover,
 )
 from app.models.snapshot import ReleaseSnapshot
+from app.models.production_history import (
+    DeploymentActualBaseline,
+    DeploymentActualCorrection,
+)
 from app.services.audit import AuditEventError, commit_with_audit
 from app.services.command_retry import atomic_command, retry_result, timestamp_content
 from app.services.revocation import ensure_chain_active, lock_chain
@@ -196,6 +200,17 @@ class ProductionService:
         if not release or not snapshot or snapshot.release_id != release.id:
             raise ProductionError("Actual snapshot does not belong to actual release")
 
+        baseline = self.db.scalar(
+            select(DeploymentActualBaseline)
+            .where(DeploymentActualBaseline.deployment_id == deployment.id)
+        )
+        head = self.db.scalar(
+            select(DeploymentActualCorrection)
+            .where(DeploymentActualCorrection.deployment_id == deployment.id)
+            .order_by(DeploymentActualCorrection.revision.desc())
+            .limit(1)
+        )
+
         def state():
             return {
                 "actual_release_id": str(deployment.actual_release_id) if deployment.actual_release_id else None,
@@ -213,6 +228,48 @@ class ProductionService:
         deployment.actual_version += 1
         after = state()
         result = self._actual_result(deployment, after)
+
+        # Append-only history: establish the baseline on the first report and
+        # append a correction ledger row for keyed corrections. Physical columns
+        # remain the current-value mirror for backward compatibility (the no-key
+        # overwrite tightening is deferred to a later API version).
+        correction_row = None
+        if baseline is None:
+            # First report under the new protocol. A deployment whose physical
+            # columns already carried a value before this call (legacy/imported)
+            # is recorded as IMPORTED_CURRENT rather than FIRST_REPORT.
+            prior_reported = before["actual_release_id"] is not None or before["actual_snapshot_id"] is not None
+            baseline = DeploymentActualBaseline(
+                deployment_id=deployment.id,
+                actual_release_id=release.id,
+                actual_snapshot_id=snapshot.id,
+                recorded_status=deployment.status,
+                recorded_actual_version=deployment.actual_version,
+                recorded_deployed_at=deployment.deployed_at,
+                source="IMPORTED_CURRENT" if prior_reported else "FIRST_REPORT",
+            )
+            if request_id is not None:
+                baseline.baseline_event_no = event_no
+            self.db.add(baseline)
+        elif correction_reason is not None:
+            # Keyed correction: append to the ledger, do not reuse the baseline.
+            next_revision = (head.revision if head is not None else 0) + 1
+            correction_row = DeploymentActualCorrection(
+                id=request_id if request_id is not None else uuid.uuid4(),
+                deployment_id=deployment.id,
+                baseline_id=baseline.id,
+                predecessor_id=head.id if head is not None else None,
+                revision=next_revision,
+                actual_release_id=release.id,
+                actual_snapshot_id=snapshot.id,
+                correction_reason=correction_reason,
+                actor_name=actor.name,
+                actor_principal_id=actor.principal_id,
+                request_json=request_content,
+                audit_event_no=event_no,
+            )
+            self.db.add(correction_row)
+
         try:
             commit_with_audit(self.db, lambda: {
                 "event_no": event_no, "event_type": "DEPLOYMENT",

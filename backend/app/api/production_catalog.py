@@ -10,6 +10,7 @@ from app.models.core import Release,Customer,Project
 from app.models.snapshot import ReleaseSnapshot
 from app.models.production import Deployment,SoftwareChangeover,ProductionBatch,ProductionLine,ManufacturingSite
 from app.models.distribution import SoftwareAuthorization
+from app.services.production_history import effective_actual_map
 
 router=APIRouter(prefix='/api/v1/production/catalog',tags=['production catalogs'])
 
@@ -86,6 +87,10 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
     if kind=='deployments' and rows:
         for child in [SoftwareChangeover,ProductionBatch]:
             counts[child]=dict(db.execute(select(child.deployment_id,func.count()).where(child.deployment_id.in_(deployments)).group_by(child.deployment_id)).all())
+    history_state={}
+    if kind=='deployments' and rows:
+        history_state=effective_actual_map(db, list(deployments.values()))
+        history_state={d_id: eff.history_state for d_id, eff in history_state.items()}
     items=[]
     for row in rows:
         dep=deployments.get(row.id if kind=='deployments' else row.deployment_id)
@@ -125,6 +130,7 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
             'changeover_linked':bool(row.changeover_id) if kind=='batches' else None,
             'changeover_count':counts.get(SoftwareChangeover,{}).get(row.id,0) if kind=='deployments' else None,
             'batch_count':counts.get(ProductionBatch,{}).get(row.id,0) if kind=='deployments' else None,
+            'history_state':history_state.get(row.id) if kind=='deployments' else None,
             'recorded_at':row.deployed_at if kind=='deployments' else row.changed_at if kind=='changeovers' else row.started_at})
     return {'total':total,'status_counts':status_counts,'next_offset':filters.offset+filters.limit if filters.offset+filters.limit<total else None,
         'items':items,'notice':'Binding checks and actual-software observations do not grant production permission. Changeovers have no stored snapshot; their snapshot filter scopes the deployment expected snapshot.'}

@@ -18,7 +18,12 @@ from app.models.production import (
     SoftwareChangeover,
 )
 from app.models.snapshot import ReleaseSnapshot
+from app.models.production_history import (
+    DeploymentActualBaseline,
+    DeploymentActualCorrection,
+)
 from app.services.production import ProductionError, ProductionService
+from app.services.production_history import effective_actual
 from app.authorization import authorize_authorization, authorize_deployment
 from app.actor import resolve_actor
 from app.services.revocation import RevocationError, governance_state
@@ -87,6 +92,52 @@ def _release_ref(db: Session, release_id, snapshot_id):
         "version": release.version if release else None,
         "snapshot_id": str(snapshot.id) if snapshot else None,
         "snapshot_no": snapshot.snapshot_no if snapshot else None,
+    }
+
+
+def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50):
+    """Bounded, read-only actual history for a Deployment.
+
+    The physical columns hold the current effective value; the baseline and
+    correction ledger hold the immutable append-only history. Returns a compact
+    shape suitable for detail/profile responses; never loads the full audit.
+    """
+    eff = effective_actual(db, deployment)
+    baseline = db.scalar(
+        select(DeploymentActualBaseline)
+        .where(DeploymentActualBaseline.deployment_id == deployment.id)
+    )
+    corrections = db.scalars(
+        select(DeploymentActualCorrection)
+        .where(DeploymentActualCorrection.deployment_id == deployment.id)
+        .order_by(DeploymentActualCorrection.revision.desc())
+        .limit(limit)
+    ).all()
+    return {
+        "history_state": eff.history_state,
+        "recorded_baseline": {
+            "source": baseline.source,
+            "recorded_actual_version": baseline.recorded_actual_version,
+            "actual": _release_ref(
+                db, baseline.actual_release_id, baseline.actual_snapshot_id
+            ) if baseline.actual_release_id or baseline.actual_snapshot_id else None,
+            "recorded_status": baseline.recorded_status,
+            "recorded_at": baseline.recorded_at,
+        } if baseline else None,
+        "correction_count": eff.correction_count,
+        "corrections": [
+            {
+                "id": str(row.id),
+                "revision": row.revision,
+                "actual": _release_ref(db, row.actual_release_id, row.actual_snapshot_id)
+                if row.actual_release_id or row.actual_snapshot_id else None,
+                "correction_reason": row.correction_reason,
+                "actor_name": row.actor_name,
+                "recorded_at": row.recorded_at,
+                "audit_event_no": row.audit_event_no,
+            }
+            for row in corrections
+        ],
     }
 
 
@@ -170,6 +221,7 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
         ],
     }
     result["governance"] = _authorization_governance(db, authorization)
+    result["actual_history"] = _actual_history(db, deployment)
     return result
 
 
