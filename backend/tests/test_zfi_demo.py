@@ -34,7 +34,17 @@ def verify(db):
     assert not db.scalar(select(ReleaseDecision.id).where(ReleaseDecision.release_id.in_([key(r['ref']) for r in refs])))
     result = zfi_import(db); assert result['initialized'] and len(result['items'])==20
     assert result['release_decisions_created']==0
+    assert result['approval_routes']=={'STANDARD':list(SSR_ROLES),'APPLICATION':list(ASR_ROLES)}
     assert all(i['supplied_artifacts']==i['supplied_test_evidence']==0 for i in result['items'])
+    by_ref={item['source_ref']:item for item in result['items']}
+    assert by_ref['SSR02']['approval_progress']=={'approved_steps':1,'total_steps':4,
+        'current_step_order':2,'current_role':'电子经理','closed':False}
+    assert by_ref['ASR05']['approval_progress']=={'approved_steps':2,'total_steps':4,
+        'current_step_order':3,'current_role':'系统工程师','closed':False}
+    assert by_ref['ASR06']['approval_progress']=={'approved_steps':3,'total_steps':4,
+        'current_step_order':4,'current_role':'项目经理','closed':False}
+    assert by_ref['ASR07']['approval_progress']['closed'] and by_ref['ASR07']['approval_progress']['current_role'] is None
+    assert by_ref['ASR08']['approval_progress']['closed'] and by_ref['ASR08']['approval_progress']['current_role'] is None
     for ref,order in [('SSR02',2),('ASR05',3),('ASR06',4)]:
         assert db.get(ApprovalStep,key(ref+f'-step-{order}')).status=='PENDING'
     assert db.get(ApprovalRequest,key('ASR07-approval')).status=='RETURNED'

@@ -5,10 +5,17 @@ import {Localized} from '../../../components/localized';
 type Row = {source_ref: string; release_id: string; version: string; release_type: 'STANDARD' | 'APPLICATION';
   product: string; customer: string | null; project_code: string | null; record_status: string;
   approval_no: string | null; approval_status: string | null; source_release_date: string | null;
+  approval_progress?: {approved_steps: number; total_steps: number; current_step_order: number | null;
+    current_role: string | null; closed: boolean} | null;
   supplied_artifacts: number; supplied_test_evidence: number};
-type Receipt = {sample_only: boolean; initialized: boolean; import_event_no?: string; synthetic_approvals?: boolean; items: Row[]};
+type Receipt = {sample_only: boolean; initialized: boolean; import_event_no?: string; synthetic_approvals?: boolean;
+  approval_routes?: {STANDARD: string[]; APPLICATION: string[]}; items: Row[]};
 type Query = Record<string, string | string[] | undefined>;
 const pageSize = 10;
+const roleLabels: Record<string, string> = {'电子工程师':'Electronics Engineer','电子经理':'Electronics Manager',
+  '系统工程师':'Systems Engineer','研发总监':'R&D Director','应用工程师':'Application Engineer',
+  '应用经理':'Application Manager','项目经理':'Project Manager'};
+const roleLabel = (role: string) => roleLabels[role] || role;
 
 export default async function Page(props: {searchParams?: Promise<Query>}) {
   const query = await props?.searchParams || {};
@@ -60,6 +67,11 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
             <p className="muted"><Localized>{'Source dates are Excel metadata, not approval or deployment dates. Customer and project columns show the reviewed import mapping.'}</Localized></p>
             <p><Localized>{'Import event'}</Localized>: {data.import_event_no || '—'}</p>
           </section>
+          {data.approval_routes && <section className="panel"><h2><Localized>{'SSR / ASR approval routes'}</Localized></h2>
+            <p><b><Localized>{'Standard Releases'}</Localized>:</b> {data.approval_routes.STANDARD.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < data.approval_routes!.STANDARD.length - 1 ? ' → ' : ''}</span>)}</p>
+            <p><b><Localized>{'Application Releases'}</Localized>:</b> {data.approval_routes.APPLICATION.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < data.approval_routes!.APPLICATION.length - 1 ? ' → ' : ''}</span>)}</p>
+            <p className="muted"><Localized>{'Workflow roles describe review stages; they do not prove configured job-role permissions.'}</Localized></p>
+          </section>}
           <section className="panel">
             <h2 id="zfi-filters"><Localized>{'Filter imported records'}</Localized></h2>
             <form className="zfi-search" action="/demo/zfi" method="get" role="search">
@@ -96,13 +108,17 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
           {visible.length === 0 ? <section className="panel"><h2><Localized>{'No imported records match these filters.'}</Localized></h2></section>
             : (['STANDARD', 'APPLICATION'] as const).filter(value => visible.some(row => row.release_type === value)).map(value => <section className="panel tablewrap zfi-table" key={value}>
             <h2><Localized>{value === 'STANDARD' ? 'Standard Releases' : 'Application Releases'}</Localized></h2>
-            <table><thead><tr>{['Excel reference', 'Software', 'Version', 'Customer', 'Project code', 'Source release date', 'Record status', 'Approval', 'Supplied files / tests'].map(label => <th key={label}><Localized>{label}</Localized></th>)}</tr></thead>
+            <table><thead><tr>{['Excel reference', 'Software', 'Version', 'Customer', 'Project code', 'Source release date', 'Record status', 'Approval', 'Approval progress', 'Supplied files / tests'].map(label => <th key={label}><Localized>{label}</Localized></th>)}</tr></thead>
               <tbody>{visible.filter(r => r.release_type === value).map(row => {
                 const path = `/releases/${value === 'STANDARD' ? 'standard' : 'application'}/${encodeURIComponent(row.release_id)}`;
                 return <tr key={row.release_id}><td>{row.source_ref}</td><td>{row.product}</td>
                   <td><Link href={path}>{row.version}</Link></td><td>{row.customer || '—'}</td><td>{row.project_code || '—'}</td>
                   <td>{row.source_release_date || '—'}</td><td><Localized>{row.record_status}</Localized></td>
                   <td>{row.approval_no ? <><Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}>{row.approval_no}</Link><br/><Localized>{row.approval_status || 'Not recorded'}</Localized></> : <Localized>{'Not recorded'}</Localized>}</td>
+                  <td>{row.approval_progress ? <><Localized>{'Approved stages'}</Localized>: {row.approval_progress.approved_steps} / {row.approval_progress.total_steps}
+                    {row.approval_progress.current_role && <><br/><Localized>{'Current stage'}</Localized>: {row.approval_progress.current_step_order} · <Localized>{roleLabel(row.approval_progress.current_role)}</Localized></>}
+                    {row.approval_progress.closed && row.approval_status && row.approval_status !== 'APPROVED' && <><br/><Localized>{'Closed result'}</Localized>: <Localized>{row.approval_status}</Localized></>}</>
+                    : <Localized>{'Stage evidence unavailable'}</Localized>}</td>
                   <td>{row.supplied_artifacts} / {row.supplied_test_evidence}</td></tr>;
               })}</tbody></table>
           </section>)}
