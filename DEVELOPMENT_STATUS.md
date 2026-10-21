@@ -8,7 +8,9 @@
 
 API 仍为 0.18.48，唯一 schema head 仍为 `0028_deployment_actual_guard`；无 migration、Seed、依赖、身份、CI、调度或部署权限改动，Seed 幂等语义不变。业务验收 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0（只读与测试收口不提高真实供应商验收比例）。
 
-精确实现 commit、PR head CI、合并/main/provider 证据在本包 PR 验证后补记。尚未完成：批准身份提供方的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选小包为 `production-changeover-batch-history-design-review`，先只审查真实模型/消费者/并发与迁移边界，不直接实现写入。
+检查点：PR#93 head `1034feb84b555281785874a765d409a792a1623b`，CI `39530257286`。Backend/PostgreSQL/migrations 成功：2331 passed、253 个 PostgreSQL 模块用例、无 skip，单一 Alembic head 0028 且 SQL/PG 往返通过；Frontend 测试 1497 passed / 0 failed，但随后 OpenNext 拒绝已超支持期的 Next.js 15.5.24，故该 job 与 CI acceptance 失败。未使用 `--dangerouslyUseUnsupportedNextVersion` 绕过；PR 保持开放且未合并，main 与 provider 未部署/未验收。本包发布被依赖升级决策阻塞。
+
+尚未完成：批准身份提供方的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选小包为 `production-changeover-batch-history-design-review`，先只审查真实模型/消费者/并发与迁移边界，不直接实现写入。
 
 ## 2026-10-21 生产实装旧写入保护与目录统一读取（DeepSeek，核验恢复并合并 PR#91）
 

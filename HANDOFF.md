@@ -4,7 +4,7 @@
 
 基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`，开放 PR 0，独立分支 `codex/production-actual-history-ui-read`。本包完成 Actual 历史只读收口：Deployment 详情双语展示 immutable baseline、history state、总更正数、最新 50 条、发生/入账时间与原审计链接；缺失历史明确 unknown，不提供提交控件、不推断生产许可。前端类型补齐时间字段。后端 `_actual_history` 对 Release/Snapshot 元数据集合预取，消除窗口 N+1；真实 PG 10,000 条链断言最新 50 条、顺序/总数及 <=12 SQL；前端覆盖中英文、截断、原文证据、审计链接、只读/未知态。
 
-API 0.18.48 / schema `0028_deployment_actual_guard`，无 migration/Seed/依赖/权限/部署配置改动。公共演示继续只读，OIDC/真实提交关闭，内网未部署。精确 commit/PR/CI/合并/main/Cloudflare/Render/Actions 证据在本包验证后补记。
+API 0.18.48 / schema `0028_deployment_actual_guard`，无 migration/Seed/依赖/权限/部署配置改动。公共演示继续只读，OIDC/真实提交关闭，内网未部署。检查点：PR#93 head `1034feb84b555281785874a765d409a792a1623b`，CI `39530257286`。Backend/PostgreSQL/migrations success（2331 passed、253 PG module cases、无 skip，Alembic 0028 SQL/PG round trip passed）；Frontend tests 1497 passed / 0 failed，但 OpenNext build 因 Next.js 15.5.24 已超支持期而拒绝，CI acceptance 随之失败。未加危险绕过参数，PR 未合并，main/Cloudflare/Render/Actions 无本包部署证据。恢复时先独立解决受支持 Next.js/OpenNext 依赖升级并跑完整 CI，再把最新 main 合入 PR#93；不得把失败 run 当作验收。
 
 未完成：批准 provider 的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选 `production-changeover-batch-history-design-review`，只做模型、消费者、并发、迁移与拒绝丢语义降级审查，后端实现须按审查拆包。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。
 
