@@ -100,8 +100,8 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50, eff
     """Bounded, read-only actual history for a Deployment.
 
     The physical columns preserve the first report; the baseline and correction
-    ledger resolve the effective append-only history. Returns a compact
-    shape suitable for detail/profile responses; never loads the full audit.
+    ledger resolve the effective append-only history. Release metadata is loaded
+    in two set-based queries so SQL work stays bounded as history grows.
     """
     eff = effective or effective_actual(db, deployment)
     baseline = db.scalar(
@@ -114,6 +114,30 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50, eff
         .order_by(DeploymentActualCorrection.revision.desc())
         .limit(limit)
     ).all()
+    history_rows = [row for row in [baseline, *corrections] if row is not None]
+    release_ids = {row.actual_release_id for row in history_rows if row.actual_release_id}
+    snapshot_ids = {row.actual_snapshot_id for row in history_rows if row.actual_snapshot_id}
+    releases = {
+        row.id: row for row in db.scalars(
+            select(Release).where(Release.id.in_(release_ids))
+        ).all()
+    } if release_ids else {}
+    snapshots = {
+        row.id: row for row in db.scalars(
+            select(ReleaseSnapshot).where(ReleaseSnapshot.id.in_(snapshot_ids))
+        ).all()
+    } if snapshot_ids else {}
+
+    def history_ref(release_id, snapshot_id):
+        release = releases.get(release_id)
+        snapshot = snapshots.get(snapshot_id)
+        return {
+            "release_id": str(release_id) if release_id else None,
+            "version": release.version if release else None,
+            "snapshot_id": str(snapshot_id) if snapshot_id else None,
+            "snapshot_no": snapshot.snapshot_no if snapshot else None,
+        }
+
     correction_times = dict(db.execute(
         select(AuditEvent.event_no, AuditEvent.occurred_at).where(
             AuditEvent.event_no.in_([row.audit_event_no for row in corrections]),
@@ -127,8 +151,8 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50, eff
         "recorded_baseline": {
             "source": baseline.source,
             "recorded_actual_version": baseline.recorded_actual_version,
-            "actual": _release_ref(
-                db, baseline.actual_release_id, baseline.actual_snapshot_id
+            "actual": history_ref(
+                baseline.actual_release_id, baseline.actual_snapshot_id
             ) if baseline.actual_release_id or baseline.actual_snapshot_id else None,
             "recorded_status": baseline.recorded_status,
             "deployed_at": baseline.recorded_deployed_at,
@@ -139,7 +163,7 @@ def _actual_history(db: Session, deployment: Deployment, *, limit: int = 50, eff
             {
                 "id": str(row.id),
                 "revision": row.revision,
-                "actual": _release_ref(db, row.actual_release_id, row.actual_snapshot_id)
+                "actual": history_ref(row.actual_release_id, row.actual_snapshot_id)
                 if row.actual_release_id or row.actual_snapshot_id else None,
                 "correction_reason": row.correction_reason,
                 "actor_name": row.actor_name,

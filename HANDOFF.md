@@ -6,7 +6,17 @@
 
 Next16.4.2/OpenNext1.20.12/React19.3.1/Wrangler4.151.3，精确锁文件、Next16 TypeScript生成配置和 @node-minify/core 的 glob10.5.0 安全补丁；细节与回退见 `docs/next-opennext-upgrade.md`。无API/迁移/Seed/CI/调度/权限或真实门控变更。公共样例只读，OIDC/真实提交关闭。精确commit/PR/测试/合并/main/Cloudflare/Render/Actions证据验证后记入PR。
 
-本地完整前端1494 passed/0 fail/0 skip；Next16/OpenNext生产Worker、cf:check、auth:check双语真实Next生产SSR/禁用路由、两层npm audit 0漏洞、进度/diff检查通过。后端/PG由本包精确CI证明，本地未执行。恢复顺序：先核对依赖PR真实状态及精确head三项CI；成功合并后核对main/provider；将最新main以普通merge纳入PR#93，不force-push，重跑其全部门禁。已有PR93不得重复开发。业务82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0不变。后续仍有批准provider真实多用户验收与Changeover/Batch更正设计。
+本地完整前端1494 passed/0 fail/0 skip；Next16/OpenNext生产Worker、cf:check、auth:check双语真实Next生产SSR/禁用路由、两层npm audit 0漏洞、进度/diff检查通过。后端/PG由本包精确CI证明，本地未执行。业务82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0不变。后续仍有批准provider真实多用户验收与Changeover/Batch更正设计。
+
+精确证据（PR#94）：head `c924002339d206a168ef76959d3163188550d043`，PR head CI `39586695734` 三 job 全绿，squash 合并 `ba86d996cfaebc5e0ae03bdbfff882f1285421ca`；main CI `39588067933` 三 job 成功；Next.js 15.5.24 支持窗口阻塞解除，main 前端 build 恢复成功。
+
+## 2026-10-21 生产实际软件历史双语只读界面与长历史有界读取（Codex / ChatGPT Work）
+
+基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`，开放 PR 0，独立分支 `codex/production-actual-history-ui-read`。本包完成 Actual 历史只读收口：Deployment 详情双语展示 immutable baseline、history state、总更正数、最新 50 条、发生/入账时间与原审计链接；缺失历史明确 unknown，不提供提交控件、不推断生产许可。前端类型补齐时间字段。后端 `_actual_history` 对 Release/Snapshot 元数据集合预取，消除窗口 N+1；真实 PG 10,000 条链断言最新 50 条、顺序/总数及 <=12 SQL；前端覆盖中英文、截断、原文证据、审计链接、只读/未知态。
+
+API 0.18.48 / schema `0028_deployment_actual_guard`，无 migration/Seed/依赖/权限/部署配置改动。公共演示继续只读，OIDC/真实提交关闭，内网未部署。检查点：PR#93 head `1034feb84b555281785874a765d409a792a1623b`，CI `39530257286`。Backend/PostgreSQL/migrations success（2331 passed、253 PG module cases、无 skip，Alembic 0028 SQL/PG round trip passed）；Frontend tests 1497 passed / 0 failed，但 OpenNext build 因 Next.js 15.5.24 已超支持期而拒绝，CI acceptance 随之失败。未加危险绕过参数，PR 未合并，main/Cloudflare/Render/Actions 无本包部署证据（PR#94 已解除该阻塞）。
+
+未完成：批准 provider 的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选 `production-changeover-batch-history-design-review`，只做模型、消费者、并发、迁移与拒绝丢语义降级审查，后端实现须按审查拆包。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。
 
 ## 2026-10-21 生产实装旧写入保护与目录统一读取（DeepSeek，核验恢复并合并 PR#91）
 

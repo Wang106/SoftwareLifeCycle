@@ -4,7 +4,7 @@ from datetime import datetime
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import select, text
+from sqlalchemy import event, select, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from test_command_concurrency_postgres import pg, count, overlapping_commands
@@ -12,6 +12,7 @@ from app.models.production import Deployment
 from app.models.production_history import DeploymentActualBaseline, DeploymentActualCorrection
 from app.models.audit import AuditEvent
 from app.services.production import ProductionService, ProductionError
+from app.api.production import _actual_history
 
 
 @pytest.fixture
@@ -157,3 +158,61 @@ def test_legacy_reported_deployment_captured_as_legacy_current(pg):
         assert baseline.source == 'LEGACY_CURRENT'
         assert baseline.actual_release_id == ids['release']
         assert baseline.recorded_actual_version == dep.actual_version
+
+
+def test_ten_thousand_corrections_keep_history_read_bounded(actual):
+    """The detail projection returns 50 newest rows with bounded SQL work."""
+    engine, ids = actual
+    with Session(engine) as db:
+        report(db, ids, uuid.uuid4())
+        dep = db.scalar(select(Deployment).where(Deployment.deployment_no == 'DEP-1'))
+        baseline = db.scalar(select(DeploymentActualBaseline).where(
+            DeploymentActualBaseline.deployment_id == dep.id))
+        db.execute(text("""
+            INSERT INTO deployment_actual_corrections
+              (id, deployment_id, baseline_id, predecessor_id, revision,
+               actual_release_id, actual_snapshot_id, correction_reason,
+               actor_name, request_json, audit_event_no, recorded_at)
+            SELECT
+              md5(:prefix || g::text)::uuid,
+              :deployment_id,
+              :baseline_id,
+              CASE WHEN g = 1 THEN NULL
+                   ELSE md5(:prefix || (g - 1)::text)::uuid END,
+              g,
+              :release_id,
+              :snapshot_id,
+              'bounded-history-' || g::text,
+              'PostgreSQL matrix',
+              '{}'::jsonb,
+              'EVT-LONG-' || g::text,
+              now() + (g * interval '1 microsecond')
+            FROM generate_series(1, 10000) AS g
+        """), {
+            'prefix': 'actual-long-history-',
+            'deployment_id': dep.id,
+            'baseline_id': baseline.id,
+            'release_id': ids['release'],
+            'snapshot_id': ids['snapshot'],
+        })
+        db.commit()
+        statement_count = 0
+
+        def count_statement(*_args):
+            nonlocal statement_count
+            statement_count += 1
+
+        event.listen(engine, 'before_cursor_execute', count_statement)
+        try:
+            result = _actual_history(db, dep, limit=50)
+        finally:
+            event.remove(engine, 'before_cursor_execute', count_statement)
+
+        assert result['correction_count'] == 10000
+        assert len(result['corrections']) == 50
+        assert [row['revision'] for row in result['corrections']] == list(
+            range(10000, 9950, -1)
+        )
+        assert result['corrections'][0]['correction_reason'] == 'bounded-history-10000'
+        assert result['corrections'][-1]['correction_reason'] == 'bounded-history-9951'
+        assert statement_count <= 12
