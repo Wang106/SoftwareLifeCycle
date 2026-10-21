@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         {corrections.length ? <>
           {actualHistory.correction_count > corrections.length ? <p className="muted"><Localized>{"Showing latest"}</Localized>{" "}{corrections.length}{" "}<Localized>{"of"}</Localized>{" "}{actualHistory.correction_count}{" "}<Localized>{"corrections."}</Localized></p> : null}
           <div className="stack">{corrections.map(correction => <article className="card" key={correction.id}>
-            <h4><Localized>{"Revision "}</Localized>{correction.revision}<Localized>{" · "}</Localized><Localized>{actualRef(correction.actual)}</Localized></h4>
+            <h4><Localized>{"Revision"}</Localized>{" "}{correction.revision}<Localized>{" · "}</Localized><Localized>{actualRef(correction.actual)}</Localized></h4>
             <div className="kv">
               <span><Localized>{"Correction reason"}</Localized></span><b>{correction.correction_reason}</b>
               <span><Localized>{"Actor"}</Localized></span><b>{correction.actor_name}</b>
