@@ -20,6 +20,12 @@ API 仍为 0.18.48，唯一 schema head 仍为 `0028_deployment_actual_guard`；
 
 检查点：PR#93 head `1034feb84b555281785874a765d409a792a1623b`，CI `39530257286`。Backend/PostgreSQL/migrations 成功：2331 passed、253 个 PostgreSQL 模块用例、无 skip，单一 Alembic head 0028 且 SQL/PG 往返通过；Frontend 测试 1497 passed / 0 failed，但随后 OpenNext 拒绝已超支持期的 Next.js 15.5.24，故该 job 与 CI acceptance 失败。未使用 `--dangerouslyUseUnsupportedNextVersion` 绕过；PR 保持开放且未合并，main 与 provider 未部署/未验收。本包发布被依赖升级决策阻塞（PR#94 已解除）。
 
+### 恢复合并精确证据（DeepSeek，本轮）
+
+PR#94 升级合并（main `ba86d996`）后，按交接将最新 main 以普通双父 merge 纳入 PR#93 分支，仅解决三处文档冲突（DEVELOPMENT_STATUS.md、HANDOFF.md、docs/development-plan-progress.json，业务代码文件无冲突），未 force-push。merge head `0fb6388854b39f7a0d38e223bb9ebafb92cf3b80`（父 `204a355` + `ba86d996`）。
+
+新 head 三项 CI 全绿（run `39590349063`）：Backend/PostgreSQL/migrations success（2331 passed、253 PG module cases、无 skip）；Frontend tests 1497 passed / 0 failed，Next.js 16.4.2 build 成功（支持窗口阻塞解除）；CI acceptance success；Workers Builds success。受保护 squash 合并 `bbb0b9c5f1f0d7081658128175dd76570d60d2dd`（PR#93）。main CI `39591745406` 三 job 全绿；Cloudflare 生产 build `3dbb7e76-d472-4a55-acf1-67f766662c5f` success；Render `/health/ready` ready 0.18.48/0028；Cloudflare `softwarelifecycle.whf969.com` HTTP 200；Actions deploy/wake skipped（SLC_DEPLOY_ENABLED 未启用）。
+
 尚未完成：批准身份提供方的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选小包为 `production-changeover-batch-history-design-review`，先只审查真实模型/消费者/并发与迁移边界，不直接实现写入。
 
 ## 2026-10-21 生产实装旧写入保护与目录统一读取（DeepSeek，核验恢复并合并 PR#91）
