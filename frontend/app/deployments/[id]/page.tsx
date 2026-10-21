@@ -14,6 +14,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const provenance = deployment.provenance;
   const delivery = provenance.delivery;
   const historyQuery = new URLSearchParams({ deployment_id: deployment.id });
+  const actualHistory = deployment.actual_history;
+  const baseline = actualHistory?.recorded_baseline;
+  const corrections = (actualHistory?.corrections || []).slice(0, 50);
+  const actualRef = (actual: typeof deployment.actual) =>
+    actual ? `ASR ${actual.version || '—'} / ${actual.snapshot_no || '—'}` : 'Not reported';
 
   return <>
     <div className="top"><div><div className="eyebrow"><Localized>{"DEPLOYMENT · "}</Localized><Localized>{deployment.deployment_no}</Localized></div><h1><Localized>{deployment.project?.name || 'Project'}</Localized><Localized>{" · "}</Localized><Localized>{deployment.site?.name || 'Site'}</Localized><Localized>{" / "}</Localized><Localized>{deployment.line?.name || 'Line'}</Localized></h1><p className="muted"><Localized>{"Production deployment trace for ASR "}</Localized><Localized>{deployment.expected.version || '—'}</Localized></p></div><span className={'status ' + (deployment.status === 'MATCH' ? 'pass' : 'warning')}><Localized>{deployment.status}</Localized></span></div>
@@ -27,6 +32,35 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <p className="muted"><Localized>{"History opens in paginated catalogs scoped to this exact deployment. Counts are not production permissions or remaining authorization capacity."}</Localized></p>
       </section>
     </div>
+    <section className="panel"><h2><Localized>{"Actual software history"}</Localized></h2>
+      {!actualHistory ? <p className="muted"><Localized>{"Actual history unavailable. No substitute history is shown."}</Localized></p> : <>
+        <p className="muted"><Localized>{"Read-only append-only history. Latest correction first. This view does not grant production permission."}</Localized></p>
+        <div className="kv"><span><Localized>{"History state"}</Localized></span><b><Localized>{actualHistory.history_state}</Localized></b><span><Localized>{"Total corrections"}</Localized></span><b>{actualHistory.correction_count}</b></div>
+        <h3><Localized>{"Recorded baseline"}</Localized></h3>
+        {baseline ? <div className="kv">
+          <span><Localized>{"Source"}</Localized></span><b><Localized>{baseline.source}</Localized></b>
+          <span><Localized>{"Actual software"}</Localized></span><b><Localized>{actualRef(baseline.actual)}</Localized></b>
+          <span><Localized>{"Recorded status"}</Localized></span><b><Localized>{baseline.recorded_status}</Localized></b>
+          <span><Localized>{"Recorded actual version"}</Localized></span><b>{baseline.recorded_actual_version}</b>
+          <span><Localized>{"Occurrence time"}</Localized></span><b>{baseline.deployed_at || <Localized>{"Unavailable"}</Localized>}</b>
+          <span><Localized>{"Ledger recorded time"}</Localized></span><b>{baseline.recorded_at}</b>
+        </div> : <p className="muted"><Localized>{"No actual software report has been recorded."}</Localized></p>}
+        <h3><Localized>{"Corrections"}</Localized></h3>
+        {corrections.length ? <>
+          {actualHistory.correction_count > corrections.length ? <p className="muted"><Localized>{"Showing latest "}</Localized>{corrections.length}<Localized>{" of "}</Localized>{actualHistory.correction_count}<Localized>{" corrections."}</Localized></p> : null}
+          <div className="stack">{corrections.map(correction => <article className="card" key={correction.id}>
+            <h4><Localized>{"Revision "}</Localized>{correction.revision}<Localized>{" · "}</Localized><Localized>{actualRef(correction.actual)}</Localized></h4>
+            <div className="kv">
+              <span><Localized>{"Correction reason"}</Localized></span><b>{correction.correction_reason}</b>
+              <span><Localized>{"Actor"}</Localized></span><b>{correction.actor_name}</b>
+              <span><Localized>{"Occurrence time"}</Localized></span><b>{correction.deployed_at || <Localized>{"Unavailable"}</Localized>}</b>
+              <span><Localized>{"Ledger recorded time"}</Localized></span><b>{correction.recorded_at}</b>
+              <span><Localized>{"Audit event"}</Localized></span><b><Link href={`/activity/${encodeURIComponent(correction.audit_event_no)}`}>{correction.audit_event_no}</Link></b>
+            </div>
+          </article>)}</div>
+        </> : <p className="muted"><Localized>{"No corrections have been recorded."}</Localized></p>}
+      </>}
+    </section>
     <section className="panel"><h2><Localized>{"End-to-end provenance"}</Localized></h2><Localized>{provenance ? <>
       <div className="kv"><span><Localized>{"Release decision history"}</Localized></span><b><Localized>{delivery ? <Link href={`/release-decisions?${new URLSearchParams({release_id: delivery.release_id, snapshot_id: delivery.snapshot_id})}`}><Localized>{"Review decisions for exact delivered release/snapshot →"}</Localized></Link> : 'Delivery unavailable — no decision scope inferred'}</Localized></b>
       <span><Localized>{"Delivery"}</Localized></span><b><Localized>{provenance.delivery ? `${provenance.delivery.package_no} Rev${provenance.delivery.revision} · ${provenance.delivery.status}` : 'No linked delivery'}</Localized></b>

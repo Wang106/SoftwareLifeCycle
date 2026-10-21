@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-21 生产实际软件历史双语只读界面与长历史有界读取（Codex / ChatGPT Work）
+
+基线真实 main `15093d0ff9afc3732ebc24ac91905f55293f48af`（PR#92），启动时开放 PR 0；独立分支 `codex/production-actual-history-ui-read`。本包只完成上一交接明确的 Actual 历史只读收口，不开放浏览器写入，不扩大到 Changeover/Batch 更正或身份/部署配置。
+
+实现：Deployment 详情新增中英文“实际软件历史”面板，明确展示不可变基线、历史状态、更正总数、最新 50 条更正、业务发生时间与账本记录时间，并链接每条原子审计；原因、actor 与事件号保持原文，历史缺失时明确未知，不推断替代事实或生产许可。前端类型补齐 baseline/correction 的 `deployed_at`。后端 `_actual_history` 将 Release/Snapshot 元数据改为两次集合查询，消除随 50 条窗口增长的 N+1。真实 PostgreSQL 新增 10,000 条追加历史矩阵，断言只返回最新 50 条、降序、总数准确且 SQL 语句数 <=12；前端新增中英文、50 条截断、审计链接、时间区分、只读/未知态测试。
+
+API 仍为 0.18.48，唯一 schema head 仍为 `0028_deployment_actual_guard`；无 migration、Seed、依赖、身份、CI、调度或部署权限改动，Seed 幂等语义不变。业务验收 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0（只读与测试收口不提高真实供应商验收比例）。
+
+精确实现 commit、PR head CI、合并/main/provider 证据在本包 PR 验证后补记。尚未完成：批准身份提供方的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选小包为 `production-changeover-batch-history-design-review`，先只审查真实模型/消费者/并发与迁移边界，不直接实现写入。
+
 ## 2026-10-21 生产实装旧写入保护与目录统一读取（DeepSeek，核验恢复并合并 PR#91）
 
 基线 main `7bb4f58b5b88ff7a7e03d9573869c336aa69f598`，启动时开放 PR#91 `codex/production-actual-old-writer-guard-catalog-read`（前序运行遗留、CI 反复卡死/失败）。本轮未新建重复工作，核验并补齐该包到可合并状态，最终 squash 合并 `dd2438d9c8edd029b36a816f35865e63ddc62c23`（PR#91），main 推进到 `dd2438d9`。

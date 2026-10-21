@@ -11,6 +11,7 @@ export type ActualCorrection = {
   actual: ReleaseReference | null;
   correction_reason: string;
   actor_name: string;
+  deployed_at: string | null;
   recorded_at: string;
   audit_event_no: string;
 };
@@ -22,6 +23,7 @@ export type ActualHistory = {
     recorded_actual_version: number;
     actual: ReleaseReference | null;
     recorded_status: string;
+    deployed_at: string | null;
     recorded_at: string;
   } | null;
   correction_count: number;

@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产实际软件历史双语只读界面与长历史有界读取（Codex / ChatGPT Work）
+
+基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`，开放 PR 0，独立分支 `codex/production-actual-history-ui-read`。本包完成 Actual 历史只读收口：Deployment 详情双语展示 immutable baseline、history state、总更正数、最新 50 条、发生/入账时间与原审计链接；缺失历史明确 unknown，不提供提交控件、不推断生产许可。前端类型补齐时间字段。后端 `_actual_history` 对 Release/Snapshot 元数据集合预取，消除窗口 N+1；真实 PG 10,000 条链断言最新 50 条、顺序/总数及 <=12 SQL；前端覆盖中英文、截断、原文证据、审计链接、只读/未知态。
+
+API 0.18.48 / schema `0028_deployment_actual_guard`，无 migration/Seed/依赖/权限/部署配置改动。公共演示继续只读，OIDC/真实提交关闭，内网未部署。精确 commit/PR/CI/合并/main/Cloudflare/Render/Actions 证据在本包验证后补记。
+
+未完成：批准 provider 的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选 `production-changeover-batch-history-design-review`，只做模型、消费者、并发、迁移与拒绝丢语义降级审查，后端实现须按审查拆包。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。
+
 ## 2026-10-21 生产实装旧写入保护与目录统一读取（DeepSeek，核验恢复并合并 PR#91）
 
 基线 main `7bb4f58b5b88ff7a7e03d9573869c336aa69f598`，启动时开放 PR#91 `codex/production-actual-old-writer-guard-catalog-read`（前序遗留，CI 反复失败：先 13 failed+12 errors，后剩 12 setup errors）。本轮未新建重复工作，核验并补齐到可合并，squash 合并 `dd2438d9c8edd029b36a816f35865e63ddc62c23`（PR#91），最终 main `dd2438d9`。

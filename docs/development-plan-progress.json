@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.48",
-  "baseline_commit": "dd2438d9c8edd029b36a816f35865e63ddc62c23",
+  "baseline_commit": "15093d0ff9afc3732ebc24ac91905f55293f48af",
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
@@ -536,11 +536,13 @@
             "backend/app/api/dashboard.py",
             "backend/tests/test_actual_concurrency_postgres.py",
             "backend/tests/test_manufacturing_views.py",
-            "backend/tests/test_release_downstream_summary.py"
+            "backend/tests/test_release_downstream_summary.py",
+            "frontend/app/deployments/[id]/page.tsx",
+            "frontend/tests/production-actual-history-ui.test.cjs"
           ],
           "acceptance_pending": [
-            "Actual baseline/correction ledger, application-layer atomic reporting, database old-writer guards and all three production catalog effective projections are implemented",
-            "Bilingual bounded history UI, approved-provider multi-user browser acceptance, and separate Changeover/Batch correction semantics remain pending"
+            "Actual baseline/correction ledger, atomic reporting, database old-writer guards, unified effective projections, bilingual bounded history UI and real PostgreSQL 10,000-row bounded-read matrix are implemented",
+            "Approved-provider multi-user browser acceptance and separate Changeover/Batch correction semantics remain pending"
           ]
         },
         {
