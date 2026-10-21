@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 受支持 Next.js / OpenNext 依赖升级（Codex / ChatGPT Work）
+
+用户已授权升级包；当前独立 `codex/next-opennext-supported-upgrade`，基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`。PR#93 (`204a3555031e418382b519208ebaa9a6cc4f7a6c`) 仍开放，main CI39519151383及PR CI39531385542均在OpenNext版本检查失败；先修复共同依赖阻塞，不新建历史界面包。
+
+Next16.4.2/OpenNext1.20.12/React19.3.1/Wrangler4.151.3，精确锁文件、Next16 TypeScript生成配置和 @node-minify/core 的 glob10.5.0 安全补丁；细节与回退见 `docs/next-opennext-upgrade.md`。无API/迁移/Seed/CI/调度/权限或真实门控变更。公共样例只读，OIDC/真实提交关闭。精确commit/PR/测试/合并/main/Cloudflare/Render/Actions证据验证后记入PR。
+
+本地完整前端1494 passed/0 fail/0 skip；Next16/OpenNext生产Worker、cf:check、auth:check双语真实Next生产SSR/禁用路由、两层npm audit 0漏洞、进度/diff检查通过。后端/PG由本包精确CI证明，本地未执行。恢复顺序：先核对依赖PR真实状态及精确head三项CI；成功合并后核对main/provider；将最新main以普通merge纳入PR#93，不force-push，重跑其全部门禁。已有PR93不得重复开发。业务82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0不变。后续仍有批准provider真实多用户验收与Changeover/Batch更正设计。
+
 ## 2026-10-21 生产实装旧写入保护与目录统一读取（DeepSeek，核验恢复并合并 PR#91）
 
 基线 main `7bb4f58b5b88ff7a7e03d9573869c336aa69f598`，启动时开放 PR#91 `codex/production-actual-old-writer-guard-catalog-read`（前序遗留，CI 反复失败：先 13 failed+12 errors，后剩 12 setup errors）。本轮未新建重复工作，核验并补齐到可合并，squash 合并 `dd2438d9c8edd029b36a816f35865e63ddc62c23`（PR#91），最终 main `dd2438d9`。

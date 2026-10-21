@@ -1,7 +1,13 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.48",
-  "baseline_commit": "dd2438d9c8edd029b36a816f35865e63ddc62c23",
+  "baseline_commit": "15093d0ff9afc3732ebc24ac91905f55293f48af",
+  "maintenance_checkpoint": {
+    "package": "next-opennext-supported-upgrade",
+    "evidence": "docs/next-opennext-upgrade.md",
+    "business_acceptance_increment": 0,
+    "resume_pr": 93
+  },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
     {
