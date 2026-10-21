@@ -1,6 +1,20 @@
 # DEVELOPMENT_STATUS
 
-## 2026-10-21 生产换型与批次事实更正设计审查（DeepSeek）
+## 2026-10-21 生产换型与批次追加式历史基线及只读投影（DeepSeek）
+
+基线 main `787ee0928bf002e6727cd8c7a55b103d770a4838`，开放 PR 0，独立分支 `codex/production-changeover-batch-history-backend-read`。承接设计审查 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 的下一小包：只新增基线/更正表与只读投影，不开放任何更正写命令（correction-write 仍为后续需人工批准的独立包）。
+
+实现：`models/production_history.py` 追加四张表——`ChangeoverBaseline`/`ChangeoverCorrection`（可更正 `from_release_id`/`changed_at`/`note`，`to_release_id` 绑定 expected 不可更正）与 `BatchBaseline`/`BatchCorrection`（可更正 `started_at`/`ended_at`/`changeover_id`/`note`，`release_id`/`snapshot_id` 软件归属不可更正），复刻 Deployment 账本的前驱/revision/唯一链/append-only 约束；`batch_corrections` 增 `ended_at >= started_at` 复合检查。迁移 `0029_changeover_batch_history`：建四表 + append-only trigger + 冻结 `software_changeovers`/`production_batches` 物理列写入 guard + 捕获 `LEGACY_CURRENT` 基线；downgrade 在存在更正或 `FIRST_RECORD` 基线时拒绝。投影 `effective_changeover`/`effective_batch`（+`_map`）以 head correction 覆盖不可变基线派生有效值，缺口 `NOT_RECORDED`，不回退基线伪装当前值。消费者统一：`_deployment_detail` 换型/批次时间与 note、`get_batch` 时间/换型/note、`production_catalog` 换型 `from_release` 与 `recorded_at` 改用有效投影；软件归属（release/snapshot/to）保持记录值。`seed.py` 的 `CO-0032`/`PB-1005-A` 改为 insert-only 并捕获 `IMPORTED_CURRENT` 基线（re-seed 不覆盖、不重复）。
+
+版本：`required_db_revision` → `0029_changeover_batch_history`，`APP_VERSION` → `0.18.49`，demo identities 快照与 status 页断言同步改为从契约读取。无身份/秘密/CI/调度/部署权限改动；未开放浏览器提交、未开放更正写端点。公共只读、OIDC/真实提交关闭、内网未部署。
+
+### 精确验收证据（PR#98）
+
+实现提交 `a168936`，测试修复提交 `9ee00dc`（status 页版本断言改读契约）；PR#98 最终 head `9ee00dcb16a141ec1a0fbefc22c9f4f63267aa23`。PR head CI 四项检查全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance 均 success）。受保护 squash 合并 `92fda758fbebcf16e816bf28e4cced5303a9c998`（PR#98）。main CI 四项检查 success（CI acceptance / Backend+PostgreSQL+migrations / Frontend tests + Cloudflare production build success；deploy/wake skipped，SLC_DEPLOY_ENABLED 未启用）。Render `/health/ready` ready、version `0.18.49`、database_revision `0029_changeover_batch_history`（合并触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200（前端由 main CI build）。本地后端 SQLite 1686 passed / 654 skipped。
+
+业务 36/44=82% 不变；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0（只读投影与冻结不提高真实供应商验收）。API 0.18.49 / 唯一 schema head `0029_changeover_batch_history`。下一候选 `production-changeover-batch-correction-write`（仅当人工批准：`POST .../changeovers/{no}/correction`、`POST .../batches/{no}/correction` 与可能的结束批次命令，带完整 request_id/expected_revision/predecessor_id/correction_reason 协议，默认关闭浏览器提交与真实身份/内网验收）。
+
+
 
 基线 main `e80598eb2c1ff05f349c39deaf53b43e9076c52e`，开放 PR 0；独立分支 `codex/production-changeover-batch-history-design-review`。本包只做设计审查，不实现写入：产出 `docs/production-changeover-batch-history-design-review.md`，把 `production-trace-correction-design-review.md`（PR#85/86）中「Changeover/Batch 自身更正账本随后另包」的约定落成精确边界。
 

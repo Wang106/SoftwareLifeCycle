@@ -1,6 +1,18 @@
 # SoftwareLifeCycle Development Handoff
 
-## 2026-10-21 生产换型与批次事实更正设计审查（DeepSeek）
+## 2026-10-21 生产换型与批次追加式历史基线及只读投影（DeepSeek）
+
+基线 main `787ee0928bf002e6727cd8c7a55b103d770a4838`，开放 PR 0，独立分支 `codex/production-changeover-batch-history-backend-read`。承接 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 下一小包：只新增基线/更正表与只读投影，不开放更正写命令（correction-write 仍为后续需人工批准的独立包）。
+
+实现：`models/production_history.py` 追加 `ChangeoverBaseline`/`ChangeoverCorrection`（可更正 `from_release_id`/`changed_at`/`note`，`to_release_id` 绑定 expected）与 `BatchBaseline`/`BatchCorrection`（可更正 `started_at`/`ended_at`/`changeover_id`/`note`，`release_id`/`snapshot_id` 软件归属不可更正），复刻 Deployment 账本前驱/revision/唯一链/append-only；`batch_corrections` 增 `ended_at >= started_at`。迁移 `0029_changeover_batch_history`：建四表 + append-only trigger + 冻结物理列 guard + 捕获 `LEGACY_CURRENT` 基线；downgrade 有更正/`FIRST_RECORD` 基线时拒绝。投影 `effective_changeover`/`effective_batch`（+`_map`）head correction 覆盖基线派生有效值，缺口 `NOT_RECORDED`。消费者统一：`_deployment_detail`/`get_batch`/`production_catalog` 换型 `from_release` 与时间/note 用有效投影，软件归属保持记录值。`seed.py` `CO-0032`/`PB-1005-A` 改 insert-only 并捕获 `IMPORTED_CURRENT` 基线。
+
+版本 `required_db_revision` → `0029_changeover_batch_history`、`APP_VERSION` → `0.18.49`、demo identities 与 status 断言改读契约。公共只读、OIDC/真实提交关闭、内网未部署。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。下一候选 `production-changeover-batch-correction-write`（仅人工批准后）。
+
+### 精确验收证据（PR#98）
+
+实现提交 `a168936`、测试修复提交 `9ee00dc`；PR#98 最终 head `9ee00dcb16a141ec1a0fbefc22c9f4f63267aa23`。PR head CI 四项全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance）。受保护 squash 合并 `92fda758fbebcf16e816bf28e4cced5303a9c998`。main CI 四项 success（deploy/wake skipped）。Render `/health/ready` ready 0.18.49/`0029_changeover_batch_history`；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。本地后端 SQLite 1686 passed / 654 skipped。
+
+
 
 基线 main `e80598eb2c1ff05f349c39deaf53b43e9076c52e`（PR#95 证据回填后），开放 PR 0，独立分支 `codex/production-changeover-batch-history-design-review`。旧候选 `release-decision-supersession-backend-read` 已被 PR68/69/70 覆盖；按最新 HANDOFF 选 `production-changeover-batch-history-design-review`，承接 `production-trace-correction-design-review.md`（PR#85/86）「Changeover/Batch 自身更正账本随后另包」的约定，只审查、不实现写入。
 
