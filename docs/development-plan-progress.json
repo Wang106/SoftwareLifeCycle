@@ -3,10 +3,10 @@
   "as_of_api": "0.18.50",
   "baseline_commit": "e8ad3085f5d0284e111f85303211acd1d273259a",
   "maintenance_checkpoint": {
-    "package": "production-changeover-batch-correction-write",
-    "evidence": "docs/production-changeover-batch-history-design-review.md",
+    "package": "ssr-asr-approval-progress",
+    "evidence": "frontend/app/demo/zfi/page.tsx",
     "business_acceptance_increment": 0,
-    "resume_pr": null
+    "resume_pr": 102
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
