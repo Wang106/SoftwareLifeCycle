@@ -10,7 +10,7 @@
 
 ### 精确验收证据（PR#100）
 
-实现提交 `a6054e1`；本地后端 SQLite 1699 passed / 654 skipped。PR head CI / 合并 / main CI / 部署证据待合并后回填。
+实现提交 `a6054e1`、文档提交 `d068b9b`；PR#100 最终 head `d068b9bbcccb7e99252b4117ccfa172946746d15`。PR head CI `39625214776` 三项全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance success）。受保护 squash 合并 `e8ad3085f5d0284e111f85303211acd1d273259a`（PR#100）。main CI `39627326765` 三项 success（deploy/wake skipped）。Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`（合并触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。本地后端 SQLite 1699 passed / 654 skipped。
 
 ## 2026-10-21 生产换型与批次追加式历史基线及只读投影（DeepSeek）
 
