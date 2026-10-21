@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产换型与批次事实更正设计审查（DeepSeek）
+
+基线 main `e80598eb2c1ff05f349c39deaf53b43e9076c52e`（PR#95 证据回填后），开放 PR 0，独立分支 `codex/production-changeover-batch-history-design-review`。旧候选 `release-decision-supersession-backend-read` 已被 PR68/69/70 覆盖；按最新 HANDOFF 选 `production-changeover-batch-history-design-review`，承接 `production-trace-correction-design-review.md`（PR#85/86）「Changeover/Batch 自身更正账本随后另包」的约定，只审查、不实现写入。
+
+本包只产出设计审查 `docs/production-changeover-batch-history-design-review.md`，无后端/迁移/Seed/界面/测试/依赖/CI/调度/身份/提供方配置改动。已核对真实模型与代码：`SoftwareChangeover`（from/to/changed_at/note/status，`to_release_id` 由服务层强制=expected，无 version/更正命令）与 `ProductionBatch`（release/snapshot/started_at/ended_at/note/status/changeover_id，`release/snapshot`=expected，`ended_at` 无任何写入路径、无结束批次命令、无更正命令）均「只创建、无更正」；`_create_changeover` 只锁 Deployment、`_create_batch` 锁 Deployment→lock_chain(AUTHORIZATION)；seed.py 551–582 对 CO-0032/PB-1005-A 即使已存在仍重新赋值（非 insert-only）。
+
+设计要点：两张不可变基线表（changeover_baselines/batch_baselines，三来源语义）+ 两张类型明确更正表（changeover_corrections/batch_corrections，`EVT-CC-*`/`EVT-BC-*` 族，复刻 DeploymentActualCorrection 的前驱/revision/唯一链/append-only 约束）；`batch_corrections` 增 `ended_at >= started_at` 复合约束；§6 定位全部真实消费者；§8 给出真实 PG 最低矩阵；§9 把实现拆成两个后续小包（先 backend-read 只读投影，后 correction-write 写命令且需人工批准）。公共只读、OIDC/真实提交关闭、内网未部署。
+
+业务 36/44=82% 不变；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。API 0.18.48 / schema 0028 不变。下一候选 `production-changeover-batch-history-backend-read`（两张基线+两张更正表+迁移 0029+append-only trigger+只读投影+消费者统一，不开放写命令）。
+
 ## 2026-10-21 恢复 PR#93：合并升级后 main 并受保护合并（DeepSeek）
 
 上一交接（依赖升级 PR#94）已完成并合并为 main `ba86d996cfaebc5e0ae03bdbfff882f1285421ca`，Next.js 15.5.24 支持窗口阻塞解除。本轮按交接恢复 PR#93 `codex/production-actual-history-ui-read`：将最新 main 以普通双父 merge 纳入该分支，仅三处文档冲突（DEVELOPMENT_STATUS.md / HANDOFF.md / docs/development-plan-progress.json），业务代码无冲突；未 force-push、未绕过门禁。
