@@ -24,10 +24,10 @@ for(const locale of ['en','zh'])test('actual imported identities, dates and read
  assert.ok(html.includes('/releases/standard/standard-uuid')&&html.includes('/approvals/APR-ZFI-ASR01'));
  assert.equal((html.match(/>v3\.8\.1\.1<\/a>/g)||[]).length,2);
  assert.ok(html.includes('KUBO')&&html.includes('VOL')&&html.includes('2026-01-01')&&html.includes('EVT-ZFI-IMPORT-V1'));
- assert.ok(html.includes(locale==='en'?'SSR / ASR approval routes':'SSR / ASR 审批路线'));
+ assert.ok(html.includes(locale==='en'?'Approval progress':'审批进度'));
  for(const role of locale==='en'?['Electronics Engineer','Electronics Manager','Systems Engineer','R&amp;D Director','Application Engineer','Application Manager','Project Manager']:['电子工程师','电子经理','系统工程师','研发总监','应用工程师','应用经理','项目经理'])assert.ok(html.includes(role),role);
  assert.ok(html.includes(locale==='en'?'Current stage: 2 · Electronics Manager':'当前节点: 2 · 电子经理'));
- assert.ok(html.includes(locale==='en'?'Closed result: REJECTED':'关闭结果: 已拒绝'));
+ assert.ok(html.includes(translation.exports.translateText('This approval request is closed.',locale))&&html.includes(translation.exports.translateText('REJECTED',locale)));
  assert.ok(html.includes('SSR: 1')&&html.includes('ASR: 2')&&!html.includes('operation=')&&!html.includes('/api/commands'));
  assert.equal((html.match(/<form\b/g)||[]).length,1);
  assert.match(html,/<form(?=[^>]*action="\/demo\/zfi")(?=[^>]*method="get")(?=[^>]*role="search")[^>]*>/);

@@ -67,7 +67,7 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
             <p className="muted"><Localized>{'Source dates are Excel metadata, not approval or deployment dates. Customer and project columns show the reviewed import mapping.'}</Localized></p>
             <p><Localized>{'Import event'}</Localized>: {data.import_event_no || '—'}</p>
           </section>
-          {data.approval_routes && <section className="panel"><h2><Localized>{'SSR / ASR approval routes'}</Localized></h2>
+          {data.approval_routes && <section className="panel"><h2><Localized>{'Approval progress'}</Localized></h2>
             <p><b><Localized>{'Standard Releases'}</Localized>:</b> {data.approval_routes.STANDARD.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < data.approval_routes!.STANDARD.length - 1 ? ' → ' : ''}</span>)}</p>
             <p><b><Localized>{'Application Releases'}</Localized>:</b> {data.approval_routes.APPLICATION.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < data.approval_routes!.APPLICATION.length - 1 ? ' → ' : ''}</span>)}</p>
             <p className="muted"><Localized>{'Workflow roles describe review stages; they do not prove configured job-role permissions.'}</Localized></p>
@@ -117,8 +117,8 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
                   <td>{row.approval_no ? <><Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}>{row.approval_no}</Link><br/><Localized>{row.approval_status || 'Not recorded'}</Localized></> : <Localized>{'Not recorded'}</Localized>}</td>
                   <td>{row.approval_progress ? <><Localized>{'Approved stages'}</Localized>: {row.approval_progress.approved_steps} / {row.approval_progress.total_steps}
                     {row.approval_progress.current_role && <><br/><Localized>{'Current stage'}</Localized>: {row.approval_progress.current_step_order} · <Localized>{roleLabel(row.approval_progress.current_role)}</Localized></>}
-                    {row.approval_progress.closed && row.approval_status && row.approval_status !== 'APPROVED' && <><br/><Localized>{'Closed result'}</Localized>: <Localized>{row.approval_status}</Localized></>}</>
-                    : <Localized>{'Stage evidence unavailable'}</Localized>}</td>
+                    {row.approval_progress.closed && row.approval_status && row.approval_status !== 'APPROVED' && <><br/><Localized>{'This approval request is closed.'}</Localized> <Localized>{row.approval_status}</Localized></>}</>
+                    : <Localized>{'Approval unavailable'}</Localized>}</td>
                   <td>{row.supplied_artifacts} / {row.supplied_test_evidence}</td></tr>;
               })}</tbody></table>
           </section>)}
