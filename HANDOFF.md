@@ -10,6 +10,10 @@
 
 业务 36/44=82% 不变；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。API 0.18.48 / schema 0028 不变。下一候选 `production-changeover-batch-history-backend-read`（两张基线+两张更正表+迁移 0029+append-only trigger+只读投影+消费者统一，不开放写命令）。
 
+### 精确验收证据（PR#96）
+
+PR#96 head `efa23c13c3e1cb3ebeb5b29e5c3239a3d2334a80`；PR head CI `39598100225` 四项检查全绿（Backend/PostgreSQL/migrations success、Frontend tests + Cloudflare production build success、Workers Builds success、CI acceptance success）。受保护 squash 合并 `e1f918455cef0ec3f23bca135911851dbe7f1484`（PR#96）。main CI `39599671086` 四项检查 success；Actions deployment `39600805752`/continuation `39600805867` skipped（SLC_DEPLOY_ENABLED 未启用）。Render `/health/ready` ready 0.18.48/`0028_deployment_actual_guard`（纯文档包未触发后端重部署，符合预期）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200（前端由 main CI build，非本包业务变更）。
+
 ## 2026-10-21 恢复 PR#93：合并升级后 main 并受保护合并（DeepSeek）
 
 上一交接（依赖升级 PR#94）已完成并合并为 main `ba86d996cfaebc5e0ae03bdbfff882f1285421ca`，Next.js 15.5.24 支持窗口阻塞解除。本轮按交接恢复 PR#93 `codex/production-actual-history-ui-read`：将最新 main 以普通双父 merge 纳入该分支，仅三处文档冲突（DEVELOPMENT_STATUS.md / HANDOFF.md / docs/development-plan-progress.json），业务代码无冲突；未 force-push、未绕过门禁。
