@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.49",
+  "as_of_api": "0.18.50",
   "baseline_commit": "92fda758fbebcf16e816bf28e4cced5303a9c998",
   "maintenance_checkpoint": {
     "package": "production-changeover-batch-history-backend-read",
@@ -528,7 +528,7 @@
         {
           "id": "production-correction",
           "label": "部署/更换/批次更正规则",
-          "complete": false,
+          "complete": true,
           "evidence": [
             "docs/production-trace-correction-design-review.md",
             "backend/app/models/production_history.py",
@@ -544,11 +544,16 @@
             "backend/tests/test_manufacturing_views.py",
             "backend/tests/test_release_downstream_summary.py",
             "frontend/app/deployments/[id]/page.tsx",
-            "frontend/tests/production-actual-history-ui.test.cjs"
+            "frontend/tests/production-actual-history-ui.test.cjs",
+            "docs/production-changeover-batch-history-design-review.md",
+            "backend/alembic/versions/0029_changeover_batch_history.py",
+            "backend/tests/test_changeover_batch_history.py",
+            "backend/tests/test_changeover_batch_correction.py",
+            "backend/tests/test_changeover_batch_history_migration_postgres.py"
           ],
           "acceptance_pending": [
-            "Actual baseline/correction ledger, atomic reporting, database old-writer guards, unified effective projections, bilingual bounded history UI and real PostgreSQL 10,000-row bounded-read matrix are implemented",
-            "Approved-provider multi-user browser acceptance and separate Changeover/Batch correction semantics remain pending"
+            "Actual baseline/correction ledger, atomic reporting, database old-writer guards, unified effective projections, bilingual bounded history UI, real PostgreSQL 10,000-row bounded-read matrix, and Changeover/Batch baseline+correction ledgers with append-only correction write commands are implemented",
+            "Approved-provider multi-user browser acceptance remains pending"
           ]
         },
         {
