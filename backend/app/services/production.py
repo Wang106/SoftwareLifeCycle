@@ -18,13 +18,21 @@ from app.models.production import (
 )
 from app.models.snapshot import ReleaseSnapshot
 from app.models.production_history import (
+    BatchBaseline,
+    BatchCorrection,
+    ChangeoverBaseline,
+    ChangeoverCorrection,
     DeploymentActualBaseline,
     DeploymentActualCorrection,
 )
 from app.services.audit import AuditEventError, commit_with_audit
 from app.services.command_retry import atomic_command, retry_result, timestamp_content
 from app.services.revocation import ensure_chain_active, lock_chain
-from app.services.production_history import effective_actual
+from app.services.production_history import (
+    effective_actual,
+    effective_batch,
+    effective_changeover,
+)
 
 
 class ProductionError(ValueError):
@@ -41,6 +49,26 @@ class ActualReportResult:
     actual_release_id: uuid.UUID
     actual_snapshot_id: uuid.UUID
     deployed_at: datetime
+
+
+@dataclass(frozen=True)
+class ChangeoverCorrectionResult:
+    """Original committed changeover correction outcome."""
+    changeover_id: uuid.UUID
+    changeover_no: str
+    from_release_id: uuid.UUID
+    changed_at: datetime
+    note: str | None
+
+
+@dataclass(frozen=True)
+class BatchCorrectionResult:
+    """Original committed batch correction outcome."""
+    batch_id: uuid.UUID
+    batch_no: str
+    started_at: datetime
+    ended_at: datetime | None
+    note: str | None
 
 
 class ProductionService:
@@ -375,6 +403,312 @@ class ProductionService:
         )
         self.db.refresh(row)
         return row
+
+    def correct_changeover(
+        self,
+        changeover_no: str,
+        from_release_id,
+        changed_at=None,
+        note: str | None = None,
+        correction_reason: str | None = None,
+        expected_revision: int | None = None,
+        predecessor_id=None,
+        actor_context: ActorContext | None = None,
+        request_id=None,
+    ):
+        with atomic_command(self.db, ProductionError):
+            return self._correct_changeover(
+                changeover_no, from_release_id, changed_at, note,
+                correction_reason, expected_revision, predecessor_id,
+                actor_context, request_id,
+            )
+
+    def _correct_changeover(self, changeover_no, from_release_id, changed_at,
+                            note, correction_reason, expected_revision,
+                            predecessor_id, actor_context, request_id):
+        actor = actor_context or ActorContext.legacy(None)
+        if request_id is None:
+            raise ProductionError(
+                "Changeover correction requires request_id, expected_revision and correction_reason"
+            )
+        if expected_revision is None or type(expected_revision) is not int or expected_revision < 0:
+            raise ProductionError("expected_revision must be a non-negative integer")
+        if correction_reason is None or not correction_reason.strip() or len(correction_reason) > 2000:
+            raise ProductionError("correction_reason must contain 1 to 2000 characters")
+        changeover = self.db.scalar(
+            select(SoftwareChangeover).where(SoftwareChangeover.changeover_no == changeover_no)
+            .with_for_update().execution_options(populate_existing=True)
+        )
+        if not changeover:
+            raise ProductionError("Changeover not found")
+        deployment = self._lock(Deployment, changeover.deployment_id)
+        if not deployment:
+            raise ProductionError("Deployment not found")
+        # Changeover target is immutable: from_release_id may change, but the
+        # target software and deployment/authorization attribution never do.
+        if not self.db.get(Release, from_release_id):
+            raise ProductionError("Previous release not found")
+        if from_release_id == deployment.expected_release_id:
+            raise ProductionError("Changeover source and target release must differ")
+
+        request_content = {
+            "changeover_no": changeover_no, "from_release_id": str(from_release_id),
+            "changed_at": timestamp_content(changed_at), "note": note,
+            "expected_revision": expected_revision,
+            "predecessor_id": str(predecessor_id) if predecessor_id else None,
+            "correction_reason": correction_reason,
+        }
+        event_no = f"EVT-CC-{(request_id or uuid.uuid4()).hex}"
+        event = self.db.scalar(select(AuditEvent).where(AuditEvent.event_no == event_no))
+        if event is not None:
+            if (event.entity_type != "SOFTWARE_CHANGEOVER" or event.entity_id != changeover.id
+                    or event.action != "CORRECTED"
+                    or not audit_actor_matches(event, actor)
+                    or event.payload_json.get("request") != request_content):
+                raise ProductionError("request_id already used for different or legacy content")
+            result = self._changeover_correction_result(changeover, event.payload_json["after"])
+            self.db.commit()
+            return result
+
+        baseline = self.db.scalar(
+            select(ChangeoverBaseline).where(ChangeoverBaseline.changeover_id == changeover.id)
+        )
+        if baseline is None:
+            # Compatibility for rows without a captured baseline (direct fixtures).
+            baseline = ChangeoverBaseline(
+                changeover_id=changeover.id, from_release_id=changeover.from_release_id,
+                to_release_id=changeover.to_release_id, recorded_status=changeover.status,
+                recorded_changed_at=changeover.changed_at, recorded_note=changeover.note,
+                source="IMPORTED_CURRENT",
+            )
+            self.db.add(baseline)
+            self.db.flush()
+
+        head = self.db.scalar(
+            select(ChangeoverCorrection).where(
+                ChangeoverCorrection.changeover_id == changeover.id
+            ).order_by(ChangeoverCorrection.revision.desc()).limit(1)
+        )
+        current_revision = head.revision if head is not None else 0
+        if expected_revision != current_revision:
+            raise ProductionError(
+                f"revision conflict: expected {expected_revision}, current {current_revision}"
+            )
+        expected_predecessor = head.id if head is not None else None
+        if predecessor_id != expected_predecessor:
+            raise ProductionError("predecessor_id does not match the current head correction")
+
+        actual_time = (
+            changed_at.replace(tzinfo=changed_at.tzinfo or timezone.utc)
+            if changed_at else datetime.now(timezone.utc)
+        )
+        effective = effective_changeover(self.db, changeover)
+        before = {
+            "from_release_id": str(effective.from_release_id),
+            "to_release_id": str(effective.to_release_id),
+            "changed_at": timestamp_content(effective.changed_at),
+            "note": effective.note,
+        }
+        after = {
+            "from_release_id": str(from_release_id),
+            "to_release_id": str(baseline.to_release_id),
+            "changed_at": timestamp_content(actual_time),
+            "note": note,
+        }
+        revision = current_revision + 1
+        self.db.add(ChangeoverCorrection(
+            id=request_id, changeover_id=changeover.id, baseline_id=baseline.id,
+            predecessor_id=expected_predecessor, revision=revision,
+            from_release_id=from_release_id, changed_at=actual_time, note=note,
+            correction_reason=correction_reason, actor_name=actor.name,
+            actor_principal_id=actor.principal_id, request_json=request_content,
+            audit_event_no=event_no,
+        ))
+        try:
+            commit_with_audit(self.db, lambda: {
+                "event_no": event_no, "event_type": "CHANGEOVER",
+                "action": "CORRECTED", "entity_type": "SOFTWARE_CHANGEOVER",
+                "entity_id": changeover.id, "entity_ref": changeover.changeover_no,
+                **actor.audit_fields(),
+                "summary": "Software changeover facts corrected",
+                "occurred_at": actual_time,
+                "payload": {"before": before, "after": after,
+                    "correction_reason": correction_reason, "actor_source": actor.source,
+                    "request": request_content},
+            })
+        except AuditEventError as exc:
+            raise ProductionError("request_id already used for different content") from exc
+        return self._changeover_correction_result(changeover, after)
+
+    @staticmethod
+    def _changeover_correction_result(changeover, after):
+        return ChangeoverCorrectionResult(
+            changeover_id=changeover.id, changeover_no=changeover.changeover_no,
+            from_release_id=uuid.UUID(after["from_release_id"]),
+            changed_at=datetime.fromisoformat(after["changed_at"]),
+            note=after["note"],
+        )
+
+    def correct_batch(
+        self,
+        batch_no: str,
+        started_at=None,
+        ended_at=None,
+        changeover_id=None,
+        note: str | None = None,
+        correction_reason: str | None = None,
+        expected_revision: int | None = None,
+        predecessor_id=None,
+        actor_context: ActorContext | None = None,
+        request_id=None,
+    ):
+        with atomic_command(self.db, ProductionError):
+            return self._correct_batch(
+                batch_no, started_at, ended_at, changeover_id, note,
+                correction_reason, expected_revision, predecessor_id,
+                actor_context, request_id,
+            )
+
+    def _correct_batch(self, batch_no, started_at, ended_at, changeover_id, note,
+                       correction_reason, expected_revision, predecessor_id,
+                       actor_context, request_id):
+        actor = actor_context or ActorContext.legacy(None)
+        if request_id is None:
+            raise ProductionError(
+                "Batch correction requires request_id, expected_revision and correction_reason"
+            )
+        if expected_revision is None or type(expected_revision) is not int or expected_revision < 0:
+            raise ProductionError("expected_revision must be a non-negative integer")
+        if correction_reason is None or not correction_reason.strip() or len(correction_reason) > 2000:
+            raise ProductionError("correction_reason must contain 1 to 2000 characters")
+        batch = self.db.scalar(
+            select(ProductionBatch).where(ProductionBatch.batch_no == batch_no)
+            .with_for_update().execution_options(populate_existing=True)
+        )
+        if not batch:
+            raise ProductionError("Production batch not found")
+        deployment = self._lock(Deployment, batch.deployment_id)
+        if not deployment:
+            raise ProductionError("Deployment not found")
+
+        eff = effective_batch(self.db, batch)
+        # Software attribution is never corrected: carry the recorded binding.
+        release_id = eff.release_id
+        snapshot_id = eff.snapshot_id
+
+        effective_start = started_at if started_at is not None else eff.started_at
+        effective_end = ended_at if ended_at is not None else eff.ended_at
+        if effective_start is not None and effective_end is not None and effective_end < effective_start:
+            raise ProductionError("ended_at must not precede started_at")
+        if changeover_id is not None:
+            changeover = self.db.get(SoftwareChangeover, changeover_id)
+            if (not changeover or changeover.deployment_id != deployment.id
+                    or changeover.to_release_id != deployment.expected_release_id
+                    or changeover.status != "COMPLETED"):
+                raise ProductionError("Production batch changeover does not match deployment")
+
+        request_content = {
+            "batch_no": batch_no, "started_at": timestamp_content(started_at),
+            "ended_at": timestamp_content(ended_at),
+            "changeover_id": str(changeover_id) if changeover_id else None,
+            "note": note, "expected_revision": expected_revision,
+            "predecessor_id": str(predecessor_id) if predecessor_id else None,
+            "correction_reason": correction_reason,
+        }
+        event_no = f"EVT-BC-{(request_id or uuid.uuid4()).hex}"
+        event = self.db.scalar(select(AuditEvent).where(AuditEvent.event_no == event_no))
+        if event is not None:
+            if (event.entity_type != "PRODUCTION_BATCH" or event.entity_id != batch.id
+                    or event.action != "CORRECTED"
+                    or not audit_actor_matches(event, actor)
+                    or event.payload_json.get("request") != request_content):
+                raise ProductionError("request_id already used for different or legacy content")
+            result = self._batch_correction_result(batch, event.payload_json["after"])
+            self.db.commit()
+            return result
+
+        baseline = self.db.scalar(
+            select(BatchBaseline).where(BatchBaseline.batch_id == batch.id)
+        )
+        if baseline is None:
+            baseline = BatchBaseline(
+                batch_id=batch.id, release_id=batch.release_id,
+                snapshot_id=batch.snapshot_id, changeover_id=batch.changeover_id,
+                recorded_status=batch.status, recorded_started_at=batch.started_at,
+                recorded_ended_at=batch.ended_at, recorded_note=batch.note,
+                source="IMPORTED_CURRENT",
+            )
+            self.db.add(baseline)
+            self.db.flush()
+
+        head = self.db.scalar(
+            select(BatchCorrection).where(BatchCorrection.batch_id == batch.id)
+            .order_by(BatchCorrection.revision.desc()).limit(1)
+        )
+        current_revision = head.revision if head is not None else 0
+        if expected_revision != current_revision:
+            raise ProductionError(
+                f"revision conflict: expected {expected_revision}, current {current_revision}"
+            )
+        expected_predecessor = head.id if head is not None else None
+        if predecessor_id != expected_predecessor:
+            raise ProductionError("predecessor_id does not match the current head correction")
+
+        start_val = (
+            started_at.replace(tzinfo=started_at.tzinfo or timezone.utc)
+            if started_at is not None else eff.started_at
+        )
+        end_val = (
+            ended_at.replace(tzinfo=ended_at.tzinfo or timezone.utc)
+            if ended_at is not None else eff.ended_at
+        )
+        before = {
+            "release_id": str(release_id), "snapshot_id": str(snapshot_id),
+            "started_at": timestamp_content(eff.started_at),
+            "ended_at": timestamp_content(eff.ended_at),
+            "changeover_id": str(eff.changeover_id) if eff.changeover_id else None,
+            "note": eff.note,
+        }
+        after = {
+            "release_id": str(release_id), "snapshot_id": str(snapshot_id),
+            "started_at": timestamp_content(start_val),
+            "ended_at": timestamp_content(end_val),
+            "changeover_id": str(changeover_id) if changeover_id else None,
+            "note": note,
+        }
+        revision = current_revision + 1
+        self.db.add(BatchCorrection(
+            id=request_id, batch_id=batch.id, baseline_id=baseline.id,
+            predecessor_id=expected_predecessor, revision=revision,
+            started_at=start_val, ended_at=end_val, changeover_id=changeover_id,
+            note=note, correction_reason=correction_reason, actor_name=actor.name,
+            actor_principal_id=actor.principal_id, request_json=request_content,
+            audit_event_no=event_no,
+        ))
+        try:
+            commit_with_audit(self.db, lambda: {
+                "event_no": event_no, "event_type": "PRODUCTION_BATCH",
+                "action": "CORRECTED", "entity_type": "PRODUCTION_BATCH",
+                "entity_id": batch.id, "entity_ref": batch.batch_no,
+                **actor.audit_fields(),
+                "summary": "Production batch facts corrected",
+                "occurred_at": start_val,
+                "payload": {"before": before, "after": after,
+                    "correction_reason": correction_reason, "actor_source": actor.source,
+                    "request": request_content},
+            })
+        except AuditEventError as exc:
+            raise ProductionError("request_id already used for different content") from exc
+        return self._batch_correction_result(batch, after)
+
+    @staticmethod
+    def _batch_correction_result(batch, after):
+        return BatchCorrectionResult(
+            batch_id=batch.id, batch_no=batch.batch_no,
+            started_at=datetime.fromisoformat(after["started_at"]),
+            ended_at=datetime.fromisoformat(after["ended_at"]) if after["ended_at"] else None,
+            note=after["note"],
+        )
 
     def create_batch(
         self,

@@ -89,6 +89,39 @@ class BatchCreate(BaseModel):
     note: str | None = None
 
 
+class ChangeoverCorrectionCreate(BaseModel):
+    request_id: uuid.UUID
+    expected_revision: int = Field(ge=0, strict=True)
+    predecessor_id: uuid.UUID | None = None
+    from_release_id: uuid.UUID
+    changed_at: datetime | None = None
+    note: str | None = None
+    correction_reason: str = Field(min_length=1, max_length=2000)
+
+    @model_validator(mode="after")
+    def reason_has_content(self):
+        if not self.correction_reason.strip():
+            raise ValueError("correction_reason must contain non-whitespace text")
+        return self
+
+
+class BatchCorrectionCreate(BaseModel):
+    request_id: uuid.UUID
+    expected_revision: int = Field(ge=0, strict=True)
+    predecessor_id: uuid.UUID | None = None
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    changeover_id: uuid.UUID | None = None
+    note: str | None = None
+    correction_reason: str = Field(min_length=1, max_length=2000)
+
+    @model_validator(mode="after")
+    def reason_has_content(self):
+        if not self.correction_reason.strip():
+            raise ValueError("correction_reason must contain non-whitespace text")
+        return self
+
+
 def _release_ref(db: Session, release_id, snapshot_id):
     release = db.get(Release, release_id) if release_id else None
     snapshot = db.get(ReleaseSnapshot, snapshot_id) if snapshot_id else None
@@ -535,5 +568,45 @@ def create_batch(
             deployment_no, **payload.model_dump(), actor_context=actor
         )
         return {"id": str(row.id), "batch_no": row.batch_no, "status": row.status}
+    except ProductionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.post("/deployments/{deployment_no}/changeovers/{changeover_no}/correction")
+def correct_changeover(
+    deployment_no: str,
+    changeover_no: str,
+    payload: ChangeoverCorrectionCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
+    actor = resolve_actor(request)
+    try:
+        row = ProductionService(db).correct_changeover(
+            changeover_no, **payload.model_dump(), actor_context=actor
+        )
+        return {"changeover_no": row.changeover_no, "from_release_id": str(row.from_release_id),
+                "changed_at": row.changed_at, "note": row.note}
+    except ProductionError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.post("/deployments/{deployment_no}/batches/{batch_no}/correction")
+def correct_batch(
+    deployment_no: str,
+    batch_no: str,
+    payload: BatchCorrectionCreate,
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
+    actor = resolve_actor(request)
+    try:
+        row = ProductionService(db).correct_batch(
+            batch_no, **payload.model_dump(), actor_context=actor
+        )
+        return {"batch_no": row.batch_no, "started_at": row.started_at,
+                "ended_at": row.ended_at, "note": row.note}
     except ProductionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
