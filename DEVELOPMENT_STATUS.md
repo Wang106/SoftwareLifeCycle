@@ -10,6 +10,10 @@
 
 无后端/迁移/Seed/界面/测试/依赖/CI/调度/身份/提供方配置改动。API 0.18.48 / 唯一 schema head `0028_deployment_actual_guard` 不变。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0（设计审查不提高真实供应商验收比例）。公共只读、OIDC/真实提交关闭、内网未部署。
 
+### 精确验收证据（PR#96）
+
+PR#96 head `efa23c13c3e1cb3ebeb5b29e5c3239a3d2334a80`；PR head CI `39598100225` 四项检查全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance 均 success）。受保护 squash 合并 `e1f918455cef0ec3f23bca135911851dbe7f1484`（PR#96）。main CI `39599671086` 四项检查 success；Actions deployment `39600805752`/continuation `39600805867` skipped（SLC_DEPLOY_ENABLED 未启用）。Render `/health/ready` ready 0.18.48/`0028_deployment_actual_guard`（纯文档包未触发后端重部署，符合预期）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200（前端由 main CI build，非本包业务变更）。
+
 ## 2026-10-21 受支持 Next.js / OpenNext 依赖升级（Codex / ChatGPT Work）
 
 用户已明确授权独立依赖升级包。基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`；已有 PR#93 head `204a3555031e418382b519208ebaa9a6cc4f7a6c` 保留，先修复其与 main 的共同构建阻塞。独立分支 `codex/next-opennext-supported-upgrade`，未重复历史界面开发。
