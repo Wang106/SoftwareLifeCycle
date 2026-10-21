@@ -2180,9 +2180,9 @@
   "Ledger recorded time": "账本记录时间",
   "No actual software report has been recorded.": "尚未记录实际软件报告。",
   "Corrections": "更正历史",
-  "Showing latest ": "显示最新 ",
-  " of ": " / 共 ",
   " corrections.": " 条更正。",
   "Revision ": "修订 ",
-  "No corrections have been recorded.": "尚无更正记录。"
+  "No corrections have been recorded.": "尚无更正记录。",
+  "Showing latest": "显示最新",
+  "of": "共"
 }
