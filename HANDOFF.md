@@ -1,5 +1,13 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 恢复 PR#93：合并升级后 main 并受保护合并（DeepSeek）
+
+上一交接（依赖升级 PR#94）已完成并合并为 main `ba86d996cfaebc5e0ae03bdbfff882f1285421ca`，Next.js 15.5.24 支持窗口阻塞解除。本轮按交接恢复 PR#93 `codex/production-actual-history-ui-read`：将最新 main 以普通双父 merge 纳入该分支，仅三处文档冲突（DEVELOPMENT_STATUS.md / HANDOFF.md / docs/development-plan-progress.json），业务代码无冲突；未 force-push、未绕过门禁。
+
+merge head `0fb6388854b39f7a0d38e223bb9ebafb92cf3b80`（双父 `204a355` + `ba86d996`）三项 CI 全绿（run `39590349063`）：Backend/PostgreSQL/migrations success（2331 passed / 253 PG module cases / 无 skip）；Frontend tests 1497 passed / 0 failed，Next.js 16.4.2 build 成功；CI acceptance success；Workers Builds success。受保护 squash 合并 `bbb0b9c5f1f0d7081658128175dd76570d60d2dd`（PR#93）。main CI `39591745406` 三 job 全绿；Cloudflare 生产 build `3dbb7e76-d472-4a55-acf1-67f766662c5f` success；Render `/health/ready` ready 0.18.48/0028；Cloudflare `softwarelifecycle.whf969.com` HTTP 200；Actions deploy/wake skipped。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0。下一候选 `production-changeover-batch-history-design-review`（先只审查 Changeover/Batch 真实模型/消费者/并发与迁移边界，不直接实现写入）。公共只读、OIDC/真实提交关闭、内网未部署。
+
 ## 2026-10-21 受支持 Next.js / OpenNext 依赖升级（Codex / ChatGPT Work）
 
 用户已授权升级包；当前独立 `codex/next-opennext-supported-upgrade`，基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`。PR#93 (`204a3555031e418382b519208ebaa9a6cc4f7a6c`) 仍开放，main CI39519151383及PR CI39531385542均在OpenNext版本检查失败；先修复共同依赖阻塞，不新建历史界面包。
