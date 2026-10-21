@@ -8,9 +8,9 @@
 
 无 migration、Seed、依赖、身份、CI、调度或提供方配置变更；API 0.18.50 / schema 0029 不变，Seed 幂等语义不变。本地定向前端 44 passed；当前容器未安装 pytest，因此后端与真实 PostgreSQL 由本包精确 PR CI 验证，未运行不称通过。业务验收仍 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，页面可见进度不提高真实身份或业务验收比例。
 
-### 精确验收证据
+### 精确验收证据（PR#102）
 
-PR#102 首轮精确 head `971496e066adbee3a0517da5676c789e21b13955` 的前端 job 检出测试夹具变量名误写（1495 passed / 2 failed），已在包含最新 main 的恢复提交中单点修正 `translation` → `translated`，未改业务语义或削弱断言。新精确 head CI、受保护合并、main CI 与 provider 证据待发布后记录于 PR；三项必需 CI 未成功前不合并。
+首轮 head `971496e066adbee3a0517da5676c789e21b13955` 的前端 job 检出测试夹具变量名误写（1495 passed / 2 failed）；恢复提交仅将 `translation` 修正为既有 `translated`，并以双父普通合并纳入最新 main，未改业务语义或削弱断言。最终 PR head `2a62228687f26bbdba8e3d8e7732a2e6f895f2d6`；精确 head CI `39636441128` 三项全绿：后端 2353 passed、258 个真实 PostgreSQL 模块用例且无 skip、单一 Alembic head `0029_changeover_batch_history`，前端 1497 passed / 0 failed / 0 skipped、Next.js 16.4.2 与 OpenNext 1.20.12 生产构建成功，CI acceptance success。受保护 squash 合并 `5f36637a624b610ae6478ebbaaf536cf5eb79ff4`（PR#102）；独立 main CI `39638296762` 三项 success。Cloudflare Workers Builds 对精确 main 成功（check `119356620238`，build `02037286-d2fb-4457-854b-51cca36d368f`）；Actions deployment `39639997780` 与 continuation `39639997804` 均 skipped，不能称 Actions 部署成功。Render 公共 `/health/ready` 返回 ready、API 0.18.50、schema `0029_changeover_batch_history`；当前会话未选择 Render workspace，无法核对精确 source deploy，故只记在线健康而不称 commit-specific 部署成功。
 
 ## 2026-10-21 生产换型与批次追加式更正写命令（DeepSeek，人工批准）
 

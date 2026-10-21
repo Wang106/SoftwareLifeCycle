@@ -6,7 +6,7 @@
 
 本包增强固定只读 `GET /api/v1/demo/zfi-import`：一次批量读取全部合成 ApprovalStep，不按 20 条发布逐行查询；仅当四步数量、顺序、岗位与 SSR/ASR 预期完全一致时返回 `approval_progress`，否则显式 null。返回已通过节点数、严格当前 PENDING 节点、关闭状态及两套路线。`/demo/zfi` 双语展示 SSR「电子工程师→电子经理→系统工程师→研发总监」、ASR「应用工程师→应用经理→系统工程师→项目经理」，每行显示进度/当前节点/退回或拒绝结果，保留原审批链接、筛选、检索、分页和只读限制；审批完成不等于正式 RELEASE。
 
-无 migration、Seed、依赖、身份、CI、调度或 provider 配置改动；API 0.18.50 / schema 0029。定向前端 44 passed / 0 failed / 0 skipped；当前容器无 pytest，后端与真实 PG 待本包精确 CI，不能借用 PR#100 结果。实现提交/PR/head CI/合并/main/provider 证据待发布后在 PR 记录。36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。
+无 migration、Seed、依赖、身份、CI、调度或 provider 配置改动；API 0.18.50 / schema 0029。最终 PR head `2a62228687f26bbdba8e3d8e7732a2e6f895f2d6`，精确 CI `39636441128` 三项全绿：2353 后端、258 个真实 PostgreSQL 模块用例且无 skip、1497 前端、Next.js 16.4.2 / OpenNext 1.20.12 生产构建与 CI acceptance 成功。受保护 squash 合并 `5f36637a624b610ae6478ebbaaf536cf5eb79ff4`（PR#102）；独立 main CI `39638296762` 三项 success。Cloudflare 精确 main Workers Build `02037286-d2fb-4457-854b-51cca36d368f` success；Actions deployment `39639997780` / continuation `39639997804` skipped。Render 公共健康 ready、API 0.18.50/schema 0029，但当前未选择 workspace，未核对精确 source deploy，不能称本提交已由 Render 部署。36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。
 
 SSR/ASR 预计后续 3–5 轮：本轮审批进度总览；下一轮标准/应用发布详情的当前 Snapshot→Readiness→审批→Decision 证据摘要；再一轮按供应商/基线 SSR 聚合 ASR 差异与阻断；最后 1–2 轮用于云端样例/API 与桌面、手机、中英文现场验收（真实浏览器/provider 权限具备时）。下一包应以本包精确 CI/合并证据为前提，优先 `ssr-asr-release-evidence-summary`，不回到无关生产账本扩展。
 
