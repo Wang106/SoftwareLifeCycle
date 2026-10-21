@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       </section>
     </div>
     <section className="panel"><h2><Localized>{"Actual software history"}</Localized></h2>
-      {!actualHistory ? <p className="muted"><Localized>{"Actual history unavailable. No substitute history is shown."}</Localized></p> : <>
+      <Localized>{!actualHistory ? <p className="muted"><Localized>{"Actual history unavailable. No substitute history is shown."}</Localized></p> : <>
         <p className="muted"><Localized>{"Read-only append-only history. Latest correction first. This view does not grant production permission."}</Localized></p>
         <div className="kv"><span><Localized>{"History state"}</Localized></span><b><Localized>{actualHistory.history_state}</Localized></b><span><Localized>{"Total corrections"}</Localized></span><b>{actualHistory.correction_count}</b></div>
         <h3><Localized>{"Recorded baseline"}</Localized></h3>
@@ -59,7 +59,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             </div>
           </article>)}</div>
         </> : <p className="muted"><Localized>{"No corrections have been recorded."}</Localized></p>}
-      </>}
+      </>}</Localized>
     </section>
     <section className="panel"><h2><Localized>{"End-to-end provenance"}</Localized></h2><Localized>{provenance ? <>
       <div className="kv"><span><Localized>{"Release decision history"}</Localized></span><b><Localized>{delivery ? <Link href={`/release-decisions?${new URLSearchParams({release_id: delivery.release_id, snapshot_id: delivery.snapshot_id})}`}><Localized>{"Review decisions for exact delivered release/snapshot →"}</Localized></Link> : 'Delivery unavailable — no decision scope inferred'}</Localized></b>
