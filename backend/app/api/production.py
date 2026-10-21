@@ -24,7 +24,11 @@ from app.models.production_history import (
     DeploymentActualCorrection,
 )
 from app.services.production import ProductionError, ProductionService
-from app.services.production_history import effective_actual
+from app.services.production_history import (
+    effective_actual,
+    effective_batch,
+    effective_changeover,
+)
 from app.authorization import authorize_authorization, authorize_deployment
 from app.actor import resolve_actor
 from app.services.revocation import RevocationError, governance_state
@@ -234,26 +238,30 @@ def _deployment_detail(db: Session, deployment: Deployment, *, include_history: 
             {
                 "id": str(row.id),
                 "changeover_no": row.changeover_no,
-                "from_version": db.get(Release, row.from_release_id).version,
-                "to_version": db.get(Release, row.to_release_id).version,
+                "from_version": db.get(Release, eff_co.from_release_id).version,
+                "to_version": db.get(Release, eff_co.to_release_id).version,
                 "status": row.status,
-                "changed_at": row.changed_at,
-                "note": row.note,
+                "changed_at": eff_co.changed_at,
+                "note": eff_co.note,
+                "history_state": eff_co.history_state,
             }
             for row in changeovers
+            for eff_co in [effective_changeover(db, row)]
         ],
         "batches": [
             {
                 "id": str(row.id),
                 "batch_no": row.batch_no,
                 "status": row.status,
-                "release_version": db.get(Release, row.release_id).version,
-                "snapshot_no": db.get(ReleaseSnapshot, row.snapshot_id).snapshot_no,
-                "started_at": row.started_at,
-                "ended_at": row.ended_at,
-                "note": row.note,
+                "release_version": db.get(Release, eff_b.release_id).version,
+                "snapshot_no": db.get(ReleaseSnapshot, eff_b.snapshot_id).snapshot_no,
+                "started_at": eff_b.started_at,
+                "ended_at": eff_b.ended_at,
+                "note": eff_b.note,
+                "history_state": eff_b.history_state,
             }
             for row in batches
+            for eff_b in [effective_batch(db, row)]
         ],
     }
     result["governance"] = _authorization_governance(db, authorization)
@@ -430,11 +438,13 @@ def get_batch(batch_no: str, db: Session = Depends(get_db)):
     deployment = db.get(Deployment, batch.deployment_id)
     actual = effective_actual(db, deployment) if deployment else None
     authorization = db.get(SoftwareAuthorization, batch.authorization_id)
-    changeover = db.get(SoftwareChangeover, batch.changeover_id) if batch.changeover_id else None
+    eff_batch = effective_batch(db, batch)
+    changeover = db.get(SoftwareChangeover, eff_batch.changeover_id) if eff_batch.changeover_id else None
     return {
         "id": str(batch.id), "batch_no": batch.batch_no, "status": batch.status,
-        "started_at": batch.started_at, "ended_at": batch.ended_at, "note": batch.note,
-        "software": _release_ref(db, batch.release_id, batch.snapshot_id),
+        "started_at": eff_batch.started_at, "ended_at": eff_batch.ended_at,
+        "note": eff_batch.note, "history_state": eff_batch.history_state,
+        "software": _release_ref(db, eff_batch.release_id, eff_batch.snapshot_id),
         "deployment": {"deployment_no": deployment.deployment_no, "status": actual.status,
                        "actual": _release_ref(db, actual.actual_release_id, actual.actual_snapshot_id)
                        if actual.actual_release_id or actual.actual_snapshot_id else None}

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "as_of_api": "0.18.48",
+  "as_of_api": "0.18.49",
   "baseline_commit": "15093d0ff9afc3732ebc24ac91905f55293f48af",
   "maintenance_checkpoint": {
     "package": "next-opennext-supported-upgrade",

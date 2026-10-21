@@ -52,6 +52,7 @@ export type DeploymentDetail = {
     status: string;
     changed_at: string | null;
     note: string | null;
+    history_state?: string;
   }[];
   batches: {
     id: string;
@@ -62,6 +63,7 @@ export type DeploymentDetail = {
     started_at: string | null;
     ended_at: string | null;
     note: string | null;
+    history_state?: string;
   }[];
 };
 
