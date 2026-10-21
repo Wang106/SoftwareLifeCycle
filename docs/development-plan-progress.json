@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "e8ad3085f5d0284e111f85303211acd1d273259a",
+  "baseline_commit": "5f36637a624b610ae6478ebbaaf536cf5eb79ff4",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-approval-progress",
-    "evidence": "frontend/app/demo/zfi/page.tsx",
+    "package": "ssr-asr-release-evidence-summary",
+    "evidence": "HANDOFF.md",
     "business_acceptance_increment": 0,
-    "resume_pr": 102
+    "resume_pr": null
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
