@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.49",
-  "baseline_commit": "15093d0ff9afc3732ebc24ac91905f55293f48af",
+  "baseline_commit": "92fda758fbebcf16e816bf28e4cced5303a9c998",
   "maintenance_checkpoint": {
-    "package": "next-opennext-supported-upgrade",
-    "evidence": "docs/next-opennext-upgrade.md",
+    "package": "production-changeover-batch-history-backend-read",
+    "evidence": "docs/production-changeover-batch-history-design-review.md",
     "business_acceptance_increment": 0,
-    "resume_pr": 93
+    "resume_pr": null
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
