@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-21 生产换型与批次事实更正设计审查（DeepSeek）
+
+基线 main `e80598eb2c1ff05f349c39deaf53b43e9076c52e`，开放 PR 0；独立分支 `codex/production-changeover-batch-history-design-review`。本包只做设计审查，不实现写入：产出 `docs/production-changeover-batch-history-design-review.md`，把 `production-trace-correction-design-review.md`（PR#85/86）中「Changeover/Batch 自身更正账本随后另包」的约定落成精确边界。
+
+已核对真实模型与代码：`SoftwareChangeover` 与 `ProductionBatch` 均「只创建、无更正」——前者 `to_release_id` 由服务层强制等于 `deployment.expected_release_id`（`services/production.py:343`）、后者 `release_id/snapshot_id` 强制等于 expected（451–452 行）、`ended_at` 全代码库无写入路径（无结束批次命令）；两表均无 version/前驱/更正账本。锁图：`_create_changeover` 只锁 Deployment，`_create_batch` 锁 Deployment→lock_chain(AUTHORIZATION)。`seed.py:551–582` 对 `CO-0032`/`PB-1005-A` 即使已存在仍重新赋值（非 insert-only），下一实现须改为只创建缺失行。
+
+设计要点：两张不可变基线表（changeover_baselines/batch_baselines，LEGACY_CURRENT/IMPORTED_CURRENT/FIRST_RECORD 三来源）+ 两张类型明确更正表（changeover_corrections/batch_corrections，`EVT-CC-*`/`EVT-BC-*` 族，复刻 DeploymentActualCorrection 的前驱/revision/唯一链/append-only 约束）；`batch_corrections` 增 `ended_at >= started_at` 复合约束；§6 定位全部真实消费者（production_catalog 的 changeover/batch 绑定、_deployment_detail、get_batch、dashboard 下游、seed）；§8 真实 PG 最低矩阵；§9 拆成两个后续小包——先 `production-changeover-batch-history-backend-read`（只读投影，不开放写命令），后 `production-changeover-batch-correction-write`（写命令，需人工批准）。
+
+无后端/迁移/Seed/界面/测试/依赖/CI/调度/身份/提供方配置改动。API 0.18.48 / 唯一 schema head `0028_deployment_actual_guard` 不变。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0（设计审查不提高真实供应商验收比例）。公共只读、OIDC/真实提交关闭、内网未部署。
+
 ## 2026-10-21 受支持 Next.js / OpenNext 依赖升级（Codex / ChatGPT Work）
 
 用户已明确授权独立依赖升级包。基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`；已有 PR#93 head `204a3555031e418382b519208ebaa9a6cc4f7a6c` 保留，先修复其与 main 的共同构建阻塞。独立分支 `codex/next-opennext-supported-upgrade`，未重复历史界面开发。
