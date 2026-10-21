@@ -1,6 +1,18 @@
 # DEVELOPMENT_STATUS
 
-## 2026-10-21 生产换型与批次追加式历史基线及只读投影（DeepSeek）
+## 2026-10-21 生产换型与批次追加式更正写命令（DeepSeek，人工批准）
+
+基线 main `80b00b62d2b2df2f20c405cb16a8895ece7df5fb`（PR#99 证据回填后），开放 PR 0，独立分支 `codex/production-changeover-batch-correction-write`。承接设计审查 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 的第二个小包，仅在人工批准后开放：新增两个更正写端点，带完整 `request_id`/`expected_revision`/`predecessor_id`/`correction_reason` 协议，不新增迁移（复用 0029 已建四表），不开放浏览器提交、真实身份或内网验收。
+
+实现：`services/production.py` 新增 `correct_changeover`/`correct_batch`。锁定顺序 `Deployment → Changeover/Batch 行`；幂等 `request_id`（`EVT-CC-`/`EVT-BC-` 族）重放须核对 entity/action/actor/正文，不一致 409；`expected_revision` 须等于当前 head（根为 0），`predecessor_id` 须等于当前 head id（根显式 null），跳号/分叉/错前驱拒绝；`correction_reason` 1..2000；Changeover 可更正 `from_release_id`/`changed_at`/`note`，`to_release_id`/deployment/authorization 不可更正；Batch 可更正 `started_at`/`ended_at`/`changeover_id`/`note`，`release_id`/`snapshot_id`（软件归属）不可更正，且 `ended_at >= started_at`；缺失基线时以 `IMPORTED_CURRENT` 兜底捕获。追加 `ChangeoverCorrection`/`BatchCorrection` 账本行 + 原子审计一次提交，失败全回滚。
+
+`api/production.py` 新增 `POST /deployments/{no}/changeovers/{changeover_no}/correction` 与 `POST /deployments/{no}/batches/{batch_no}/correction`，`PRODUCTION_OPERATOR` 授权 + `resolve_actor`；新增 `ChangeoverCorrectionCreate`/`BatchCorrectionCreate` Pydantic 模型（request_id 必填、expected_revision ge=0、reason 非空白）。`write_contracts.py` 注册两条路由（19→21）并更新 changeovers/batches 的 known_gap 措辞。`APP_VERSION` 0.18.49→0.18.50；`demo-family-identities.json` api_version 同步；两个 retirement 测试的 `len(WRITE_CONTRACTS)` 19→21。
+
+版本 API 0.18.50 / schema 0029 不变（无新迁移）。公共只读、OIDC/真实提交关闭、内网未部署。七计划 group6「追加式更正和撤销」`production-correction`（部署/更换/批次更正规则）标记 complete，七计划 100/100/20/33/40/40/0；业务 36/44=82% 不变（后端规则不提升真实供应商验收）。
+
+### 精确验收证据（PR#100）
+
+实现提交 `a6054e1`；本地后端 SQLite 1699 passed / 654 skipped（新增 13 个更正写命令测试）。PR head CI / 合并 / main CI / 部署证据待合并后回填。
 
 基线 main `787ee0928bf002e6727cd8c7a55b103d770a4838`，开放 PR 0，独立分支 `codex/production-changeover-batch-history-backend-read`。承接设计审查 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 的下一小包：只新增基线/更正表与只读投影，不开放任何更正写命令（correction-write 仍为后续需人工批准的独立包）。
 

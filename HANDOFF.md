@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 生产换型与批次追加式更正写命令（DeepSeek，人工批准）
+
+基线 main `80b00b62d2b2df2f20c405cb16a8895ece7df5fb`，开放 PR 0，独立分支 `codex/production-changeover-batch-correction-write`。承接 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 第二个小包，仅在人工批准后开放：新增两个更正写端点，完整 `request_id`/`expected_revision`/`predecessor_id`/`correction_reason` 协议；不新增迁移（复用 0029 四表），默认关闭浏览器提交、真实身份与内网验收。
+
+实现：`correct_changeover`/`correct_batch`（锁 Deployment→目标行；幂等 keyed 重放核对 entity/action/actor/正文；revision/predecessor 链校验；`ended_at>=started_at`；缺失基线 IMPORTED_CURRENT 兜底；追加账本 + 原子 `EVT-CC-`/`EVT-BC-` 审计）。Changeover 只更正 from/changed_at/note（to 不可更正），Batch 只更正 started_at/ended_at/changeover/note（release/snapshot 软件归属不可更正）。端点 `POST .../changeovers/{no}/correction`、`POST .../batches/{no}/correction`，PRODUCTION_OPERATOR + resolve_actor。`write_contracts` 19→21；APP_VERSION→0.18.50；demo api_version 同步；两个 retirement 测试计数 19→21。
+
+版本 API 0.18.50 / schema 0029。七计划 group6 `production-correction` complete → 100/100/20/33/40/40/0；业务 36/44=82% 不变。公共只读、OIDC/真实提交关闭、内网未部署。下一候选：真实身份/浏览器更正提交与内网验收（`correction-e2e` 及「全部 14 项命令」的 all-submit/all-recovery-results/all-e2e 里程碑）仍待批准环境，非后端代码包；后端下一候选 `production-changeover-batch-correction-e2e`（真实 PG 并发更正矩阵，若有）。
+
+### 精确验收证据（PR#100）
+
+实现提交 `a6054e1`；本地后端 SQLite 1699 passed / 654 skipped。PR head CI / 合并 / main CI / 部署证据待合并后回填。
+
 ## 2026-10-21 生产换型与批次追加式历史基线及只读投影（DeepSeek）
 
 基线 main `787ee0928bf002e6727cd8c7a55b103d770a4838`，开放 PR 0，独立分支 `codex/production-changeover-batch-history-backend-read`。承接 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 下一小包：只新增基线/更正表与只读投影，不开放更正写命令（correction-write 仍为后续需人工批准的独立包）。
