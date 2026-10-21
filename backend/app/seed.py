@@ -13,7 +13,11 @@ from app.models.policy import ArtifactDistributionRule
 from app.models.approval import ApprovalRequest, ApprovalStep, ApprovalAction, ReleaseDecision
 from app.models.distribution import DeliveryPackage, DeliveryPackageItem, Distribution, SoftwareAuthorization
 from app.models.production import Deployment, ManufacturingSite, ProductionBatch, ProductionLine, SoftwareChangeover
-from app.models.production_history import DeploymentActualBaseline
+from app.models.production_history import (
+    BatchBaseline,
+    ChangeoverBaseline,
+    DeploymentActualBaseline,
+)
 from app.models.audit import AuditEvent
 
 def h(name):
@@ -554,28 +558,54 @@ def run():
     if not changeover:
         changeover = SoftwareChangeover(changeover_no="CO-0032")
         db.add(changeover)
-    changeover.deployment_id = deployment.id
-    changeover.authorization_id = authorization.id
-    changeover.from_release_id = previous_asr.id
-    changeover.to_release_id = asr.id
-    changeover.status = "COMPLETED"
-    changeover.changed_at = changeover.changed_at or seeded_at
-    changeover.note = "Controlled changeover from ASR 2.3.3 to authorized ASR 2.3.4."
-    db.flush()
+        changeover.deployment_id = deployment.id
+        changeover.authorization_id = authorization.id
+        changeover.from_release_id = previous_asr.id
+        changeover.to_release_id = asr.id
+        changeover.status = "COMPLETED"
+        changeover.changed_at = seeded_at
+        changeover.note = "Controlled changeover from ASR 2.3.3 to authorized ASR 2.3.4."
+        db.flush()
+    # Insert-only: once recorded, a re-seed must not overwrite the physical
+    # columns (the changeover baseline is frozen behind the append-only guard).
+    if not db.query(ChangeoverBaseline).filter_by(
+        changeover_id=changeover.id
+    ).first():
+        db.add(ChangeoverBaseline(
+            changeover_id=changeover.id,
+            from_release_id=changeover.from_release_id,
+            to_release_id=changeover.to_release_id,
+            recorded_status=changeover.status,
+            recorded_changed_at=changeover.changed_at,
+            recorded_note=changeover.note,
+            source="IMPORTED_CURRENT",
+        ))
 
     batch = db.query(ProductionBatch).filter_by(batch_no="PB-1005-A").first()
     if not batch:
         batch = ProductionBatch(batch_no="PB-1005-A")
         db.add(batch)
-    batch.deployment_id = deployment.id
-    batch.changeover_id = changeover.id
-    batch.authorization_id = authorization.id
-    batch.release_id = asr.id
-    batch.snapshot_id = snap8.id
-    batch.status = "ACTIVE"
-    batch.started_at = batch.started_at or seeded_at
-    batch.note = "Initial controlled production batch under PEX-0018 restriction."
-    db.flush()
+        batch.deployment_id = deployment.id
+        batch.changeover_id = changeover.id
+        batch.authorization_id = authorization.id
+        batch.release_id = asr.id
+        batch.snapshot_id = snap8.id
+        batch.status = "ACTIVE"
+        batch.started_at = seeded_at
+        batch.note = "Initial controlled production batch under PEX-0018 restriction."
+        db.flush()
+    if not db.query(BatchBaseline).filter_by(batch_id=batch.id).first():
+        db.add(BatchBaseline(
+            batch_id=batch.id,
+            release_id=batch.release_id,
+            snapshot_id=batch.snapshot_id,
+            changeover_id=batch.changeover_id,
+            recorded_status=batch.status,
+            recorded_started_at=batch.started_at,
+            recorded_ended_at=batch.ended_at,
+            recorded_note=batch.note,
+            source="IMPORTED_CURRENT",
+        ))
 
     audit_specs = [
         (

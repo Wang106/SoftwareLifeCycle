@@ -10,7 +10,11 @@ from app.models.core import Release,Customer,Project
 from app.models.snapshot import ReleaseSnapshot
 from app.models.production import Deployment,SoftwareChangeover,ProductionBatch,ProductionLine,ManufacturingSite
 from app.models.distribution import SoftwareAuthorization
-from app.services.production_history import effective_actual_map
+from app.services.production_history import (
+    effective_actual_map,
+    effective_batch_map,
+    effective_changeover_map,
+)
 
 router=APIRouter(prefix='/api/v1/production/catalog',tags=['production catalogs'])
 
@@ -84,6 +88,8 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
     if kind=='changeovers':release_ids.extend(i for r in rows for i in [r.from_release_id,r.to_release_id])
     releases=objects(db,Release,release_ids);snapshots=objects(db,ReleaseSnapshot,snapshot_ids)
     changeovers=objects(db,SoftwareChangeover,[r.changeover_id for r in rows]) if kind=='batches' else {}
+    effective_changeovers = effective_changeover_map(db, rows) if kind == 'changeovers' else {}
+    effective_batches = effective_batch_map(db, rows) if kind == 'batches' else {}
     counts={}
     if kind=='deployments' and rows:
         for child in [SoftwareChangeover,ProductionBatch]:
@@ -123,13 +129,13 @@ def production_catalog(kind: Literal['deployments','changeovers','batches'], fil
             'expected':software(releases,snapshots,dep.expected_release_id,dep.expected_snapshot_id) if dep else None,
             'actual':software(releases,snapshots,effective.actual_release_id,effective.actual_snapshot_id) if effective and (effective.actual_release_id or effective.actual_snapshot_id) else None,'software_observation':observed(dep,effective),
             'recorded':software(releases,snapshots,row.release_id,row.snapshot_id) if kind=='batches' else software(releases,snapshots,row.to_release_id) if kind=='changeovers' else None,
-            'from_release':software(releases,snapshots,row.from_release_id) if kind=='changeovers' else None,
+            'from_release':software(releases,snapshots,effective_changeovers[row.id].from_release_id) if kind=='changeovers' and row.id in effective_changeovers else software(releases,snapshots,row.from_release_id) if kind=='changeovers' else None,
             'changeover':{'changeover_no':co.changeover_no,'status':co.status} if co else None,
             'changeover_linked':bool(row.changeover_id) if kind=='batches' else None,
             'changeover_count':counts.get(SoftwareChangeover,{}).get(row.id,0) if kind=='deployments' else None,
             'batch_count':counts.get(ProductionBatch,{}).get(row.id,0) if kind=='deployments' else None,
             'history_state':effective.history_state if effective else None,
             'actual_version':effective.actual_version if effective else None,
-            'recorded_at':effective.deployed_at if kind=='deployments' and effective else row.changed_at if kind=='changeovers' else row.started_at})
+            'recorded_at':effective.deployed_at if kind=='deployments' and effective else effective_changeovers[row.id].changed_at if kind=='changeovers' and row.id in effective_changeovers else effective_batches[row.id].started_at if kind=='batches' and row.id in effective_batches else row.changed_at if kind=='changeovers' else row.started_at})
     return {'total':total,'status_counts':status_counts,'next_offset':filters.offset+filters.limit if filters.offset+filters.limit<total else None,
         'items':items,'notice':'Binding checks and actual-software observations do not grant production permission. Changeovers have no stored snapshot; their snapshot filter scopes the deployment expected snapshot.'}

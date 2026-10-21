@@ -1,12 +1,19 @@
-"""Effective-value projection for immutable Deployment actual history."""
+"""Effective-value projection for immutable production trace history."""
 import uuid
 from dataclasses import dataclass
 from datetime import timezone
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 from app.models.audit import AuditEvent
-from app.models.production import Deployment
-from app.models.production_history import DeploymentActualBaseline, DeploymentActualCorrection
+from app.models.production import Deployment, ProductionBatch, SoftwareChangeover
+from app.models.production_history import (
+    BatchBaseline,
+    BatchCorrection,
+    ChangeoverBaseline,
+    ChangeoverCorrection,
+    DeploymentActualBaseline,
+    DeploymentActualCorrection,
+)
 
 @dataclass(frozen=True)
 class EffectiveActual:
@@ -121,4 +128,182 @@ def effective_actual_map(db: Session, deployments) -> dict:
             baseline.recorded_actual_version + revision,
             _utc(proof_time) if head is not None else _utc(baseline.recorded_deployed_at),
             _history_state(baseline, head, proof_time), count)
+    return result
+
+
+@dataclass(frozen=True)
+class EffectiveChangeover:
+    changeover_id: uuid.UUID
+    from_release_id: uuid.UUID
+    to_release_id: uuid.UUID
+    changed_at: object
+    note: str | None
+    history_state: str
+    correction_count: int
+
+
+def _changeover_state(baseline, head):
+    if baseline is None:
+        return "NOT_RECORDED"
+    prefix = ("LEGACY" if baseline.source == "LEGACY_CURRENT" else
+              "IMPORTED" if baseline.source == "IMPORTED_CURRENT" else "FIRST_RECORD")
+    return f"{prefix}_CORRECTED" if head is not None else prefix
+
+
+def effective_changeover(db: Session, changeover: SoftwareChangeover) -> EffectiveChangeover:
+    """Resolve the effective recorded facts for one Changeover.
+
+    The physical columns preserve the recorded baseline; corrections are
+    appended and never overwrite it. The effective value is the head correction
+    when present, else the immutable baseline.
+    """
+    baseline = db.scalar(select(ChangeoverBaseline).where(
+        ChangeoverBaseline.changeover_id == changeover.id))
+    head = db.scalar(select(ChangeoverCorrection).where(
+        ChangeoverCorrection.changeover_id == changeover.id
+    ).order_by(ChangeoverCorrection.revision.desc()).limit(1))
+    correction_count = db.scalar(select(func.count()).select_from(
+        ChangeoverCorrection).where(
+        ChangeoverCorrection.changeover_id == changeover.id)) or 0
+    if baseline is None:
+        return EffectiveChangeover(
+            changeover.id, changeover.from_release_id, changeover.to_release_id,
+            changeover.changed_at, changeover.note,
+            "NOT_RECORDED", 0)
+    from_release_id = head.from_release_id if head is not None else baseline.from_release_id
+    changed_at = head.changed_at if head is not None else baseline.recorded_changed_at
+    note = head.note if head is not None else baseline.recorded_note
+    return EffectiveChangeover(
+        changeover.id, from_release_id, baseline.to_release_id,
+        _utc(changed_at), note,
+        _changeover_state(baseline, head), correction_count)
+
+
+@dataclass(frozen=True)
+class EffectiveBatch:
+    batch_id: uuid.UUID
+    release_id: uuid.UUID
+    snapshot_id: uuid.UUID
+    changeover_id: uuid.UUID | None
+    started_at: object
+    ended_at: object
+    note: str | None
+    history_state: str
+    correction_count: int
+
+
+def _batch_state(baseline, head):
+    if baseline is None:
+        return "NOT_RECORDED"
+    prefix = ("LEGACY" if baseline.source == "LEGACY_CURRENT" else
+              "IMPORTED" if baseline.source == "IMPORTED_CURRENT" else "FIRST_RECORD")
+    return f"{prefix}_CORRECTED" if head is not None else prefix
+
+
+def effective_batch(db: Session, batch: ProductionBatch) -> EffectiveBatch:
+    """Resolve the effective recorded facts for one ProductionBatch.
+
+    ``release_id``/``snapshot_id`` are the recorded software binding and stay on
+    the physical columns; only time/changeover/note are corrected. This mirrors
+    the design rule that batch software attribution is never corrected.
+    """
+    baseline = db.scalar(select(BatchBaseline).where(
+        BatchBaseline.batch_id == batch.id))
+    head = db.scalar(select(BatchCorrection).where(
+        BatchCorrection.batch_id == batch.id
+    ).order_by(BatchCorrection.revision.desc()).limit(1))
+    correction_count = db.scalar(select(func.count()).select_from(
+        BatchCorrection).where(BatchCorrection.batch_id == batch.id)) or 0
+    if baseline is None:
+        return EffectiveBatch(
+            batch.id, batch.release_id, batch.snapshot_id, batch.changeover_id,
+            batch.started_at, batch.ended_at, batch.note, "NOT_RECORDED", 0)
+    started_at = head.started_at if head is not None else baseline.recorded_started_at
+    ended_at = head.ended_at if head is not None else baseline.recorded_ended_at
+    changeover_id = head.changeover_id if head is not None else baseline.changeover_id
+    note = head.note if head is not None else baseline.recorded_note
+    return EffectiveBatch(
+        batch.id, baseline.release_id, baseline.snapshot_id, changeover_id,
+        _utc(started_at), _utc(ended_at), note,
+        _batch_state(baseline, head), correction_count)
+
+
+def effective_changeover_map(db: Session, changeovers) -> dict:
+    """Resolve a page of Changeovers with bounded baseline, head/count queries."""
+    if not changeovers:
+        return {}
+    ids = [row.id for row in changeovers]
+    baselines = {row.changeover_id: row for row in db.scalars(
+        select(ChangeoverBaseline).where(
+            ChangeoverBaseline.changeover_id.in_(ids))).all()}
+    stats = select(
+        ChangeoverCorrection.changeover_id.label("changeover_id"),
+        func.max(ChangeoverCorrection.revision).label("head_revision"),
+        func.count().label("correction_count"),
+    ).where(ChangeoverCorrection.changeover_id.in_(ids)).group_by(
+        ChangeoverCorrection.changeover_id).subquery()
+    packed = {}
+    for head, count in db.execute(select(
+        ChangeoverCorrection, stats.c.correction_count
+    ).join(stats, and_(
+        stats.c.changeover_id == ChangeoverCorrection.changeover_id,
+        stats.c.head_revision == ChangeoverCorrection.revision,
+    ))).all():
+        packed[head.changeover_id] = (head, int(count))
+    result = {}
+    for changeover in changeovers:
+        baseline = baselines.get(changeover.id)
+        head, count = packed.get(changeover.id, (None, 0))
+        if baseline is None:
+            result[changeover.id] = EffectiveChangeover(
+                changeover.id, changeover.from_release_id, changeover.to_release_id,
+                changeover.changed_at, changeover.note, "NOT_RECORDED", 0)
+            continue
+        result[changeover.id] = EffectiveChangeover(
+            changeover.id,
+            head.from_release_id if head is not None else baseline.from_release_id,
+            baseline.to_release_id,
+            _utc(head.changed_at) if head is not None else _utc(baseline.recorded_changed_at),
+            head.note if head is not None else baseline.recorded_note,
+            _changeover_state(baseline, head), count)
+    return result
+
+
+def effective_batch_map(db: Session, batches) -> dict:
+    """Resolve a page of Batches with bounded baseline, head/count queries."""
+    if not batches:
+        return {}
+    ids = [row.id for row in batches]
+    baselines = {row.batch_id: row for row in db.scalars(
+        select(BatchBaseline).where(BatchBaseline.batch_id.in_(ids))).all()}
+    stats = select(
+        BatchCorrection.batch_id.label("batch_id"),
+        func.max(BatchCorrection.revision).label("head_revision"),
+        func.count().label("correction_count"),
+    ).where(BatchCorrection.batch_id.in_(ids)).group_by(
+        BatchCorrection.batch_id).subquery()
+    packed = {}
+    for head, count in db.execute(select(
+        BatchCorrection, stats.c.correction_count
+    ).join(stats, and_(
+        stats.c.batch_id == BatchCorrection.batch_id,
+        stats.c.head_revision == BatchCorrection.revision,
+    ))).all():
+        packed[head.batch_id] = (head, int(count))
+    result = {}
+    for batch in batches:
+        baseline = baselines.get(batch.id)
+        head, count = packed.get(batch.id, (None, 0))
+        if baseline is None:
+            result[batch.id] = EffectiveBatch(
+                batch.id, batch.release_id, batch.snapshot_id, batch.changeover_id,
+                batch.started_at, batch.ended_at, batch.note, "NOT_RECORDED", 0)
+            continue
+        result[batch.id] = EffectiveBatch(
+            batch.id, baseline.release_id, baseline.snapshot_id,
+            head.changeover_id if head is not None else baseline.changeover_id,
+            _utc(head.started_at) if head is not None else _utc(baseline.recorded_started_at),
+            _utc(head.ended_at) if head is not None else _utc(baseline.recorded_ended_at),
+            head.note if head is not None else baseline.recorded_note,
+            _batch_state(baseline, head), count)
     return result
