@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-21 SSR / ASR 四级审批进度总览（Codex / ChatGPT Work）
+
+基线 main `e8ad3085f5d0284e111f85303211acd1d273259a`；启动时开放 PR 0，PR#100 合并后 main CI `39627326765` 三项必需 job 已全部 success，Actions deployment `39628577265` 与 continuation `39628577252` 为 skipped，不能称部署成功。独立分支 `codex/ssr-asr-approval-progress`，按用户要求暂停扩展生产更正，把主要精力放在 SSR/ASR 演示。
+
+本包增强固定只读 `GET /api/v1/demo/zfi-import`：一次批量读取全部合成 ApprovalStep，不按 20 条发布逐行查询；仅当四步数量、顺序、岗位与 SSR/ASR 预期完全一致时返回 `approval_progress`，否则显式 null。返回已通过节点数、严格当前 PENDING 节点、关闭状态及两套路线。`/demo/zfi` 双语展示 SSR「电子工程师→电子经理→系统工程师→研发总监」、ASR「应用工程师→应用经理→系统工程师→项目经理」，每行显示进度/当前节点/退回或拒绝结果，保留原审批链接、筛选、检索、分页和只读限制；审批完成不等于正式 RELEASE。
+
+无 migration、Seed、依赖、身份、CI、调度或 provider 配置改动；API 0.18.50 / schema 0029。定向前端 44 passed / 0 failed / 0 skipped；当前容器无 pytest，后端与真实 PG 待本包精确 CI，不能借用 PR#100 结果。实现提交/PR/head CI/合并/main/provider 证据待发布后在 PR 记录。36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。
+
+SSR/ASR 预计后续 3–5 轮：本轮审批进度总览；下一轮标准/应用发布详情的当前 Snapshot→Readiness→审批→Decision 证据摘要；再一轮按供应商/基线 SSR 聚合 ASR 差异与阻断；最后 1–2 轮用于云端样例/API 与桌面、手机、中英文现场验收（真实浏览器/provider 权限具备时）。下一包应以本包精确 CI/合并证据为前提，优先 `ssr-asr-release-evidence-summary`，不回到无关生产账本扩展。
+
 ## 2026-10-21 生产换型与批次追加式更正写命令（DeepSeek，人工批准）
 
 基线 main `80b00b62d2b2df2f20c405cb16a8895ece7df5fb`，开放 PR 0，独立分支 `codex/production-changeover-batch-correction-write`。承接 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 第二个小包，仅在人工批准后开放：新增两个更正写端点，完整 `request_id`/`expected_revision`/`predecessor_id`/`correction_reason` 协议；不新增迁移（复用 0029 四表），默认关闭浏览器提交、真实身份与内网验收。
