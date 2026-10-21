@@ -2,7 +2,7 @@
 
 ## 2026-10-21 SSR / ASR 四级审批进度总览（Codex / ChatGPT Work）
 
-基线 main `e8ad3085f5d0284e111f85303211acd1d273259a`（PR#100 已合并），开放 PR 0；独立分支 `codex/ssr-asr-approval-progress`。按用户最新优先级把主要精力切回标准发布（SSR）与应用发布（ASR），本包只增强脱敏 Excel 演示家族的只读审批进度，不扩大生产更正、真实身份或内网范围。
+基线 main 已同步至 `307e17a30baf18ad540333729b8cdd83842e7a98`（PR#101 仅补录 PR#100 验收证据）；恢复开放 PR#102，独立分支 `codex/ssr-asr-approval-progress`。按用户最新优先级把主要精力切回标准发布（SSR）与应用发布（ASR），本包只增强脱敏 Excel 演示家族的只读审批进度，不扩大生产更正、真实身份或内网范围。
 
 `GET /api/v1/demo/zfi-import` 现在以固定数量批量查询返回两套真实记录路线及逐发布进度：SSR「电子工程师→电子经理→系统工程师→研发总监」，ASR「应用工程师→应用经理→系统工程师→项目经理」；每条记录包含已通过节点数、严格当前 `PENDING` 节点及关闭状态。步骤数量、顺序或角色与预期不符时返回未知，不补造当前节点。页面 `/demo/zfi` 双语展示路线、逐行进度、当前节点及退回/拒绝关闭结果，并继续链接原审批详情；保持单次只读 API、筛选/检索/分页、无 POST 表单及「审批通过不等于正式发布」边界。
 
@@ -10,7 +10,7 @@
 
 ### 精确验收证据
 
-实现提交、PR、精确 head CI、受保护合并、main CI 与 provider 证据待本包发布后记录于 PR；三项必需 CI 未成功前不合并。
+PR#102 首轮精确 head `971496e066adbee3a0517da5676c789e21b13955` 的前端 job 检出测试夹具变量名误写（1495 passed / 2 failed），已在包含最新 main 的恢复提交中单点修正 `translation` → `translated`，未改业务语义或削弱断言。新精确 head CI、受保护合并、main CI 与 provider 证据待发布后记录于 PR；三项必需 CI 未成功前不合并。
 
 ## 2026-10-21 生产换型与批次追加式更正写命令（DeepSeek，人工批准）
 
@@ -24,7 +24,7 @@
 
 ### 精确验收证据（PR#100）
 
-实现提交 `a6054e1`；本地后端 SQLite 1699 passed / 654 skipped（新增 13 个更正写命令测试）。PR head CI / 合并 / main CI / 部署证据待合并后回填。
+实现提交 `a6054e1`，文档提交 `d068b9b`；PR#100 最终 head `d068b9bbcccb7e99252b4117ccfa172946746d15`。PR head CI `39625214776` 三项检查全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance 均 success）。受保护 squash 合并 `e8ad3085f5d0284e111f85303211acd1d273259a`（PR#100）。main CI `39627326765` 三项检查 success（deploy/wake skipped，SLC_DEPLOY_ENABLED 未启用）。Render `/health/ready` ready、version `0.18.50`、database_revision `0029_changeover_batch_history`（合并触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200（前端由 main CI build）。本地后端 SQLite 1699 passed / 654 skipped（新增 13 个更正写命令测试）。
 
 基线 main `787ee0928bf002e6727cd8c7a55b103d770a4838`，开放 PR 0，独立分支 `codex/production-changeover-batch-history-backend-read`。承接设计审查 `docs/production-changeover-batch-history-design-review.md`（PR#96）§9 的下一小包：只新增基线/更正表与只读投影，不开放任何更正写命令（correction-write 仍为后续需人工批准的独立包）。
 

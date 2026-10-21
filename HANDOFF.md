@@ -2,7 +2,7 @@
 
 ## 2026-10-21 SSR / ASR 四级审批进度总览（Codex / ChatGPT Work）
 
-基线 main `e8ad3085f5d0284e111f85303211acd1d273259a`；启动时开放 PR 0，PR#100 合并后 main CI `39627326765` 三项必需 job 已全部 success，Actions deployment `39628577265` 与 continuation `39628577252` 为 skipped，不能称部署成功。独立分支 `codex/ssr-asr-approval-progress`，按用户要求暂停扩展生产更正，把主要精力放在 SSR/ASR 演示。
+基线 main 已同步至 `307e17a30baf18ad540333729b8cdd83842e7a98`（PR#101 仅补录 PR#100 验收证据）；恢复开放 PR#102，独立分支 `codex/ssr-asr-approval-progress`。PR#102 首轮精确 head `971496e066adbee3a0517da5676c789e21b13955` 的前端 job 为 1495 passed / 2 failed，两项均由同一测试夹具变量名 `translation` 误写导致；恢复提交仅改为既有 `translated` 并纳入最新 main，随后必须重新核对精确 head 三项 CI。按用户要求暂停扩展生产更正，把主要精力放在 SSR/ASR 演示。
 
 本包增强固定只读 `GET /api/v1/demo/zfi-import`：一次批量读取全部合成 ApprovalStep，不按 20 条发布逐行查询；仅当四步数量、顺序、岗位与 SSR/ASR 预期完全一致时返回 `approval_progress`，否则显式 null。返回已通过节点数、严格当前 PENDING 节点、关闭状态及两套路线。`/demo/zfi` 双语展示 SSR「电子工程师→电子经理→系统工程师→研发总监」、ASR「应用工程师→应用经理→系统工程师→项目经理」，每行显示进度/当前节点/退回或拒绝结果，保留原审批链接、筛选、检索、分页和只读限制；审批完成不等于正式 RELEASE。
 
@@ -20,7 +20,7 @@ SSR/ASR 预计后续 3–5 轮：本轮审批进度总览；下一轮标准/应�
 
 ### 精确验收证据（PR#100）
 
-实现提交 `a6054e1`；本地后端 SQLite 1699 passed / 654 skipped。PR head CI / 合并 / main CI / 部署证据待合并后回填。
+实现提交 `a6054e1`、文档提交 `d068b9b`；PR#100 最终 head `d068b9bbcccb7e99252b4117ccfa172946746d15`。PR head CI `39625214776` 三项全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance success）。受保护 squash 合并 `e8ad3085f5d0284e111f85303211acd1d273259a`（PR#100）。main CI `39627326765` 三项 success（deploy/wake skipped）。Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`（合并触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。本地后端 SQLite 1699 passed / 654 skipped。
 
 ## 2026-10-21 生产换型与批次追加式历史基线及只读投影（DeepSeek）
 
