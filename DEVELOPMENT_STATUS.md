@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-21 受支持 Next.js / OpenNext 依赖升级（Codex / ChatGPT Work）
+
+用户已明确授权独立依赖升级包。基线 main `15093d0ff9afc3732ebc24ac91905f55293f48af`；已有 PR#93 head `204a3555031e418382b519208ebaa9a6cc4f7a6c` 保留，先修复其与 main 的共同构建阻塞。独立分支 `codex/next-opennext-supported-upgrade`，未重复历史界面开发。
+
+升级 Next.js 16.4.2、OpenNext 1.20.12、React/React DOM 19.3.1、根目录与前端 Wrangler 4.151.3，更新两份锁文件及 Next16 生成的 TypeScript 配置。针对新增间接依赖 `@node-minify/core` 仅限定 glob 10.5.0 安全补丁；不添加 unsupported-version 绕过。兼容/恢复说明见 `docs/next-opennext-upgrade.md`。API0.18.48/schema0028/Seed不变；CI、身份、写入门控、部署权限及调度配置不变。
+
+本地完整前端1494 passed/0 fail/0 skip；Next16/OpenNext生产Worker构建、cf:check、auth:check双语生产SSR/禁用路由、两层npm audit（0漏洞）、进度和diff检查通过。本地未重跑后端/PG；精确 PR head CI、合并、main CI 与提供方证据在本包 PR 验证后记录；旧 PR#93 后端2331/前端1497成功不复用为升级后验收。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/20/0，均不因依赖维护提升。
+
+精确证据（PR#94）：head `c924002339d206a168ef76959d3163188550d043`，PR head CI `39586695734` 三 job 全绿，squash 合并 `ba86d996cfaebc5e0ae03bdbfff882f1285421ca`；main CI `39588067933` 三 job 成功（head `ba86d996`）；前端 build 成功（Next16.4.2/OpenNext1.20.12），Next.js 15.5.24 支持窗口阻塞解除。
+
 ## 2026-10-21 生产实际软件历史双语只读界面与长历史有界读取（Codex / ChatGPT Work）
 
 基线真实 main `15093d0ff9afc3732ebc24ac91905f55293f48af`（PR#92），启动时开放 PR 0；独立分支 `codex/production-actual-history-ui-read`。本包只完成上一交接明确的 Actual 历史只读收口，不开放浏览器写入，不扩大到 Changeover/Batch 更正或身份/部署配置。
@@ -8,7 +18,7 @@
 
 API 仍为 0.18.48，唯一 schema head 仍为 `0028_deployment_actual_guard`；无 migration、Seed、依赖、身份、CI、调度或部署权限改动，Seed 幂等语义不变。业务验收 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/20/0（只读与测试收口不提高真实供应商验收比例）。
 
-检查点：PR#93 head `1034feb84b555281785874a765d409a792a1623b`，CI `39530257286`。Backend/PostgreSQL/migrations 成功：2331 passed、253 个 PostgreSQL 模块用例、无 skip，单一 Alembic head 0028 且 SQL/PG 往返通过；Frontend 测试 1497 passed / 0 failed，但随后 OpenNext 拒绝已超支持期的 Next.js 15.5.24，故该 job 与 CI acceptance 失败。未使用 `--dangerouslyUseUnsupportedNextVersion` 绕过；PR 保持开放且未合并，main 与 provider 未部署/未验收。本包发布被依赖升级决策阻塞。
+检查点：PR#93 head `1034feb84b555281785874a765d409a792a1623b`，CI `39530257286`。Backend/PostgreSQL/migrations 成功：2331 passed、253 个 PostgreSQL 模块用例、无 skip，单一 Alembic head 0028 且 SQL/PG 往返通过；Frontend 测试 1497 passed / 0 failed，但随后 OpenNext 拒绝已超支持期的 Next.js 15.5.24，故该 job 与 CI acceptance 失败。未使用 `--dangerouslyUseUnsupportedNextVersion` 绕过；PR 保持开放且未合并，main 与 provider 未部署/未验收。本包发布被依赖升级决策阻塞（PR#94 已解除）。
 
 尚未完成：批准身份提供方的真实多用户浏览器验收；Changeover/Batch 独立更正语义与账本。下一候选小包为 `production-changeover-batch-history-design-review`，先只审查真实模型/消费者/并发与迁移边界，不直接实现写入。
 
