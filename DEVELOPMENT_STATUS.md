@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-22 SSR / ASR 发布证据摘要（DeepSeek）
+
+基线 main 已同步至 `8942f6d692e32c69a59a69260d0f6213e1c7e6d2`（PR#103 证据回填后），开放 PR 0。承接 PR#102（SSR/ASR 审批进度总览）后的下一包 `ssr-asr-release-evidence-summary`：把标准/应用发布详情的「当前冻结 Snapshot → Readiness → 审批 → 生效 Decision」串成一条只读证据摘要，独立分支 `codex/ssr-asr-release-evidence-summary`。
+
+实现：新增通用只读端点 `GET /api/v1/releases/{release_id}/evidence-summary`（任意 STANDARD/APPLICATION 发布），由共享服务 `app/services/release_evidence.py` 一次性有界投影——当前冻结 Snapshot、Readiness（`_readiness_for_release` bounded）、绑定当前快照的 Approval、`effective_release_decision`（解析 supersession 链）与 `current_release_confirmed` 综合判断；approval/decision 的 `*_bound` 显式标注「绑定/不匹配」，从不静默视为一致，也不从记录状态或节点计数推断正式发布。前端标准/应用详情页新增 `ReleaseEvidenceSummary` 面板（中英文），只读、无 POST、无命令入口，审批通过不等于正式发布。
+
+无 migration、Seed、依赖、身份、CI、调度或部署权限变更；API 0.18.50 / schema 0029 不变。业务验收 36/44=82% 不变；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0（只读证据收口不提升真实供应商验收）。本地后端 1705 passed / 654 skipped（+6 新增），前端 1502 passed / 0 fail / 0 skip（+5 新增）。
+
+### 精确验收证据（PR#104）
+
+实现提交 `2b59ee8`；PR#104 最终 head `…`。PR head CI `…` 三项全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance）。受保护 squash 合并 `…`（PR#104）；main CI `…` 三项 success（deploy/wake skipped）。Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。（提交/合并后回填精确 commit/CI/部署证据。）
+
 ## 2026-10-21 SSR / ASR 四级审批进度总览（Codex / ChatGPT Work）
 
 基线 main 已同步至 `307e17a30baf18ad540333729b8cdd83842e7a98`（PR#101 仅补录 PR#100 验收证据）；恢复开放 PR#102，独立分支 `codex/ssr-asr-approval-progress`。按用户最新优先级把主要精力切回标准发布（SSR）与应用发布（ASR），本包只增强脱敏 Excel 演示家族的只读审批进度，不扩大生产更正、真实身份或内网范围。

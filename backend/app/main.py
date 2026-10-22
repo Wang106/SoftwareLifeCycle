@@ -21,6 +21,7 @@ from app.api.asr_policy import router as asr_policy_router
 from app.api.asr_components import router as asr_components_router
 from app.api.standard_release_views import router as standard_views_router
 from app.api.asr_evidence import router as asr_evidence_router
+from app.api.release_evidence import router as release_evidence_router
 from app.api.current_identity import router as current_identity_router
 from app.api.browser_sessions import router as browser_sessions_router
 import re
@@ -82,6 +83,7 @@ app.include_router(issue_views_router)
 app.include_router(change_views_router)
 app.include_router(change_coverage_views_router)
 app.include_router(asr_evidence_router)
+app.include_router(release_evidence_router)
 app.include_router(standard_views_router)
 app.include_router(asr_components_router)
 app.include_router(asr_policy_router)
