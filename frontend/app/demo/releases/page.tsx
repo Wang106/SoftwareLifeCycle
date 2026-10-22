@@ -11,13 +11,13 @@ type Row = {release_id: string; version: string; release_type: string; record_st
   current_release_confirmed: boolean; change_request_no: string; dvp_items: {id: string; item_no: string}[]};
 
 export default async function Page() {
-  const result = await apiGet<Evidence>('/api/v1/demo/release-evidence');
+  const result = await apiGet<Evidence>('/api/v1/demo/release-evidence', {timeoutMs: 15000});
   const data = result?.sample_only === true ? result : null;
   return <Localized>
     <div className="top"><div><h1><Localized>{'Release evidence demonstration'}</Localized></h1>
       <p className="muted"><Localized>{'Synthetic records only. Read-only review; no real approvals, firmware delivery or production authorization.'}</Localized></p></div></div>
     <p><Link href="/releases/standard"><Localized>{'Standard Releases'}</Localized></Link> <Localized>{' · '}</Localized> <Link href="/releases/application"><Localized>{'Application Releases'}</Localized></Link> <Localized>{' · '}</Localized> <Link href="/demo/zfi"><Localized>{'Excel demonstration overview'}</Localized></Link> <Localized>{' · '}</Localized> <Link href="/demo/status" prefetch={false}><Localized>{'Demonstration status'}</Localized></Link></p>
-    {!data ? <section className="panel"><h2><Localized>{'Evidence API unavailable'}</Localized></h2><p><Localized>{'No sample evidence is fabricated when the API is unavailable.'}</Localized></p></section> : !data.initialized ? <section className="panel"><h2><Localized>{'Evidence samples not installed'}</Localized></h2><p><Localized>{'The complete sample family must be explicitly installed in the cloud test database before this demonstration.'}</Localized></p></section> : data.items.map(row => {
+    {!data ? <section className="panel"><h2><Localized>{'Evidence API unavailable'}</Localized></h2><p><Localized>{'No sample evidence is fabricated when the API is unavailable.'}</Localized></p><p className="muted"><Localized>{'The read is bounded and stops waiting when the API does not settle in time.'}</Localized></p><p><a href="/demo/releases"><Localized>{'Read again'}</Localized></a></p></section> : !data.initialized ? <section className="panel"><h2><Localized>{'Evidence samples not installed'}</Localized></h2><p><Localized>{'The complete sample family must be explicitly installed in the cloud test database before this demonstration.'}</Localized></p></section> : data.items.map(row => {
       const kind = row.release_type === 'STANDARD' ? 'standard' : 'application';
       const path = `/releases/${kind}/${encodeURIComponent(row.release_id)}`;
       return <section className="panel" key={row.release_id}>

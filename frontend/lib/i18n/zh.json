@@ -2188,5 +2188,10 @@
   "Showing latest": "显示最新",
   "of": "共",
   "corrections.": "条更正。",
-  "Revision": "修订"
+  "Revision": "修订",
+  "Loading demonstration data": "正在加载演示数据",
+  "Waiting for the read-only demonstration API. This may take a moment on a cold start.": "正在等待只读演示 API 响应，冷启动时可能需要片刻。",
+  "Preparing the read-only overview": "正在准备只读总览",
+  "No sample evidence is fabricated while waiting.": "等待期间不编造样例证据。",
+  "The read is bounded and stops waiting when the API does not settle in time.": "读取设有时间上限，API 未在时限内响应时停止等待。"
 }
