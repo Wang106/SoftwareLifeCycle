@@ -1,5 +1,18 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 SSR/ASR 首屏加载反馈恢复（Codex / ChatGPT Work）
+
+恢复现有PR#109 / `codex/ssr-asr-initial-load-feedback`，没有新建重复包。基线main `2e7306b3b16e63f6e46c80dfaa749942da2f1013`（PR#108）是唯一事实源；该main三项CI与Cloudflare生产构建已success，Actions deploy/wake skipped；Render最新live仍为 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106），没有本次main后端部署证据。PR#108用户报告的Mac/Windows/手机/双语功能验收已记录，不重复要求相同验收，不当作新加载代码的现场验证。
+
+实现head `e3c404013403806589052868fd43a319a9914f3e`（ahead1/behind0）实际修改6个文件：`frontend/app/demo/loading.tsx`提供双语只读骨架及aria-busy；`frontend/app/demo/zfi/page.tsx`和`frontend/app/demo/releases/page.tsx`使用既有apiGet的15秒timeout并在不可用态提供Read again链接；`frontend/app/globals.css`提供尊重prefers-reduced-motion的样式；`frontend/lib/i18n/zh.json`补5条翻译；`frontend/tests/demo-initial-load-feedback.test.cjs`覆盖双语骨架/错误态/重读与timeout参数。apiGet保留connection()/no-store/取消及响应体超时；不缓存或编造治理证据，不增加后台保活或收费。
+
+实现head前端job119889250629日志确认1511 passed/0 failed/0 skipped，Next/OpenNext构建完成；Workers check119890944932成功（仅feature Preview）；Backend119889250997步骤API显示所有步骤success，但最近check-run总状态仍in_progress，不能据此称完整精确CI已完成。新增交接文档提交后需验证新head的三项完整CI，不复用实现head结果。本轮没有本地完整后端/PG或前端重跑，以上为远端精确head证据；交接账本一致性单独检查。新提交/PR/合并/main/provider终态记录在PR#109，未验证不称成功。
+
+本次补齐DEVELOPMENT_STATUS、HANDOFF和进度账本，只在原PR继续；没有额外业务代码修改。API0.18.50/schema `0029_changeover_batch_history` 不变，无Migration/Seed/后端协议/依赖/CI/身份/计费/部署权限变更，Seed幂等性没有新增本地验证。公共样例只读、OIDC/真实写入关闭、内网未部署。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0均不变。
+
+限制：加载骨架仅改善等待体验，不能宣称Render冷启动消失或实际API延迟降低；15秒仍可能在免费后端唤醒前返回不可用态，用户可显式重读。新代码的生产首字节/流式加载时序与用户实际浏览器表现尚未测量。下一步：先验证最终head完整CI、受保护合并、独立main/Cloudflare/Render/Actions；随后小包 `ssr-asr-loading-runtime-verification` 在可控延迟API下验证真实Next生产响应的加载时序、超时与恢复，不绕过浏览器访问拒绝，不启用真实身份或写入。
+
+
 ## 2026-10-22 SSR/ASR 用户现场验收确认（Codex / ChatGPT Work）
 
 用户明确反馈“双语验收ok, 手机端验收OK，Windows验收OK”；此前MacBook已反馈已检查功能正常。按用户报告记录桌面/手机/中英文现场功能验收通过，解除PR#108的人工验收阻塞。这是用户现场结果，不是本助手执行的浏览器自动化；未提供浏览器版本、截图或逐项测量，不虚构这些证据。不绕过既有浏览器访问拒绝，不把样例审批通过当正式发布、真实身份或生产部署验收。
