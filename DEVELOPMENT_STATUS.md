@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-22 SSR / ASR 聚合差异与阻断（DeepSeek）
+
+基线 main 已同步至 `6199d9bc4fa694122d33d9ca1bf867fb761b156f`（PR#105 证据回填后），开放 PR 0。承接 PR#102（审批进度总览）、PR#104（发布证据摘要）后的下一包 `ssr-asr-aggregated-differences`：按基线 SSR 聚合其全部派生 ASR 的组件差异与阻断，独立分支 `codex/ssr-asr-aggregated-differences`。
+
+实现：新增通用只读端点 `GET /api/v1/releases/standard/id/{release_id}/aggregated-differences`，由共享服务 `app/services/ssr_asr_aggregation.py` 做一次性有界投影——`delta_type_aggregate`（每个派生 ASR 的组件声明按 delta_type UNCHANGED/MODIFIED/ADDED/REMOVED 分桶，再按 base_link_status VALID/INVALID/NOT_RECORDED 细分，链接非 VALID 显式标注、从不静默视为干净差异）与 `unlinked_base_aggregate`（基线 SSR 每个组件被多少个派生 ASR 未声明有效链接的阻断计数，全部 ASR 均链接则非阻断）。观察的是存储的组件关联，从不从计数、版本串或记录状态推断审批、继承、就绪或正式发布。
+
+无 migration、Seed、依赖、身份、CI、调度或部署权限变更；API 0.18.50 / schema 0029 不变。业务验收 36/44=82% 不变；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0（只读聚合收口不提升真实供应商验收）。本地后端 1713 passed / 655 skipped（+8 新增）。
+
+### 精确验收证据（PR#106）
+
+实现提交 `3374439`（含 8 个测试）、测试修复提交 `5e40660`（PG 用例补真实 customer/project id，修复 application_release_details_customer_id_fkey 外键违反）；PR#106 最终 head `5e406600b905`（精确 head 已含最新 main，behind 0）。PR head CI 四项全绿：Backend/PostgreSQL/migrations success、Frontend tests + Cloudflare production build success、Workers Builds success、CI acceptance success。受保护 squash 合并 `87fdcda352179bcaf224393567580b3c3897027c`（PR#106）；main CI `39756062105` 四项 success（deploy `119753042880`/wake `119753048004` skipped，SLC_DEPLOY_ENABLED 未启用）。Cloudflare Workers Build `b3c1580b-2c5f-4977-9b85-0cac3c4870e2`（Version `c0564872-4cf5-4d5d-8ad3-42c9a87d74d9`）success；Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`（本包纯后端只读、无 schema/version 变更，未触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。本地后端 SQLite 1713 passed / 655 skipped。
+
 ## 2026-10-22 SSR / ASR 发布证据摘要（DeepSeek）
 
 基线 main 已同步至 `8942f6d692e32c69a59a69260d0f6213e1c7e6d2`（PR#103 证据回填后），开放 PR 0。承接 PR#102（SSR/ASR 审批进度总览）后的下一包 `ssr-asr-release-evidence-summary`：把标准/应用发布详情的「当前冻结 Snapshot → Readiness → 审批 → 生效 Decision」串成一条只读证据摘要，独立分支 `codex/ssr-asr-release-evidence-summary`。
