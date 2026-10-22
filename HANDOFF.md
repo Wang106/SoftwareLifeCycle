@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 SSR / ASR 发布证据摘要（DeepSeek）
+
+基线 main `8942f6d692e32c69a59a69260d0f6213e1c7e6d2`（PR#103 证据回填后），开放 PR 0，独立分支 `codex/ssr-asr-release-evidence-summary`。承接 PR#102 后的下一包 `ssr-asr-release-evidence-summary`：把标准/应用发布详情的「当前冻结 Snapshot → Readiness → 审批 → 生效 Decision」串成一条只读证据摘要。
+
+实现：通用只读端点 `GET /api/v1/releases/{release_id}/evidence-summary`（任意 STANDARD/APPLICATION），共享服务 `app/services/release_evidence.py` 一次性有界投影——当前冻结 Snapshot、Readiness（bounded）、绑定当前快照的 Approval、`effective_release_decision`（解析 supersession 链）与 `current_release_confirmed`；approval/decision 的 `*_bound` 显式「绑定/不匹配」，从不静默一致，不从记录状态或节点计数推断正式发布。前端标准/应用详情页新增 `ReleaseEvidenceSummary` 面板（中英文，只读，无 POST/命令入口，审批通过≠正式发布）。
+
+无 migration/Seed/依赖/身份/CI/调度/部署权限变更；API 0.18.50 / schema 0029 不变。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。本地后端 1705 passed / 654 skipped、前端 1502 passed / 0 fail / 0 skip。
+
+SSR/ASR 系列已推进：审批进度总览（PR#102）→ 发布证据摘要（本包）。下一包应为 `ssr-asr-aggregated-differences`（按供应商/基线 SSR 聚合 ASR 差异与阻断），最后 1–2 轮做云端样例/API 与桌面、手机、中英文现场验收（真实浏览器/provider 权限具备时）。精确 commit/PR/CI/合并/main/Render/Cloudflare 证据在本包 PR 合并后回填。
+
 ## 2026-10-21 SSR / ASR 四级审批进度总览（Codex / ChatGPT Work）
 
 基线 main 已同步至 `307e17a30baf18ad540333729b8cdd83842e7a98`（PR#101 仅补录 PR#100 验收证据）；恢复开放 PR#102，独立分支 `codex/ssr-asr-approval-progress`。PR#102 首轮精确 head `971496e066adbee3a0517da5676c789e21b13955` 的前端 job 为 1495 passed / 2 failed，两项均由同一测试夹具变量名 `translation` 误写导致；恢复提交仅改为既有 `translated` 并纳入最新 main，随后必须重新核对精确 head 三项 CI。按用户要求暂停扩展生产更正，把主要精力放在 SSR/ASR 演示。
