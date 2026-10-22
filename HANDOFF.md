@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 SSR/ASR 初始加载反馈（DeepSeek）
+
+承接 PR#108 验收后的「首次打开慢」性能待办，实现 `ssr-asr-initial-load-feedback` 并合并 PR#109。基线 main `2e7306b3b16e63f6e46c80dfaa749942da2f1013`（PR#108 合并后），开放 PR 0，独立分支 `codex/ssr-asr-initial-load-feedback`。
+
+实现（纯前端只读）：`/demo/zfi` 与 `/demo/releases` 的 `apiGet` 加 `timeoutMs: 15000`（有界超时，释放慢 API 等待）；新增 `app/demo/loading.tsx` 双语只读骨架屏（`aria-busy`，不编造样例证据）；两页不可用分支加「有界读取说明」+「重新读取」显式重试链接；`globals.css` 增 reduced-motion 安全脉冲样式；`zh.json` 增 5 条标签。未移除 `connection()`，未增付费/保活/依赖/后端协议/身份权限/迁移。
+
+精确证据：PR#109 head `e3c404013403806589052868fd43a319a9914f3e`（behind 0），PR head CI 四项全绿，squash 合并 `fa745ad4fe6ca97546b3facb203efbb79d555225`；main CI `39799886527` 三项 success（deploy/wake skipped）；Cloudflare Workers Build `b1672479-2b9e-41b1-9713-68e02da533ce` success；Cloudflare HTTP 200（冷启动 ~16.8s），Render ready 0.18.50/`0029_changeover_batch_history`（未重部署）。本地前端 1511 passed / 0 fail / 0 skip。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0 不变。API 0.18.50/schema 0029 不变。公共样例只读、真实身份/写入关闭、内网未部署。
+
+SSR/ASR 系列已收口：审批进度总览（PR#102）→ 发布证据摘要（PR#104）→ 聚合差异与阻断（PR#106）→ 现场验收（PR#108）→ 初始加载反馈（本包 PR#109）。当前无未完成的自动化后端代码包；剩余未勾选项（OIDC 配置、备份恢复监控、环境隔离、真实数据加载）仍在安全边界内，需人工/真实环境批准。
+
 ## 2026-10-22 SSR/ASR 用户现场验收确认（Codex / ChatGPT Work）
 
 用户明确反馈“双语验收ok, 手机端验收OK，Windows验收OK”；此前MacBook已反馈已检查功能正常。按用户报告记录桌面/手机/中英文现场功能验收通过，解除PR#108的人工验收阻塞。这是用户现场结果，不是本助手执行的浏览器自动化；未提供浏览器版本、截图或逐项测量，不虚构这些证据。不绕过既有浏览器访问拒绝，不把样例审批通过当正式发布、真实身份或生产部署验收。

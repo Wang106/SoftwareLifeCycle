@@ -1,5 +1,19 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-22 SSR/ASR 初始加载反馈（DeepSeek）
+
+承接 PR#108 用户验收确认后遗留的「首次打开慢」性能待办，实现 `ssr-asr-initial-load-feedback`：为 SSR/ASR 演示路由的慢 API 等待提供双语只读加载框架 + 有界超时 + 显式重试，纯前端只读，不伪造、不缓存治理结论。
+
+实现：`/demo/zfi`（`/api/v1/demo/zfi-import`）与 `/demo/releases`（`/api/v1/demo/release-evidence`）的 `apiGet` 从无超时改为 `timeoutMs: 15000`（与既有 `/demo/status` 的有界读取语义一致），API 未在时限内响应时释放页面而非无限等待；新增 `app/demo/loading.tsx` 作为 Suspense fallback（双语只读骨架屏 + `aria-busy`，等待期间不编造样例证据）；两个页面不可用分支补充「有界读取说明」与「重新读取」显式重试链接（`/demo/status` 已有该模式）；`globals.css` 增 reduced-motion 安全的骨架屏脉冲样式；`zh.json` 增 5 条标签。未移除 `connection()`，未增付费/保活/依赖/后端协议/身份权限/迁移。
+
+### 精确验收证据（PR#109）
+
+实现提交 `e3c4040`；PR#109 最终 head `e3c404013403806589052868fd43a319a9914f3e`（base=最新 main `2e7306b`，behind 0）。PR head CI 四项全绿：Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance 均 success。受保护 squash 合并 `fa745ad4fe6ca97546b3facb203efbb79d555225`（PR#109）。main CI `39799886527` 三项 success（backend 真实 PG 全套 + frontend + CI acceptance，deploy `39802164657`/wake `39802164630` skipped，SLC_DEPLOY_ENABLED 未启用）；Cloudflare Workers Build `b1672479-2b9e-41b1-9713-68e02da533ce` success。部署独立核验：Cloudflare `softwarelifecycle.whf969.com/demo/zfi` HTTP 200（冷启动 ~16.8s，与本包缓解的慢等待现象一致）；Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`（纯前端无 schema/version 变更，未触发重部署）。本地前端 1511 passed / 0 failed / 0 skipped（+7 新增 `demo-initial-load-feedback.test.cjs`），`tsc --noEmit` 干净。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0（纯前端只读加载体验收口，不提升真实业务/身份/内网验收完成度）。API 0.18.50 / schema 0029 不变。
+
+下一候选：`ssr-asr-live-acceptance` 已由 PR#108 用户现场验收确认（MacBook/Windows/手机 + 中英文），本包为其加载性能收尾。后续若需进一步后端代码包，以最新 HANDOFF 为准；当前 SSR/ASR 系列功能与加载反馈均已收口，无未完成的自动化后端包。
+
 ## 2026-10-22 SSR/ASR 用户现场验收确认（Codex / ChatGPT Work）
 
 用户明确反馈“双语验收ok, 手机端验收OK，Windows验收OK”；此前MacBook已反馈已检查功能正常。按用户报告记录桌面/手机/中英文现场功能验收通过，解除PR#108的人工验收阻塞。这是用户现场结果，不是本助手执行的浏览器自动化；未提供浏览器版本、截图或逐项测量，不虚构这些证据。不绕过既有浏览器访问拒绝，不把样例审批通过当正式发布、真实身份或生产部署验收。
