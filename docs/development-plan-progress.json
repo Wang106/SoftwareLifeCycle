@@ -7,11 +7,8 @@
     "evidence": "HANDOFF.md",
     "business_acceptance_increment": 0,
     "resume_pr": 108,
-    "state": "blocked",
-    "blockers": [
-      "Windows/mobile bilingual live browser acceptance remains unverified; previous denial must not be bypassed",
-      "Initial page opening latency reported by user; cause and optimization not yet verified"
-    ],
+    "state": "user_acceptance_confirmed_pending_ci_merge",
+    "blockers": [],
     "verified_ci_head": "3c606cff82ba823faf72b1a86a26d7e8f0d467f3",
     "verified_ci_run": 39782718900,
     "render_deploy_id": "dep-dbctfp7avr4c73d17apg",
@@ -21,7 +18,23 @@
       "functional_result": "User reports checked functions normal; detailed bilingual/device matrix not supplied",
       "performance": "Slow initial page opening; unresolved",
       "evidence": "HANDOFF.md"
-    }
+    },
+    "user_acceptance": {
+      "source": "explicit_user_report",
+      "platforms": [
+        "MacBook browser",
+        "Windows browser",
+        "mobile browser"
+      ],
+      "languages": [
+        "zh",
+        "en"
+      ],
+      "result": "User confirms functional acceptance; detailed browser versions/screenshots not supplied",
+      "evidence": "HANDOFF.md",
+      "performance": "Slow initial opening remains unresolved; separate optimization follow-up"
+    },
+    "next_package": "ssr-asr-initial-load-feedback"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
