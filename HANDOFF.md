@@ -1,5 +1,16 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 PR#108 完整 CI 核验与 Render 来源确认（Codex / ChatGPT Work）
+
+恢复现有 `ssr-asr-live-acceptance` 草稿 PR#108，不新建业务包。基线 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1` 未变；已验证 head `b72a36909c6277ef2758edf93ca35e8990d7bb57` ahead 2 / behind 0。精确 CI run `39780729975` 的 Backend/PostgreSQL/migrations（job119831443921）、Frontend/Cloudflare production build（job119831444430）、CI acceptance（check119836724879）均 success；日志确认 2368 passed、258 PostgreSQL-module cases、no skips；前端1503 passed/0 failed/0 skipped，Next16.4.2/OpenNext1.20.12构建完成。Workers Builds check119832437405 / build `5ee400b1-1fe7-43dd-8869-d3509a35ed12` success（feature Preview，不是 main 生产证据）。
+
+用户已明确确认 Render My Workspace（`tea-datl248u01pc739j09eg`）。提供方只读核验 `softwarelifecycle-api-test` 的最新部署 `dep-dbctfp7avr4c73d17apg` 为 live，精确 source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106），完成于2026-10-22T09:32:14.811605Z。这解除先前“workspace未确认/精确来源未核验”阻塞；不是从API版本相同推断未部署。最新 main 三项CI及Workers Builds success，Actions deploy/wake skipped；未执行新的生产部署。此前HTTP代理CONNECT超时不证明站点故障，本轮不宣称HTTP或浏览器验收成功。
+
+仅补录三份检查点文档；本次文档提交的精确SHA/CI另见PR，不复用上述旧head成功。API0.18.50/schema `0029_changeover_batch_history` 不变，Seed未改，幂等性无本轮新增验证。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0，增量0。
+
+剩余阻塞：Windows、手机、中英文真实浏览器验收尚无证据；遵守既有禁止绕过浏览器拒绝的要求。PR保持draft、不合并、不扩展后端开发；下一步核验本次文档head CI后，在允许的真实浏览器中验收SSR/ASR的审批路线、发布证据摘要、聚合差异、只读边界及“审批通过≠正式发布”。当前包完成前不启动新的业务包。
+
+
 ## 2026-10-22 SSR / ASR live acceptance：只读核验与阻塞检查点（Codex / ChatGPT Work）
 
 持久检查点：draft PR https://github.com/Wang106/SoftwareLifeCycle/pull/108，首个远端提交 `0534c547c8861954d8344aa157515a05c130caec`，完整树 `fa090a67f9661f7bdc253b795b96026f29308b49`。本地 Git 无凭据，已通过授权 GitHub blob/tree/commit/ref 工具发布并逐文件核对 SHA。后续仅补录 PR 编号/恢复状态，最终 head 与 CI 见 PR；外部验收阻塞未解除前保持 draft、不合并。
