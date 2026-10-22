@@ -2,6 +2,8 @@
 
 ## 2026-10-22 SSR / ASR 线上只读验收检查点（Codex / ChatGPT Work）
 
+检查点已保存到 draft PR#108（https://github.com/Wang106/SoftwareLifeCycle/pull/108），首个远端提交 `0534c547c8861954d8344aa157515a05c130caec`；最终文档 head/CI 在该 PR 核对。阻塞未解除前不合并，不发布重复业务实现。
+
 本轮重新读取实际远端 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`（PR#107），开放 PR 0。GitHub 已确认 PR#104（head `124930682b0d4ec282e0242289e3a8cfa87749f9`，合并 `99e94cbb79ef610b2c212612a2fae016f8f8b2e8`）及 PR#106（head `5e406600b905969ba82c459fd786be5d36a679b3`，合并 `87fdcda352179bcaf224393567580b3c3897027c`）均真实 merged，两个 head 的三个必需 CI 均 success。此前未提交的同名发布证据草稿已被远端实现覆盖，保留原工作目录，不发布重复实现；本包在干净独立分支 `codex/ssr-asr-live-acceptance-checkpoint` 仅记录验收检查点。
 
 核对 main CI `39759183805`：后端 2368 passed、258 PostgreSQL-module cases、无 skip；前端 1503 passed / 0 failed / 0 skipped；Next.js 16.4.2 / OpenNext 1.20.12 生产构建及 CI acceptance success。Cloudflare 对该精确 main 的 Workers Build `ae178eeb-9eba-4ed9-aa36-5588da3b9b61` success，Version `7339733c-9206-4545-8089-b83ec5ad5e89`。Actions deploy `39760704185` / wake `39760704328` skipped。这些是基线 main 的独立证据，不是本检查点 PR 的 CI。

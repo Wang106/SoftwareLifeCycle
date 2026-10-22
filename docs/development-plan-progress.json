@@ -6,7 +6,7 @@
     "package": "ssr-asr-live-acceptance",
     "evidence": "HANDOFF.md",
     "business_acceptance_increment": 0,
-    "resume_pr": null,
+    "resume_pr": 108,
     "state": "blocked",
     "blockers": [
       "Render workspace not confirmed; exact source deployment unverified",

@@ -2,6 +2,8 @@
 
 ## 2026-10-22 SSR / ASR live acceptance：只读核验与阻塞检查点（Codex / ChatGPT Work）
 
+持久检查点：draft PR https://github.com/Wang106/SoftwareLifeCycle/pull/108，首个远端提交 `0534c547c8861954d8344aa157515a05c130caec`，完整树 `fa090a67f9661f7bdc253b795b96026f29308b49`。本地 Git 无凭据，已通过授权 GitHub blob/tree/commit/ref 工具发布并逐文件核对 SHA。后续仅补录 PR 编号/恢复状态，最终 head 与 CI 见 PR；外部验收阻塞未解除前保持 draft、不合并。
+
 实际 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`，启动开放 PR 0；PR#104/#106 的真实 merged、完整 head SHA 及三个必需 CI success 已由 GitHub 独立核对，旧 `release-decision-supersession-backend-read` 和发布证据摘要均不得重复实现。保留旧工作目录的未提交草稿，在干净 worktree 创建 `codex/ssr-asr-live-acceptance-checkpoint`；本包只更新 DEVELOPMENT_STATUS、HANDOFF 与进度账本。
 
 基线独立 main CI `39759183805` success：2368 后端、258 PostgreSQL-module cases 无 skip，1503 前端无失败/跳过，Next16.4.2/OpenNext1.20.12 构建及 acceptance success；Cloudflare build `ae178eeb-9eba-4ed9-aa36-5588da3b9b61` success / Version `7339733c-9206-4545-8089-b83ec5ad5e89`；Actions deploy `39760704185` / wake `39760704328` skipped。此证据仅归该 main，不归尚未创建的检查点提交。
