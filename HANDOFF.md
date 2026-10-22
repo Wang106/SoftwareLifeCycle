@@ -1,5 +1,56 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 SSR/ASR 用户现场验收确认（Codex / ChatGPT Work）
+
+用户明确反馈“双语验收ok, 手机端验收OK，Windows验收OK”；此前MacBook已反馈已检查功能正常。按用户报告记录桌面/手机/中英文现场功能验收通过，解除PR#108的人工验收阻塞。这是用户现场结果，不是本助手执行的浏览器自动化；未提供浏览器版本、截图或逐项测量，不虚构这些证据。不绕过既有浏览器访问拒绝，不把样例审批通过当正式发布、真实身份或生产部署验收。
+
+恢复PR#108，基线main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`，前一精确head `b0e109fef0d95fb83e3500693b8c1180a54429f3` 已含最新main（behind0）。CI39786937392的Backend/PostgreSQL/migrations119852530379、Frontend/Next/OpenNext119852529725、CI acceptance119858409008均success；Cloudflare feature check119853352839 success。此验收文档新增head仍须重新验证全部CI，不复用前一head结论。受保护合并及独立main/provider证据随后记录PR；未验证前不称已合并或部署。
+
+加载慢仍为明确保留的性能缺陷，与本次用户功能验收分开记录；未修复、未承诺延迟下降。下一小包 `ssr-asr-initial-load-feedback`：先核对SSR/ASR现有路由和加载边界，在慢API等待时提供双语只读加载提示/框架，评估必要的有界超时与显式重试；正常和失败状态不得伪造发布证据，不缓存治理结论、不移除connection()，不增加付费、保活调度、依赖、后端协议、身份权限或迁移。精确路径由实际SSR/ASR路由清单确定，新独立分支/PR实施；先完成本包合并/main/provider核验再进入，不并发。
+
+仅更新三份检查点文档；API0.18.50/schema `0029_changeover_batch_history` 不变，Seed未改且本轮无新增幂等验证。进度账本groups保持不变，文档和演示功能确认不提升真实业务/身份/内网验收完成度。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0。公共样例只读、真实身份/写入关闭、内网未部署。
+
+
+## 2026-10-22 MacBook 用户反馈与加载性能待办（Codex / ChatGPT Work）
+
+恢复 PR#108，基线 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`、已验证 feature `3c606cff82ba823faf72b1a86a26d7e8f0d467f3`。精确 CI39782718900 的 Backend/PostgreSQL/migrations、Frontend production build、CI acceptance 均 success，Workers Builds119838738481 success；此前日志核对2368后端、258 PG-module cases无skip、1503前端无fail/skip、Next/OpenNext成功。新文档head不能复用这些成功，另在PR核对。
+
+用户使用MacBook浏览器后反馈“其他正常，只是输入链接打开网页的速度好慢”。记录为Mac桌面已检查功能的正向用户反馈；未提供浏览器版本、逐项中英文结果、Windows或手机证据，不能宣称完整跨端验收。新增未解决项：首次打开慢。
+
+性能排查观察（此前同日只读探针，不是本次新测量）：Cloudflare /demo/zfi HTTP200首字节8.72秒，随后8.11秒；Render /health/ready HTTP200约6.38秒，/api/v1/demo/zfi-import HTTP200约6.65秒。来自执行环境，不能等同用户当地延迟；两次页面请求均慢，尚不能归因于冷启动。已查代码/demo/zfi服务端等待apiGet完成，默认未指定timeout；Render服务plan确认为free。官方https://render.com/docs/free说明空闲15分钟休眠、唤醒约1分钟，仅作为可能因素，不证明本次原因。禁止付费升级、定时保活或变更部署权限。
+
+本包仍是验收检查点，不扩展实现。建议后续独立小包 `ssr-asr-initial-load-feedback`：核对SSR/ASR路由现有loading/Suspense边界，为慢API等待提供真实双语加载状态，必要时明确有界超时及重试；不缓存/伪造正式发布证据，不移除connection()，不改变只读、迁移、依赖或计费。须在当前验收包边界解除/重新划定后再启动；加载提示只改善等待体验，不能宣称降低后端实际耗时。验收应包含延迟API下提前可见的框架、双语/可访问性、API失败不展示虚假数据、正常SSR/ASR功能回归、完整CI与精确provider核验。
+
+本次只更新DEVELOPMENT_STATUS、HANDOFF、进度账本，无业务实现/API/迁移/Seed变更；schema仍0029，Seed幂等性未新增验证。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0均不变。PR继续draft，保留Windows/手机/双语验收与性能问题，不绕过既有浏览器拒绝。
+
+
+## 2026-10-22 PR#108 完整 CI 核验与 Render 来源确认（Codex / ChatGPT Work）
+
+恢复现有 `ssr-asr-live-acceptance` 草稿 PR#108，不新建业务包。基线 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1` 未变；已验证 head `b72a36909c6277ef2758edf93ca35e8990d7bb57` ahead 2 / behind 0。精确 CI run `39780729975` 的 Backend/PostgreSQL/migrations（job119831443921）、Frontend/Cloudflare production build（job119831444430）、CI acceptance（check119836724879）均 success；日志确认 2368 passed、258 PostgreSQL-module cases、no skips；前端1503 passed/0 failed/0 skipped，Next16.4.2/OpenNext1.20.12构建完成。Workers Builds check119832437405 / build `5ee400b1-1fe7-43dd-8869-d3509a35ed12` success（feature Preview，不是 main 生产证据）。
+
+用户已明确确认 Render My Workspace（`tea-datl248u01pc739j09eg`）。提供方只读核验 `softwarelifecycle-api-test` 的最新部署 `dep-dbctfp7avr4c73d17apg` 为 live，精确 source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106），完成于2026-10-22T09:32:14.811605Z。这解除先前“workspace未确认/精确来源未核验”阻塞；不是从API版本相同推断未部署。最新 main 三项CI及Workers Builds success，Actions deploy/wake skipped；未执行新的生产部署。此前HTTP代理CONNECT超时不证明站点故障，本轮不宣称HTTP或浏览器验收成功。
+
+仅补录三份检查点文档；本次文档提交的精确SHA/CI另见PR，不复用上述旧head成功。API0.18.50/schema `0029_changeover_batch_history` 不变，Seed未改，幂等性无本轮新增验证。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0，增量0。
+
+剩余阻塞：Windows、手机、中英文真实浏览器验收尚无证据；遵守既有禁止绕过浏览器拒绝的要求。PR保持draft、不合并、不扩展后端开发；下一步核验本次文档head CI后，在允许的真实浏览器中验收SSR/ASR的审批路线、发布证据摘要、聚合差异、只读边界及“审批通过≠正式发布”。当前包完成前不启动新的业务包。
+
+
+## 2026-10-22 SSR / ASR live acceptance：只读核验与阻塞检查点（Codex / ChatGPT Work）
+
+持久检查点：draft PR https://github.com/Wang106/SoftwareLifeCycle/pull/108，首个远端提交 `0534c547c8861954d8344aa157515a05c130caec`，完整树 `fa090a67f9661f7bdc253b795b96026f29308b49`。本地 Git 无凭据，已通过授权 GitHub blob/tree/commit/ref 工具发布并逐文件核对 SHA。后续仅补录 PR 编号/恢复状态，最终 head 与 CI 见 PR；外部验收阻塞未解除前保持 draft、不合并。
+
+实际 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`，启动开放 PR 0；PR#104/#106 的真实 merged、完整 head SHA 及三个必需 CI success 已由 GitHub 独立核对，旧 `release-decision-supersession-backend-read` 和发布证据摘要均不得重复实现。保留旧工作目录的未提交草稿，在干净 worktree 创建 `codex/ssr-asr-live-acceptance-checkpoint`；本包只更新 DEVELOPMENT_STATUS、HANDOFF 与进度账本。
+
+基线独立 main CI `39759183805` success：2368 后端、258 PostgreSQL-module cases 无 skip，1503 前端无失败/跳过，Next16.4.2/OpenNext1.20.12 构建及 acceptance success；Cloudflare build `ae178eeb-9eba-4ed9-aa36-5588da3b9b61` success / Version `7339733c-9206-4545-8089-b83ec5ad5e89`；Actions deploy `39760704185` / wake `39760704328` skipped。此证据仅归该 main，不归尚未创建的检查点提交。
+
+2026-10-22 20:39–20:40（Asia/Shanghai）公开 API 六项 GET 复核均 HTTP200：health ready API0.18.50/schema0029；Excel 20 条发布、正确两套四级路线；三个合成发布 evidence-summary 的 confirmed 为 true/true/false，最后一条 APPROVED 仍为 NOT_READY/HOLD；SSR 聚合 2 条 ASR、6 条组件声明（UNCHANGED VALID=4 / MODIFIED VALID=2），3 个基线组件、0 未关联阻断。具体 UUID/端点/范围见 DEVELOPMENT_STATUS 本轮条目。没有任何线上写入，未新增或改动样例。
+
+阻塞现场验收：首次 health 35 秒超时后一次复核恢复；Cloudflare `/demo/zfi` HTTP 探针 Proxy CONNECT timeout，不能外推站点故障；已有浏览器拒绝不重试/不绕过，未做真实 Windows/手机/中英文交互。Render connector no workspace selected，技能要求用户确认工作区，未擅自选择，未取得精确 source deploy。不能因 API 版本未变推断 Render 没有重部署。真实浏览器与 provider 验收必须继续标记未完成。
+
+状态 `ssr-asr-live-acceptance=blocked`；保存 draft PR 供跨窗口恢复，不把检查点当验收通过或本轮功能提升。无 migration/Seed/API/依赖/身份/CI/调度/提供方配置改动。进度/差异检查本地执行；新 PR CI 待验，未重跑全套或真实 PG。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0。
+
+恢复顺序：先读实际 main、开放 PR 与本检查点的精确 head/CI，保留较新证据；确认 Render 工作区后只读核对 source deploy；具备获准且可访问的浏览器环境后完成 Windows 桌面/手机/中英文演示及链接导航。若仍阻塞，保持停止，不能扩大为身份/权限/写入或部署配置包。
+
 ## 2026-10-22 SSR / ASR 聚合差异与阻断（DeepSeek）
 
 基线 main `6199d9bc4fa694122d33d9ca1bf867fb761b156f`（PR#105 证据回填后），开放 PR 0，独立分支 `codex/ssr-asr-aggregated-differences`。承接 PR#102/PR#104 后的下一包 `ssr-asr-aggregated-differences`：按基线 SSR 聚合全部派生 ASR 的组件差异与阻断，只读收口。
