@@ -1,12 +1,17 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "87fdcda352179bcaf224393567580b3c3897027c",
+  "baseline_commit": "dc6f30b8aea8da479129e0bdfe725c1457f81da1",
   "maintenance_checkpoint": {
     "package": "ssr-asr-live-acceptance",
     "evidence": "HANDOFF.md",
     "business_acceptance_increment": 0,
-    "resume_pr": null
+    "resume_pr": null,
+    "state": "blocked",
+    "blockers": [
+      "Render workspace not confirmed; exact source deployment unverified",
+      "Windows/mobile bilingual live browser acceptance unavailable; previous denial must not be bypassed"
+    ]
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [

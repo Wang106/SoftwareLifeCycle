@@ -1,5 +1,19 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 SSR / ASR live acceptance：只读核验与阻塞检查点（Codex / ChatGPT Work）
+
+实际 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`，启动开放 PR 0；PR#104/#106 的真实 merged、完整 head SHA 及三个必需 CI success 已由 GitHub 独立核对，旧 `release-decision-supersession-backend-read` 和发布证据摘要均不得重复实现。保留旧工作目录的未提交草稿，在干净 worktree 创建 `codex/ssr-asr-live-acceptance-checkpoint`；本包只更新 DEVELOPMENT_STATUS、HANDOFF 与进度账本。
+
+基线独立 main CI `39759183805` success：2368 后端、258 PostgreSQL-module cases 无 skip，1503 前端无失败/跳过，Next16.4.2/OpenNext1.20.12 构建及 acceptance success；Cloudflare build `ae178eeb-9eba-4ed9-aa36-5588da3b9b61` success / Version `7339733c-9206-4545-8089-b83ec5ad5e89`；Actions deploy `39760704185` / wake `39760704328` skipped。此证据仅归该 main，不归尚未创建的检查点提交。
+
+2026-10-22 20:39–20:40（Asia/Shanghai）公开 API 六项 GET 复核均 HTTP200：health ready API0.18.50/schema0029；Excel 20 条发布、正确两套四级路线；三个合成发布 evidence-summary 的 confirmed 为 true/true/false，最后一条 APPROVED 仍为 NOT_READY/HOLD；SSR 聚合 2 条 ASR、6 条组件声明（UNCHANGED VALID=4 / MODIFIED VALID=2），3 个基线组件、0 未关联阻断。具体 UUID/端点/范围见 DEVELOPMENT_STATUS 本轮条目。没有任何线上写入，未新增或改动样例。
+
+阻塞现场验收：首次 health 35 秒超时后一次复核恢复；Cloudflare `/demo/zfi` HTTP 探针 Proxy CONNECT timeout，不能外推站点故障；已有浏览器拒绝不重试/不绕过，未做真实 Windows/手机/中英文交互。Render connector no workspace selected，技能要求用户确认工作区，未擅自选择，未取得精确 source deploy。不能因 API 版本未变推断 Render 没有重部署。真实浏览器与 provider 验收必须继续标记未完成。
+
+状态 `ssr-asr-live-acceptance=blocked`；保存 draft PR 供跨窗口恢复，不把检查点当验收通过或本轮功能提升。无 migration/Seed/API/依赖/身份/CI/调度/提供方配置改动。进度/差异检查本地执行；新 PR CI 待验，未重跑全套或真实 PG。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0。
+
+恢复顺序：先读实际 main、开放 PR 与本检查点的精确 head/CI，保留较新证据；确认 Render 工作区后只读核对 source deploy；具备获准且可访问的浏览器环境后完成 Windows 桌面/手机/中英文演示及链接导航。若仍阻塞，保持停止，不能扩大为身份/权限/写入或部署配置包。
+
 ## 2026-10-22 SSR / ASR 聚合差异与阻断（DeepSeek）
 
 基线 main `6199d9bc4fa694122d33d9ca1bf867fb761b156f`（PR#105 证据回填后），开放 PR 0，独立分支 `codex/ssr-asr-aggregated-differences`。承接 PR#102/PR#104 后的下一包 `ssr-asr-aggregated-differences`：按基线 SSR 聚合全部派生 ASR 的组件差异与阻断，只读收口。

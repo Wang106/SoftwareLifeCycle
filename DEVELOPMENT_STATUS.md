@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-22 SSR / ASR 线上只读验收检查点（Codex / ChatGPT Work）
+
+本轮重新读取实际远端 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`（PR#107），开放 PR 0。GitHub 已确认 PR#104（head `124930682b0d4ec282e0242289e3a8cfa87749f9`，合并 `99e94cbb79ef610b2c212612a2fae016f8f8b2e8`）及 PR#106（head `5e406600b905969ba82c459fd786be5d36a679b3`，合并 `87fdcda352179bcaf224393567580b3c3897027c`）均真实 merged，两个 head 的三个必需 CI 均 success。此前未提交的同名发布证据草稿已被远端实现覆盖，保留原工作目录，不发布重复实现；本包在干净独立分支 `codex/ssr-asr-live-acceptance-checkpoint` 仅记录验收检查点。
+
+核对 main CI `39759183805`：后端 2368 passed、258 PostgreSQL-module cases、无 skip；前端 1503 passed / 0 failed / 0 skipped；Next.js 16.4.2 / OpenNext 1.20.12 生产构建及 CI acceptance success。Cloudflare 对该精确 main 的 Workers Build `ae178eeb-9eba-4ed9-aa36-5588da3b9b61` success，Version `7339733c-9206-4545-8089-b83ec5ad5e89`。Actions deploy `39760704185` / wake `39760704328` skipped。这些是基线 main 的独立证据，不是本检查点 PR 的 CI。
+
+2026-10-22 20:39–20:40（Asia/Shanghai）对既有公开测试 API 只发 GET：`/health/ready` HTTP200、ready、API0.18.50/schema `0029_changeover_batch_history`；`/api/v1/demo/zfi-import` HTTP200、sample_only/initialized true、20 条记录及正确 SSR/ASR 四级路线；三个 `/api/v1/releases/{id}/evidence-summary` HTTP200，合成 SSR `e9703dc2-b0dd-5ac9-ad29-61eb0a84563b` 与 ASR `edc4e355-4446-5dc7-921a-03be5475f0b3` 为 READY/RELEASE/confirmed=true，ASR `f4083d6d-96bc-500d-989b-efcc5657dba4` 为 APPROVED 但 NOT_READY/HOLD/confirmed=false。SSR `aggregated-differences` HTTP200，2 个 ASR/6 条声明，UNCHANGED VALID=4、MODIFIED VALID=2、3 个基线组件、0 个未关联阻断。合成证据家族与 Excel 家族独立，不把合成测试证据归给 Excel 版本。
+
+阻塞：首次 API health GET 35 秒超时，后续一次有限复核正常；Cloudflare `/demo/zfi` HTTP 探针报 Proxy CONNECT timeout（不能据此断言站点故障）。已有浏览器访问拒绝未重试或绕过，Windows 桌面/手机/中英文实际浏览器验收未执行。Render 技能要求先确认工作区；连接返回 no workspace selected，仅列出可用工作区而未自行选择，故不能核对本提交的 source deploy。API 功能可访问不证明精确 Render commit，也不证明手机布局。原交接“无 schema/version 变更所以未重部署”的表述不足以判定 Render 部署状态，当前仅认定 source deploy 未核验。
+
+无业务代码/API/迁移/Seed/依赖/CI/身份/部署配置变更；Seed 幂等语义不变。本地仅做进度账本及 diff 检查；本 PR 新 CI 待核对，不把上述基线测试数算作本轮重新运行。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。`ssr-asr-live-acceptance` 保持 blocked，保存 draft PR，不合并或宣称验收完成。下一步需经确认的 Render 工作区与可访问的只读浏览器验收条件；按最新 main 恢复此检查点，再做 Windows/手机/中英文现场验收。
+
 ## 2026-10-22 SSR / ASR 聚合差异与阻断（DeepSeek）
 
 基线 main 已同步至 `6199d9bc4fa694122d33d9ca1bf867fb761b156f`（PR#105 证据回填后），开放 PR 0。承接 PR#102（审批进度总览）、PR#104（发布证据摘要）后的下一包 `ssr-asr-aggregated-differences`：按基线 SSR 聚合其全部派生 ASR 的组件差异与阻断，独立分支 `codex/ssr-asr-aggregated-differences`。
