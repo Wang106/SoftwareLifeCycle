@@ -16,6 +16,7 @@ function load(file,api,collections){
   if(name.endsWith('/localized'))return {Localized:({children})=>React.createElement(React.Fragment,null,children)};
   if(name.endsWith('/release-review-records'))return {ReleaseReviewRecords:async()=>null};
   if(name.endsWith('/standard-release-collections'))return {StandardReleaseCollections:collections};
+  if(name.endsWith('/release-evidence-summary'))return {ReleaseEvidenceSummary:()=>null};
   return require(name);
  };
  new Function('require','module','exports',compiled)(requireMock,module,module.exports);return module.exports;
