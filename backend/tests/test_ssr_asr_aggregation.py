@@ -26,12 +26,12 @@ def add_component(db, release, code=None, name=None):
     return definition, component
 
 
-def add_asr(db, base, version='app'):
+def add_asr(db, base, version='app', customer_id=None, project_id=None):
     product = db.get(SoftwareProduct, base.software_id)
     asr = Release(software_id=product.id, release_type='APPLICATION', version=version, status='DRAFT')
     db.add(asr); db.flush()
-    db.add(ApplicationReleaseDetail(release_id=asr.id, customer_id=uuid.uuid4(),
-        project_id=uuid.uuid4(), standard_base_release_id=base.id))
+    db.add(ApplicationReleaseDetail(release_id=asr.id, customer_id=customer_id or uuid.uuid4(),
+        project_id=project_id or uuid.uuid4(), standard_base_release_id=base.id))
     return asr
 
 
@@ -203,7 +203,7 @@ def test_real_migrated_postgresql_no_audit_write(pg):
         base = db.get(Release, ids['release'])
         customer = db.scalar(select(Customer.id)); project = db.scalar(select(Project.id))
         definition, comp = add_component(db, base)
-        asr = add_asr(db, base, version='pg-app')
+        asr = add_asr(db, base, version='pg-app', customer_id=customer, project_id=project)
         db.add(ReleaseComponent(release_id=asr.id, component_definition_id=definition.id,
             base_component_id=comp.id, delta_type='MODIFIED', version='1.2'))
         db.commit()
