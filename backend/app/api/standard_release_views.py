@@ -16,6 +16,7 @@ from app.models.core import (
     ApplicationReleaseDetail, ComponentDefinition, Release, ReleaseComponent,
     SoftwareProduct, StandardReleaseDetail, Supplier,
 )
+from app.services.ssr_asr_aggregation import ssr_asr_aggregated_differences
 
 router = APIRouter(prefix='/api/v1/releases/standard/id', tags=['standard release views'])
 
@@ -96,3 +97,9 @@ def standard_applications(release_id: uuid.UUID, filters: Annotated[CollectionPa
     return envelope(release_id, filters, count, [
         {'id': str(row['id']), 'version': row['version'], 'status': row['status']} for row in rows
     ])
+
+
+@router.get('/{release_id}/aggregated-differences')
+def aggregated_differences(release_id: uuid.UUID, db: Session = Depends(get_db)):
+    standard_release(db, release_id)
+    return ssr_asr_aggregated_differences(db, release_id)
