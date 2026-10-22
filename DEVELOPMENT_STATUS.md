@@ -10,7 +10,7 @@
 
 ### 精确验收证据（PR#104）
 
-实现提交 `2b59ee8`；PR#104 最终 head `…`。PR head CI `…` 三项全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、CI acceptance）。受保护 squash 合并 `…`（PR#104）；main CI `…` 三项 success（deploy/wake skipped）。Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。（提交/合并后回填精确 commit/CI/部署证据。）
+实现提交 `2b59ee8`、文档提交 `1249306`；PR#104 最终 head `124930682b0d4ec282e0242289e3a8cfa87749f9`（精确 head 已含最新 main，behind 0）。PR head CI 四项全绿：Backend/PostgreSQL/migrations success、Frontend tests + Cloudflare production build success、Workers Builds success、CI acceptance success。受保护 squash 合并 `99e94cbb79ef610b2c212612a2fae016f8f8b2e8`（PR#104）；main CI `39747295029` 四项 success（deploy `39748654097`/wake `39748654101` skipped，SLC_DEPLOY_ENABLED 未启用）。Cloudflare Workers Build `33d366c2-316d-4fba-ac52-e99ed16ecc1f`（Version `16affb0c-8fe0-42f5-9eff-029f05615e73`）success；Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`（本包无后端 schema/version 变更，未触发重部署）；Cloudflare `softwarelifecycle.whf969.com` HTTP 200（本包前端面板由 main CI build 产物）。本地后端 SQLite 1705 passed / 654 skipped，前端 1502 passed / 0 fail / 0 skip。
 
 ## 2026-10-21 SSR / ASR 四级审批进度总览（Codex / ChatGPT Work）
 

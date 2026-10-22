@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "5f36637a624b610ae6478ebbaaf536cf5eb79ff4",
+  "baseline_commit": "99e94cbb79ef610b2c212612a2fae016f8f8b2e8",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-release-evidence-summary",
+    "package": "ssr-asr-aggregated-differences",
     "evidence": "HANDOFF.md",
     "business_acceptance_increment": 0,
     "resume_pr": null

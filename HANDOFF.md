@@ -8,7 +8,11 @@
 
 无 migration/Seed/依赖/身份/CI/调度/部署权限变更；API 0.18.50 / schema 0029 不变。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。本地后端 1705 passed / 654 skipped、前端 1502 passed / 0 fail / 0 skip。
 
-SSR/ASR 系列已推进：审批进度总览（PR#102）→ 发布证据摘要（本包）。下一包应为 `ssr-asr-aggregated-differences`（按供应商/基线 SSR 聚合 ASR 差异与阻断），最后 1–2 轮做云端样例/API 与桌面、手机、中英文现场验收（真实浏览器/provider 权限具备时）。精确 commit/PR/CI/合并/main/Render/Cloudflare 证据在本包 PR 合并后回填。
+SSR/ASR 系列已推进：审批进度总览（PR#102）→ 发布证据摘要（本包 PR#104）。下一包应为 `ssr-asr-aggregated-differences`（按供应商/基线 SSR 聚合 ASR 差异与阻断），最后 1–2 轮做云端样例/API 与桌面、手机、中英文现场验收（真实浏览器/provider 权限具备时）。
+
+### 精确验收证据（PR#104）
+
+实现提交 `2b59ee8`、文档提交 `1249306`；PR#104 最终 head `124930682b0d4ec282e0242289e3a8cfa87749f9`，精确 head 已含最新 main（behind 0）。PR head CI 四项全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance success）。受保护 squash 合并 `99e94cbb79ef610b2c212612a2fae016f8f8b2e8`；main CI `39747295029` 四项 success（deploy/wake skipped）。Cloudflare Workers Build `33d366c2-316d-4fba-ac52-e99ed16ecc1f`（Version `16affb0c-8fe0-42f5-9eff-029f05615e73`）success；Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。
 
 ## 2026-10-21 SSR / ASR 四级审批进度总览（Codex / ChatGPT Work）
 
