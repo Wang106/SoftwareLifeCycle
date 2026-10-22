@@ -9,12 +9,19 @@
     "resume_pr": 108,
     "state": "blocked",
     "blockers": [
-      "Windows/mobile bilingual live browser acceptance unavailable; previous denial must not be bypassed"
+      "Windows/mobile bilingual live browser acceptance remains unverified; previous denial must not be bypassed",
+      "Initial page opening latency reported by user; cause and optimization not yet verified"
     ],
-    "verified_ci_head": "b72a36909c6277ef2758edf93ca35e8990d7bb57",
-    "verified_ci_run": 39780729975,
+    "verified_ci_head": "3c606cff82ba823faf72b1a86a26d7e8f0d467f3",
+    "verified_ci_run": 39782718900,
     "render_deploy_id": "dep-dbctfp7avr4c73d17apg",
-    "render_source_commit": "87fdcda352179bcaf224393567580b3c3897027c"
+    "render_source_commit": "87fdcda352179bcaf224393567580b3c3897027c",
+    "user_feedback": {
+      "platform": "MacBook browser",
+      "functional_result": "User reports checked functions normal; detailed bilingual/device matrix not supplied",
+      "performance": "Slow initial page opening; unresolved",
+      "evidence": "HANDOFF.md"
+    }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [

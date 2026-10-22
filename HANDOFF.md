@@ -1,5 +1,18 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 MacBook 用户反馈与加载性能待办（Codex / ChatGPT Work）
+
+恢复 PR#108，基线 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1`、已验证 feature `3c606cff82ba823faf72b1a86a26d7e8f0d467f3`。精确 CI39782718900 的 Backend/PostgreSQL/migrations、Frontend production build、CI acceptance 均 success，Workers Builds119838738481 success；此前日志核对2368后端、258 PG-module cases无skip、1503前端无fail/skip、Next/OpenNext成功。新文档head不能复用这些成功，另在PR核对。
+
+用户使用MacBook浏览器后反馈“其他正常，只是输入链接打开网页的速度好慢”。记录为Mac桌面已检查功能的正向用户反馈；未提供浏览器版本、逐项中英文结果、Windows或手机证据，不能宣称完整跨端验收。新增未解决项：首次打开慢。
+
+性能排查观察（此前同日只读探针，不是本次新测量）：Cloudflare /demo/zfi HTTP200首字节8.72秒，随后8.11秒；Render /health/ready HTTP200约6.38秒，/api/v1/demo/zfi-import HTTP200约6.65秒。来自执行环境，不能等同用户当地延迟；两次页面请求均慢，尚不能归因于冷启动。已查代码/demo/zfi服务端等待apiGet完成，默认未指定timeout；Render服务plan确认为free。官方https://render.com/docs/free说明空闲15分钟休眠、唤醒约1分钟，仅作为可能因素，不证明本次原因。禁止付费升级、定时保活或变更部署权限。
+
+本包仍是验收检查点，不扩展实现。建议后续独立小包 `ssr-asr-initial-load-feedback`：核对SSR/ASR路由现有loading/Suspense边界，为慢API等待提供真实双语加载状态，必要时明确有界超时及重试；不缓存/伪造正式发布证据，不移除connection()，不改变只读、迁移、依赖或计费。须在当前验收包边界解除/重新划定后再启动；加载提示只改善等待体验，不能宣称降低后端实际耗时。验收应包含延迟API下提前可见的框架、双语/可访问性、API失败不展示虚假数据、正常SSR/ASR功能回归、完整CI与精确provider核验。
+
+本次只更新DEVELOPMENT_STATUS、HANDOFF、进度账本，无业务实现/API/迁移/Seed变更；schema仍0029，Seed幂等性未新增验证。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0均不变。PR继续draft，保留Windows/手机/双语验收与性能问题，不绕过既有浏览器拒绝。
+
+
 ## 2026-10-22 PR#108 完整 CI 核验与 Render 来源确认（Codex / ChatGPT Work）
 
 恢复现有 `ssr-asr-live-acceptance` 草稿 PR#108，不新建业务包。基线 main `dc6f30b8aea8da479129e0bdfe725c1457f81da1` 未变；已验证 head `b72a36909c6277ef2758edf93ca35e8990d7bb57` ahead 2 / behind 0。精确 CI run `39780729975` 的 Backend/PostgreSQL/migrations（job119831443921）、Frontend/Cloudflare production build（job119831444430）、CI acceptance（check119836724879）均 success；日志确认 2368 passed、258 PostgreSQL-module cases、no skips；前端1503 passed/0 failed/0 skipped，Next16.4.2/OpenNext1.20.12构建完成。Workers Builds check119832437405 / build `5ee400b1-1fe7-43dd-8869-d3509a35ed12` success（feature Preview，不是 main 生产证据）。
