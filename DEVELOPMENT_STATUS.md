@@ -1,5 +1,10 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-22 PR#110 精确证据对应修正（Codex / ChatGPT Work）
+
+恢复现有证据补录PR#110，不新建重复PR。核实CI39799886527属于main `fa745ad4fe6ca97546b3facb203efbb79d555225`，不能与feature `e3c404013403806589052868fd43a319a9914f3e`配成同一次运行；账本分开记录实现head、实现基线与已验证main CI。文档补录本身的起点为fa745ad4；新文档head需重新核验三项完整CI，精确提交/合并/main/provider结果随后记录PR。PR#109功能已合入，不重复实现；保留的旧分支文档7e69f52已被本PR范围覆盖，不再重复发布。HTTP耗时不证明冷启动或加载时序，新增加载代码实际浏览器表现仍未独立核验；PR#108用户功能验收属于此前基线。无API/迁移/Seed/依赖/身份/门控/计费变更，业务完成度增量0。
+
+
 ## 2026-10-22 SSR/ASR 初始加载反馈（DeepSeek）
 
 承接 PR#108 用户验收确认后遗留的「首次打开慢」性能待办，实现 `ssr-asr-initial-load-feedback`：为 SSR/ASR 演示路由的慢 API 等待提供双语只读加载框架 + 有界超时 + 显式重试，纯前端只读，不伪造、不缓存治理结论。
@@ -8,7 +13,7 @@
 
 ### 精确验收证据（PR#109）
 
-实现提交 `e3c4040`；PR#109 最终 head `e3c404013403806589052868fd43a319a9914f3e`（base=最新 main `2e7306b`，behind 0）。PR head CI 四项全绿：Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance 均 success。受保护 squash 合并 `fa745ad4fe6ca97546b3facb203efbb79d555225`（PR#109）。main CI `39799886527` 三项 success（backend 真实 PG 全套 + frontend + CI acceptance，deploy `39802164657`/wake `39802164630` skipped，SLC_DEPLOY_ENABLED 未启用）；Cloudflare Workers Build `b1672479-2b9e-41b1-9713-68e02da533ce` success。部署独立核验：Cloudflare `softwarelifecycle.whf969.com/demo/zfi` HTTP 200（冷启动 ~16.8s，与本包缓解的慢等待现象一致）；Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`（纯前端无 schema/version 变更，未触发重部署）。本地前端 1511 passed / 0 failed / 0 skipped（+7 新增 `demo-initial-load-feedback.test.cjs`），`tsc --noEmit` 干净。
+实现提交 `e3c4040`；PR#109 最终 head `e3c404013403806589052868fd43a319a9914f3e`（base=最新 main `2e7306b`，behind 0）。PR head CI 四项全绿：Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance 均 success。受保护 squash 合并 `fa745ad4fe6ca97546b3facb203efbb79d555225`（PR#109）。main CI `39799886527` 三项 success（backend 真实 PG 全套 + frontend + CI acceptance，deploy `39802164657`/wake `39802164630` skipped，SLC_DEPLOY_ENABLED 未启用）；Cloudflare Workers Build `b1672479-2b9e-41b1-9713-68e02da533ce` success。部署独立核验：Cloudflare `softwarelifecycle.whf969.com/demo/zfi` HTTP 200（记录的单次耗时约16.8s；不能据此证明冷启动、加载骨架提前显示或响应速度改善）；Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`（精确latest live为dep-dbctfp7avr4c73d17apg，source87fdcda352179bcaf224393567580b3c3897027c；未观察到PR#109新的Render部署，不能仅凭版本不变判断）。本地前端 1511 passed / 0 failed / 0 skipped（+7 新增 `demo-initial-load-feedback.test.cjs`），`tsc --noEmit` 干净。
 
 业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0（纯前端只读加载体验收口，不提升真实业务/身份/内网验收完成度）。API 0.18.50 / schema 0029 不变。
 

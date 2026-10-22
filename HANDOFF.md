@@ -1,12 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 PR#110 精确证据对应修正（Codex / ChatGPT Work）
+
+恢复现有证据补录PR#110，不新建重复PR。核实CI39799886527属于main `fa745ad4fe6ca97546b3facb203efbb79d555225`，不能与feature `e3c404013403806589052868fd43a319a9914f3e`配成同一次运行；账本分开记录实现head、实现基线与已验证main CI。文档补录本身的起点为fa745ad4；新文档head需重新核验三项完整CI，精确提交/合并/main/provider结果随后记录PR。PR#109功能已合入，不重复实现；保留的旧分支文档7e69f52已被本PR范围覆盖，不再重复发布。HTTP耗时不证明冷启动或加载时序，新增加载代码实际浏览器表现仍未独立核验；PR#108用户功能验收属于此前基线。无API/迁移/Seed/依赖/身份/门控/计费变更，业务完成度增量0。
+
+
 ## 2026-10-22 SSR/ASR 初始加载反馈（DeepSeek）
 
 承接 PR#108 验收后的「首次打开慢」性能待办，实现 `ssr-asr-initial-load-feedback` 并合并 PR#109。基线 main `2e7306b3b16e63f6e46c80dfaa749942da2f1013`（PR#108 合并后），开放 PR 0，独立分支 `codex/ssr-asr-initial-load-feedback`。
 
 实现（纯前端只读）：`/demo/zfi` 与 `/demo/releases` 的 `apiGet` 加 `timeoutMs: 15000`（有界超时，释放慢 API 等待）；新增 `app/demo/loading.tsx` 双语只读骨架屏（`aria-busy`，不编造样例证据）；两页不可用分支加「有界读取说明」+「重新读取」显式重试链接；`globals.css` 增 reduced-motion 安全脉冲样式；`zh.json` 增 5 条标签。未移除 `connection()`，未增付费/保活/依赖/后端协议/身份权限/迁移。
 
-精确证据：PR#109 head `e3c404013403806589052868fd43a319a9914f3e`（behind 0），PR head CI 四项全绿，squash 合并 `fa745ad4fe6ca97546b3facb203efbb79d555225`；main CI `39799886527` 三项 success（deploy/wake skipped）；Cloudflare Workers Build `b1672479-2b9e-41b1-9713-68e02da533ce` success；Cloudflare HTTP 200（冷启动 ~16.8s），Render ready 0.18.50/`0029_changeover_batch_history`（未重部署）。本地前端 1511 passed / 0 fail / 0 skip。
+精确证据：PR#109 head `e3c404013403806589052868fd43a319a9914f3e`（behind 0），PR head CI 四项全绿，squash 合并 `fa745ad4fe6ca97546b3facb203efbb79d555225`；main CI `39799886527` 三项 success（deploy/wake skipped）；Cloudflare Workers Build `b1672479-2b9e-41b1-9713-68e02da533ce` success；Cloudflare HTTP 200（记录的单次耗时约16.8s，不能据此证明冷启动或加载时序改善），Render ready 0.18.50/`0029_changeover_batch_history`（精确latest live dep-dbctfp7avr4c73d17apg/source87fdcda352179bcaf224393567580b3c3897027c，未观察到新的Render部署）。本地前端 1511 passed / 0 fail / 0 skip。
 
 业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0 不变。API 0.18.50/schema 0029 不变。公共样例只读、真实身份/写入关闭、内网未部署。
 
