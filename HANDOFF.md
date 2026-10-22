@@ -1,5 +1,19 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-22 SSR / ASR 聚合差异与阻断（DeepSeek）
+
+基线 main `6199d9bc4fa694122d33d9ca1bf867fb761b156f`（PR#105 证据回填后），开放 PR 0，独立分支 `codex/ssr-asr-aggregated-differences`。承接 PR#102/PR#104 后的下一包 `ssr-asr-aggregated-differences`：按基线 SSR 聚合全部派生 ASR 的组件差异与阻断，只读收口。
+
+实现：通用只读端点 `GET /api/v1/releases/standard/id/{release_id}/aggregated-differences`，共享服务 `app/services/ssr_asr_aggregation.py` 一次性有界投影——`delta_type_aggregate`（每个派生 ASR 组件声明按 delta_type 分桶，再按 base_link_status VALID/INVALID/NOT_RECORDED 细分，非 VALID 链接显式标注，从不静默视为干净差异）与 `unlinked_base_aggregate`（基线 SSR 每个组件被多少个派生 ASR 未声明有效链接的阻断计数；全部 ASR 均链接则非阻断）。观察存储的组件关联，不从计数/版本串/记录状态推断审批、继承、就绪或正式发布。
+
+无 migration/Seed/依赖/身份/CI/调度/部署权限变更；API 0.18.50 / schema 0029 不变。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。本地后端 1713 passed / 655 skipped（+8 新增）。
+
+SSR/ASR 系列已推进：审批进度总览（PR#102）→ 发布证据摘要（PR#104）→ 聚合差异与阻断（本包 PR#106）。下一包为 `ssr-asr-live-acceptance`：云端样例/API 与桌面、手机、中英文现场验收（真实浏览器/provider 权限具备时），非后端代码包。
+
+### 精确验收证据（PR#106）
+
+实现提交 `3374439`、测试修复提交 `5e40660`；PR#106 最终 head `5e406600b905`，精确 head 已含最新 main（behind 0）。PR head CI 四项全绿（Backend/PostgreSQL/migrations、Frontend tests + Cloudflare production build、Workers Builds、CI acceptance success）。受保护 squash 合并 `87fdcda352179bcaf224393567580b3c3897027c`（PR#106）；main CI `39756062105` 四项 success（deploy/wake skipped）。Cloudflare Workers Build `b3c1580b-2c5f-4977-9b85-0cac3c4870e2`（Version `c0564872-4cf5-4d5d-8ad3-42c9a87d74d9`）success；Render `/health/ready` ready 0.18.50/`0029_changeover_batch_history`；Cloudflare `softwarelifecycle.whf969.com` HTTP 200。
+
 ## 2026-10-22 SSR / ASR 发布证据摘要（DeepSeek）
 
 基线 main `8942f6d692e32c69a59a69260d0f6213e1c7e6d2`（PR#103 证据回填后），开放 PR 0，独立分支 `codex/ssr-asr-release-evidence-summary`。承接 PR#102 后的下一包 `ssr-asr-release-evidence-summary`：把标准/应用发布详情的「当前冻结 Snapshot → Readiness → 审批 → 生效 Decision」串成一条只读证据摘要。
