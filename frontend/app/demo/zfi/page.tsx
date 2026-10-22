@@ -26,7 +26,7 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
   const customer = single('customer');
   const statuses = ['APPROVED', 'PENDING', 'RETURNED', 'REJECTED', 'CANCELLED'];
   const status = [...statuses, 'UNRECORDED'].includes(single('status')) ? single('status') : '';
-  const response = await apiGet<Receipt>('/api/v1/demo/zfi-import');
+  const response = await apiGet<Receipt>('/api/v1/demo/zfi-import', {timeoutMs: 15000});
   const data = response?.sample_only === true && Array.isArray(response.items) ? response : null;
   const items = data?.initialized ? data.items : [];
   const customers = [...new Set(items.map(row => row.customer).filter((value): value is string => value !== null && value !== ''))].sort();
@@ -54,7 +54,9 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
       <Link href="/demo/releases"><Localized>{'Release evidence demonstration'}</Localized></Link> <Localized>{' · '}</Localized>
       <Link href="/demo/status" prefetch={false}><Localized>{'Demonstration status'}</Localized></Link></p>
     {!data ? <section className="panel"><h2><Localized>{'Excel import API unavailable'}</Localized></h2>
-      <p><Localized>{'No sample evidence is fabricated when the API is unavailable.'}</Localized></p></section>
+      <p><Localized>{'No sample evidence is fabricated when the API is unavailable.'}</Localized></p>
+      <p className="muted"><Localized>{'The read is bounded and stops waiting when the API does not settle in time.'}</Localized></p>
+      <p><a href="/demo/zfi"><Localized>{'Read again'}</Localized></a></p></section>
       : !data.initialized ? <section className="panel"><h2><Localized>{'Excel sample family incomplete or not installed'}</Localized></h2>
         <p><Localized>{'This overview requires the complete imported family. Partial records do not establish successful import.'}</Localized></p></section>
         : <>

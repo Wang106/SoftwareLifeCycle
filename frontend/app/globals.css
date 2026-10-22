@@ -47,3 +47,11 @@ details[open] > summary .disclosure-closed { display: none; }
 .release-record-table { overflow-x: auto; }
 .file-hash { overflow-wrap: anywhere; display: block; min-width: 160px; max-width: 320px; }
 @media (max-width: 600px) { .supplier-release-content { padding: 0 8px 8px; } .standard-software-card > summary { padding: 12px; } }
+
+/* Bounded read loading skeleton for the read-only demonstration routes. */
+.demo-loading{display:flex;flex-direction:column;gap:10px;padding:6px 0}
+.demo-loading-bar{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,#eef1f4 25%,#e2e6eb 37%,#eef1f4 63%);background-size:400% 100%;animation:demo-loading-pulse 1.4s ease infinite}
+.demo-loading-bar:nth-child(2){width:76%}
+.demo-loading-bar:nth-child(3){width:52%}
+@keyframes demo-loading-pulse{0%{background-position:100% 0}100%{background-position:0 0}}
+@media (prefers-reduced-motion: reduce){.demo-loading-bar{animation:none}}
