@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 发布证据类型漂移安全降级（Codex / ChatGPT Work）
+
+基线为最新 main `cfe66f90b008ef618e981744252eb773124f1c32`（PR#118），启动时开放 PR 为 0。本轮单包 `ssr-asr-release-evidence-type-drift-safety`，分支 `codex/ssr-asr-release-evidence-type-drift-safety`，远端实现检查点 `2a5cfcc7063da6d29278dbf3c726eaccd913051e`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+`/demo/releases` 的类型分派改为严格白名单：只有 `STANDARD` 生成 SSR 路线，只有 `APPLICATION` 生成 ASR 路线；任何其他原始值保持可见并显示双语安全提示，但不生成 SSR/ASR 详情、ASR readiness 或 passport 链接。其他只读证据仍显示，不用丢弃记录来隐藏漂移，也不把未知值推断为业务类型。契约：`docs/ssr-asr-release-evidence-type-drift-safety.md`。
+
+本地已通过定向 8/8、完整前端 1550/1550（0 fail/skip）、Next 16.4.2 生产构建、Worker 配置和禁用认证双语 SSR。跨 worktree 模块解析的首次无效尝试已按事实记录；最终使用当前临时 worktree 内同锁文件硬链接依赖树通过，未改依赖/锁文件。后端/真实 PG 本地未重跑，以本包精确远端 head CI 为准。
+
+基线 main CI40003193590 三项 success；Actions deploy40004633691、wake40004633759 skipped；Cloudflare 基线 production build `ade3fc8d-35f5-490e-9cb2-38a614e5e807` success。Render My Workspace 最新已知 live `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，不是本包部署。以上不能冒充本包验证。
+
+API0.18.50/schema0029、公共只读、OIDC/真实身份/业务写入关闭、内网未部署边界不变；审批或类型识别不等于正式发布。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。下一步只完成本包远端提交、精确 head 三项 CI、受保护合并、main CI 及 Cloudflare/Render/Actions 分项核验；下一实现包为 `null`。
+
 ## 2026-10-24 PR#117 已合并证据对账（Codex / ChatGPT Work）
 
 本次从最新 main `7d3b888afdb13c5c56360788c329d8a98d8a4c29` 建立独立分支 `codex/ssr-asr-pr117-evidence-reconciliation`，启动时开放 PR 为 0；只推进 `ssr-asr-pr117-evidence-reconciliation`，更新本交接、DEVELOPMENT_STATUS 和进度账本，不重复已完成的路线漂移实现或另开功能包。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。

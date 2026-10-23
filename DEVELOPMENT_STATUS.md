@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据类型漂移安全降级（Codex / ChatGPT Work）
+
+从最新 main `cfe66f90b008ef618e981744252eb773124f1c32`（PR#118）建立独立分支 `codex/ssr-asr-release-evidence-type-drift-safety`，启动时开放 PR 为 0；本轮仅推进 `ssr-asr-release-evidence-type-drift-safety`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+`/demo/releases` 现在仅把精确 `STANDARD` 映射为 SSR、精确 `APPLICATION` 映射为 ASR。其他值继续以原始版本和类型显示，并明确双语提示“未知值不会被映射为 SSR 或 ASR”；页面不再为未知类型生成 SSR/ASR 详情、readiness 或 passport 链接。既有 Snapshot、审批、决定和 DVP 证据仍按只读记录展示，不丢弃或替换记录。远端实现检查点为 `2a5cfcc7063da6d29278dbf3c726eaccd913051e`；契约见 `docs/ssr-asr-release-evidence-type-drift-safety.md`。
+
+本地验证：定向 8/8、完整前端 1550/1550（0 failed/0 skipped）、Next.js 16.4.2 生产构建、Worker 配置和禁用认证双语 SSR 全部通过。首次全量/构建尝试分别因跨 worktree 的 `NODE_PATH` 不会传给测试内 `tsc`、Turbopack 拒绝工作区外依赖符号链接而未形成有效源码结论；改用当前临时 worktree 内与锁文件一致的硬链接依赖树后全部通过，无依赖或锁文件变更。完整后端/真实 PostgreSQL 未在本地重跑，必须由本 PR 精确 head 的三个必需 CI 检查独立验证。
+
+基线 main CI [40003193590](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40003193590) 三项 success；Actions deployment [40004633691](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40004633691) 与 continuation/wake [40004633759](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40004633759) 均 skipped。PR#118 已记录的 Cloudflare production build `ade3fc8d-35f5-490e-9cb2-38a614e5e807` success。Render My Workspace 最新已知 live 仍为 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106）。这些都是基线证据，不能替代本包精确 head CI、受保护合并或合并后的 main/provider 核验。
+
+本包仅收紧前端只读解释，不改 API、后端、数据库、迁移、Seed、依赖、身份、写入门控、CI、调度或部署配置。业务验收不人为上调：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；类型识别、审批记录和构建成功都不证明当前冻结 Snapshot、真实权限或正式发布。下一包暂为 `null`；先完成本包精确 head CI、受保护合并及独立 main/Cloudflare/Render/Actions 核验，不并发新包。
+
 ## 2026-10-24 PR#117 已合并证据对账（Codex / ChatGPT Work）
 
 本次从最新 main `7d3b888afdb13c5c56360788c329d8a98d8a4c29` 建立独立分支 `codex/ssr-asr-pr117-evidence-reconciliation`，启动时开放 PR 为 0；只推进 `ssr-asr-pr117-evidence-reconciliation`，更新本状态、HANDOFF 和进度账本，不重复已完成的路线漂移实现或另开功能包。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
