@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "02f42fb93f3103dd37cc758c429b2ce07500d988",
+  "baseline_commit": "7d3b888afdb13c5c56360788c329d8a98d8a4c29",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-recorded-route-drift-safety",
-    "evidence": "docs/ssr-asr-recorded-route-drift-safety.md",
+    "package": "ssr-asr-pr117-evidence-reconciliation",
+    "evidence": "https://github.com/Wang106/SoftwareLifeCycle/pull/117#issuecomment-6371199063",
     "business_acceptance_increment": 0,
     "resume_pr": null,
-    "branch": "codex/ssr-asr-recorded-route-drift-safety",
-    "state": "implementation_checkpoint_pending_exact_head_ci",
+    "branch": "codex/ssr-asr-pr117-evidence-reconciliation",
+    "state": "documentation_checkpoint_pending_own_exact_head_ci",
     "implementation_commit": "e4aec8910c165c771ea54d464da1b7a11764f67d",
     "local_targeted_tests": 31,
     "local_runtime_observations": 16,
@@ -16,28 +16,33 @@
     "local_frontend_tests": 1548,
     "local_next_opennext_build": "passed",
     "local_disabled_auth_check": "passed",
-    "verified_previous_pr": 116,
-    "verified_main": "02f42fb93f3103dd37cc758c429b2ce07500d988",
-    "verified_main_ci": 39978736182,
-    "cloudflare_build": "30010edf-7ffc-4c05-aa60-dc1374f9da44",
+    "verified_previous_pr": 117,
+    "verified_main": "7d3b888afdb13c5c56360788c329d8a98d8a4c29",
+    "verified_main_ci": 39996853218,
+    "cloudflare_build": "794e8ab5-e271-432f-8ee4-fff19771deb9",
     "render_live_deploy": "dep-dbctfp7avr4c73d17apg",
     "render_source_commit": "87fdcda352179bcaf224393567580b3c3897027c",
     "next_package": null,
     "limitations": [
-      "Exact-head backend, PostgreSQL, frontend and acceptance CI are still pending",
+      "This documentation reconciliation package still requires its own exact-head CI, protected merge and post-merge provider verification",
       "Route consistency only protects recorded sample interpretation; it does not establish current frozen Snapshot binding, real authority or formal release",
       "Local production HTTP/SSR is not browser, device or public-provider acceptance",
       "Render live source remains PR106; no new backend deployment"
     ],
     "actions_deploy": {
-      "run_id": 39980379307,
+      "run_id": 39998004462,
       "conclusion": "skipped"
     },
     "actions_wake": {
-      "run_id": 39980379288,
+      "run_id": 39998004389,
       "conclusion": "skipped"
     },
-    "render_status": "live_previous_backend_source_no_new_deployment"
+    "render_status": "live_previous_backend_source_no_new_deployment",
+    "verified_pr_head": "5c70fa7baab42dc978b13045be22b60984a6c894",
+    "verified_pr_ci": 39995037941,
+    "cloudflare_preview_build": "e0b3b303-6b96-4cff-8ef9-ce2de7aa7666",
+    "final_evidence_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/117#issuecomment-6371199063",
+    "evidence_reconciliation_status": "documentation_only_own_exact_head_ci_and_post_merge_evidence_pending"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
