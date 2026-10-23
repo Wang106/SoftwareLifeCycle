@@ -4,6 +4,8 @@ const {renderToStaticMarkup}=require('react-dom/server');
 const dict=require('../lib/i18n/zh.json'),templates=require('../lib/i18n/templates.json');
 const translated={exports:{}};
 new Function('require','module','exports',ts.transpileModule(fs.readFileSync('lib/i18n.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText)(n=>n.endsWith('zh.json')?dict:templates,translated,translated.exports);
+const confirmation={exports:{}};
+new Function('require','module','exports',ts.transpileModule(fs.readFileSync('lib/release-evidence-confirmation.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(require,confirmation,confirmation.exports);
 
 const evidence={
   release:{id:'rel-uuid',version:'v1.0',release_type:'STANDARD',record_status:'DRAFT'},
@@ -20,9 +22,9 @@ async function render(data,releaseId='rel-uuid',locale='en'){
  const compiled=ts.transpileModule(fs.readFileSync('components/release-evidence-summary.tsx','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
  const m={exports:{}},calls=[];
  const translate=c=>typeof c==='string'?translated.exports.translateText(c,locale):Array.isArray(c)?c.map(translate):c;
- const req=n=>n==='next/link'?({href,children})=>React.createElement('a',{href},children):n.endsWith('/lib/api')?{apiGet:async p=>{calls.push(p);return data;}}:n.endsWith('/localized')?{Localized:({children})=>React.createElement(React.Fragment,null,translate(children))}:require(n);
+ const req=n=>n==='next/link'?({href,children})=>React.createElement('a',{href},children):n.endsWith('/lib/api')?{apiGet:async p=>{calls.push(p);return data;}}:n.endsWith('/release-evidence-confirmation')?confirmation.exports:n.endsWith('/localized')?{Localized:({children})=>React.createElement(React.Fragment,null,translate(children))}:require(n);
  new Function('require','module','exports',compiled)(req,m,m.exports);
- const html=renderToStaticMarkup(await m.exports.ReleaseEvidenceSummary({releaseId}));
+ const html=renderToStaticMarkup(await m.exports.ReleaseEvidenceSummary({releaseId,expectedReleaseType:'STANDARD'}));
  return {html,calls};
 }
 
@@ -47,13 +49,41 @@ test('renders the chain in chinese',async()=>{
 
 test('renders unknown placeholders when evidence is missing',async()=>{
  const {html,calls}=await render({
-  release:{id:'rel-uuid',version:'v2',release_type:'APPLICATION',record_status:'DRAFT'},
+  release:{id:'rel-uuid',version:'v2',release_type:'STANDARD',record_status:'DRAFT'},
   snapshot:null,approval:null,decision:null,
   readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{required_dvp_total:0,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[]},
   current_release_confirmed:false,
  });
  assert.ok(html.includes('Current evidence does not confirm a formal release.'));
  assert.ok(!html.includes('/snapshots/')&&!html.includes('/approvals/')&&!html.includes('/release-decisions/'));
+});
+
+test('fails closed when the evidence response belongs to a different release type',async()=>{
+ const {html}=await render({...evidence,release:{...evidence.release,release_type:'APPLICATION'}});
+ assert.ok(html.includes('Evidence summary unavailable.'));
+ assert.ok(!html.includes('Formal release evidence matches'));
+});
+
+test('does not confirm release when any recorded invariant contradicts the API claim',async()=>{
+ const mutations=[
+  value=>value.snapshot.status='DRAFT',
+  value=>value.readiness.overall='NOT_READY',
+  value=>value.readiness.approval_eligible=false,
+  value=>value.readiness.coverage.snapshot_match=false,
+  value=>value.approval.status='PENDING',
+  value=>value.approval.current_snapshot_bound=false,
+  value=>value.decision.decision='HOLD',
+  value=>value.decision.readiness_status='NOT_READY',
+  value=>value.decision.current_evidence_bound=false,
+  value=>value.decision.snapshot_id='different-snapshot',
+ ];
+ for(const mutate of mutations){
+  const value=structuredClone(evidence);mutate(value);
+  const {html}=await render(value);
+  assert.ok(html.includes('Current evidence does not confirm a formal release.'));
+  assert.ok(html.includes('Release evidence response is inconsistent; formal release is not confirmed.'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
 });
 
 test('does not present a summary when the API is unavailable',async()=>{

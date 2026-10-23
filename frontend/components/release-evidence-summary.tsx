@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { apiGet } from '../lib/api';
+import { releaseConfirmationState, type ReleaseType } from '../lib/release-evidence-confirmation';
 import { Localized } from './localized';
 
 type Snapshot = {
@@ -21,18 +22,28 @@ type Evidence = {
   current_release_confirmed: boolean;
 };
 
-export async function ReleaseEvidenceSummary({ releaseId }: { releaseId: string }) {
+export async function ReleaseEvidenceSummary({ releaseId, expectedReleaseType }: { releaseId: string; expectedReleaseType: ReleaseType }) {
   const data = await apiGet<Evidence>(`/api/v1/releases/${encodeURIComponent(releaseId)}/evidence-summary`);
-  if (!data || data.release.id !== releaseId) {
+  if (!data || data.release.id !== releaseId || data.release.release_type !== expectedReleaseType) {
     return <Localized><section className="panel"><h2><Localized>{'Evidence summary'}</Localized></h2>
       <p className="datasource"><Localized>{'Evidence summary unavailable. Counts are unknown; no unbounded fallback is used.'}</Localized></p></section></Localized>;
   }
+  const confirmation = releaseConfirmationState({
+    releaseType: data.release.release_type,
+    expectedReleaseType,
+    snapshot: data.snapshot,
+    readiness: data.readiness,
+    approval: data.approval,
+    decision: data.decision,
+    currentReleaseConfirmed: data.current_release_confirmed,
+  });
   return <Localized>
     <section className="panel">
       <h2><Localized>{'Release evidence summary'}</Localized></h2>
       <p className="muted"><Localized>{'Read-only projection of the current frozen snapshot, readiness gates, approval and the effective release decision. It does not infer a formal release from record status or stage counts.'}</Localized></p>
       <p><Localized>{'Record status'}</Localized><Localized>{': '}</Localized><Localized>{data.release.record_status}</Localized><Localized>{' · '}</Localized><Localized>{'Current Readiness'}</Localized><Localized>{': '}</Localized><Localized>{data.readiness.overall}</Localized></p>
-      <p><Localized>{data.current_release_confirmed ? 'Formal release evidence matches the current snapshot.' : 'Current evidence does not confirm a formal release.'}</Localized></p>
+      <p><Localized>{confirmation.confirmed ? 'Formal release evidence matches the current snapshot.' : 'Current evidence does not confirm a formal release.'}</Localized></p>
+      {confirmation.contractMismatch && <p className="datasource"><Localized>{'Release evidence response is inconsistent; formal release is not confirmed.'}</Localized></p>}
       <p className="muted"><Localized>{'All stages approved does not mean formally released'}</Localized></p>
       <dl>
         <dt><Localized>{'Current snapshot'}</Localized></dt>

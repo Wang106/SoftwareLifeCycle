@@ -4,12 +4,13 @@ const {renderToStaticMarkup}=require('react-dom/server');
 const dict=require('../lib/i18n/zh.json'),templates=require('../lib/i18n/templates.json');
 const code=ts.transpileModule(fs.readFileSync('lib/i18n.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;
 const i18n={exports:{}};new Function('require','module','exports',code)(n=>n.endsWith('zh.json')?dict:templates,i18n,i18n.exports);
-const row={release_id:'exact-release',version:'DEMO-EVIDENCE-ASR-B-2.0',release_type:'APPLICATION',record_status:'DRAFT',snapshot:{id:'snapshot-2',snapshot_no:'SNAP-2',content_hash:'a'.repeat(64)},readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{required_dvp_total:3,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[{group:'Verification',rule:'Required DVP executed on current snapshot',effective:'FAIL',evidence:'0 / 3'}]},approval:{approval_no:'APR-2',status:'APPROVED',current_snapshot_bound:true},decision:{decision_no:'RD-2',decision:'HOLD',readiness_status:'NOT_READY',snapshot_id:'snapshot-2',current_evidence_bound:true},current_release_confirmed:false,change_request_no:'SCR-DEMO',dvp_items:[{id:'exact-item',item_no:'DVP-SOFTWARE'}]};
+const confirmation={exports:{}};new Function('require','module','exports',ts.transpileModule(fs.readFileSync('lib/release-evidence-confirmation.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(require,confirmation,confirmation.exports);
+const row={release_id:'exact-release',version:'DEMO-EVIDENCE-ASR-B-2.0',release_type:'APPLICATION',record_status:'DRAFT',snapshot:{id:'snapshot-2',snapshot_no:'SNAP-2',status:'FROZEN',content_hash:'a'.repeat(64)},readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{required_dvp_total:3,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[{group:'Verification',rule:'Required DVP executed on current snapshot',effective:'FAIL',evidence:'0 / 3'}]},approval:{approval_no:'APR-2',status:'APPROVED',current_snapshot_bound:true},decision:{decision_no:'RD-2',decision:'HOLD',readiness_status:'NOT_READY',snapshot_id:'snapshot-2',current_evidence_bound:true},current_release_confirmed:false,change_request_no:'SCR-DEMO',dvp_items:[{id:'exact-item',item_no:'DVP-SOFTWARE'}]};
 async function render(data,locale='en'){
  const compiled=ts.transpileModule(fs.readFileSync('app/demo/releases/page.tsx','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
  const module={exports:{}},calls=[];
  const translate=c=>typeof c==='string'?i18n.exports.translateText(c,locale):Array.isArray(c)?c.map(translate):c;
- const req=n=>n==='next/link'?({href,children})=>React.createElement('a',{href},children):n.endsWith('/lib/api')?{apiGet:async path=>{calls.push(path);return data;}}:n.endsWith('/localized')?{Localized:({children})=>React.createElement(React.Fragment,null,translate(children))}:require(n);
+ const req=n=>n==='next/link'?({href,children})=>React.createElement('a',{href},children):n.endsWith('/lib/api')?{apiGet:async path=>{calls.push(path);return data;}}:n.endsWith('/release-evidence-confirmation')?confirmation.exports:n.endsWith('/localized')?{Localized:({children})=>React.createElement(React.Fragment,null,translate(children))}:require(n);
  new Function('require','module','exports',compiled)(req,module,module.exports);
  return {html:renderToStaticMarkup(await module.exports.default()),calls};
 }
@@ -24,9 +25,16 @@ for(const locale of ['en','zh'])test('blocked approval evidence and exact links 
  assert.ok(!html.includes('<form')&&!html.includes('operation='));
 });
 test('positive SSR has exact decision and no application-only link',async()=>{
- const {html}=await render({sample_only:true,initialized:true,items:[{...row,release_type:'STANDARD',current_release_confirmed:true,decision:{...row.decision,decision:'RELEASE'}}]});
+ const {html}=await render({sample_only:true,initialized:true,items:[{...row,release_type:'STANDARD',current_release_confirmed:true,readiness:{...row.readiness,overall:'READY',approval_eligible:true,coverage:{...row.readiness.coverage,snapshot_match:true}},decision:{...row.decision,decision:'RELEASE',readiness_status:'READY'}}]});
  assert.ok(html.includes('Formal release evidence matches the current snapshot.'));
  assert.ok(html.includes('/releases/standard/exact-release')&&!html.includes('/passport'));
+});
+test('claimed release with a non-frozen snapshot fails closed',async()=>{
+ const claimed={...row,current_release_confirmed:true,snapshot:{...row.snapshot,status:'DRAFT'},readiness:{...row.readiness,overall:'READY',approval_eligible:true,coverage:{...row.readiness.coverage,snapshot_match:true}},decision:{...row.decision,decision:'RELEASE',readiness_status:'READY'}};
+ const {html}=await render({sample_only:true,initialized:true,items:[claimed]});
+ assert.ok(html.includes('Current evidence does not confirm a formal release.'));
+ assert.ok(html.includes('Release evidence response is inconsistent; formal release is not confirmed.'));
+ assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
 });
 for(const locale of ['en','zh'])test('unknown release type stays visible without an invented SSR or ASR route in '+locale,async()=>{
  const {html}=await render({sample_only:true,initialized:true,items:[{...row,release_type:'FUTURE'}]},locale);

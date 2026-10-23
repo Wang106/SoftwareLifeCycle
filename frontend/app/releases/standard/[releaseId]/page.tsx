@@ -39,7 +39,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       <span><Localized>{"Source commit"}</Localized></span><code>{profile.source?.commit || '—'}</code>
     </div></section><section className="panel"><h2><Localized>{"Release notes"}</Localized></h2><p><Localized>{profile.release_notes || 'No release notes recorded.'}</Localized></p></section></div>
     <p><Link href={`/releases/${encodeURIComponent(profile.id)}/snapshots`}><Localized>{"View snapshot history →"}</Localized></Link></p>
-    <ReleaseEvidenceSummary releaseId={profile.id} />
+    <ReleaseEvidenceSummary releaseId={profile.id} expectedReleaseType="STANDARD" />
     <StandardReleaseCollections releaseId={profile.id} search={search} componentCount={profile.component_count} applicationCount={profile.application_count} />
     <p className="datasource"><Link href="/releases/standard"><Localized>{"← All standard releases"}</Localized></Link></p>
   </>;
