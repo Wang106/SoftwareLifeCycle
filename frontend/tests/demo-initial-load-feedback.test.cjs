@@ -4,6 +4,7 @@ const {renderToStaticMarkup}=require('react-dom/server');
 const dict=require('../lib/i18n/zh.json'),templates=require('../lib/i18n/templates.json');
 const i18nCode=ts.transpileModule(fs.readFileSync('lib/i18n.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;
 const i18n={exports:{}};new Function('require','module','exports',i18nCode)(n=>n.endsWith('zh.json')?dict:templates,i18n,i18n.exports);
+const confirmation={exports:{}};new Function('require','module','exports',ts.transpileModule(fs.readFileSync('lib/release-evidence-confirmation.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(require,confirmation,confirmation.exports);
 const translate=c=>typeof c==='string'?i18n.exports.translateText(c,localeForRender):Array.isArray(c)?c.map(translate):c;
 let localeForRender='en';
 
@@ -14,6 +15,7 @@ async function renderPage(pageFile, data, locale='en'){
   const module={exports:{}},calls=[];
   const req=n=>n==='next/link'?({href,children})=>React.createElement('a',{href},children)
     : n.endsWith('/lib/api')?{apiGet:async(...args)=>{calls.push(args);return data;}}
+    : n.endsWith('/release-evidence-confirmation')?confirmation.exports
     : n.endsWith('/localized')?{Localized:({children})=>React.createElement(React.Fragment,null,translate(children))}
     : require(n);
   new Function('require','module','exports',compiled)(req,module,module.exports);

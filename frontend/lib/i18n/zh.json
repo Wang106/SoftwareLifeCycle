@@ -2015,6 +2015,7 @@
   "The complete sample family must be explicitly installed in the cloud test database before this demonstration.": "演示前需在云端测试数据库显式安装完整样例。",
   "Formal release evidence matches the current snapshot.": "正式发布证据与当前快照匹配。",
   "Current evidence does not confirm a formal release.": "当前证据不能确认正式发布。",
+  "Release evidence response is inconsistent; formal release is not confirmed.": "发布证据响应不一致，不能确认正式发布。",
   "Current snapshot bound": "绑定当前快照",
   "Current snapshot mismatch": "当前快照不匹配",
   "Current evidence bound": "绑定当前证据",

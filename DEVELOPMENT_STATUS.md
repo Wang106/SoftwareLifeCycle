@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据不变量安全降级（Codex / ChatGPT Work）
+
+从最新 main `17786831b04122d5ad9148ea821fcf4704e33293`（PR#121）建立独立分支 `codex/ssr-asr-release-evidence-invariant-safety`；启动时开放 PR 为 0，上轮 PR/CI/provider 核验均已完成，因此本轮只推进 `ssr-asr-release-evidence-invariant-safety`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。现有旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖，没有重复实施。
+
+[PR#122](https://github.com/Wang106/SoftwareLifeCycle/pull/122) 的实现检查点为 `b40d0fb99c3cbf670945002c486b3843da411c7a`。SSR/ASR 详情与 `/demo/releases` 现在共享只读不变量校验：只有 release type 与路线一致、Snapshot 为 `FROZEN`、Readiness 为 READY 且可审批并命中当前 Snapshot、Approval 为 APPROVED 且绑定当前 Snapshot、有效 Release Decision 为 RELEASE/READY 且绑定当前证据、decision Snapshot UUID 与显示 Snapshot UUID 相同，同时 API 明确确认时，才显示“正式发布证据与当前快照匹配”。类型漂移使摘要不可用；其他矛盾保留原始记录供审阅，但安全降级为“未确认”并显示双语契约不一致提示。前端不会把 API 的 false 升级为 true。契约见 `docs/ssr-asr-release-evidence-invariant-safety.md`。
+
+本地定向 16/16、完整前端 1553/1553（0 failed/0 skipped）、TypeScript `--noEmit` 与 Next.js 16.4.2 生产构建通过。新工作树首次测试仅因依赖目录尚未安装而无效；随后用锁文件离线安装同版本依赖，未改 package/lock。本地未重跑后端或真实 PostgreSQL，须由 PR#122 最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 三项检查独立验证。
+
+本轮开始时 main CI [40027452988](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40027452988) 三项 success；Cloudflare 已知 main production build `5f6d680c-e47a-411c-a563-99d4454a5de4` success；Actions deployment [40028807091](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40028807091) 与 continuation/wake [40028806796](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40028806796) 均 skipped。Render `My Workspace` 本轮只读复核：`softwarelifecycle-api-test` 未暂停，最新 live 仍 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106），本轮起点后没有新 deploy、service event 或 error log；未触发部署、重启或配置变更。这些只是基线证据，不能冒充 PR#122 最终 head 或合并后 provider 结果。
+
+本包仅收紧前端只读解释，不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。业务验收不人为上调：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；记录一致、审批通过或 CI/build 成功都不等于正式发布。先完成 PR#122 最终精确 head CI、确认包含最新 main、受保护合并及独立 main/Cloudflare/Render/Actions 核验；完成前不并发下一包，下一实现包保持 `null`。
+
 ## 2026-10-24 PR#120 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `c419befb7b5f52911965f2db17285c5cc1933e56` 为唯一事实源；启动时开放 PR 为 0。最新状态文件仍把 PR#120 文档包标为待自身 CI、合并和 provider 核验，因此只推进 `ssr-asr-pr120-evidence-reconciliation`，分支 `codex/ssr-asr-pr120-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。

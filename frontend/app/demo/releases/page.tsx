@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import {apiGet} from '../../../lib/api';
+import {releaseConfirmationState} from '../../../lib/release-evidence-confirmation';
 import {Localized} from '../../../components/localized';
 
 type Evidence = {sample_only: boolean; initialized: boolean; items: Row[]};
 type Row = {release_id: string; version: string; release_type: string; record_status: string;
-  snapshot: {id: string; snapshot_no: string; content_hash: string} | null;
+  snapshot: {id: string; snapshot_no: string; status: string; content_hash: string} | null;
   readiness: {overall: string; approval_eligible: boolean; coverage: {required_dvp_total: number; current_snapshot_executed: number; current_snapshot_passed: number; snapshot_match: boolean}; rules: {group: string; rule: string; evidence: string; effective: string}[]};
   approval: {approval_no: string; status: string; current_snapshot_bound: boolean} | null;
   decision: {decision_no: string; decision: string; readiness_status: string; snapshot_id: string; current_evidence_bound: boolean} | null;
@@ -20,11 +21,14 @@ export default async function Page() {
     {!data ? <section className="panel"><h2><Localized>{'Evidence API unavailable'}</Localized></h2><p><Localized>{'No sample evidence is fabricated when the API is unavailable.'}</Localized></p><p className="muted"><Localized>{'The read is bounded and stops waiting when the API does not settle in time.'}</Localized></p><p><a href="/demo/releases"><Localized>{'Read again'}</Localized></a></p></section> : !data.initialized ? <section className="panel"><h2><Localized>{'Evidence samples not installed'}</Localized></h2><p><Localized>{'The complete sample family must be explicitly installed in the cloud test database before this demonstration.'}</Localized></p></section> : data.items.map(row => {
       const kind = row.release_type === 'STANDARD' ? 'standard' : row.release_type === 'APPLICATION' ? 'application' : null;
       const path = kind ? `/releases/${kind}/${encodeURIComponent(row.release_id)}` : null;
+      const confirmation = releaseConfirmationState({releaseType: row.release_type, expectedReleaseType: kind === 'standard' ? 'STANDARD' : kind === 'application' ? 'APPLICATION' : null,
+        snapshot: row.snapshot, readiness: row.readiness, approval: row.approval, decision: row.decision, currentReleaseConfirmed: row.current_release_confirmed});
       return <section className="panel" key={row.release_id}>
         <h2>{path ? <Link href={path}>{kind === 'standard' ? 'SSR' : 'ASR'} {row.version}</Link> : <><Localized>{'Unrecognized release type'}</Localized>: {row.version}</>}</h2>
         {!kind && <p className="muted"><Localized>{'Unknown values are not mapped to SSR or ASR.'}</Localized> <code>{row.release_type}</code></p>}
         <p><Localized>{'Record status'}</Localized>: <Localized>{row.record_status}</Localized> <Localized>{' · '}</Localized> <Localized>{'Current Readiness'}</Localized>: <Localized>{row.readiness.overall}</Localized></p>
-        <p><Localized>{row.current_release_confirmed ? 'Formal release evidence matches the current snapshot.' : 'Current evidence does not confirm a formal release.'}</Localized></p>
+        <p><Localized>{confirmation.confirmed ? 'Formal release evidence matches the current snapshot.' : 'Current evidence does not confirm a formal release.'}</Localized></p>
+        {confirmation.contractMismatch && <p className="datasource"><Localized>{'Release evidence response is inconsistent; formal release is not confirmed.'}</Localized></p>}
         <p><Localized>{'All stages approved does not mean formally released'}</Localized></p>
         <dl>
           <dt><Localized>{'Current Snapshot'}</Localized></dt><dd>{row.snapshot ? <><Link href={`/snapshots/${encodeURIComponent(row.snapshot.snapshot_no)}`}>{row.snapshot.snapshot_no}</Link><br/><code>{row.snapshot.id}</code><br/><code style={{overflowWrap:'anywhere'}}>{row.snapshot.content_hash}</code></> : '—'}</dd>
