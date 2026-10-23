@@ -92,6 +92,21 @@ test('does not present a summary when the API is unavailable',async()=>{
  assert.ok(!html.includes('Formal release evidence matches'));
 });
 
+test('malformed nested evidence fails closed without throwing during SSR',async()=>{
+ const malformed=[{}, {...evidence,release:null}, {...evidence,readiness:null},
+  {...evidence,readiness:{...evidence.readiness,coverage:null}},
+  {...evidence,readiness:{...evidence.readiness,rules:[null]}},
+  {...evidence,snapshot:{...evidence.snapshot,id:null}},
+  {...evidence,approval:{...evidence.approval,current_snapshot_bound:'true'}},
+  {...evidence,decision:{...evidence.decision,snapshot_id:null}},
+  {...evidence,current_release_confirmed:'true'}];
+ for(const value of malformed){
+  const {html}=await render(value);
+  assert.ok(html.includes('Evidence summary unavailable.'));
+  assert.ok(!html.includes('Formal release evidence matches'));
+ }
+});
+
 test('is read-only and never links to a command form',async()=>{
  const {html}=await render(evidence);
  assert.ok(!html.includes('<form')&&!html.includes('method="post"')&&!html.includes('/commands'));
