@@ -2202,5 +2202,7 @@
   "All recorded stages": "全部已记录节点",
   "Stage cannot be confirmed": "节点无法确认",
   "Invalid or repeated stage parameter. The stage filter was not applied; other filters remain in effect.": "节点参数无效或重复。未应用节点筛选，其他筛选条件仍然有效。",
-  "Unrecognized release type": "无法识别的发布类型"
+  "Unrecognized release type": "无法识别的发布类型",
+  "Recorded approval routes cannot be confirmed": "无法确认已记录审批路线",
+  "Pending records are shown with an unconfirmed stage until both SSR and ASR routes match the recorded sample contract.": "在 SSR 和 ASR 路线均符合已记录样例契约前，待审记录均显示为节点无法确认。"
 }

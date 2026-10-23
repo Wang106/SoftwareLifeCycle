@@ -9,7 +9,7 @@ type Row = {source_ref: string; release_id: string; version: string; release_typ
     current_role: string | null; closed: boolean} | null;
   supplied_artifacts: number; supplied_test_evidence: number};
 type Receipt = {sample_only: boolean; initialized: boolean; import_event_no?: string; synthetic_approvals?: boolean;
-  approval_routes?: {STANDARD: string[]; APPLICATION: string[]}; items: Row[]};
+  approval_routes?: unknown; items: Row[]};
 type Query = Record<string, string | string[] | undefined>;
 const pageSize = 10;
 const roleLabels: Record<string, string> = {'电子工程师':'Electronics Engineer','电子经理':'Electronics Manager',
@@ -23,12 +23,21 @@ const recordedRoutes = {
   STANDARD: ['电子工程师', '电子经理', '系统工程师', '研发总监'],
   APPLICATION: ['应用工程师', '应用经理', '系统工程师', '项目经理'],
 } as const;
+function recordedRoutesMatch(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const candidate = value as Record<string, unknown>;
+  return (['STANDARD', 'APPLICATION'] as const).every(type => {
+    const roles = candidate[type];
+    return Array.isArray(roles) && roles.length === recordedRoutes[type].length
+      && roles.every((role, index) => role === recordedRoutes[type][index]);
+  });
+}
 function parseRecordedStage(value: string | string[] | undefined): {stage: RecordedStage | ''; invalid: boolean} {
   if (value === undefined || value === '') return {stage: '', invalid: false};
   return typeof value === 'string' && ['1', '2', '3', '4', 'UNKNOWN'].includes(value)
     ? {stage: value as RecordedStage, invalid: false} : {stage: '', invalid: true};
 }
-function recordedApprovalStage(value: unknown): RecordedStage | 'CLOSED' {
+function recordedApprovalStage(value: unknown, routesMatch = true): RecordedStage | 'CLOSED' {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'UNKNOWN';
   const row = value as Row;
   if ((row.release_type !== 'STANDARD' && row.release_type !== 'APPLICATION')
@@ -41,6 +50,7 @@ function recordedApprovalStage(value: unknown): RecordedStage | 'CLOSED' {
     return progress.closed === true && progress.current_step_order === null && progress.current_role === null
       ? 'CLOSED' : 'UNKNOWN';
   }
+  if (!routesMatch) return 'UNKNOWN';
   const order = progress.current_step_order;
   if (row.approval_status !== 'PENDING' || progress.closed !== false
     || !Number.isInteger(order) || order === null || order < 1 || order > 4
@@ -61,8 +71,9 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
   const response = await apiGet<Receipt>('/api/v1/demo/zfi-import', {timeoutMs: 15000});
   const data = response?.sample_only === true && Array.isArray(response.items) ? response : null;
   const items = data?.initialized ? data.items : [];
+  const routesMatch = recordedRoutesMatch(data?.approval_routes);
   const customers = [...new Set(items.map(row => row.customer).filter((value): value is string => value !== null && value !== ''))].sort();
-  const matched = items.filter(row => (!stage || recordedApprovalStage(row) === stage) && (!type || row.release_type === type) && (!customer || row.customer === customer)
+  const matched = items.filter(row => (!stage || recordedApprovalStage(row, routesMatch) === stage) && (!type || row.release_type === type) && (!customer || row.customer === customer)
     && (!status || (status === 'UNRECORDED' ? row.approval_status === null : row.approval_status === status))
     && words.every(word => [row.version, row.source_ref, row.product, row.customer, row.project_code, row.release_id, row.approval_no]
       .some(value => typeof value === 'string' && value.toLowerCase().includes(word))));
@@ -101,10 +112,12 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
             <p className="muted"><Localized>{'Source dates are Excel metadata, not approval or deployment dates. Customer and project columns show the reviewed import mapping.'}</Localized></p>
             <p><Localized>{'Import event'}</Localized>: {data.import_event_no || '—'}</p>
           </section>
-          {data.approval_routes && <section className="panel"><h2><Localized>{'Approval progress'}</Localized></h2>
-            <p><b><Localized>{'Standard Releases'}</Localized>:</b> {data.approval_routes.STANDARD.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < data.approval_routes!.STANDARD.length - 1 ? ' → ' : ''}</span>)}</p>
-            <p><b><Localized>{'Application Releases'}</Localized>:</b> {data.approval_routes.APPLICATION.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < data.approval_routes!.APPLICATION.length - 1 ? ' → ' : ''}</span>)}</p>
+          {routesMatch ? <section className="panel"><h2><Localized>{'Approval progress'}</Localized></h2>
+            <p><b><Localized>{'Standard Releases'}</Localized>:</b> {recordedRoutes.STANDARD.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < recordedRoutes.STANDARD.length - 1 ? ' → ' : ''}</span>)}</p>
+            <p><b><Localized>{'Application Releases'}</Localized>:</b> {recordedRoutes.APPLICATION.map((role, index) => <span key={role}><Localized>{roleLabel(role)}</Localized>{index < recordedRoutes.APPLICATION.length - 1 ? ' → ' : ''}</span>)}</p>
             <p className="muted"><Localized>{'Workflow roles describe review stages; they do not prove configured job-role permissions.'}</Localized></p>
+          </section> : <section className="panel"><h2><Localized>{'Recorded approval routes cannot be confirmed'}</Localized></h2>
+            <p><Localized>{'Pending records are shown with an unconfirmed stage until both SSR and ASR routes match the recorded sample contract.'}</Localized></p>
           </section>}
           <section className="panel">
             <h2 id="zfi-filters"><Localized>{'Filter imported records'}</Localized></h2>
@@ -159,7 +172,7 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
                   <td>{path ? <Link href={path}>{row.version}</Link> : row.version}</td><td>{row.customer || '—'}</td><td>{row.project_code || '—'}</td>
                   <td>{row.source_release_date || '—'}</td><td><Localized>{row.record_status}</Localized></td>
                   <td>{typeof row.approval_no === 'string' && row.approval_no ? <><Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}>{row.approval_no}</Link><br/><Localized>{typeof row.approval_status === 'string' ? row.approval_status : 'Not recorded'}</Localized></> : <Localized>{'Not recorded'}</Localized>}</td>
-                  <td>{row.approval_progress && recordedApprovalStage(row) !== 'UNKNOWN' ? <><Localized>{'Approved stages'}</Localized>: {row.approval_progress.approved_steps} / {row.approval_progress.total_steps}
+                  <td>{row.approval_progress && recordedApprovalStage(row, routesMatch) !== 'UNKNOWN' ? <><Localized>{'Approved stages'}</Localized>: {row.approval_progress.approved_steps} / {row.approval_progress.total_steps}
                     {row.approval_progress.current_role && <><br/><Localized>{'Current stage'}</Localized>: {row.approval_progress.current_step_order} · <Localized>{roleLabel(row.approval_progress.current_role)}</Localized></>}
                     {row.approval_progress.closed && row.approval_status && row.approval_status !== 'APPROVED' && <><br/><Localized>{'This approval request is closed.'}</Localized> <Localized>{row.approval_status}</Localized></>}</>
                     : <Localized>{row.approval_progress ? 'Stage cannot be confirmed' : 'Approval unavailable'}</Localized>}</td>
