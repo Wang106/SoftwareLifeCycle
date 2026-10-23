@@ -1,22 +1,26 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "d0b5ef28cb95014e41791d6be4b1587fb002954e",
+  "baseline_commit": "181d06776d35a24bc251ed85d313bdd14c0e8b34",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-catalog-filter-usability",
-    "evidence": "HANDOFF.md",
+    "package": "ssr-asr-approval-node-filter-design-review",
+    "evidence": "docs/ssr-asr-approval-node-filter-design-review.md",
     "business_acceptance_increment": 0,
     "resume_pr": null,
-    "branch": "codex/ssr-asr-catalog-filter-usability",
-    "state": "verified_locally_pending_exact_head_ci",
-    "new_frontend_regressions": 6,
-    "local_frontend_tests": 1517,
-    "local_next_opennext_build": "passed",
-    "next_package": null,
+    "branch": "codex/ssr-asr-approval-node-filter-design-review",
+    "state": "review_complete_pending_exact_head_ci",
+    "verified_previous_pr": 112,
+    "verified_previous_head": "7584d44fda11db1382365110fcc1371ce20c3e80",
+    "verified_main": "181d06776d35a24bc251ed85d313bdd14c0e8b34",
+    "verified_main_ci": 39945729101,
+    "cloudflare_build": "4bebb7bf-7b35-489d-ac78-31179cf56a46",
+    "render_live_deploy": "dep-dbctfp7avr4c73d17apg",
+    "render_source_commit": "87fdcda352179bcaf224393567580b3c3897027c",
+    "next_package": "ssr-asr-recorded-approval-node-filter",
     "limitations": [
-      "Native datalist presentation varies by browser; arbitrary exact status text remains accepted",
-      "Recorded status labels do not establish approval or release authority",
-      "No new real-device or public-network latency acceptance"
+      "Design review only; no product node filter implemented",
+      "Recorded demo progress does not establish approval target or current frozen snapshot binding",
+      "New document head CI and post-merge provider results must be verified separately"
     ]
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
