@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 演示发布证据 Snapshot 状态契约对齐（Codex / ChatGPT Work）
+
+当前唯一进行中工作是包 `ssr-asr-release-evidence-demo-snapshot-status`，分支 `codex/ssr-asr-release-evidence-demo-snapshot-status`，基线 main `93b5ab8e93347cde8b9d57b824f3fe90b272f72d`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+最新 main 的前端解析器要求非空 Snapshot 包含记录状态，但 `/api/v1/demo/release-evidence` 遗漏该字段，导致合法 SSR/ASR 演示响应被整体拒绝。后端演示投影现直接携带数据库 `snapshot.status`；后端 Seed/HTTP 回归要求三个 Snapshot 均为 `FROZEN`，前端继续证明缺字段必须 fail closed。契约：`docs/ssr-asr-release-evidence-demo-snapshot-status.md`。本包不从其他证据推断状态，也不放宽 PR#123 的形状安全规则。
+
+本地定向前端 18/18、完整前端 1555/1555、Python 编译、TypeScript、Next.js 生产构建和 Worker 配置通过。Python 环境缺 pytest，后端本地未执行；必须等待本包精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 全部 success，并确认相对最新 main behind 0 后才能受保护合并。
+
+基线 main CI40035165972 与 Cloudflare production build `eba20bfc-8026-4d28-9fed-fe954483a99a` / version `b3e37422-5b81-4d3b-8528-23f1bb465712` success；Actions deploy40036046575/wake40036046507 skipped。Render My Workspace 只读基线仍为 live `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，不是本包部署，不得复用为新 head/provider 证据。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、公司内网未部署；显示 FROZEN 也不等于正式发布。恢复顺序：先查本分支是否已有 PR 及最新精确 head/base/CI；若运行中只等待，不开新包；三项成功且包含最新 main 后受保护合并，再分别核验 main CI、Cloudflare、Render、Actions，并把最终证据写入 PR 评论。完成后 `next_package` 仍为 `null`。
+
 ## 2026-10-24 SSR/ASR 发布证据响应形状安全降级（Codex / ChatGPT Work）
 
 当前唯一进行中工作是 [PR#123](https://github.com/Wang106/SoftwareLifeCycle/pull/123)，包 `ssr-asr-release-evidence-shape-safety`，分支 `codex/ssr-asr-release-evidence-shape-safety`，基线 main `454499b49fd19d61aff0d93acb91fd265f1a3c19`，实现检查点 `214002c97dbdcc1a80d80a36a6ca16dedd3d4123`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。

@@ -62,6 +62,7 @@ def test_evidence_read_distinguishes_approval_and_decision(context):
     result=evidence(db)
     assert result['initialized'] and len(result['items'])==3
     assert [x['current_release_confirmed'] for x in result['items']]==[True,True,False]
+    assert [x['snapshot']['status'] for x in result['items']]==['FROZEN','FROZEN','FROZEN']
     blocked=result['items'][2]
     assert blocked['approval']['status']=='APPROVED'
     assert blocked['decision']['decision']=='HOLD'
@@ -112,6 +113,7 @@ def test_read_only_api_and_existing_passport_agree():
             response=client.get('/api/v1/demo/release-evidence')
             assert response.status_code==200
             for row in response.json()['items'][1:]:
+                assert row['snapshot']['status']=='FROZEN'
                 passport=client.get('/api/v1/releases/application/id/'+row['release_id']+'/passport/summary')
                 assert passport.status_code==200
                 data=passport.json()

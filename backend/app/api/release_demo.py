@@ -89,7 +89,7 @@ def evidence(db: Session = Depends(get_db)):
             and decision.readiness_status == 'READY' and ready['overall'] == 'READY')
         items.append({'release_id': str(release.id), 'version': release.version, 'release_type': release.release_type,
             'record_status': release.status, 'snapshot': {'id': str(snapshot.id), 'snapshot_no': snapshot.snapshot_no,
-                'content_hash': snapshot.content_hash} if snapshot else None,
+                'status': snapshot.status, 'content_hash': snapshot.content_hash} if snapshot else None,
             'readiness': ready,
             'approval': {'approval_no': approval.approval_no, 'status': approval.status, 'current_snapshot_bound': approval_bound} if approval else None,
             'decision': {'decision_no': decision.decision_no, 'decision': decision.decision,

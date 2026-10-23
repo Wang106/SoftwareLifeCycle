@@ -1,41 +1,41 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "454499b49fd19d61aff0d93acb91fd265f1a3c19",
+  "baseline_commit": "93b5ab8e93347cde8b9d57b824f3fe90b272f72d",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-release-evidence-shape-safety",
-    "evidence": "docs/ssr-asr-release-evidence-shape-safety.md",
+    "package": "ssr-asr-release-evidence-demo-snapshot-status",
+    "evidence": "docs/ssr-asr-release-evidence-demo-snapshot-status.md",
     "business_acceptance_increment": 0,
-    "resume_pr": 123,
-    "branch": "codex/ssr-asr-release-evidence-shape-safety",
-    "state": "pr_open_local_verified_remote_ci_pending",
-    "implementation_commit": "214002c97dbdcc1a80d80a36a6ca16dedd3d4123",
+    "resume_pr": null,
+    "branch": "codex/ssr-asr-release-evidence-demo-snapshot-status",
+    "state": "local_verified_pr_pending",
+    "implementation_commit": null,
     "local_targeted_tests": 18,
     "local_frontend_tests": 1555,
     "local_next_build": "passed",
     "local_typescript": "passed",
     "local_worker_config_check": "passed",
-    "verified_previous_pr": 122,
-    "verified_main": "454499b49fd19d61aff0d93acb91fd265f1a3c19",
-    "verified_main_ci": 40031613720,
-    "cloudflare_build": "fd33c61e-3141-4c0d-a932-88ae2d09a39b",
-    "cloudflare_version": "864f7a5e-b1e1-4dd3-bf3e-166320f72910",
+    "verified_previous_pr": 123,
+    "verified_main": "93b5ab8e93347cde8b9d57b824f3fe90b272f72d",
+    "verified_main_ci": 40035165972,
+    "cloudflare_build": "eba20bfc-8026-4d28-9fed-fe954483a99a",
+    "cloudflare_version": "b3e37422-5b81-4d3b-8528-23f1bb465712",
     "render_live_deploy": "dep-dbctfp7avr4c73d17apg",
     "render_source_commit": "87fdcda352179bcaf224393567580b3c3897027c",
-    "render_health": "live service; PR122 merge had no deploy, service event or error log; PR123 read-only verification pending",
+    "render_health": "live service; PR123 merge had no new deploy, service event or error log; current package read-only verification pending",
     "next_package": null,
     "limitations": [
-      "PR123 final exact-head CI, protected merge and post-merge provider evidence are pending",
-      "Runtime shape validation is read-only interpretation; it does not create or independently attest upstream approval evidence",
+      "Current package PR, exact-head CI, protected merge and post-merge provider evidence are pending",
+      "Snapshot status parity is a read-only projection fix; it does not create or independently attest upstream approval evidence",
       "Local tests and production build are not browser, device or public-provider acceptance",
       "Render live source remains PR106; no new backend deployment"
     ],
     "actions_deploy": {
-      "run_id": 40032489320,
+      "run_id": 40036046575,
       "conclusion": "skipped"
     },
     "actions_wake": {
-      "run_id": 40032489259,
+      "run_id": 40036046507,
       "conclusion": "skipped"
     },
     "render_status": "live_previous_backend_source_no_new_deployment",
@@ -43,7 +43,7 @@
     "verified_pr_ci": null,
     "cloudflare_preview_build": null,
     "final_evidence_url": null,
-    "evidence_reconciliation_status": "pr123_implementation_published_documentation_and_final_ci_pending"
+    "evidence_reconciliation_status": "demo_snapshot_status_implementation_local_verified_pr_pending"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
