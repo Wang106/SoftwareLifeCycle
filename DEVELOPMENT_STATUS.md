@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-23 SSR/ASR 已记录待审节点筛选（ChatGPT Work 云端执行）
+
+承接已合并 PR#113，基线 main `0afad064143d3fb321adc64e7d28caf2f34d215c`，开放 PR 为 0。重新核验 main CI39953796969 三项 success、Cloudflare 同提交生产 build `4a718671-e734-4514-834f-779946f69a3a` success，Actions deploy39955122729/wake39955122757 skipped。Render 最新 live 仍 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，没有新后端部署。main 分支读到 protected=true、required checks enforcement=everyone；管理级保护详情接口 403，未绕过或改权限。旧任务不能恢复，使用当前 ChatGPT Work 云端 checkout，不声称另启独立 Codex 任务，不调用额外付费模型 API 或用户本地常驻 CLI。
+
+单一实现包 `ssr-asr-recorded-approval-node-filter`，分支 `codex/ssr-asr-recorded-approval-node-filter`。仅 `/demo/zfi` 固定样例家族新增 stage=1/2/3/4/UNKNOWN；严格校验已记录状态、四步计数、显式步序、角色路线与 closed。已关闭且一致的记录不归 UNKNOWN；未知/缺失/失配不能推断未开始或已完成。节点与原 type/customer/status/q 取交集后分页；合法参数随 GET 搜索和链接保留，变更归第一页，清除全部移除节点，非法/重复参数双语提示且保留其他条件。保持全家族摘要、单次15秒有界GET和只读边界。并列展示两条路线；未知节点安全显示，不渲染异常对象或假关闭状态，未知发布类型保留记录但不猜详情链接。
+
+新增 27 项纯函数及实际组件渲染回归，保留全部既有测试；定向 71/71、完整前端 1544/1544（0 fail/skip）、TypeScript 检查通过。独立审查发现的异常对象渲染和未知类型遗漏已修复并覆盖回归。npm 默认缓存目录不可用，改用临时可写缓存后安装成功，无依赖/锁文件变更。最终 Next/OpenNext、禁用认证双语生产 SSR、52项自动化契约、进度--check、diff 检查全部通过；精确 PR/main CI/provider 证据待本包 PR 独立核验；未在本地执行后端/真实 PG，不以旧基线证明新 head。尚未取得本包真实设备/公网性能验收。
+
+API0.18.50/schema0029、后端/迁移/Seed/依赖/CI/调度/部署配置不变。审批记录不证明当前冻结 Snapshot 绑定、真实授权任务或正式发布。公共只读，OIDC/真实身份/业务写入关闭，内网未部署。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0，验收增量0。
+
+先完成本包精确 head 完整 CI、受保护合并及独立 main/provider 核验；之后候选 `ssr-asr-recorded-stage-runtime-verification`：独立本地 Next 生产路由 GET 查询/重复参数/双语和失败恢复验证，不扩展真实审批、全库或身份写入。需先核对最新 main，避免与其他任务重复。
+
 ## 2026-10-23 SSR/ASR 审批节点筛选范围审查（Codex / ChatGPT Work）
 
 本轮先恢复PR#112：feature `7584d44fda11db1382365110fcc1371ce20c3e80`已合并到main `181d06776d35a24bc251ed85d313bdd14c0e8b34`。独立读取当前main、分支与开放PR（0），复核精确feature CI39944097290三项success及main CI39945729101三项success。main日志为2368后端、258 PostgreSQL-module cases/no skips、1517前端/0fail/0skip，迁移0029/SQL/真实PG往返、生产构建与禁用认证SSR通过。Cloudflare同main check120388407538/build4bebb7bf-7b35-489d-ac78-31179cf56a46/version7280d42d-a934-48cc-b817-fe2327e18be6 success；Actions deploy39947115581/wake39947115492 skipped。Render沿用用户已确认workspace的显式请求ID，最新live仍dep-dbctfp7avr4c73d17apg/source87fdcda352179bcaf224393567580b3c3897027c（PR#106），未观察到新后端部署，未触发部署；未新做HTTP健康或现场验收。以上覆盖旧pending记录，不能归到本轮新文档head。
