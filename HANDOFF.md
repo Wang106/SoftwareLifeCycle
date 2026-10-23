@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 已记录审批路线漂移安全降级（Codex / ChatGPT Work）
+
+从最新 main `02f42fb93f3103dd37cc758c429b2ce07500d988`（PR#116）建立独立工作树，启动时开放 PR 为 0；旧 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮仅推进 `ssr-asr-recorded-route-drift-safety`，分支 `codex/ssr-asr-recorded-route-drift-safety`，远端代码检查点 `e4aec8910c165c771ea54d464da1b7a11764f67d`。使用 Codex / ChatGPT Work 完成，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+`/demo/zfi` 现在只有在 API 回执同时携带精确的四步 SSR 与 ASR 固定样例路线时，才确认待审记录的第 1–4 节点。路线缺失、格式错误、数量/顺序变化或任一角色漂移时，所有待审记录安全降级为 `UNKNOWN`，页面显示双语路线异常说明，不再展示可被误解为已确认的路线进度。已关闭记录仍按自身状态、关闭标记与空当前节点一致性独立判断。该变化只收紧只读解释，不改变 API、后端、数据库、Seed、依赖、身份、写入门控、CI 或部署配置；契约见 `docs/ssr-asr-recorded-route-drift-safety.md`。
+
+本地验证：定向 31/31、完整前端 1548/1548（0 failed/0 skipped）、TypeScript、Next 16.4.2 生产构建、Worker 配置、禁用认证双语 SSR、既有 16/16 生产路由读取与 OpenNext 1.20.12 构建均通过。首次构建仅因工作树外依赖符号链接被 Turbopack 可移植边界拒绝；改用同一锁文件在本工作树内安装后通过，未修改依赖或锁文件。完整后端/真实 PostgreSQL 未在本地重跑，必须由本 PR 精确 head 的三个必需 CI 检查独立验证。
+
+基线 main 的既有 main CI `39978736182` 三项 success、Cloudflare build `30010edf-7ffc-4c05-aa60-dc1374f9da44` success；Actions deploy `39980379307` 与 wake `39980379288` skipped，不能称部署成功。沿用用户确认的 Render My Workspace 只读核验：服务未暂停，最新 live 仍 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106），本包尚无新后端部署。上述都是基线证据，不能代替本包精确 head CI、合并后 main CI 或新 Cloudflare 构建。
+
+业务验收不人为上调：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入与内网部署关闭；路线一致也不证明当前冻结 Snapshot 绑定、真实权限或正式发布。下一包保持 `null`；先完成本包精确 head CI、受保护合并及独立 main/Cloudflare/Render/Actions 核验，不并发新包。
+
 ## 2026-10-23 PR#115 已合并证据对账（ChatGPT Work 云端执行）
 
 本次从最新 main `e80a1c94a100dd70d9c52fdd56d401bb1c2a64e4` 建立独立干净 checkout，开放 PR 为0；仅推进 `ssr-asr-pr115-evidence-reconciliation`，只更新本状态、HANDOFF 和进度账本，不重复已完成的生产路由验证，也不处理另一本地暂停草稿。实际使用当前 ChatGPT Work 云端执行，不声称另启独立 Codex 模型任务；无额外付费模型 API、用户本地常驻 CLI 或配置变更。

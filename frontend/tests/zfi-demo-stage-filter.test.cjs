@@ -19,7 +19,7 @@ function load(data=receipt,locale='en'){
  const m={exports:{}},calls=[];
  const code=ts.transpileModule(fs.readFileSync('app/demo/zfi/page.tsx','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
  const translate=c=>typeof c==='string'?translation.exports.translateText(c,locale):Array.isArray(c)?c.map(translate):c;
- new Function('require','module','exports',code+'\nmodule.exports.stageHelpers = {parseRecordedStage, recordedApprovalStage};')(n=>n==='next/link'?({href,children,...props})=>React.createElement('a',{href,...props},children):
+ new Function('require','module','exports',code+'\nmodule.exports.stageHelpers = {parseRecordedStage, recordedApprovalStage, recordedRoutesMatch};')(n=>n==='next/link'?({href,children,...props})=>React.createElement('a',{href,...props},children):
   n.endsWith('/lib/api')?{apiGet:async (path,options)=>{calls.push({path,options});return data;}}:
   n.endsWith('/localized')?{Localized:({children})=>React.createElement(React.Fragment,null,translate(children))}:require(n),m,m.exports);
  return {...m.exports,calls};
@@ -42,6 +42,24 @@ test('only canonical single stage values are accepted; missing or empty means al
 for(const type of Object.keys(routes))test(type+' exact recorded role and ordinal map all four stages',()=>{
  const {recordedApprovalStage}=helpers();
  for(let stage=1;stage<=4;stage++)assert.equal(recordedApprovalStage(row(stage,type,stage)),String(stage));
+});
+test('recorded route contract requires both exact ordered SSR and ASR role lists',()=>{
+ const {recordedRoutesMatch}=helpers();
+ assert.equal(recordedRoutesMatch(routes),true);
+ for(const value of [null,undefined,{},[],{STANDARD:routes.STANDARD},{APPLICATION:routes.APPLICATION},
+  {...routes,STANDARD:[...routes.STANDARD].reverse()},
+  {...routes,APPLICATION:[...routes.APPLICATION,'额外角色']},
+  {...routes,STANDARD:[...routes.STANDARD.slice(0,3),'研发经理']},
+  {...routes,APPLICATION:'应用工程师,应用经理,系统工程师,项目经理'}]){
+  assert.equal(recordedRoutesMatch(value),false,JSON.stringify(value));
+ }
+});
+test('route drift makes pending stages UNKNOWN without changing a consistent closed record',()=>{
+ const {recordedApprovalStage}=helpers();
+ assert.equal(recordedApprovalStage(row(0,'STANDARD',2),false),'UNKNOWN');
+ assert.equal(recordedApprovalStage(row(1,'APPLICATION',4),false),'UNKNOWN');
+ const closed={...row(2),approval_status:'APPROVED',approval_progress:{approved_steps:4,total_steps:4,current_step_order:null,current_role:null,closed:true}};
+ assert.equal(recordedApprovalStage(closed,false),'CLOSED');
 });
 test('shared Systems Engineer stays stage 3 while stage 2 and 4 roles cannot cross release types',()=>{
  const {recordedApprovalStage}=helpers();
@@ -172,6 +190,19 @@ for(const locale of ['en','zh'])test('node labels, role distinctions and invalid
  assert.ok(invalid.includes(translation.exports.translateText(warning,locale)));assert.match(invalid,/<p role="status">/);
  assert.ok(!html.includes(translation.exports.translateText(warning,locale)));
  assert.ok(!html.includes('method="post"')&&!html.includes('/api/commands')&&!html.includes('operation='));
+});
+for(const locale of ['en','zh'])test('route drift is visible and prevents false stage confirmation in '+locale,async()=>{
+ const drifted={...receipt,approval_routes:{...routes,APPLICATION:['应用工程师','应用经理','系统工程师','研发总监']}};
+ const numeric=await render({stage:'2'},drifted,locale);
+ assert.deepEqual(rows(numeric.html),[]);
+ assert.ok(numeric.html.includes(translation.exports.translateText('Recorded approval routes cannot be confirmed',locale)));
+ assert.ok(numeric.html.includes(translation.exports.translateText('Pending records are shown with an unconfirmed stage until both SSR and ASR routes match the recorded sample contract.',locale)));
+ assert.ok(!numeric.html.includes('<h2>Approval progress</h2>'));
+ const unknown=await render({stage:'UNKNOWN'},drifted,locale);
+ assert.deepEqual(rows(unknown.html).sort(),fixtureItems.filter(item=>item.approval_status==='PENDING').map(item=>item.release_id).sort());
+ const table=unknown.html.match(/<tbody>[\s\S]*<\/tbody>/)[0];
+ assert.ok(table.includes(translation.exports.translateText('Stage cannot be confirmed',locale)));
+ for(const label of ['Approved stages','Current stage'])assert.ok(!table.includes(translation.exports.translateText(label,locale)));
 });
 test('stage controls reuse wrapping and keyboard-focus styles without a new client write or poll path',()=>{
  const css=fs.readFileSync('app/globals.css','utf8');
