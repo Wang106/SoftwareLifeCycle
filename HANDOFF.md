@@ -1,5 +1,18 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-23 SSR/ASR 生产加载时序与慢请求恢复验证（Codex / ChatGPT Work）
+
+基线 main `bd627eb2303a59edb355e401b63c569d8e2551c4`，无开放PR；已复核其三项CI/Cloudflare成功，Actions deploy/wake skipped，Render仍为既有PR#106后端。按用户继续开发及此前下一包建议，本轮仅推进 `ssr-asr-loading-runtime-verification`，独立分支 `codex/ssr-asr-loading-runtime-verification`，不重复PR#109页面实现。
+
+新增 `frontend/scripts/check-demo-loading.cjs`：实际Next生产构建+next start，白名单环境、本地loopback临时API，双语两页20项真实HTTP/SSR观察。显式暂停API，断言实际加载h1到达后API才发送响应；真实15秒请求头/JSON响应体超时；下一次GET恢复；503/坏JSON错误态、原文不泄露、显式重读链接、no-store、每项恰好1次GET。两种API端点均检查，测试数据明确样例不完整，不伪造业务证据，不访问外部API/数据库。工具及限制见 `docs/ssr-asr-loading-runtime-verification.md`，既有CI和依赖不变，脚本需显式执行。
+
+本地首轮20/20通过；OpenNext构建后最终脚本再跑20/20、20次本地API GET（约61秒）；完整前端1511 passed/0 failed/0 skipped，Next16.4.2/OpenNext1.20.12生产构建与禁用认证双语生产SSR检查通过。完整后端与真实PG本地未重跑，最终head完整CI尚待发布验证。原有7个静态组件/参数测试不冒充此次真实流式运行证据。
+
+仅验证，不修改页面、API或数据库；API0.18.50/schema `0029_changeover_batch_history`、Migration/Seed均不变，Seed幂等性无新增本地验证。无身份/权限/写入/计费/保活/CI门禁/内网配置变更。不能把本地SSR日志等同浏览器绘制或云端速度改善；公共只读，真实身份和提交仍关闭。业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0均不变。
+
+下一步先发布本包、核验精确head三项CI、包含最新main及受保护合并，独立核验新main/Cloudflare/Render/Actions。之后没有预设新实现包；若仍需改善实际公网延迟，应单独划定测量范围，不自行升级套餐、保活、启用身份或部署内网。
+
+
 ## 2026-10-22 PR#110 精确证据对应修正（Codex / ChatGPT Work）
 
 恢复现有证据补录PR#110，不新建重复PR。核实CI39799886527属于main `fa745ad4fe6ca97546b3facb203efbb79d555225`，不能与feature `e3c404013403806589052868fd43a319a9914f3e`配成同一次运行；账本分开记录实现head、实现基线与已验证main CI。文档补录本身的起点为fa745ad4；新文档head需重新核验三项完整CI，精确提交/合并/main/provider结果随后记录PR。PR#109功能已合入，不重复实现；保留的旧分支文档7e69f52已被本PR范围覆盖，不再重复发布。HTTP耗时不证明冷启动或加载时序，新增加载代码实际浏览器表现仍未独立核验；PR#108用户功能验收属于此前基线。无API/迁移/Seed/依赖/身份/门控/计费变更，业务完成度增量0。
