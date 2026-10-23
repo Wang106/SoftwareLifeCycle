@@ -54,6 +54,7 @@ test('malformed list or row fails closed without throwing during SSR',async()=>{
   {sample_only:true,initialized:true,items:[null]},
   {sample_only:true,initialized:true,items:[{...row,readiness:null}]},
   {sample_only:true,initialized:true,items:[{...row,readiness:{...row.readiness,coverage:null}}]},
+  {sample_only:true,initialized:true,items:[{...row,snapshot:{...row.snapshot,status:undefined}}]},
   {sample_only:true,initialized:true,items:[{...row,dvp_items:[{id:null,item_no:'DVP'}]}]},
   {sample_only:true,initialized:true,items:[{...row,current_release_confirmed:'true'}]}];
  for(const value of malformed){
