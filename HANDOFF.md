@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 发布证据不变量安全降级（Codex / ChatGPT Work）
+
+当前唯一进行中工作是 [PR#122](https://github.com/Wang106/SoftwareLifeCycle/pull/122)，包 `ssr-asr-release-evidence-invariant-safety`，分支 `codex/ssr-asr-release-evidence-invariant-safety`，基线 main `17786831b04122d5ad9148ea821fcf4704e33293`，实现检查点 `b40d0fb99c3cbf670945002c486b3843da411c7a`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+共享前端校验器不再单独信任 `current_release_confirmed`：SSR/ASR 类型、冻结 Snapshot、当前 Readiness/coverage、Approval 状态与绑定、有效 Release Decision/recorded Readiness/绑定以及精确 Snapshot UUID 必须全部一致才显示正式发布匹配。路线类型漂移使摘要不可用；其他矛盾保留原始只读证据并显示双语不一致警告，不会制造正式发布结论。`/demo/releases` 与 SSR/ASR 详情使用同一规则。契约：`docs/ssr-asr-release-evidence-invariant-safety.md`。
+
+本地已通过定向 16/16、完整前端 1553/1553、TypeScript 与 Next.js 生产构建；未本地重跑后端/真实 PG。PR#122 的文档后最终 head 仍须重新等待 Backend/PostgreSQL、Frontend、CI acceptance 全部 success，并确认 base 仍为最新 main 后才能受保护合并。不得复用实现检查点或基线 CI 作为最终 head 证据。
+
+基线 main CI40027452988 success；Cloudflare production build `5f6d680c-e47a-411c-a563-99d4454a5de4` success；Actions deploy40028807091/wake40028806796 skipped。Render My Workspace 本轮只读复核仍为 live `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，起点后无 deploy/event/error；不是本包部署。未修改 provider。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、公司内网未部署；审批通过不等于正式发布。恢复顺序：先读 PR#122 最新精确 head/base/CI；若仍运行只等待，不开新包；全部通过且包含最新 main 时按保护流程合并，然后分别核验 main CI、Cloudflare、Render、Actions，并把最终证据记录到 PR 评论。本包完成后 `next_package` 仍为 `null`，下轮重读最新 main/HANDOFF 再选新的 SSR/ASR 小包。
+
 ## 2026-10-24 PR#120 已合并证据对账（Codex / ChatGPT Work）
 
 从最新 main `c419befb7b5f52911965f2db17285c5cc1933e56` 建立独立分支 `codex/ssr-asr-pr120-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#120 已完成证据，不重复 PR#119 类型漂移代码或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
