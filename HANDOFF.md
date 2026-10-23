@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-23 SSR/ASR 发布目录筛选易用性（Codex / ChatGPT Work）
+
+用户再次要求继续开发并优先SSR/ASR，选择单一只读包 `ssr-asr-catalog-filter-usability`。实际基线main `d0b5ef28cb95014e41791d6be4b1587fb002954e`（PR#111），开放PR为0；其独立main CI39879440159三项success、Cloudflare生产build409bac21-1cbf-4016-95e2-38536ce64e48 success，Actions deploy/wake skipped。Render最新live仍dep-dbctfp7avr4c73d17apg/source87fdcda352179bcaf224393567580b3c3897027c。本包独立分支 `codex/ssr-asr-catalog-filter-usability`，不重复PR#111或旧release-decision-supersession包。
+
+SSR供应商目录和ASR目录新增双语状态建议（DRAFT/READY/RELEASED/SUPERSEDED），保留原有任意精确状态输入；不是数据库状态枚举，也不推断审批或正式发布。当前搜索词/记录状态/软件ID显式列出，可清除全部条件；分页保留已有过滤范围，新筛选仍从第一页开始。用户文本按原值显示并由React转义，长值允许换行。仅两个目录组件、词典及新增回归测试，无新请求、端点或写入。
+
+验证：21项目录相关回归通过；最终完整前端1517 passed/0 failed/0 skipped（新增6项），Next16.4.2/OpenNext1.20.12生产构建、禁用认证双语生产SSR、进度--check及diff检查通过。完整后端/真实PG本地未重跑，以本包精确PR head完整CI为准。既有测试、依赖、CI、迁移和Seed未改；Seed幂等性无新增专项验证。API0.18.50/schema `0029_changeover_batch_history` 不变；公共只读、真实身份/提交关闭、免费和内网未部署边界不变。
+
+业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0，增量0。精确feature/PR/合并/main/provider证据随后记录本包PR。下一步完成本包精确head CI与受保护合并，独立核验main/provider；没有预设新的实现包。原生datalist的浏览器呈现依浏览器而异，保留自由输入；尚无本包新增真实设备或公网性能验收。
+
 ## 2026-10-23 SSR/ASR 生产加载时序与慢请求恢复验证（Codex / ChatGPT Work）
 
 基线 main `bd627eb2303a59edb355e401b63c569d8e2551c4`，无开放PR；已复核其三项CI/Cloudflare成功，Actions deploy/wake skipped，Render仍为既有PR#106后端。按用户继续开发及此前下一包建议，本轮仅推进 `ssr-asr-loading-runtime-verification`，独立分支 `codex/ssr-asr-loading-runtime-verification`，不重复PR#109页面实现。

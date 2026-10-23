@@ -2193,5 +2193,8 @@
   "Waiting for the read-only demonstration API. This may take a moment on a cold start.": "正在等待只读演示 API 响应，冷启动时可能需要片刻。",
   "Preparing the read-only overview": "正在准备只读总览",
   "No sample evidence is fabricated while waiting.": "等待期间不编造样例证据。",
-  "The read is bounded and stops waiting when the API does not settle in time.": "读取设有时间上限，API 未在时限内响应时停止等待。"
+  "The read is bounded and stops waiting when the API does not settle in time.": "读取设有时间上限，API 未在时限内响应时停止等待。",
+  "Current filters": "当前筛选条件",
+  "Software ID": "软件 ID",
+  "Status suggestions are recorded labels, not approval or release evidence. Other exact status labels can still be entered.": "建议状态仅为记录标签，不能作为审批或发布证据。仍可输入其他精确状态标签。"
 }
