@@ -4,9 +4,9 @@
 
 从最新 main `93b5ab8e93347cde8b9d57b824f3fe90b272f72d`（PR#123）建立独立分支 `codex/ssr-asr-release-evidence-demo-snapshot-status`；启动时开放 PR 为 0，PR#123 已完成精确 head CI、受保护合并、main CI 及提供方核验，因此本轮只推进 `ssr-asr-release-evidence-demo-snapshot-status`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖，没有重复实施。
 
-发现最新 main 的共享解析器正确要求非空 Snapshot 提供 `id`、`snapshot_no`、`status`、`content_hash`，但只读 `/api/v1/demo/release-evidence` 遗漏 `status`；因此真实有效的演示响应会被 `/demo/releases` 安全降级为不可用。后端演示投影现在显式返回数据库中记录的 `snapshot.status`，不从 Readiness、Approval、Release Decision 或版本推断。后端测试固定验证三个 Seed Snapshot 及 HTTP 回执均为 `FROZEN`；前端新增缺失 `status` 仍须拒绝的回归，保持 PR#123 的 fail-closed 门槛。契约见 `docs/ssr-asr-release-evidence-demo-snapshot-status.md`。
+[PR#124](https://github.com/Wang106/SoftwareLifeCycle/pull/124) 实现检查点 `37f207cfcb1fb6b85a9db5be532e08a9b488fad8`。发现最新 main 的共享解析器正确要求非空 Snapshot 提供 `id`、`snapshot_no`、`status`、`content_hash`，但只读 `/api/v1/demo/release-evidence` 遗漏 `status`；因此真实有效的演示响应会被 `/demo/releases` 安全降级为不可用。后端演示投影现在显式返回数据库中记录的 `snapshot.status`，不从 Readiness、Approval、Release Decision 或版本推断。后端测试固定验证三个 Seed Snapshot 及 HTTP 回执均为 `FROZEN`；前端新增缺失 `status` 仍须拒绝的回归，保持 PR#123 的 fail-closed 门槛。契约见 `docs/ssr-asr-release-evidence-demo-snapshot-status.md`。
 
-本地定向前端 18/18、完整前端 1555/1555（0 failed/0 skipped）、Python 源码/测试编译、TypeScript `--noEmit`、Next.js 16.4.2 生产构建及 Worker 配置检查通过。当前 Python 环境没有 pytest，后端测试未在本地执行，须由本包精确 PR head 的 Backend/PostgreSQL、Frontend、CI acceptance 三项检查独立验证；两次命令仅因工作目录/不存在的 npm script 名称写错而未形成源码失败，修正命令后上述检查通过，未修改依赖或锁文件。
+本地定向前端 18/18、完整前端 1555/1555（0 failed/0 skipped）、Python 源码/测试编译、TypeScript `--noEmit`、Next.js 16.4.2 生产构建及 Worker 配置检查通过。当前 Python 环境没有 pytest，后端测试未在本地执行，须由 PR#124 最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 三项检查独立验证；两次命令仅因工作目录/不存在的 npm script 名称写错而未形成源码失败，修正命令后上述检查通过，未修改依赖或锁文件。
 
 基线 PR#123 精确 head `2a335acce1ea23b1e0ee6da11a9c3cba036aed91`、PR CI `40033800529` 与 main CI `40035165972` 三项均 success；Cloudflare production build `eba20bfc-8026-4d28-9fed-fe954483a99a` / version `b3e37422-5b81-4d3b-8528-23f1bb465712` success；Actions deploy `40036046575` 与 wake `40036046507` skipped。Render `My Workspace` 基线仍为 live `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，不是本包部署。以上仅证明起点，不能冒充本包结果。
 
