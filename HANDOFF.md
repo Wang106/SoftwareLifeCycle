@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-23 SSR/ASR 审批节点筛选范围审查（Codex / ChatGPT Work）
+
+本轮先恢复PR#112：feature `7584d44fda11db1382365110fcc1371ce20c3e80`已合并到main `181d06776d35a24bc251ed85d313bdd14c0e8b34`。独立读取当前main、分支与开放PR（0），复核精确feature CI39944097290三项success及main CI39945729101三项success。main日志为2368后端、258 PostgreSQL-module cases/no skips、1517前端/0fail/0skip，迁移0029/SQL/真实PG往返、生产构建与禁用认证SSR通过。Cloudflare同main check120388407538/build4bebb7bf-7b35-489d-ac78-31179cf56a46/version7280d42d-a934-48cc-b817-fe2327e18be6 success；Actions deploy39947115581/wake39947115492 skipped。Render沿用用户已确认workspace的显式请求ID，最新live仍dep-dbctfp7avr4c73d17apg/source87fdcda352179bcaf224393567580b3c3897027c（PR#106），未观察到新后端部署，未触发部署；未新做HTTP健康或现场验收。以上覆盖旧pending记录，不能归到本轮新文档head。
+
+依PR#112最新收口建议，仅推进 `ssr-asr-approval-node-filter-design-review`，独立分支 `codex/ssr-asr-approval-node-filter-design-review`。新增 `docs/ssr-asr-approval-node-filter-design-review.md`，核对演示API、治理目录/summary/分页步骤和两个真实消费者。发现演示节点投影未携带审批UUID、目标/冻结Snapshot绑定证明；后续只能筛选“已记录的待审节点”，不得称当前有效审批或授权任务。文档明确1至4步/UNKNOWN、状态/角色失配、WAITING/关闭态、筛选交集/分页/非法参数/双语/有界单GET要求及下一包路径与验收。没有实现产品筛选，也未修改后端、迁移、Seed、依赖、身份或CI/调度/部署配置。
+
+本轮验证为代码对照审查、进度--check、52项自动化恢复契约及diff检查；未在本地重跑产品全套或真实PG，本包精确head完整CI须独立通过。提交/PR与最终云端证据记录本包PR；未通过三必需检查不得合并，未核验不得称部署成功。GitHub完整main checkout为基线，不调用额外付费模型API、不依赖用户常驻CLI。
+
+业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0，增量0。公共只读，OIDC/真实身份/业务写入关闭，内网未部署；审批通过不等于正式发布。下一步先完成本审查包精确head CI/受保护合并/main-provider核验，随后候选 `ssr-asr-recorded-approval-node-filter`，不得并发或扩为全库/真实审批/当前Snapshot绑定实现。
+
 ## 2026-10-23 SSR/ASR 发布目录筛选易用性（Codex / ChatGPT Work）
 
 用户再次要求继续开发并优先SSR/ASR，选择单一只读包 `ssr-asr-catalog-filter-usability`。实际基线main `d0b5ef28cb95014e41791d6be4b1587fb002954e`（PR#111），开放PR为0；其独立main CI39879440159三项success、Cloudflare生产build409bac21-1cbf-4016-95e2-38536ce64e48 success，Actions deploy/wake skipped。Render最新live仍dep-dbctfp7avr4c73d17apg/source87fdcda352179bcaf224393567580b3c3897027c。本包独立分支 `codex/ssr-asr-catalog-filter-usability`，不重复PR#111或旧release-decision-supersession包。
