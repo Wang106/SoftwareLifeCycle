@@ -28,6 +28,16 @@ test('positive SSR has exact decision and no application-only link',async()=>{
  assert.ok(html.includes('Formal release evidence matches the current snapshot.'));
  assert.ok(html.includes('/releases/standard/exact-release')&&!html.includes('/passport'));
 });
+for(const locale of ['en','zh'])test('unknown release type stays visible without an invented SSR or ASR route in '+locale,async()=>{
+ const {html}=await render({sample_only:true,initialized:true,items:[{...row,release_type:'FUTURE'}]},locale);
+ assert.ok(html.includes(i18n.exports.translateText('Unrecognized release type',locale)));
+ assert.ok(html.includes(i18n.exports.translateText('Unknown values are not mapped to SSR or ASR.',locale)));
+ assert.ok(html.includes('<code>FUTURE</code>'));
+ assert.ok(!html.includes('/releases/application/exact-release'));
+ assert.ok(!html.includes('/releases/standard/exact-release'));
+ assert.ok(!html.includes('/releases/application/exact-release/readiness'));
+ assert.ok(!html.includes('/releases/application/exact-release/passport'));
+});
 for(const [name,data,expected] of [['unavailable',null,'Evidence API unavailable'],['not installed',{sample_only:true,initialized:false,items:[row]},'Evidence samples not installed'],['foreign response',{sample_only:false,initialized:true,items:[row]},'Evidence API unavailable']])test(name+' never fabricates proof',async()=>{
  const {html}=await render(data);assert.ok(html.includes(expected)&&!html.includes('APR-2')&&!html.includes('RD-2'));
 });
