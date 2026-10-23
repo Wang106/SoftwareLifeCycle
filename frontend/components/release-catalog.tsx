@@ -27,11 +27,20 @@ export default async function ReleaseCatalog({kind, search}: {kind: Kind; search
     <p><Link href="/demo/releases"><Localized>{'Release evidence demonstration'}</Localized></Link> <Localized>{' · '}</Localized> <Link href="/demo/zfi"><Localized>{'Excel demonstration overview'}</Localized></Link></p>
     <section className="panel"><form method="get" className="filters">
       <label><Localized>{'Search'}</Localized> <input name="q" defaultValue={query.get('q') || ''} maxLength={200}/></label>
-      <label><Localized>{'Status'}</Localized> <input name="status" defaultValue={query.get('status') || ''} maxLength={30}/></label>
+      <label><Localized>{'Record status'}</Localized> <input name="status" list={`${kind}-release-statuses`} defaultValue={query.get('status') || ''} maxLength={30}/></label>
+      <datalist id={`${kind}-release-statuses`}>{['DRAFT', 'READY', 'RELEASED', 'SUPERSEDED'].map(status => <option key={status} value={status}><Localized>{status}</Localized></option>)}</datalist>
       <label><Localized>{'Page size'}</Localized> <input name="limit" type="number" min={1} max={100} defaultValue={query.get('limit') ?? '50'}/></label>
       {query.has('software_id') && <input type="hidden" name="software_id" value={query.get('software_id')!}/>}
       <button type="submit"><Localized>{'Filter'}</Localized></button> <Link href={path}><Localized>{'Reset'}</Localized></Link>
     </form></section>
+    <p className="muted"><Localized>{'Status suggestions are recorded labels, not approval or release evidence. Other exact status labels can still be entered.'}</Localized></p>
+    {(query.get('q')?.trim() || query.get('status') || query.get('software_id')) && <section className="panel" style={{overflowWrap: 'anywhere'}}>
+      <h2><Localized>{'Current filters'}</Localized></h2>
+      {query.get('q')?.trim() && <p><Localized>{'Search'}</Localized>: <code>{query.get('q')}</code></p>}
+      {query.get('status') && <p><Localized>{'Record status'}</Localized>: <code>{query.get('status')}</code></p>}
+      {query.get('software_id') && <p><Localized>{'Software ID'}</Localized>: <code>{query.get('software_id')}</code></p>}
+      <Link href={path}><Localized>{'Clear filters'}</Localized></Link>
+    </section>}
     {data ? <section className="panel tablewrap"><h2><Localized>{'Total releases'}</Localized>: {data.total}</h2>
       <p className="muted"><Localized>{'Counts cover all filtered records.'}</Localized> <Localized>{'Releases on this page'}</Localized>: {data.items.length}</p>
       <table><thead><tr><th><Localized>{'Version'}</Localized></th>

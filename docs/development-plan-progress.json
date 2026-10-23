@@ -1,23 +1,23 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "bd627eb2303a59edb355e401b63c569d8e2551c4",
+  "baseline_commit": "d0b5ef28cb95014e41791d6be4b1587fb002954e",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-loading-runtime-verification",
+    "package": "ssr-asr-catalog-filter-usability",
     "evidence": "HANDOFF.md",
     "business_acceptance_increment": 0,
     "resume_pr": null,
-    "branch": "codex/ssr-asr-loading-runtime-verification",
+    "branch": "codex/ssr-asr-catalog-filter-usability",
     "state": "verified_locally_pending_exact_head_ci",
-    "local_production_ssr_observations": 20,
+    "new_frontend_regressions": 6,
+    "local_frontend_tests": 1517,
+    "local_next_opennext_build": "passed",
     "next_package": null,
     "limitations": [
-      "Local controlled production HTTP/SSR only; not browser or provider acceptance",
-      "Standalone verification command; existing CI is unchanged",
-      "No evidence of lower API latency or eliminated cold starts"
-    ],
-    "local_frontend_tests": 1511,
-    "local_next_opennext_build": "passed"
+      "Native datalist presentation varies by browser; arbitrary exact status text remains accepted",
+      "Recorded status labels do not establish approval or release authority",
+      "No new real-device or public-network latency acceptance"
+    ]
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
