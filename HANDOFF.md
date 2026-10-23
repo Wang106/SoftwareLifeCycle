@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 PR#117 已合并证据对账（Codex / ChatGPT Work）
+
+本次从最新 main `7d3b888afdb13c5c56360788c329d8a98d8a4c29` 建立独立分支 `codex/ssr-asr-pr117-evidence-reconciliation`，启动时开放 PR 为 0；只推进 `ssr-asr-pr117-evidence-reconciliation`，更新本交接、DEVELOPMENT_STATUS 和进度账本，不重复已完成的路线漂移实现或另开功能包。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+已完成的 PR[#117](https://github.com/Wang106/SoftwareLifeCycle/pull/117) `ssr-asr-recorded-route-drift-safety` 精确 head 为 `5c70fa7baab42dc978b13045be22b60984a6c894`，实现检查点 `e4aec8910c165c771ea54d464da1b7a11764f67d`，受保护 squash 合并为当前 main `7d3b888afdb13c5c56360788c329d8a98d8a4c29`。精确 head CI [39995037941](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/39995037941) 与合并后 main CI [39996853218](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/39996853218) 的三个必需 job 均 success：后端 2368 passed，真实 PostgreSQL 模块 258 且无 skip，迁移单头 `0029_changeover_batch_history` 的 SQL 与隔离 PostgreSQL 往返成功；前端 1548 passed、0 failed、0 skipped，Next.js 16.4.2、OpenNext 1.20.12 和禁用认证双语 SSR 均通过。PR#117 最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/117#issuecomment-6371199063 。
+
+Cloudflare Preview build `e0b3b303-6b96-4cff-8ef9-ce2de7aa7666`、production build `794e8ab5-e271-432f-8ee4-fff19771deb9` 均 success。Actions deployment [39998004462](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/39998004462) 与 continuation/wake [39998004389](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/39998004389) 均 skipped。Render My Workspace 只读复核显示服务未暂停，最新 live 仍 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106）；PR#117 没有后端变更或新 Render 部署，未触发部署、重启或配置变更。
+
+本次文档包不修改产品、API、数据库、Seed、依赖、身份、写入门控、CI 或部署配置。业务验收仍 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例只读，OIDC、真实身份、业务写入和内网部署关闭；真实 Snapshot 绑定、授权、浏览器/设备、公司环境及正式发布仍未验收。本包自己的精确 head CI、受保护合并和合并后 main/provider 必须另验并记录，不能借用 PR#117 证据。下一实现包为 `null`；先完成本对账包，不并发新功能。
+
 ## 2026-10-24 SSR/ASR 已记录审批路线漂移安全降级（Codex / ChatGPT Work）
 
 从最新 main `02f42fb93f3103dd37cc758c429b2ce07500d988`（PR#116）建立独立工作树，启动时开放 PR 为 0；旧 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮仅推进 `ssr-asr-recorded-route-drift-safety`，分支 `codex/ssr-asr-recorded-route-drift-safety`，远端代码检查点 `e4aec8910c165c771ea54d464da1b7a11764f67d`。使用 Codex / ChatGPT Work 完成，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
