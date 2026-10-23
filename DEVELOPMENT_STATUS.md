@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 PR#120 已合并证据对账（Codex / ChatGPT Work）
+
+本轮以最新 main `c419befb7b5f52911965f2db17285c5cc1933e56` 为唯一事实源；启动时开放 PR 为 0。最新状态文件仍把 PR#120 文档包标为待自身 CI、合并和 provider 核验，因此只推进 `ssr-asr-pr120-evidence-reconciliation`，分支 `codex/ssr-asr-pr120-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+[PR#120](https://github.com/Wang106/SoftwareLifeCycle/pull/120) 精确 head `29758cab1f9dcc93ae1e45314cf02999b11ba7e8` 已受保护 squash 合并为 main `c419befb7b5f52911965f2db17285c5cc1933e56`。PR 精确 head CI [40018026261](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40018026261) 与合并后 main CI [40019136950](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40019136950) 的 Backend/PostgreSQL/migrations、Frontend/build、CI acceptance 三项均 success：后端 2368 passed，真实 PostgreSQL 模块 258 且无 skip，迁移单头 `0029_changeover_batch_history` 的 SQL 与隔离 PostgreSQL 往返成功；前端 1550 passed、0 failed、0 skipped。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/120#issuecomment-6374259932 。
+
+提供方证据分开核验：Cloudflare Preview build `fa5faedc-4fdf-4281-afde-4a74bce18062` success；production build `999b41b2-5261-4d48-8463-4bc806d3d520` / version `05c65cf1-d8e4-4e39-a4af-0db28c1d95ab` success。Actions deployment [40020544179](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40020544179) 与 continuation/wake [40020544229](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40020544229) 均 skipped，不能称 Actions 部署成功。Render My Workspace 只读复核显示 `softwarelifecycle-api-test` 未暂停、合并后无服务事件且错误日志为空；最新 live 仍为 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106），本次文档包没有新后端部署。`/health/ready` 首次 30 秒冷启动超时，一次有界重试返回 HTTP 200、API `0.18.50`、schema `0029_changeover_batch_history`；未触发部署、重启或配置变更。
+
+本轮仅对账证据，业务验收增量 0：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入与公司内网部署关闭；CI、Cloudflare 构建、Render live 和健康响应都不证明当前冻结 Snapshot 绑定、真实权限、浏览器/设备验收或正式发布。本次文档变更自己的精确 head CI、受保护合并及合并后 main/provider 证据记录在本包 PR 最终评论，不再为纯文档包递归创建下一份对账包。下一实现包保持 `null`，下轮从最新 main/HANDOFF 重新划定一个不重复的 SSR/ASR 小包。
+
 ## 2026-10-24 PR#119 已合并证据对账（Codex / ChatGPT Work）
 
 本次从最新 main `0b21755cd341290bd503f64d3f82df5e113b12db` 建立独立分支 `codex/ssr-asr-pr119-evidence-reconciliation`，启动时开放 PR 为 0；只推进 `ssr-asr-pr119-evidence-reconciliation`，更新本状态、HANDOFF 和进度账本，不重复已完成的类型漂移实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
