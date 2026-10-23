@@ -1,29 +1,10 @@
 import Link from 'next/link';
 import { apiGet } from '../lib/api';
-import { releaseConfirmationState, type ReleaseType } from '../lib/release-evidence-confirmation';
+import { parseReleaseEvidenceSummary, releaseConfirmationState, type ReleaseType } from '../lib/release-evidence-confirmation';
 import { Localized } from './localized';
 
-type Snapshot = {
-  id: string; snapshot_no: string; status: string; content_hash: string;
-};
-type Readiness = {
-  overall: string; approval_eligible: boolean;
-  coverage: { required_dvp_total: number; current_snapshot_executed: number; current_snapshot_passed: number; snapshot_match: boolean };
-  rules: { group: string; rule: string; evidence: string; effective: string }[];
-};
-type Approval = { approval_no: string; status: string; current_snapshot_bound: boolean };
-type Decision = { decision_no: string; decision: string; readiness_status: string; snapshot_id: string; current_evidence_bound: boolean };
-type Evidence = {
-  release: { id: string; version: string; release_type: string; record_status: string };
-  snapshot: Snapshot | null;
-  readiness: Readiness;
-  approval: Approval | null;
-  decision: Decision | null;
-  current_release_confirmed: boolean;
-};
-
 export async function ReleaseEvidenceSummary({ releaseId, expectedReleaseType }: { releaseId: string; expectedReleaseType: ReleaseType }) {
-  const data = await apiGet<Evidence>(`/api/v1/releases/${encodeURIComponent(releaseId)}/evidence-summary`);
+  const data = parseReleaseEvidenceSummary(await apiGet<unknown>(`/api/v1/releases/${encodeURIComponent(releaseId)}/evidence-summary`));
   if (!data || data.release.id !== releaseId || data.release.release_type !== expectedReleaseType) {
     return <Localized><section className="panel"><h2><Localized>{'Evidence summary'}</Localized></h2>
       <p className="datasource"><Localized>{'Evidence summary unavailable. Counts are unknown; no unbounded fallback is used.'}</Localized></p></section></Localized>;

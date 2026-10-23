@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据响应形状安全降级（Codex / ChatGPT Work）
+
+从最新 main `454499b49fd19d61aff0d93acb91fd265f1a3c19`（PR#122）建立独立分支 `codex/ssr-asr-release-evidence-shape-safety`；启动时开放 PR 为 0，PR#122 已在最终评论中完成精确 head CI、受保护合并、main CI、Cloudflare、Render 与 Actions 核验，因此本轮只推进 `ssr-asr-release-evidence-shape-safety`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖，没有重复实施。
+
+[PR#123](https://github.com/Wang106/SoftwareLifeCycle/pull/123) 的实现检查点为 `214002c97dbdcc1a80d80a36a6ca16dedd3d4123`。SSR/ASR 精确详情证据摘要与 `/demo/releases` 现在先对运行时响应执行共享的只读形状解析；顶层对象、发布身份、Snapshot、Readiness/coverage/rules、Approval、Release Decision、确认布尔值及演示 DVP 引用任一缺失、类型错误、非安全非负计数或数组超过 200 项时，整份对应响应安全降级为既有“不可用”，不再因编译期类型假设而在 SSR 期间抛错，也不部分信任畸形证据。未初始化的合法样例仍独立显示“样例未安装”。契约见 `docs/ssr-asr-release-evidence-shape-safety.md`。
+
+本地定向 18/18、完整前端 1555/1555（0 failed/0 skipped）、TypeScript `--noEmit`、Next.js 16.4.2 生产构建及 Worker 配置检查通过。首次定向命令仅因 `NODE_PATH` 相对路径写错而无法加载 TypeScript，修正路径后全部通过；该环境错误不是源码失败，未修改依赖或锁文件。本地未重跑后端或真实 PostgreSQL，须由 PR#123 最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 三项检查独立验证。
+
+本轮基线证据来自 PR#122 最终评论：PR 精确 head CI [40030447364](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40030447364) 与 main CI [40031613720](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40031613720) 三项均 success；Cloudflare production build `fd33c61e-3141-4c0d-a932-88ae2d09a39b` / version `864f7a5e-b1e1-4dd3-bf3e-166320f72910` success；Actions deploy [40032489320](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40032489320) 与 wake [40032489259](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40032489259) skipped。Render `My Workspace` 只读基线仍为 live `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`（PR#106），PR#122 合并后无 deploy/service event/error；这些不能冒充 PR#123 结果。
+
+本包仅收紧前端只读解析，不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。业务验收不人为上调：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；响应形状有效、审批记录或 CI/build 成功都不等于正式发布。先完成 PR#123 最终精确 head CI、确认包含最新 main、受保护合并及独立 main/Cloudflare/Render/Actions 核验；完成前不并发下一包，下一实现包保持 `null`。
+
 ## 2026-10-24 SSR/ASR 发布证据不变量安全降级（Codex / ChatGPT Work）
 
 从最新 main `17786831b04122d5ad9148ea821fcf4704e33293`（PR#121）建立独立分支 `codex/ssr-asr-release-evidence-invariant-safety`；启动时开放 PR 为 0，上轮 PR/CI/provider 核验均已完成，因此本轮只推进 `ssr-asr-release-evidence-invariant-safety`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。现有旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖，没有重复实施。

@@ -1,19 +1,10 @@
 import Link from 'next/link';
 import {apiGet} from '../../../lib/api';
-import {releaseConfirmationState} from '../../../lib/release-evidence-confirmation';
+import {parseReleaseEvidenceDemo, releaseConfirmationState} from '../../../lib/release-evidence-confirmation';
 import {Localized} from '../../../components/localized';
 
-type Evidence = {sample_only: boolean; initialized: boolean; items: Row[]};
-type Row = {release_id: string; version: string; release_type: string; record_status: string;
-  snapshot: {id: string; snapshot_no: string; status: string; content_hash: string} | null;
-  readiness: {overall: string; approval_eligible: boolean; coverage: {required_dvp_total: number; current_snapshot_executed: number; current_snapshot_passed: number; snapshot_match: boolean}; rules: {group: string; rule: string; evidence: string; effective: string}[]};
-  approval: {approval_no: string; status: string; current_snapshot_bound: boolean} | null;
-  decision: {decision_no: string; decision: string; readiness_status: string; snapshot_id: string; current_evidence_bound: boolean} | null;
-  current_release_confirmed: boolean; change_request_no: string; dvp_items: {id: string; item_no: string}[]};
-
 export default async function Page() {
-  const result = await apiGet<Evidence>('/api/v1/demo/release-evidence', {timeoutMs: 15000});
-  const data = result?.sample_only === true ? result : null;
+  const data = parseReleaseEvidenceDemo(await apiGet<unknown>('/api/v1/demo/release-evidence', {timeoutMs: 15000}));
   return <Localized>
     <div className="top"><div><h1><Localized>{'Release evidence demonstration'}</Localized></h1>
       <p className="muted"><Localized>{'Synthetic records only. Read-only review; no real approvals, firmware delivery or production authorization.'}</Localized></p></div></div>

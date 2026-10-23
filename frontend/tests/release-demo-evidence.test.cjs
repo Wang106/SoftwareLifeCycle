@@ -49,3 +49,16 @@ for(const locale of ['en','zh'])test('unknown release type stays visible without
 for(const [name,data,expected] of [['unavailable',null,'Evidence API unavailable'],['not installed',{sample_only:true,initialized:false,items:[row]},'Evidence samples not installed'],['foreign response',{sample_only:false,initialized:true,items:[row]},'Evidence API unavailable']])test(name+' never fabricates proof',async()=>{
  const {html}=await render(data);assert.ok(html.includes(expected)&&!html.includes('APR-2')&&!html.includes('RD-2'));
 });
+test('malformed list or row fails closed without throwing during SSR',async()=>{
+ const malformed=[{sample_only:true,initialized:true,items:null},
+  {sample_only:true,initialized:true,items:[null]},
+  {sample_only:true,initialized:true,items:[{...row,readiness:null}]},
+  {sample_only:true,initialized:true,items:[{...row,readiness:{...row.readiness,coverage:null}}]},
+  {sample_only:true,initialized:true,items:[{...row,dvp_items:[{id:null,item_no:'DVP'}]}]},
+  {sample_only:true,initialized:true,items:[{...row,current_release_confirmed:'true'}]}];
+ for(const value of malformed){
+  const {html}=await render(value);
+  assert.ok(html.includes('Evidence API unavailable'));
+  assert.ok(!html.includes('APR-2')&&!html.includes('RD-2'));
+ }
+});

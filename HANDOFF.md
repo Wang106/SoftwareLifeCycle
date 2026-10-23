@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 发布证据响应形状安全降级（Codex / ChatGPT Work）
+
+当前唯一进行中工作是 [PR#123](https://github.com/Wang106/SoftwareLifeCycle/pull/123)，包 `ssr-asr-release-evidence-shape-safety`，分支 `codex/ssr-asr-release-evidence-shape-safety`，基线 main `454499b49fd19d61aff0d93acb91fd265f1a3c19`，实现检查点 `214002c97dbdcc1a80d80a36a6ca16dedd3d4123`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+共享运行时解析器现在保护 SSR/ASR 详情证据摘要和 `/demo/releases`。合法对象必须包含可显示的发布身份、Snapshot/null、完整 Readiness/coverage/rules、Approval/null、Release Decision/null、严格布尔确认值；演示记录还必须有变更号与有界 DVP 引用。任一嵌套结构畸形或列表超过 200 项时，整份对应响应降级为不可用，不渲染部分证据、不抛出 SSR 异常、不制造正式发布结论。合法未初始化样例仍保持独立状态。契约：`docs/ssr-asr-release-evidence-shape-safety.md`。
+
+本地已通过定向 18/18、完整前端 1555/1555、TypeScript、Next.js 生产构建和 Worker 配置；未本地重跑后端/真实 PG。首次定向命令只有依赖查找路径错误，修正后全绿，未改依赖。PR#123 文档后的最终 head 必须重新等待 Backend/PostgreSQL、Frontend、CI acceptance 全部 success，并确认相对最新 main behind 0 后才能受保护合并。
+
+PR#122 最终评论已证明基线 main CI40031613720 与 Cloudflare production build `fd33c61e-3141-4c0d-a932-88ae2d09a39b` success；Actions deploy40032489320/wake40032489259 skipped。Render My Workspace 只读基线仍为 live `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，不是 PR#123 部署。本包不得复用这些基线结果冒充新 head/provider 证据。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、公司内网未部署；有效响应也不等于正式发布。恢复顺序：先读 PR#123 最新 head/base/CI；若运行中只等待，不开新包；三项成功且包含最新 main 后受保护合并，再分别核验 main CI、Cloudflare、Render、Actions，并把最终证据写入 PR 评论。完成后 `next_package` 仍为 `null`，下轮重读最新 main/HANDOFF 再选非重复 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据不变量安全降级（Codex / ChatGPT Work）
 
 当前唯一进行中工作是 [PR#122](https://github.com/Wang106/SoftwareLifeCycle/pull/122)，包 `ssr-asr-release-evidence-invariant-safety`，分支 `codex/ssr-asr-release-evidence-invariant-safety`，基线 main `17786831b04122d5ad9148ea821fcf4704e33293`，实现检查点 `b40d0fb99c3cbf670945002c486b3843da411c7a`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
