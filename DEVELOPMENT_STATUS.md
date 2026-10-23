@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-23 SSR/ASR 已记录待审节点生产路由验证（Codex / ChatGPT Work）
+
+恢复最新 main `a73e7d6f98c808e57ce7299dd5f60b1c751b64f0`（PR#114），开放 PR 为 0。独立核验 main CI39960377324 三项 success、Cloudflare 同提交生产 build `486c47cd-d374-4973-ba27-33ce3f8a65a2` success；Actions deploy39961970073/wake39961969655 均 skipped。Render `My Workspace` 最新 live 仍 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，未观察到或触发本轮新部署。PR#114 的较新真实合并和最终证据覆盖其仓库内 pending 记录；旧候选 `release-decision-supersession-backend-read` 不重复。
+
+按最新交接仅推进 `ssr-asr-recorded-stage-runtime-verification`，分支 `codex/ssr-asr-recorded-stage-runtime-verification`。新增 `frontend/scripts/check-zfi-stage-runtime.cjs` 和复现文档：使用实际 Next 生产构建及 `next start`、白名单环境和回环只读 API，验证 `/demo/zfi` 的 stage 1–4 同时定位对应 SSR/ASR、两套中英文岗位、type/customer/status/q 交集、重复 stage 双语警告与其他条件保留，以及 503 后下一次 GET 恢复。每个页面请求只允许一次 API GET，拒绝身份头/Cookie/其他方法，不访问真实提供方、数据库或业务写入。
+
+本地最终 16/16 生产路由观察通过、16 次回环 API GET；完整前端1544 passed/0 failed/0 skipped，Next16.4.2/OpenNext1.20.12生产构建、禁用认证双语生产SSR、进度及diff检查通过。OpenNext构建后再次执行验证器仍为16/16。本地未重跑完整后端/真实PG，必须由本包精确远端head的完整CI独立验证。
+
+本包不改产品页面、后端、API、迁移、Seed、依赖、既有测试、CI、身份或部署配置。API0.18.50/schema `0029_changeover_batch_history` 不变；Seed无新增幂等性专项。该验证不等于浏览器、设备、Cloudflare/Render、公网性能、当前 Snapshot 绑定、真实授权或正式发布验收。
+
+业务36/44=82%；七模块100/100演示/100演示/100/89/60/17；七计划100/100/20/33/40/40/0，增量0。公共样例只读、OIDC/真实身份/业务写入关闭、内网未部署。完成精确 head CI、受保护合并和独立 main/provider 核验前不开始下一包；后续范围须以最新 main/HANDOFF 重新划定。
+
 ## 2026-10-23 SSR/ASR 已记录待审节点筛选（ChatGPT Work 云端执行）
 
 承接已合并 PR#113，基线 main `0afad064143d3fb321adc64e7d28caf2f34d215c`，开放 PR 为 0。重新核验 main CI39953796969 三项 success、Cloudflare 同提交生产 build `4a718671-e734-4514-834f-779946f69a3a` success，Actions deploy39955122729/wake39955122757 skipped。Render 最新 live 仍 `dep-dbctfp7avr4c73d17apg` / source `87fdcda352179bcaf224393567580b3c3897027c`，没有新后端部署。main 分支读到 protected=true、required checks enforcement=everyone；管理级保护详情接口 403，未绕过或改权限。旧任务不能恢复，使用当前 ChatGPT Work 云端 checkout，不声称另启独立 Codex 任务，不调用额外付费模型 API 或用户本地常驻 CLI。
