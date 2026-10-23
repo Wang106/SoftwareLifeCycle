@@ -6,9 +6,9 @@
     "package": "ssr-asr-release-evidence-text-bounds",
     "evidence": "docs/ssr-asr-release-evidence-text-bounds.md",
     "business_acceptance_increment": 0,
-    "resume_pr": null,
+    "resume_pr": 125,
     "branch": "codex/ssr-asr-release-evidence-text-bounds",
-    "state": "local_verified_remote_pr_pending",
+    "state": "pr_open_local_verified_remote_ci_pending",
     "implementation_commit": "04ccca5a5ed38dc104de127b51d3ad2633eecb6b",
     "local_targeted_tests": 18,
     "local_frontend_tests": 1555,
@@ -25,7 +25,7 @@
     "render_health": "PR124 deploy live in My Workspace; health and frozen demonstration evidence returned HTTP 200; current package provider verification pending",
     "next_package": null,
     "limitations": [
-      "Current text-bounds package has not yet been published; exact-head CI, protected merge and post-merge provider evidence are pending",
+      "PR125 exact-head CI, protected merge and post-merge provider evidence are pending",
       "Text bounds are a read-only frontend safety rule; they do not create or independently attest upstream approval evidence",
       "Local tests and production build are not browser, device or public-provider acceptance",
       "The verified PR124 provider evidence is baseline only and cannot prove the current package"
@@ -43,7 +43,7 @@
     "verified_pr_ci": null,
     "cloudflare_preview_build": null,
     "final_evidence_url": null,
-    "evidence_reconciliation_status": "text_bounds_local_verified_remote_pr_pending"
+    "evidence_reconciliation_status": "pr125_text_bounds_published_final_ci_pending"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
