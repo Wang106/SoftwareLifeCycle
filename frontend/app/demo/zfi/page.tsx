@@ -17,9 +17,41 @@ const roleLabels: Record<string, string> = {'电子工程师':'Electronics Engin
   '应用经理':'Application Manager','项目经理':'Project Manager'};
 const roleLabel = (role: string) => roleLabels[role] || role;
 
+// Interpret only the recorded sample projection, never current approval authority.
+type RecordedStage = '1' | '2' | '3' | '4' | 'UNKNOWN';
+const recordedRoutes = {
+  STANDARD: ['电子工程师', '电子经理', '系统工程师', '研发总监'],
+  APPLICATION: ['应用工程师', '应用经理', '系统工程师', '项目经理'],
+} as const;
+function parseRecordedStage(value: string | string[] | undefined): {stage: RecordedStage | ''; invalid: boolean} {
+  if (value === undefined || value === '') return {stage: '', invalid: false};
+  return typeof value === 'string' && ['1', '2', '3', '4', 'UNKNOWN'].includes(value)
+    ? {stage: value as RecordedStage, invalid: false} : {stage: '', invalid: true};
+}
+function recordedApprovalStage(value: unknown): RecordedStage | 'CLOSED' {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return 'UNKNOWN';
+  const row = value as Row;
+  if ((row.release_type !== 'STANDARD' && row.release_type !== 'APPLICATION')
+    || typeof row.approval_no !== 'string' || !row.approval_no.trim()) return 'UNKNOWN';
+  const progress = row.approval_progress;
+  if (!progress || typeof progress !== 'object' || Array.isArray(progress)
+    || progress.total_steps !== 4 || !Number.isInteger(progress.approved_steps)
+    || progress.approved_steps < 0 || progress.approved_steps > 4) return 'UNKNOWN';
+  if (['APPROVED', 'RETURNED', 'REJECTED', 'CANCELLED'].includes(row.approval_status || '')) {
+    return progress.closed === true && progress.current_step_order === null && progress.current_role === null
+      ? 'CLOSED' : 'UNKNOWN';
+  }
+  const order = progress.current_step_order;
+  if (row.approval_status !== 'PENDING' || progress.closed !== false
+    || !Number.isInteger(order) || order === null || order < 1 || order > 4
+    || progress.current_role !== recordedRoutes[row.release_type][order - 1]) return 'UNKNOWN';
+  return String(order) as RecordedStage;
+}
+
 export default async function Page(props: {searchParams?: Promise<Query>}) {
   const query = await props?.searchParams || {};
   const single = (key: string) => typeof query[key] === 'string' ? query[key] as string : '';
+  const {stage, invalid: invalidStage} = parseRecordedStage(query.stage);
   const search = single('q').trim();
   const words = search.toLowerCase().split(/\s+/u).filter(Boolean);
   const type = ['STANDARD', 'APPLICATION'].includes(single('type')) ? single('type') : '';
@@ -30,18 +62,18 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
   const data = response?.sample_only === true && Array.isArray(response.items) ? response : null;
   const items = data?.initialized ? data.items : [];
   const customers = [...new Set(items.map(row => row.customer).filter((value): value is string => value !== null && value !== ''))].sort();
-  const matched = items.filter(row => (!type || row.release_type === type) && (!customer || row.customer === customer)
+  const matched = items.filter(row => (!stage || recordedApprovalStage(row) === stage) && (!type || row.release_type === type) && (!customer || row.customer === customer)
     && (!status || (status === 'UNRECORDED' ? row.approval_status === null : row.approval_status === status))
     && words.every(word => [row.version, row.source_ref, row.product, row.customer, row.project_code, row.release_id, row.approval_no]
-      .some(value => value?.toLowerCase().includes(word))));
+      .some(value => typeof value === 'string' && value.toLowerCase().includes(word))));
   const pageCount = Math.max(1, Math.ceil(matched.length / pageSize));
   const requestedPage = /^[1-9]\d{0,8}$/.test(single('page')) ? Number(single('page')) : 1;
   const page = Math.min(requestedPage, pageCount);
   const visible = matched.slice((page - 1) * pageSize, page * pageSize);
-  function href(overrides: Partial<Record<'type' | 'customer' | 'status' | 'page', string>> = {}) {
-    const values = {type, customer, status, q: search, page: '1', ...overrides};
+  function href(overrides: Partial<Record<'type' | 'customer' | 'status' | 'stage' | 'page', string>> = {}) {
+    const values = {type, customer, status, stage, q: search, page: '1', ...overrides};
     const params = new URLSearchParams();
-    for (const key of ['type', 'customer', 'status', 'q', 'page'] as const) {
+    for (const key of ['type', 'customer', 'status', 'stage', 'q', 'page'] as const) {
       if (values[key] && !(key === 'page' && values[key] === '1')) params.set(key, values[key]);
     }
     return '/demo/zfi' + (params.size ? '?' + params.toString() : '');
@@ -83,6 +115,7 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
               {type && <input type="hidden" name="type" value={type}/>}
               {customer && <input type="hidden" name="customer" value={customer}/>}
               {status && <input type="hidden" name="status" value={status}/>}
+              {stage && <input type="hidden" name="stage" value={stage}/>}
               <button type="submit"><Localized>{'Search'}</Localized></button>
               <p id="zfi-search-help" className="muted"><Localized>{'Matches all words across version, Excel reference, software, customer, project, release UUID and approval number.'}</Localized></p>
             </form>
@@ -102,25 +135,34 @@ export default async function Page(props: {searchParams?: Promise<Query>}) {
                 <Link href={href({status: ''})} aria-current={!status ? 'true' : undefined}><Localized>{'All approval statuses'}</Localized></Link>
                 {[...statuses, 'UNRECORDED'].map(value => <Link key={value} href={href({status: value})} aria-current={status === value ? 'true' : undefined}><Localized>{value === 'UNRECORDED' ? 'Not recorded' : value}</Localized></Link>)}
               </div>
+              <h3 id="zfi-stage"><Localized>{'Recorded pending stage'}</Localized></h3>
+              <p id="zfi-stage-help" className="muted"><Localized>{'Recorded sample stages do not establish current frozen Snapshot binding, authorized tasks or formal release.'}</Localized></p>
+              <p><b>SSR:</b> {recordedRoutes.STANDARD.map((role, index) => <span key={role}>{index + 1}. <Localized>{roleLabel(role)}</Localized>{index < 3 ? ' → ' : ''}</span>)}</p>
+              <p><b>ASR:</b> {recordedRoutes.APPLICATION.map((role, index) => <span key={role}>{index + 1}. <Localized>{roleLabel(role)}</Localized>{index < 3 ? ' → ' : ''}</span>)}</p>
+              <div className="actions zfi-filter-links" role="group" aria-labelledby="zfi-stage" aria-describedby="zfi-stage-help">
+                <Link href={href({stage: ''})} aria-current={!stage ? 'true' : undefined}><Localized>{'All recorded stages'}</Localized></Link>
+                {(['1', '2', '3', '4', 'UNKNOWN'] as const).map(value => <Link key={value} href={href({stage: value})} aria-current={stage === value ? 'true' : undefined}><Localized>{value === 'UNKNOWN' ? 'Stage cannot be confirmed' : 'Recorded pending stage'}</Localized>{value !== 'UNKNOWN' ? ` ${value}` : ''}</Link>)}
+              </div>
+              {invalidStage && <p role="status"><Localized>{'Invalid or repeated stage parameter. The stage filter was not applied; other filters remain in effect.'}</Localized></p>}
               <p><Link href="/demo/zfi"><Localized>{'Clear filters'}</Localized></Link></p>
             </nav>
             <p><Localized>{'Matched records'}</Localized>: {matched.length} <Localized>{' · '}</Localized> <Localized>{'Page'}</Localized>: {page} / {pageCount}</p>
             <p className="muted"><Localized>{'Summary counts describe the complete imported family; filters apply only to the records below.'}</Localized></p>
           </section>
           {visible.length === 0 ? <section className="panel"><h2><Localized>{'No imported records match these filters.'}</Localized></h2></section>
-            : (['STANDARD', 'APPLICATION'] as const).filter(value => visible.some(row => row.release_type === value)).map(value => <section className="panel tablewrap zfi-table" key={value}>
-            <h2><Localized>{value === 'STANDARD' ? 'Standard Releases' : 'Application Releases'}</Localized></h2>
+            : (['STANDARD', 'APPLICATION', 'UNKNOWN'] as const).filter(value => visible.some(row => value === 'UNKNOWN' ? !['STANDARD', 'APPLICATION'].includes(row.release_type) : row.release_type === value)).map(value => <section className="panel tablewrap zfi-table" key={value}>
+            <h2><Localized>{value === 'UNKNOWN' ? 'Unrecognized release type' : value === 'STANDARD' ? 'Standard Releases' : 'Application Releases'}</Localized></h2>
             <table><thead><tr>{['Excel reference', 'Software', 'Version', 'Customer', 'Project code', 'Source release date', 'Record status', 'Approval', 'Approval progress', 'Supplied files / tests'].map(label => <th key={label}><Localized>{label}</Localized></th>)}</tr></thead>
-              <tbody>{visible.filter(r => r.release_type === value).map(row => {
-                const path = `/releases/${value === 'STANDARD' ? 'standard' : 'application'}/${encodeURIComponent(row.release_id)}`;
+              <tbody>{visible.filter(r => value === 'UNKNOWN' ? !['STANDARD', 'APPLICATION'].includes(r.release_type) : r.release_type === value).map(row => {
+                const path = value === 'UNKNOWN' ? null : `/releases/${value === 'STANDARD' ? 'standard' : 'application'}/${encodeURIComponent(row.release_id)}`;
                 return <tr key={row.release_id}><td>{row.source_ref}</td><td>{row.product}</td>
-                  <td><Link href={path}>{row.version}</Link></td><td>{row.customer || '—'}</td><td>{row.project_code || '—'}</td>
+                  <td>{path ? <Link href={path}>{row.version}</Link> : row.version}</td><td>{row.customer || '—'}</td><td>{row.project_code || '—'}</td>
                   <td>{row.source_release_date || '—'}</td><td><Localized>{row.record_status}</Localized></td>
-                  <td>{row.approval_no ? <><Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}>{row.approval_no}</Link><br/><Localized>{row.approval_status || 'Not recorded'}</Localized></> : <Localized>{'Not recorded'}</Localized>}</td>
-                  <td>{row.approval_progress ? <><Localized>{'Approved stages'}</Localized>: {row.approval_progress.approved_steps} / {row.approval_progress.total_steps}
+                  <td>{typeof row.approval_no === 'string' && row.approval_no ? <><Link href={`/approvals/${encodeURIComponent(row.approval_no)}`}>{row.approval_no}</Link><br/><Localized>{typeof row.approval_status === 'string' ? row.approval_status : 'Not recorded'}</Localized></> : <Localized>{'Not recorded'}</Localized>}</td>
+                  <td>{row.approval_progress && recordedApprovalStage(row) !== 'UNKNOWN' ? <><Localized>{'Approved stages'}</Localized>: {row.approval_progress.approved_steps} / {row.approval_progress.total_steps}
                     {row.approval_progress.current_role && <><br/><Localized>{'Current stage'}</Localized>: {row.approval_progress.current_step_order} · <Localized>{roleLabel(row.approval_progress.current_role)}</Localized></>}
                     {row.approval_progress.closed && row.approval_status && row.approval_status !== 'APPROVED' && <><br/><Localized>{'This approval request is closed.'}</Localized> <Localized>{row.approval_status}</Localized></>}</>
-                    : <Localized>{'Approval unavailable'}</Localized>}</td>
+                    : <Localized>{row.approval_progress ? 'Stage cannot be confirmed' : 'Approval unavailable'}</Localized>}</td>
                   <td>{row.supplied_artifacts} / {row.supplied_test_evidence}</td></tr>;
               })}</tbody></table>
           </section>)}

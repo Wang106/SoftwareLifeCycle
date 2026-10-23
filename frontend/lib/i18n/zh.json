@@ -2196,5 +2196,11 @@
   "The read is bounded and stops waiting when the API does not settle in time.": "读取设有时间上限，API 未在时限内响应时停止等待。",
   "Current filters": "当前筛选条件",
   "Software ID": "软件 ID",
-  "Status suggestions are recorded labels, not approval or release evidence. Other exact status labels can still be entered.": "建议状态仅为记录标签，不能作为审批或发布证据。仍可输入其他精确状态标签。"
+  "Status suggestions are recorded labels, not approval or release evidence. Other exact status labels can still be entered.": "建议状态仅为记录标签，不能作为审批或发布证据。仍可输入其他精确状态标签。",
+  "Recorded pending stage": "已记录待审节点",
+  "Recorded sample stages do not establish current frozen Snapshot binding, authorized tasks or formal release.": "样例已记录节点不能证明当前冻结快照绑定、已授权任务或正式发布。",
+  "All recorded stages": "全部已记录节点",
+  "Stage cannot be confirmed": "节点无法确认",
+  "Invalid or repeated stage parameter. The stage filter was not applied; other filters remain in effect.": "节点参数无效或重复。未应用节点筛选，其他筛选条件仍然有效。",
+  "Unrecognized release type": "无法识别的发布类型"
 }
