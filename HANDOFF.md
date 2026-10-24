@@ -6,7 +6,7 @@
 
 后端固定生成八条唯一的 Readiness 规则，但共享运行时解析器此前接受重复的 `group + rule`，使同一规则可能同时展示冲突状态，同时两处表格只用标题作 React key。解析器现在拒绝重复组合身份并让整份 SSR/ASR 详情或演示响应降级为不可用；不同组中的同名规则保持合法。渲染 key 与解析器使用同一组合身份。契约：`docs/ssr-asr-release-evidence-rule-identity-safety.md`。
 
-已通过本地定向 23/23、完整前端 1560/1560、自动化 52/52、TypeScript、Worker 配置、Next/OpenNext Cloudflare 生产构建、禁用认证双语 SSR/路由与 diff 检查。先建立 PR 并等待最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 全部成功；同时确认相对最新 main behind 0，才可受保护合并。随后分别核验 main CI、Cloudflare、Render 和 Actions，不复用 PR#128 证据冒充本包结果。
+已通过本地定向 23/23、完整前端 1560/1560、自动化 52/52、TypeScript、Worker 配置、Next/OpenNext Cloudflare 生产构建、禁用认证双语 SSR/路由与 diff 检查。当前唯一进行中工作是 [PR#129](https://github.com/Wang106/SoftwareLifeCycle/pull/129)；等待最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 全部成功；同时确认相对最新 main behind 0，才可受保护合并。随后分别核验 main CI、Cloudflare、Render 和 Actions，不复用 PR#128 证据冒充本包结果。
 
 业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；客户端规则身份校验不替代真实提供方、浏览器或正式发布验收。下一实现包为 `null`；本包闭环前不并发新功能。
 

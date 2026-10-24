@@ -6,9 +6,9 @@
     "package": "ssr-asr-release-evidence-rule-identity-safety",
     "evidence": "docs/ssr-asr-release-evidence-rule-identity-safety.md",
     "business_acceptance_increment": 0,
-    "resume_pr": null,
+    "resume_pr": 129,
     "branch": "codex/ssr-asr-release-evidence-rule-identity-safety",
-    "state": "remote_implementation_checkpoint_published_pr_pending",
+    "state": "pr129_exact_head_ci_pending",
     "implementation_commit": "ec09bb89dd4abe1ca6b138ae7313ade25b39eac5",
     "local_targeted_tests": 23,
     "local_frontend_tests": 1560,
@@ -46,7 +46,7 @@
     "verified_pr_ci": null,
     "cloudflare_preview_build": null,
     "final_evidence_url": null,
-    "evidence_reconciliation_status": "rule_identity_safety_remote_checkpoint_pr_pending"
+    "evidence_reconciliation_status": "rule_identity_safety_pr129_ci_pending"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
