@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 PR#127 已合并证据对账（Codex / ChatGPT Work）
+
+本轮以最新 main `d58684b373e6a948acb34d487bbd9b1c7e2c57d7` 为唯一事实源；启动时开放 PR 为 0。状态文件仍把 PR#127 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr127-evidence-reconciliation`，分支 `codex/ssr-asr-pr127-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+[PR#127](https://github.com/Wang106/SoftwareLifeCycle/pull/127) 精确 head `c7130838aa6657c2cef14beb3edeb426dfc62c80`（实现检查点 `63cde32c3cb4aa3af78d9cb62514d9f881efa120`）已受保护 squash 合并为 main `d58684b373e6a948acb34d487bbd9b1c7e2c57d7`。PR 精确 head CI [40056479493](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40056479493) 与合并后 main CI [40057331577](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40057331577) 的 Backend/PostgreSQL/migrations、Frontend/build、CI acceptance 三项均 success：后端 2368 passed，真实 PostgreSQL 模块 258 且无 skip；前端 1557 passed、0 failed、0 skipped，TypeScript、Next/OpenNext 与禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/127#issuecomment-6379255332 。
+
+提供方证据分开核验：Cloudflare Preview build `67889466-dd2d-449e-9686-b6d3f6039d82` / deployment `ed1111b9-d224-4ab0-98b4-355f0bf96650` success；production build `b2208d32-4177-446d-8400-ebd91946ba2e` / version `f5edefed-7adf-4879-a93a-92ff11e6192f` success。Actions deployment [40057928279](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40057928279) 与 continuation/wake [40057928297](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40057928297) 均 skipped，不能称 Actions 部署成功。Render `My Workspace` 本轮只读复核显示 `softwarelifecycle-api-test` 未暂停，PR#127 合并后没有 deploy、service event 或日志；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124）。没有取得本时间窗新的 `/health/ready` 请求，因此不复用旧响应冒充本包健康验收。
+
+本轮只对账证据，业务验收增量 0：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入与公司内网部署关闭；客户端安全降级、CI 或构建成功不等于正式发布。本次文档变更自己的精确 head CI、受保护合并及合并后 provider 证据只记录在本包 PR 最终评论，避免递归对账。下一实现包保持 `null`，下轮从最新 main/HANDOFF 重新划定一个不重复的 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据覆盖计数不变量（Codex / ChatGPT Work）
 
 以最新 main `d8f1e3dbd211efbf666ed797877cd45ca820aee7`（PR#126）为唯一事实源；启动时开放 PR 为 0。PR#126 的精确 head、受保护合并、main CI、Cloudflare 与 Render 分项证据已闭环，因此本轮只推进 `ssr-asr-release-evidence-coverage-count-safety`，分支 `codex/ssr-asr-release-evidence-coverage-count-safety`，远端实现检查点 `63cde32c3cb4aa3af78d9cb62514d9f881efa120`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
