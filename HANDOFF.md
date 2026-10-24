@@ -2,7 +2,7 @@
 
 ## 2026-10-24 SSR/ASR 发布证据内容哈希安全降级（Codex / ChatGPT Work）
 
-从最新 main `885f56cefc38de41b6c06f04e3fb126e967f2831` 建立独立分支 `codex/ssr-asr-release-evidence-content-hash-safety`；启动时开放 PR 为 0，上一包 PR#132 已闭环。本轮唯一包为 `ssr-asr-release-evidence-content-hash-safety`，实现检查点 `480cfbba1261c703526591f0d7a7b01561c3ae45`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+从最新 main `885f56cefc38de41b6c06f04e3fb126e967f2831` 建立独立分支 `codex/ssr-asr-release-evidence-content-hash-safety`；启动时开放 PR 为 0，上一包 PR#132 已闭环。本轮唯一包为 `ssr-asr-release-evidence-content-hash-safety`，实现检查点 `480cfbba1261c703526591f0d7a7b01561c3ae45`，当前为 [PR#133](https://github.com/Wang106/SoftwareLifeCycle/pull/133)。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
 
 共享运行时解析器现在要求非空 Snapshot 的 `content_hash` 精确匹配 64 位小写十六进制 SHA-256。长度异常、非十六进制或大写值使整个详情摘要或演示响应降级为不可用；不规范化输入、不展示畸形响应里的审批/决定链接、不确认正式发布。后端生成算法、API、数据库、Seed、依赖、身份、写入门控、CI 与 provider 配置不变。契约：`docs/ssr-asr-release-evidence-content-hash-safety.md`。
 

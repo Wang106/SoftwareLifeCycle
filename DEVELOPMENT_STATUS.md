@@ -2,7 +2,7 @@
 
 ## 2026-10-24 SSR/ASR 发布证据内容哈希安全降级（Codex / ChatGPT Work）
 
-本轮以最新 main `885f56cefc38de41b6c06f04e3fb126e967f2831`（PR#132）为唯一事实源；启动时开放 PR 为 0，PR#132 的精确 head、受保护合并、main CI 与提供方证据已闭环，因此只推进 `ssr-asr-release-evidence-content-hash-safety`，独立分支 `codex/ssr-asr-release-evidence-content-hash-safety`，实现检查点 `480cfbba1261c703526591f0d7a7b01561c3ae45`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+本轮以最新 main `885f56cefc38de41b6c06f04e3fb126e967f2831`（PR#132）为唯一事实源；启动时开放 PR 为 0，PR#132 的精确 head、受保护合并、main CI 与提供方证据已闭环，因此只推进 `ssr-asr-release-evidence-content-hash-safety`，独立分支 `codex/ssr-asr-release-evidence-content-hash-safety`，实现检查点 `480cfbba1261c703526591f0d7a7b01561c3ae45`，当前为 [PR#133](https://github.com/Wang106/SoftwareLifeCycle/pull/133)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
 
 Snapshot 服务使用 `hashlib.sha256(...).hexdigest()` 生成内容哈希，但共享前端解析器此前接受任意 1–128 字符串。现在非空 Snapshot 的 `content_hash` 必须是精确 64 位小写十六进制；63/65 位、非十六进制或大写值都会让 SSR/ASR 详情摘要或完整演示证据响应沿既有不可用路径安全降级，不修补值、不渲染畸形响应中的审批/决定链接，也不确认正式发布。契约见 `docs/ssr-asr-release-evidence-content-hash-safety.md`。
 
