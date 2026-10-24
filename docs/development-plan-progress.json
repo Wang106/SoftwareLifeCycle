@@ -1,49 +1,49 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "d8f1e3dbd211efbf666ed797877cd45ca820aee7",
+  "baseline_commit": "d58684b373e6a948acb34d487bbd9b1c7e2c57d7",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-release-evidence-coverage-count-safety",
+    "package": "ssr-asr-pr127-evidence-reconciliation",
     "evidence": "docs/ssr-asr-release-evidence-coverage-count-safety.md",
     "business_acceptance_increment": 0,
     "resume_pr": null,
-    "branch": "codex/ssr-asr-release-evidence-coverage-count-safety",
-    "state": "local_implementation_verified_remote_publication_pending",
+    "branch": "codex/ssr-asr-pr127-evidence-reconciliation",
+    "state": "verified_pr127_evidence_reconciled",
     "implementation_commit": "63cde32c3cb4aa3af78d9cb62514d9f881efa120",
     "local_targeted_tests": 20,
     "local_frontend_tests": 1557,
     "local_next_build": "passed",
     "local_typescript": "passed",
     "local_worker_config_check": "passed",
-    "verified_previous_pr": 126,
-    "verified_main": "d8f1e3dbd211efbf666ed797877cd45ca820aee7",
-    "verified_main_ci": 40052964576,
-    "cloudflare_build": "45d4b9a1-80a1-44e4-aa49-805955833d05",
-    "cloudflare_version": "07c9ab97-e88c-45e1-a801-2d563f55105f",
+    "verified_previous_pr": 127,
+    "verified_main": "d58684b373e6a948acb34d487bbd9b1c7e2c57d7",
+    "verified_main_ci": 40057331577,
+    "cloudflare_build": "b2208d32-4177-446d-8400-ebd91946ba2e",
+    "cloudflare_version": "f5edefed-7adf-4879-a93a-92ff11e6192f",
     "render_live_deploy": "dep-dbduk78u01pc73dvp0ag",
     "render_source_commit": "12900d6c8b26002a9eaa611a40d552e550662462",
-    "render_health": "My Workspace service not suspended; no new deploy, service event, error log or fresh health request after PR126 merge",
+    "render_health": "My Workspace service not suspended; no new deploy, service event, log or fresh health request after PR127 merge",
     "next_package": null,
     "limitations": [
-      "Current package exact-head CI, protected merge and post-merge provider evidence are pending",
+      "This reconciliation package still requires its own exact-head CI, protected merge and post-merge provider checks, recorded only in its PR final comment",
       "Coverage-count validation is a read-only frontend safety rule; it does not create or independently attest upstream approval evidence",
       "Local tests and production build are not browser, device or public-provider acceptance",
-      "Render live source remains PR124; no new backend deployment for the documentation-only PR126 package"
+      "Render live source remains PR124; no new backend deployment for the frontend-only PR127 package"
     ],
     "actions_deploy": {
-      "run_id": 40053858867,
+      "run_id": 40057928279,
       "conclusion": "skipped"
     },
     "actions_wake": {
-      "run_id": 40053858855,
+      "run_id": 40057928297,
       "conclusion": "skipped"
     },
     "render_status": "live_previous_backend_source_no_new_deployment",
-    "verified_pr_head": null,
-    "verified_pr_ci": null,
-    "cloudflare_preview_build": null,
-    "final_evidence_url": null,
-    "evidence_reconciliation_status": "coverage_count_safety_local_verified_remote_pending"
+    "verified_pr_head": "c7130838aa6657c2cef14beb3edeb426dfc62c80",
+    "verified_pr_ci": 40056479493,
+    "cloudflare_preview_build": "67889466-dd2d-449e-9686-b6d3f6039d82",
+    "final_evidence_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/127#issuecomment-6379255332",
+    "evidence_reconciliation_status": "pr127_exact_head_main_and_provider_verified"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
