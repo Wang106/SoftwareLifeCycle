@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "885f56cefc38de41b6c06f04e3fb126e967f2831",
+  "baseline_commit": "aa39384247653050a198be642cf991c9d38432d5",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-release-evidence-content-hash-safety",
+    "package": "ssr-asr-pr133-evidence-reconciliation",
     "evidence": "docs/ssr-asr-release-evidence-content-hash-safety.md",
     "business_acceptance_increment": 0,
-    "resume_pr": 133,
-    "branch": "codex/ssr-asr-release-evidence-content-hash-safety",
-    "state": "pr133_exact_head_ci_pending",
+    "resume_pr": null,
+    "branch": "codex/ssr-asr-pr133-evidence-reconciliation",
+    "state": "pr133_exact_head_main_and_provider_verified",
     "implementation_commit": "480cfbba1261c703526591f0d7a7b01561c3ae45",
     "local_targeted_tests": 27,
     "local_frontend_tests": 1564,
@@ -18,35 +18,35 @@
     "local_disabled_auth_ssr": "passed",
     "local_typescript": "passed",
     "local_worker_config_check": "passed",
-    "verified_previous_pr": 132,
-    "verified_main": "885f56cefc38de41b6c06f04e3fb126e967f2831",
-    "verified_main_ci": 40080181720,
-    "cloudflare_build": "ca035cf0-68e2-4756-b784-cd47effad7e2",
-    "cloudflare_version": "f9d679fc-a256-4260-b6eb-797093a5bf3c",
+    "verified_previous_pr": 133,
+    "verified_main": "aa39384247653050a198be642cf991c9d38432d5",
+    "verified_main_ci": 40084499476,
+    "cloudflare_build": "c304b081-3123-4d70-8a6d-923aa3ff85a7",
+    "cloudflare_version": "d90201d7-8611-4d3b-9d7d-9b3673b1e734",
     "render_live_deploy": "dep-dbduk78u01pc73dvp0ag",
     "render_source_commit": "12900d6c8b26002a9eaa611a40d552e550662462",
-    "render_health": "My Workspace has no new deploy for this frontend-only package; latest live remains the PR124 backend source and is baseline evidence only",
+    "render_health": "My Workspace has no new deploy for PR133; latest live remains the PR124 source and no prior health response is reused as current-package acceptance",
     "next_package": null,
     "limitations": [
-      "The package still requires its own exact-head CI, protected merge, post-merge main CI and provider evidence",
-      "Canonical hash shape does not independently attest that the hash was computed from the correct artifacts",
+      "This documentation reconciliation package still requires its own exact-head CI, protected merge and post-merge provider evidence in its PR final comment",
+      "Canonical hash shape protects the frontend read model and does not independently attest the underlying artifacts",
       "CI and provider builds are not browser, device, public performance or formal release acceptance",
-      "Render live source remains PR124; no new backend deployment is expected for this frontend-only package"
+      "Render live source remains PR124; no new backend deployment was produced by frontend-only PR133"
     ],
     "actions_deploy": {
-      "run_id": 40080920329,
+      "run_id": 40085103819,
       "conclusion": "skipped"
     },
     "actions_wake": {
-      "run_id": 40080920359,
+      "run_id": 40085103792,
       "conclusion": "skipped"
     },
-    "render_status": "live_previous_backend_source_no_current_package_deployment",
-    "verified_pr_head": null,
-    "verified_pr_ci": null,
-    "cloudflare_preview_build": "99f10e92-8498-424b-abd7-3b0be71f77f9",
-    "final_evidence_url": null,
-    "evidence_reconciliation_status": "pending_current_package_remote_evidence"
+    "render_status": "live_previous_backend_source_no_pr133_deployment",
+    "verified_pr_head": "75f2a4dac68208f7f303b23ff398248a5dbe5beb",
+    "verified_pr_ci": 40083695589,
+    "cloudflare_preview_build": "407a193f-18b5-4cc3-bf54-1265bf005e1d",
+    "final_evidence_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/133#issuecomment-6382982587",
+    "evidence_reconciliation_status": "pr133_exact_head_main_and_provider_verified"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
