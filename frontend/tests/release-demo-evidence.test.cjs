@@ -67,6 +67,16 @@ test('malformed list or row fails closed without throwing during SSR',async()=>{
   assert.ok(!html.includes('APR-2')&&!html.includes('RD-2'));
  }
 });
+test('non-canonical snapshot hashes never produce demonstration release proof',async()=>{
+ const malformed=['a'.repeat(63),'a'.repeat(65),'g'.repeat(64),'A'.repeat(64)];
+ for(const content_hash of malformed){
+  const value={sample_only:true,initialized:true,items:[{...row,snapshot:{...row.snapshot,content_hash}}]};
+  const {html}=await render(value);
+  assert.ok(html.includes('Evidence API unavailable'));
+  assert.ok(!html.includes('APR-2')&&!html.includes('RD-2'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});
 test('impossible coverage counts never produce demonstration release proof',async()=>{
  const impossible=[
   {required_dvp_total:3,current_snapshot_executed:2,current_snapshot_passed:3,snapshot_match:true},

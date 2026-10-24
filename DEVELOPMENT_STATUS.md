@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据内容哈希安全降级（Codex / ChatGPT Work）
+
+本轮以最新 main `885f56cefc38de41b6c06f04e3fb126e967f2831`（PR#132）为唯一事实源；启动时开放 PR 为 0，PR#132 的精确 head、受保护合并、main CI 与提供方证据已闭环，因此只推进 `ssr-asr-release-evidence-content-hash-safety`，独立分支 `codex/ssr-asr-release-evidence-content-hash-safety`，实现检查点 `480cfbba1261c703526591f0d7a7b01561c3ae45`，当前为 [PR#133](https://github.com/Wang106/SoftwareLifeCycle/pull/133)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+Snapshot 服务使用 `hashlib.sha256(...).hexdigest()` 生成内容哈希，但共享前端解析器此前接受任意 1–128 字符串。现在非空 Snapshot 的 `content_hash` 必须是精确 64 位小写十六进制；63/65 位、非十六进制或大写值都会让 SSR/ASR 详情摘要或完整演示证据响应沿既有不可用路径安全降级，不修补值、不渲染畸形响应中的审批/决定链接，也不确认正式发布。契约见 `docs/ssr-asr-release-evidence-content-hash-safety.md`。
+
+本地验证已通过：定向 27/27、完整前端 1564/1564（0 failed/0 skipped）、自动化 52/52、TypeScript `--noEmit`、Worker 配置、Next.js 16.4.2 与 OpenNext 1.20.12 Cloudflare 生产构建、禁用认证双语 SSR/路由及 diff 检查。首次定向命令只因新 worktree 尚无依赖目录而未进入源码执行；复用同一仓库、同一锁文件的现有依赖树后通过，未修改依赖或锁文件。本地未重跑后端或真实 PostgreSQL，必须由本包精确 head 的三项远端 CI 独立覆盖。
+
+基线 PR#132 精确 head `9067fb4b89f0d6e07ee81a9dbfb70c1daa96baa2`、PR CI `40079611036` 与 main CI `40080181720` 三项均 success；Cloudflare Preview build `99f10e92-8498-424b-abd7-3b0be71f77f9`、production build `ca035cf0-68e2-4756-b784-cd47effad7e2` / version `f9d679fc-a256-4260-b6eb-797093a5bf3c` success；Actions deploy `40080920329` 与 wake `40080920359` skipped。Render `My Workspace` 最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`，没有 PR#132 新部署。以上只证明本包起点，不能冒充当前分支的 CI 或部署结果。
+
+本包只收紧前端只读证据解析，不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；哈希格式有效也不证明内容来源、真实审批、冻结 Snapshot 绑定或正式发布。下一实现包为 `null`；先完成本包远端 PR、精确 head CI、受保护合并及独立 main/Cloudflare/Render/Actions 核验，不并发其他包。
+
 ## 2026-10-24 PR#131 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `32541d9ac6fde082c59182ad113398396a051847` 为唯一事实源；启动时开放 PR 为 0。状态文件仍把 PR#131 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr131-evidence-reconciliation`，分支 `codex/ssr-asr-pr131-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
