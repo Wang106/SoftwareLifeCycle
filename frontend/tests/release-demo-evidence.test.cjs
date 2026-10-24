@@ -52,10 +52,14 @@ for(const [name,data,expected] of [['unavailable',null,'Evidence API unavailable
 test('malformed list or row fails closed without throwing during SSR',async()=>{
  const malformed=[{sample_only:true,initialized:true,items:null},
   {sample_only:true,initialized:true,items:[null]},
+  {sample_only:true,initialized:true,items:[{...row,release_id:'r'.repeat(65)}]},
   {sample_only:true,initialized:true,items:[{...row,readiness:null}]},
   {sample_only:true,initialized:true,items:[{...row,readiness:{...row.readiness,coverage:null}}]},
+  {sample_only:true,initialized:true,items:[{...row,readiness:{...row.readiness,rules:[{...row.readiness.rules[0],rule:'r'.repeat(241)}]}}]},
   {sample_only:true,initialized:true,items:[{...row,snapshot:{...row.snapshot,status:undefined}}]},
   {sample_only:true,initialized:true,items:[{...row,dvp_items:[{id:null,item_no:'DVP'}]}]},
+  {sample_only:true,initialized:true,items:[{...row,dvp_items:[{id:'item',item_no:'d'.repeat(51)}]}]},
+  {sample_only:true,initialized:true,items:[{...row,change_request_no:'c'.repeat(51)}]},
   {sample_only:true,initialized:true,items:[{...row,current_release_confirmed:'true'}]}];
  for(const value of malformed){
   const {html}=await render(value);

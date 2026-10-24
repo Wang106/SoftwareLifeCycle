@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 发布证据文本长度安全降级（Codex / ChatGPT Work）
+
+当前唯一进行中工作是 [PR#125](https://github.com/Wang106/SoftwareLifeCycle/pull/125)，包 `ssr-asr-release-evidence-text-bounds`，分支 `codex/ssr-asr-release-evidence-text-bounds`，基线 main `12900d6c8b26002a9eaa611a40d552e550662462`，远端实现检查点 `04ccca5a5ed38dc104de127b51d3ad2633eecb6b`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。
+
+共享运行时解析器现在按后端存储契约限制 SSR/ASR 证据的所有必需字符串：身份、版本、类型/状态、Snapshot 编号/hash、审批/决定/变更/DVP 编号及 Readiness 规则字段。任一字段超限时整份对应响应安全降级为不可用，不截断或部分信任，也不构造超长业务链接。合法响应保持精确原文。契约：`docs/ssr-asr-release-evidence-text-bounds.md`。
+
+本地定向 18/18、完整前端 1555/1555、TypeScript、Next.js 16.4.2 生产构建和 Worker 配置检查通过。首次完整套件的 missing-module 结果来自新 worktree 未准备依赖，不是源码失败；锁文件一致依赖树准备后全绿，package/lock 未变。后端/真实 PG 本地未重跑，必须等待 PR#125 最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 全部 success，并确认相对最新 main behind 0 后才能受保护合并。
+
+基线 PR#124 精确 head `8f85c9c52e465d3b7b9cf05d909471e4dea833fe` 已合并为 main `12900d6c8b26002a9eaa611a40d552e550662462`；main CI `40038434819` 三项 success，Cloudflare production build `3acf4225-273f-487a-9a2a-b36a8e68e8a2` / version `a35418c8-cc59-4d8b-b23f-89fac119af27` success，Render `My Workspace` deploy `dep-dbduk78u01pc73dvp0ag` live 且 source 为该 main；Actions deploy `40039499679`、wake `40039499665` skipped。以上只是本包基线，不能冒充 PR#125 结果。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、公司内网未部署；文本合法或审批记录不等于正式发布。恢复顺序：先查 PR#125 最新精确 head/base/CI；若 CI 运行中只等待，不开新包；三项成功且包含最新 main 后受保护合并，再分别核验 main CI、Cloudflare、Render、Actions，并把最终证据写入 PR 评论。完成后 `next_package` 仍为 `null`。
+
 ## 2026-10-24 SSR/ASR 演示发布证据 Snapshot 状态契约对齐（Codex / ChatGPT Work）
 
 当前唯一进行中工作是 [PR#124](https://github.com/Wang106/SoftwareLifeCycle/pull/124)，包 `ssr-asr-release-evidence-demo-snapshot-status`，分支 `codex/ssr-asr-release-evidence-demo-snapshot-status`，基线 main `93b5ab8e93347cde8b9d57b824f3fe90b272f72d`，实现检查点 `37f207cfcb1fb6b85a9db5be532e08a9b488fad8`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。

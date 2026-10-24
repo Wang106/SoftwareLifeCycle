@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据文本长度安全降级（Codex / ChatGPT Work）
+
+以最新 main `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124）为唯一事实源建立独立分支 `codex/ssr-asr-release-evidence-text-bounds`；启动时开放 PR 为 0。已核验 PR#124 精确 head `8f85c9c52e465d3b7b9cf05d909471e4dea833fe`、受保护合并、main CI `40038434819`、Cloudflare production build `3acf4225-273f-487a-9a2a-b36a8e68e8a2` / version `a35418c8-cc59-4d8b-b23f-89fac119af27` 与 Render `My Workspace` live deploy `dep-dbduk78u01pc73dvp0ag` / source 当前 main 均已完成；Actions deploy `40039499679`、wake `40039499665` 为 skipped。旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮只推进 `ssr-asr-release-evidence-text-bounds`，实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+远端实现检查点 `04ccca5a5ed38dc104de127b51d3ad2633eecb6b` 为 SSR/ASR 精确证据摘要与 `/demo/releases` 共用解析器增加字段级文本上限。发布/Snapshot/DVP UUID 表示、版本、类型、状态、Snapshot 编号与 hash、审批/决定/变更/DVP 编号以及 Readiness rule/group/evidence/effective 任一超限时，整份对应响应沿既有路径安全降级为不可用；不截断成歧义证据、不渲染部分链路、不生成超长路由，也不改变合法响应原文。契约见 `docs/ssr-asr-release-evidence-text-bounds.md`。
+
+本地定向 18/18、完整前端 1555/1555（0 failed/0 skipped）、TypeScript `--noEmit`、Next.js 16.4.2 生产构建和 Worker 配置检查通过。完整套件首次尝试发生在新 worktree 依赖树准备前，仅产生缺失模块错误；复用锁文件一致的依赖树后全绿，未修改 package/lock。后端与真实 PostgreSQL 未在本地重跑，仍须由本包 PR 最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 三项检查独立验证。
+
+本包只收紧前端只读解析，不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。业务验收不人为上调：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；证据字段合法、审批通过或 CI/build 成功都不等于正式发布。PR#125 已建立；先完成精确 head 三项 CI，仅在包含最新 main 后受保护合并，再分别核验新 main CI、Cloudflare、Render 与 Actions。完成前不并发下一包，下一实现包保持 `null`。
+
 ## 2026-10-24 SSR/ASR 演示发布证据 Snapshot 状态契约对齐（Codex / ChatGPT Work）
 
 从最新 main `93b5ab8e93347cde8b9d57b824f3fe90b272f72d`（PR#123）建立独立分支 `codex/ssr-asr-release-evidence-demo-snapshot-status`；启动时开放 PR 为 0，PR#123 已完成精确 head CI、受保护合并、main CI 及提供方核验，因此本轮只推进 `ssr-asr-release-evidence-demo-snapshot-status`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖，没有重复实施。

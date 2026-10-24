@@ -94,11 +94,16 @@ test('does not present a summary when the API is unavailable',async()=>{
 
 test('malformed nested evidence fails closed without throwing during SSR',async()=>{
  const malformed=[{}, {...evidence,release:null}, {...evidence,readiness:null},
+  {...evidence,release:{...evidence.release,version:'v'.repeat(101)}},
   {...evidence,readiness:{...evidence.readiness,coverage:null}},
   {...evidence,readiness:{...evidence.readiness,rules:[null]}},
+  {...evidence,readiness:{...evidence.readiness,rules:[{...evidence.readiness.rules[0],evidence:'e'.repeat(501)}]}},
   {...evidence,snapshot:{...evidence.snapshot,id:null}},
+  {...evidence,snapshot:{...evidence.snapshot,snapshot_no:'s'.repeat(81)}},
   {...evidence,approval:{...evidence.approval,current_snapshot_bound:'true'}},
+  {...evidence,approval:{...evidence.approval,approval_no:'a'.repeat(51)}},
   {...evidence,decision:{...evidence.decision,snapshot_id:null}},
+  {...evidence,decision:{...evidence.decision,decision_no:'d'.repeat(51)}},
   {...evidence,current_release_confirmed:'true'}];
  for(const value of malformed){
   const {html}=await render(value);
