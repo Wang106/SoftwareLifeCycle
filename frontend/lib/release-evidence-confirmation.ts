@@ -72,13 +72,15 @@ const object = (value: unknown): JsonObject | null =>
   value !== null && typeof value === 'object' && !Array.isArray(value) ? value as JsonObject : null;
 const text = (value: unknown, max: number): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= max;
+const sha256Hex = (value: unknown): value is string =>
+  typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
 const boolean = (value: unknown): value is boolean => typeof value === 'boolean';
 const count = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) >= 0;
 
 function parseSnapshot(value: unknown): ReleaseEvidenceSnapshot | null | undefined {
   if (value === null) return null;
   const row = object(value);
-  return row && text(row.id, 64) && text(row.snapshot_no, 80) && text(row.status, 30) && text(row.content_hash, 128)
+  return row && text(row.id, 64) && text(row.snapshot_no, 80) && text(row.status, 30) && sha256Hex(row.content_hash)
     ? {id: row.id, snapshot_no: row.snapshot_no, status: row.status, content_hash: row.content_hash}
     : undefined;
 }
