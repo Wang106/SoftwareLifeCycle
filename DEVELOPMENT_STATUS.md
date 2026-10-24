@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 PR#125 已合并证据对账（Codex / ChatGPT Work）
+
+本轮以最新 main `bc28abe5afb40c4dfe8f1d784f00fe8eda66dc06` 为唯一事实源；启动时开放 PR 为 0。最新状态文件仍把 PR#125 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr125-evidence-reconciliation`，分支 `codex/ssr-asr-pr125-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+[PR#125](https://github.com/Wang106/SoftwareLifeCycle/pull/125) 精确 head `9c51539f8f7f8ad3918caca1304bd918ae970660`（实现检查点 `04ccca5a5ed38dc104de127b51d3ad2633eecb6b`）已受保护 squash 合并为 main `bc28abe5afb40c4dfe8f1d784f00fe8eda66dc06`。PR 精确 head CI [40041737295](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40041737295) 与合并后 main CI [40045994721](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40045994721) 的 Backend/PostgreSQL/migrations、Frontend/build、CI acceptance 三项均 success：后端 2368 passed，真实 PostgreSQL 模块 258 且无 skip，迁移单头 `0029_changeover_batch_history` 的 SQL 与隔离 PostgreSQL 往返成功；前端 1555 passed、0 failed、0 skipped，TypeScript、Next.js 16.4.2、OpenNext 与禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/125#issuecomment-6377788563 。
+
+提供方证据分开核验：Cloudflare Preview deployment `850832d9-4e3a-4e19-9845-9083025e7b27` success；production build `13b99a98-37b3-4f9c-a1c4-95034ae25a74` / version `5728d741-9eda-4aa8-bf8e-cf18b4205652` success。Actions deployment [40046938345](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40046938345) 与 continuation/wake [40046938387](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40046938387) 均 skipped，不能称 Actions 部署成功。Render My Workspace 只读复核显示 `softwarelifecycle-api-test` 未暂停、合并后无 deploy/service event 且错误日志为空；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124），本次前端只读安全包没有新 Render 部署。未取得本时间窗新的 `/health/ready` 请求日志，因此不复用旧 HTTP 响应冒充本包健康验收。
+
+本地 52/52 自动化回归、开发进度 `--check`、JSON 解析、三文件范围与 `git diff --check` 通过。首次把后端进度单测与根目录自动化测试组合执行时，先后因后端模块路径与当前 worktree 未安装 FastAPI 依赖而无法收集该测试；未修改或下载依赖，也未把这两次环境导入错误记录为测试成功。完整后端/真实 PostgreSQL 继续由上述 PR/main 精确 CI 证明。
+
+本轮仅对账证据，业务验收增量 0：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入与公司内网部署关闭；文本边界、CI、Cloudflare 构建或 Render 既有 live 都不证明当前冻结 Snapshot 绑定、真实权限、浏览器/设备验收或正式发布。本次文档变更自己的精确 head CI、受保护合并及合并后 main/provider 证据只记录在本包 PR 最终评论，不再递归创建文档对账包。下一实现包保持 `null`，下轮从最新 main/HANDOFF 重新划定一个不重复的 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据文本长度安全降级（Codex / ChatGPT Work）
 
 以最新 main `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124）为唯一事实源建立独立分支 `codex/ssr-asr-release-evidence-text-bounds`；启动时开放 PR 为 0。已核验 PR#124 精确 head `8f85c9c52e465d3b7b9cf05d909471e4dea833fe`、受保护合并、main CI `40038434819`、Cloudflare production build `3acf4225-273f-487a-9a2a-b36a8e68e8a2` / version `a35418c8-cc59-4d8b-b23f-89fac119af27` 与 Render `My Workspace` live deploy `dep-dbduk78u01pc73dvp0ag` / source 当前 main 均已完成；Actions deploy `40039499679`、wake `40039499665` 为 skipped。旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮只推进 `ssr-asr-release-evidence-text-bounds`，实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
