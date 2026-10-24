@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 PR#129 已合并证据对账（Codex / ChatGPT Work）
+
+从最新 main `8c07d84335017bc0a61fedd3697e8cdd0f2cd098` 建立独立分支 `codex/ssr-asr-pr129-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#129 已完成证据，不重复规则身份安全实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+[PR#129](https://github.com/Wang106/SoftwareLifeCycle/pull/129) 精确 head `181bc2c42ddd14ad70f71a950bdade145a89895b`（实现检查点 `ec09bb89dd4abe1ca6b138ae7313ade25b39eac5`）已受保护 squash 合并为 main `8c07d84335017bc0a61fedd3697e8cdd0f2cd098`。PR CI [40061803383](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40061803383) 与 main CI [40062646153](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40062646153) 三项必需检查全部 success：后端 2368 passed，258 个 PostgreSQL-module cases、无 skip；前端 1560 passed、0 fail/skip，TypeScript、Next.js 16.4.2、OpenNext 1.20.12 与禁用认证双语 SSR 通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/129#issuecomment-6379955079 。
+
+Cloudflare Preview build `7af75343-dc97-41ae-a322-443c6e2bca0e` success；production build `ce585357-974d-4313-a28b-17ab9b9e8367` / version `f1b219fd-d8ac-4a69-a26c-8a9e9b2ff5ce` success。Actions deployment [40063388785](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40063388785) 与 continuation/wake [40063388761](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40063388761) 均 skipped。Render `My Workspace` 服务未暂停，PR#129 合并后无新 deploy/event；最新 live 仍 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124）。本轮只读唤醒后的 `/health/ready` 为 ready，API `0.18.50` / schema `0029_changeover_batch_history`；没有触发部署或改动 provider。
+
+本包只更新 DEVELOPMENT_STATUS、HANDOFF 与进度账本。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；现有审批、CI 和 provider 构建不等于正式发布。本包自己的精确 CI/合并/provider 最终证据只记录于本包 PR，避免递归文档对账。下一实现包为 `null`；下轮重读最新 main/HANDOFF 后优先划定新的 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据规则身份安全降级（Codex / ChatGPT Work）
 
 从最新 main `662fde80c9cc0c2e7b13d2cd31ae8e09a7d0707b` 建立独立分支 `codex/ssr-asr-release-evidence-rule-identity-safety`；启动时开放 PR 为 0，PR#128 已完成精确 CI、受保护合并及 provider 分项闭环。本轮唯一包为 `ssr-asr-release-evidence-rule-identity-safety`，远端实现检查点 `ec09bb89dd4abe1ca6b138ae7313ade25b39eac5`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。

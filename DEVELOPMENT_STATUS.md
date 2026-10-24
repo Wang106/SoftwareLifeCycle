@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 PR#129 已合并证据对账（Codex / ChatGPT Work）
+
+本轮以最新 main `8c07d84335017bc0a61fedd3697e8cdd0f2cd098` 为唯一事实源；启动时开放 PR 为 0。状态文件仍把 PR#129 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr129-evidence-reconciliation`，分支 `codex/ssr-asr-pr129-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+[PR#129](https://github.com/Wang106/SoftwareLifeCycle/pull/129) 精确 head `181bc2c42ddd14ad70f71a950bdade145a89895b`（实现检查点 `ec09bb89dd4abe1ca6b138ae7313ade25b39eac5`）已受保护 squash 合并为 main `8c07d84335017bc0a61fedd3697e8cdd0f2cd098`。PR 精确 head CI [40061803383](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40061803383) 与合并后 main CI [40062646153](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40062646153) 的 Backend/PostgreSQL/migrations、Frontend/build、CI acceptance 三项均 success：后端 2368 passed，真实 PostgreSQL 模块 258 且无 skip；前端 1560 passed、0 failed、0 skipped，TypeScript、Next.js 16.4.2、OpenNext 1.20.12 与禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/129#issuecomment-6379955079 。
+
+提供方证据分开核验：Cloudflare Preview build `7af75343-dc97-41ae-a322-443c6e2bca0e` success；同一 main 的 production build `ce585357-974d-4313-a28b-17ab9b9e8367` / version `f1b219fd-d8ac-4a69-a26c-8a9e9b2ff5ce` success。Actions deployment [40063388785](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40063388785) 与 continuation/wake [40063388761](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40063388761) 均 skipped，不能称 Actions 部署成功。Render `My Workspace` 服务未暂停，合并后无新 deploy 或 service event；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124）。本轮只读唤醒后 `/health/ready` 返回 ready、API `0.18.50`、schema `0029_changeover_batch_history`；PR#129 是前端只读安全包，因此没有新 Render 部署，不能把既有 live source 称为本包部署。
+
+本轮只对账证据，业务验收增量 0：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入与公司内网部署关闭；客户端规则身份安全降级、CI 或 provider 构建成功不等于正式发布。本次文档变更自己的精确 head CI、受保护合并及合并后 provider 证据只记录在本包 PR 最终评论，避免递归对账。下一实现包保持 `null`，下轮从最新 main/HANDOFF 重新划定一个不重复的 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据规则身份安全降级（Codex / ChatGPT Work）
 
 以最新 main `662fde80c9cc0c2e7b13d2cd31ae8e09a7d0707b`（PR#128）为唯一事实源；启动时开放 PR 为 0，PR#128 的精确 head、受保护合并、main CI、Cloudflare、Actions 与 Render 分项证据已在最终评论闭环。本轮只推进 `ssr-asr-release-evidence-rule-identity-safety`，分支 `codex/ssr-asr-release-evidence-rule-identity-safety`，远端实现检查点 `ec09bb89dd4abe1ca6b138ae7313ade25b39eac5`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
