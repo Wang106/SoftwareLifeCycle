@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 发布证据覆盖计数不变量（Codex / ChatGPT Work）
+
+从最新 main `d8f1e3dbd211efbf666ed797877cd45ca820aee7` 建立独立分支 `codex/ssr-asr-release-evidence-coverage-count-safety`；启动时开放 PR 为 0，PR#126 已完成闭环。本轮唯一包为 `ssr-asr-release-evidence-coverage-count-safety`，远端实现检查点 `63cde32c3cb4aa3af78d9cb62514d9f881efa120`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+现有发布确认逻辑会检查 Snapshot、Readiness、Approval、Decision 与绑定，但解析器只要求三个 DVP 计数分别为非负安全整数，未检查它们的数量关系。共享解析器现要求 `passed <= executed <= required`；违反任一关系时，SSR/ASR 详情显示“证据摘要不可用”，演示页显示“证据 API 不可用”，不会渲染部分证据或正式发布匹配。零/零/零仍是合法结构，既有 Readiness 语义不变。契约：`docs/ssr-asr-release-evidence-coverage-count-safety.md`。
+
+已通过本地定向 20/20、完整前端 1557/1557、自动化门禁 52/52、TypeScript、Worker 配置、Next/OpenNext Cloudflare 生产构建、禁用认证路由检查和 diff 检查。后续只完成远端发布和精确 head 三项 CI；成功且 behind 0 后受保护合并，再分别核验 main CI、Cloudflare、Render 和 Actions。后端、迁移、Seed、依赖、身份、写入与 provider 配置均不在本包范围。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；客户端计数防护不替代真实提供方、浏览器或正式发布验收。下一实现包为 `null`。
+
 ## 2026-10-24 PR#125 已合并证据对账（Codex / ChatGPT Work）
 
 从最新 main `bc28abe5afb40c4dfe8f1d784f00fe8eda66dc06` 建立独立分支 `codex/ssr-asr-pr125-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#125 已完成证据，不重复文本边界实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
