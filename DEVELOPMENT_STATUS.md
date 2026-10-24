@@ -1,5 +1,16 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据规则身份安全降级（Codex / ChatGPT Work）
+
+以最新 main `662fde80c9cc0c2e7b13d2cd31ae8e09a7d0707b`（PR#128）为唯一事实源；启动时开放 PR 为 0，PR#128 的精确 head、受保护合并、main CI、Cloudflare、Actions 与 Render 分项证据已在最终评论闭环。本轮只推进 `ssr-asr-release-evidence-rule-identity-safety`，分支 `codex/ssr-asr-release-evidence-rule-identity-safety`，远端实现检查点 `ec09bb89dd4abe1ca6b138ae7313ade25b39eac5`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+共享前端解析器现在把 Readiness 的 `group + rule` 作为规则身份；同一身份出现两次时，SSR/ASR 详情与演示响应会整份安全降级为不可用，不再允许同一发布门槛同时携带相互矛盾的状态或证据。不同组复用相同标题仍合法。两处只读表格也用同一组合身份作为 React row key，使渲染身份与解析契约一致。契约：`docs/ssr-asr-release-evidence-rule-identity-safety.md`。
+
+本地定向 23/23、完整前端 1560/1560、自动化门禁 52/52、TypeScript `--noEmit`、Worker 配置、Next/OpenNext Cloudflare 生产构建、禁用认证双语 SSR/路由检查和 diff 检查通过。首次把认证检查放在生产构建之前时因不存在 `.next` 而退出；首次通过跨 worktree 符号链接复用依赖时 Turbopack 因工作区根边界拒绝，改为锁文件一致的本地硬链接依赖树后全部构建通过，未改 package/lock。本包不修改后端、数据库、迁移、Seed、依赖、认证、写入门控、CI 或部署配置。
+
+业务验收暂不增加：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；前端拒绝重复规则不等于真实审批、冻结 Snapshot 绑定或正式发布验收。下一实现包保持 `null`；先完成本包独立 PR、最终精确 head 三项 CI，仅在包含最新 main 后受保护合并，再分别核验 main CI、Cloudflare、Render 与 Actions。
+
+
 ## 2026-10-24 PR#127 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `d58684b373e6a948acb34d487bbd9b1c7e2c57d7` 为唯一事实源；启动时开放 PR 为 0。状态文件仍把 PR#127 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr127-evidence-reconciliation`，分支 `codex/ssr-asr-pr127-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。

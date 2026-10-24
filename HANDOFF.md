@@ -1,5 +1,16 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 发布证据规则身份安全降级（Codex / ChatGPT Work）
+
+从最新 main `662fde80c9cc0c2e7b13d2cd31ae8e09a7d0707b` 建立独立分支 `codex/ssr-asr-release-evidence-rule-identity-safety`；启动时开放 PR 为 0，PR#128 已完成精确 CI、受保护合并及 provider 分项闭环。本轮唯一包为 `ssr-asr-release-evidence-rule-identity-safety`，远端实现检查点 `ec09bb89dd4abe1ca6b138ae7313ade25b39eac5`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+后端固定生成八条唯一的 Readiness 规则，但共享运行时解析器此前接受重复的 `group + rule`，使同一规则可能同时展示冲突状态，同时两处表格只用标题作 React key。解析器现在拒绝重复组合身份并让整份 SSR/ASR 详情或演示响应降级为不可用；不同组中的同名规则保持合法。渲染 key 与解析器使用同一组合身份。契约：`docs/ssr-asr-release-evidence-rule-identity-safety.md`。
+
+已通过本地定向 23/23、完整前端 1560/1560、自动化 52/52、TypeScript、Worker 配置、Next/OpenNext Cloudflare 生产构建、禁用认证双语 SSR/路由与 diff 检查。先建立 PR 并等待最终精确 head 的 Backend/PostgreSQL、Frontend、CI acceptance 全部成功；同时确认相对最新 main behind 0，才可受保护合并。随后分别核验 main CI、Cloudflare、Render 和 Actions，不复用 PR#128 证据冒充本包结果。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；客户端规则身份校验不替代真实提供方、浏览器或正式发布验收。下一实现包为 `null`；本包闭环前不并发新功能。
+
+
 ## 2026-10-24 PR#127 已合并证据对账（Codex / ChatGPT Work）
 
 从最新 main `d58684b373e6a948acb34d487bbd9b1c7e2c57d7` 建立独立分支 `codex/ssr-asr-pr127-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#127 已完成证据，不重复覆盖计数安全实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
