@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 PR#125 已合并证据对账（Codex / ChatGPT Work）
+
+从最新 main `bc28abe5afb40c4dfe8f1d784f00fe8eda66dc06` 建立独立分支 `codex/ssr-asr-pr125-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#125 已完成证据，不重复文本边界实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+[PR#125](https://github.com/Wang106/SoftwareLifeCycle/pull/125) 精确 head `9c51539f8f7f8ad3918caca1304bd918ae970660`（实现检查点 `04ccca5a5ed38dc104de127b51d3ad2633eecb6b`）已受保护 squash 合并为 main `bc28abe5afb40c4dfe8f1d784f00fe8eda66dc06`。PR CI [40041737295](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40041737295) 与 main CI [40045994721](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40045994721) 三项必需检查全部 success：后端 2368 passed，258 个 PostgreSQL-module cases、无 skip，迁移 `0029_changeover_batch_history` SQL/隔离 PostgreSQL 往返通过；前端 1555 passed、0 fail/skip，TypeScript、Next.js 16.4.2、OpenNext 与禁用认证双语 SSR 通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/125#issuecomment-6377788563 。
+
+Cloudflare Preview deployment `850832d9-4e3a-4e19-9845-9083025e7b27` success；production build `13b99a98-37b3-4f9c-a1c4-95034ae25a74` / version `5728d741-9eda-4aa8-bf8e-cf18b4205652` success。Actions deployment [40046938345](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40046938345) 与 continuation/wake [40046938387](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40046938387) 均 skipped。Render My Workspace 服务未暂停，合并后 deploy/event/error 均为空；最新 live 仍 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124），没有 PR#125 后端部署。本时间窗没有新的 `/health/ready` 请求日志，故不宣称本包获得新的 HTTP 健康响应。
+
+本地 52/52 自动化测试、进度账本 `--check`、JSON、三文件范围与 diff 检查通过。后端进度单测在此 worktree 缺少 FastAPI 依赖，未完成本地收集；没有安装或修改依赖，后端/真实 PostgreSQL 以 PR/main 精确 CI 为准。
+
+本包只更新 DEVELOPMENT_STATUS、HANDOFF 与进度账本。业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；服务既有 live、审批记录或构建成功不等于正式发布。本包自己的精确 CI/合并/provider 最终证据只记录于本包 PR，避免递归文档对账。下一实现包为 `null`；下轮重读最新 main/HANDOFF 后优先划定新的 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据文本长度安全降级（Codex / ChatGPT Work）
 
 当前唯一进行中工作是 [PR#125](https://github.com/Wang106/SoftwareLifeCycle/pull/125)，包 `ssr-asr-release-evidence-text-bounds`，分支 `codex/ssr-asr-release-evidence-text-bounds`，基线 main `12900d6c8b26002a9eaa611a40d552e550662462`，远端实现检查点 `04ccca5a5ed38dc104de127b51d3ad2633eecb6b`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。
