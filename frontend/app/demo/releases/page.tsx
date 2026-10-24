@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {apiGet} from '../../../lib/api';
-import {parseReleaseEvidenceDemo, releaseConfirmationState} from '../../../lib/release-evidence-confirmation';
+import {parseReleaseEvidenceDemo, releaseConfirmationState, releaseEvidenceRuleIdentity} from '../../../lib/release-evidence-confirmation';
 import {Localized} from '../../../components/localized';
 
 export default async function Page() {
@@ -30,7 +30,7 @@ export default async function Page() {
         <p><Localized>{'Required test items'}</Localized>: {row.readiness.coverage.required_dvp_total} <Localized>{' · '}</Localized> <Localized>{'Executed on current snapshot'}</Localized>: {row.readiness.coverage.current_snapshot_executed} <Localized>{' · '}</Localized> <Localized>{'Passed on current snapshot'}</Localized>: {row.readiness.coverage.current_snapshot_passed}</p>
         {!row.readiness.coverage.snapshot_match && <p className="muted"><Localized>{'Tests on an older snapshot do not verify the current snapshot, even when their content hashes are identical.'}</Localized></p>}
         <p><Link href={`/changes/${encodeURIComponent(row.change_request_no)}`}><Localized>{'Change Request'}</Localized></Link> <Localized>{' · '}</Localized> {row.dvp_items.map(item => <span key={item.id}><Link href={`/testing/dvp/${encodeURIComponent(item.id)}?release_id=${encodeURIComponent(row.release_id)}${row.snapshot ? `&snapshot_no=${encodeURIComponent(row.snapshot.snapshot_no)}` : ''}`}>{item.item_no}</Link>{' '}</span>)}</p>
-        <div className="tablewrap"><table><thead><tr><th><Localized>{'Rule'}</Localized></th><th><Localized>{'Status'}</Localized></th></tr></thead><tbody>{row.readiness.rules.map(rule => <tr key={rule.rule}><td><Localized>{rule.rule}</Localized> <Localized>{' · '}</Localized> {rule.evidence}</td><td><Localized>{rule.effective}</Localized></td></tr>)}</tbody></table></div>
+        <div className="tablewrap"><table><thead><tr><th><Localized>{'Rule'}</Localized></th><th><Localized>{'Status'}</Localized></th></tr></thead><tbody>{row.readiness.rules.map(rule => <tr key={releaseEvidenceRuleIdentity(rule)}><td><Localized>{rule.rule}</Localized> <Localized>{' · '}</Localized> {rule.evidence}</td><td><Localized>{rule.effective}</Localized></td></tr>)}</tbody></table></div>
         {kind === 'application' && path && <p><Link href={`${path}/readiness`}><Localized>{'Readiness'}</Localized></Link> <Localized>{' · '}</Localized> <Link href={`${path}/passport`}><Localized>{'Software Passport'}</Localized></Link></p>}
       </section>;
     })}

@@ -19,6 +19,10 @@ export type ReleaseEvidenceReadiness = {
   rules: { group: string; rule: string; evidence: string; effective: string }[];
 };
 
+export const releaseEvidenceRuleIdentity = (
+  rule: Pick<ReleaseEvidenceReadiness['rules'][number], 'group' | 'rule'>,
+) => JSON.stringify([rule.group, rule.rule]);
+
 export type ReleaseEvidenceApproval = {
   approval_no: string;
   status: string;
@@ -90,6 +94,8 @@ function parseReadiness(value: unknown): ReleaseEvidenceReadiness | null {
   const rules = row.rules.map(object);
   if (rules.some(rule => !rule || !text(rule.group, 100) || !text(rule.rule, 240)
       || !text(rule.evidence, 500) || !text(rule.effective, 30))) return null;
+  const parsedRules = rules as ReleaseEvidenceReadiness['rules'];
+  if (new Set(parsedRules.map(releaseEvidenceRuleIdentity)).size !== parsedRules.length) return null;
   return {
     overall: row.overall,
     approval_eligible: row.approval_eligible,
@@ -99,7 +105,7 @@ function parseReadiness(value: unknown): ReleaseEvidenceReadiness | null {
       current_snapshot_passed: coverage.current_snapshot_passed,
       snapshot_match: coverage.snapshot_match,
     },
-    rules: rules as ReleaseEvidenceReadiness['rules'],
+    rules: parsedRules,
   };
 }
 
