@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据集合身份安全降级（Codex / ChatGPT Work）
+
+从最新 main `cf7be5abcbb59f26e932440bafe5b2a7ea348f2e`（PR#130）建立独立分支 `codex/ssr-asr-release-evidence-collection-identity-safety`；启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮唯一包为 `ssr-asr-release-evidence-collection-identity-safety`，实现检查点 `d1f59ae067ef2dc4cb5a7cba5f2d0821347ea24a`，当前 [PR#131](https://github.com/Wang106/SoftwareLifeCycle/pull/131) 已开放。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+共享运行时解析器此前接受同一 `/demo/releases` 响应中重复的 `release_id`，也接受同一发布行内重复的 DVP `id`，可能让同一导航身份展示相互冲突的 SSR/ASR 或测试证据。解析器现在要求演示发布行身份全局唯一、每行 DVP 身份唯一；任一重复时整份演示响应沿既有路径降级为不可用，不选择胜者、不渲染冲突链接，也不形成正式发布结论。不同发布仍可各自引用同一 DVP，显示标签不作为身份。契约见 `docs/ssr-asr-release-evidence-collection-identity-safety.md`。
+
+本地定向 25/25、完整前端 1562/1562（0 failed/0 skipped）、自动化门禁 52/52、TypeScript `--noEmit`、Worker 配置、Next.js 16.4.2 / OpenNext 1.20.12 Cloudflare 生产构建、禁用认证双语 SSR/路由、进度 `--check` 与 diff 检查均通过。本包不修改 API、后端、数据库、迁移、Seed、依赖、认证、写入门控、CI 或部署配置；完整后端与真实 PostgreSQL 由 PR#131 最终精确 head CI 独立验证。
+
+基线 PR#130 已闭环：精确 head `00461730a137331723e1b383499da5c224d304ec`、PR CI `40072142407`、合并后 main CI `40072828359` 三项必需检查均 success；Cloudflare production build `03d69b30-e9f7-4d54-8dd1-7ab85dd505d2` / version `5f9b25d6-05de-4467-a4ef-5017e1eb3725` success；Actions deploy `40073573471` 与 wake `40073573697` skipped。Render `My Workspace` 最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`，基线只读 `/health/ready` 为 ready、API `0.18.50`、schema `0029_changeover_batch_history`。以上仅是起点证据，不能冒充 PR#131 的 CI 或部署结果。
+
+业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共样例继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；前端集合身份校验不等于真实审批、冻结 Snapshot 绑定或正式发布验收。下一实现包保持 `null`；先等待 PR#131 最终精确 head 三项 CI，仅在包含最新 main 后受保护合并，再分别核验 main CI、Cloudflare、Render 与 Actions。
+
 ## 2026-10-24 PR#129 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `8c07d84335017bc0a61fedd3697e8cdd0f2cd098` 为唯一事实源；启动时开放 PR 为 0。状态文件仍把 PR#129 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr129-evidence-reconciliation`，分支 `codex/ssr-asr-pr129-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。

@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 SSR/ASR 发布证据集合身份安全降级（Codex / ChatGPT Work）
+
+从最新 main `cf7be5abcbb59f26e932440bafe5b2a7ea348f2e`（PR#130）建立独立分支 `codex/ssr-asr-release-evidence-collection-identity-safety`，启动时开放 PR 为 0。本轮只推进 `ssr-asr-release-evidence-collection-identity-safety`；实现检查点 `d1f59ae067ef2dc4cb5a7cba5f2d0821347ea24a`，当前工作为 [PR#131](https://github.com/Wang106/SoftwareLifeCycle/pull/131)。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+`/demo/releases` 的共享解析器现在拒绝两类冲突集合身份：同一响应中重复的 `release_id`，以及同一发布行内重复的 DVP `id`。任一冲突使完整演示证据响应安全降级为不可用，不会从重复记录中选一条、展示冲突链接或确认正式发布。不同发布可分别引用同一 DVP；显示标签保持原始记录且不充当身份。契约：`docs/ssr-asr-release-evidence-collection-identity-safety.md`。
+
+本地验证已通过：定向 25/25、完整前端 1562/1562、自动化 52/52、TypeScript、Worker 配置、Next/OpenNext Cloudflare 生产构建、禁用认证双语 SSR/路由、进度与 diff 检查。后端、迁移、Seed、依赖、身份、写入门控、CI 和 provider 配置不变；后端/真实 PostgreSQL 由本 PR 精确 head CI 覆盖。
+
+基线 main 的 CI `40072828359` 与 Cloudflare build `03d69b30-e9f7-4d54-8dd1-7ab85dd505d2` success；Actions deploy `40073573471`、wake `40073573697` skipped。Render `My Workspace` 仍为既有 live `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`，基线只读健康为 ready、API `0.18.50` / schema `0029_changeover_batch_history`。不得复用这些基线结果作为 PR#131 证据。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；解析通过不等于正式发布。恢复顺序：先核对 PR#131 最终 head/base/CI；若 CI 运行中只等待，不开新包；三项成功且 behind 0 后受保护合并，再分别核验 main CI、Cloudflare、Render、Actions并记录最终评论。下一实现包为 `null`。
+
 ## 2026-10-24 PR#129 已合并证据对账（Codex / ChatGPT Work）
 
 从最新 main `8c07d84335017bc0a61fedd3697e8cdd0f2cd098` 建立独立分支 `codex/ssr-asr-pr129-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#129 已完成证据，不重复规则身份安全实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。

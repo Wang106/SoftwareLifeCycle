@@ -92,3 +92,20 @@ test('duplicate readiness rule identities never produce demonstration release pr
  assert.ok(html.includes('Evidence API unavailable'));
  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
 });
+test('duplicate release identities make the complete demonstration unavailable',async()=>{
+ const conflicting={...row,version:'CONFLICTING',current_release_confirmed:true,
+  readiness:{...row.readiness,overall:'READY',approval_eligible:true,
+   coverage:{required_dvp_total:3,current_snapshot_executed:3,current_snapshot_passed:3,snapshot_match:true}},
+  decision:{...row.decision,decision:'RELEASE',readiness_status:'READY'}};
+ const {html}=await render({sample_only:true,initialized:true,items:[row,conflicting]});
+ assert.ok(html.includes('Evidence API unavailable'));
+ assert.ok(!html.includes('APR-2')&&!html.includes('CONFLICTING'));
+ assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+});
+test('duplicate DVP identities make the complete demonstration unavailable',async()=>{
+ const duplicate={...row.dvp_items[0],item_no:'CONFLICTING-DVP'};
+ const value={sample_only:true,initialized:true,items:[{...row,dvp_items:[...row.dvp_items,duplicate]}]};
+ const {html}=await render(value);
+ assert.ok(html.includes('Evidence API unavailable'));
+ assert.ok(!html.includes('exact-item')&&!html.includes('CONFLICTING-DVP'));
+});
