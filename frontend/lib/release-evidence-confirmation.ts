@@ -151,6 +151,7 @@ function parseDemoRow(value: unknown): ReleaseEvidenceDemoRow | null {
       || row.dvp_items.length > 200) return null;
   const items = row.dvp_items.map(object);
   if (items.some(item => !item || !text(item.id, 64) || !text(item.item_no, 50))) return null;
+  if (new Set(items.map(item => item?.id)).size !== items.length) return null;
   const core = parseEvidenceCore(row);
   return core ? {release_id: row.release_id, version: row.version, release_type: row.release_type,
     record_status: row.record_status, change_request_no: row.change_request_no,
@@ -163,8 +164,10 @@ export function parseReleaseEvidenceDemo(value: unknown): ReleaseEvidenceDemo | 
       || root.items.length > 200) return null;
   if (!root.initialized) return {sample_only: true, initialized: false, items: []};
   const items = root.items.map(parseDemoRow);
-  return items.some(item => !item) ? null : {sample_only: true, initialized: true,
-    items: items as ReleaseEvidenceDemoRow[]};
+  if (items.some(item => !item)) return null;
+  const parsedItems = items as ReleaseEvidenceDemoRow[];
+  if (new Set(parsedItems.map(item => item.release_id)).size !== parsedItems.length) return null;
+  return {sample_only: true, initialized: true, items: parsedItems};
 }
 
 export type ReleaseConfirmationInput = {
