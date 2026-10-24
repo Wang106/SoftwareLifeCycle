@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-24 PR#131 已合并证据对账（Codex / ChatGPT Work）
+
+从最新 main `32541d9ac6fde082c59182ad113398396a051847` 建立独立分支 `codex/ssr-asr-pr131-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#131 已完成证据，不重复集合身份安全实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+[PR#131](https://github.com/Wang106/SoftwareLifeCycle/pull/131) 精确 head `a752e8c0ed9c45ccdaa4f623fecf431bddbfadd4`（实现检查点 `d1f59ae067ef2dc4cb5a7cba5f2d0821347ea24a`）已受保护 squash 合并为 main `32541d9ac6fde082c59182ad113398396a051847`。PR CI [40075128706](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40075128706) 与 main CI [40075857181](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40075857181) 三项必需检查均 success：后端 2368 passed，真实 PostgreSQL 模块 258/no skip，迁移 0029 往返通过；前端 1562 passed、0 failed、0 skipped，TypeScript、Next/OpenNext 与禁用认证双语 SSR 通过。PR 最终评论：https://github.com/Wang106/SoftwareLifeCycle/pull/131#issuecomment-6381776816 。
+
+Cloudflare production build `06c71a2b-fa17-47b4-974e-791d847d867f` / version `ecd4e6c4-b0ef-4d5d-a440-63febf94bc9d` success。Actions deploy `40076599848`、wake `40076599830` skipped。Render `My Workspace` 没有 PR#131 新部署；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`，不得复用为本包部署成功证据。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；集合身份校验或构建成功不等于正式发布。本对账包仅修改 `DEVELOPMENT_STATUS.md`、`HANDOFF.md` 和进度 JSON；它自己的最终 CI、合并及 provider 证据记录在 PR 评论，避免递归对账。下一实现包为 `null`，恢复时先读取最新 main/HANDOFF 和开放 PR，再选择不重复的 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据集合身份安全降级（Codex / ChatGPT Work）
 
 从最新 main `cf7be5abcbb59f26e932440bafe5b2a7ea348f2e`（PR#130）建立独立分支 `codex/ssr-asr-release-evidence-collection-identity-safety`，启动时开放 PR 为 0。本轮只推进 `ssr-asr-release-evidence-collection-identity-safety`；实现检查点 `d1f59ae067ef2dc4cb5a7cba5f2d0821347ea24a`，当前工作为 [PR#131](https://github.com/Wang106/SoftwareLifeCycle/pull/131)。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
