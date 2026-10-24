@@ -112,6 +112,18 @@ test('malformed nested evidence fails closed without throwing during SSR',async(
  }
 });
 
+test('impossible coverage counts make the evidence unavailable',async()=>{
+ const impossible=[
+  {required_dvp_total:3,current_snapshot_executed:2,current_snapshot_passed:3,snapshot_match:true},
+  {required_dvp_total:3,current_snapshot_executed:4,current_snapshot_passed:3,snapshot_match:true},
+ ];
+ for(const coverage of impossible){
+  const {html}=await render({...evidence,readiness:{...evidence.readiness,coverage}});
+  assert.ok(html.includes('Evidence summary unavailable.'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});
+
 test('is read-only and never links to a command form',async()=>{
  const {html}=await render(evidence);
  assert.ok(!html.includes('<form')&&!html.includes('method="post"')&&!html.includes('/commands'));
