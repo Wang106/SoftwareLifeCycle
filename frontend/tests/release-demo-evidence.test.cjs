@@ -81,3 +81,14 @@ test('impossible coverage counts never produce demonstration release proof',asyn
   assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
  }
 });
+test('duplicate readiness rule identities never produce demonstration release proof',async()=>{
+ const duplicate={...row.readiness.rules[0],effective:'PASS',evidence:'3 / 3'};
+ const value={sample_only:true,initialized:true,items:[{...row,current_release_confirmed:true,
+  readiness:{...row.readiness,overall:'READY',approval_eligible:true,
+   coverage:{required_dvp_total:3,current_snapshot_executed:3,current_snapshot_passed:3,snapshot_match:true},
+   rules:[...row.readiness.rules,duplicate]},
+  decision:{...row.decision,decision:'RELEASE',readiness_status:'READY'}}]};
+ const {html}=await render(value);
+ assert.ok(html.includes('Evidence API unavailable'));
+ assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+});

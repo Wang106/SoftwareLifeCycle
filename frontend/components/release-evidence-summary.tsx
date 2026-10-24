@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { apiGet } from '../lib/api';
-import { parseReleaseEvidenceSummary, releaseConfirmationState, type ReleaseType } from '../lib/release-evidence-confirmation';
+import { parseReleaseEvidenceSummary, releaseConfirmationState, releaseEvidenceRuleIdentity, type ReleaseType } from '../lib/release-evidence-confirmation';
 import { Localized } from './localized';
 
 export async function ReleaseEvidenceSummary({ releaseId, expectedReleaseType }: { releaseId: string; expectedReleaseType: ReleaseType }) {
@@ -37,7 +37,7 @@ export async function ReleaseEvidenceSummary({ releaseId, expectedReleaseType }:
       <h3><Localized>{'Exact snapshot test evidence'}</Localized></h3>
       <p><Localized>{'Required test items'}</Localized><Localized>{': '}</Localized>{data.readiness.coverage.required_dvp_total}<Localized>{' · '}</Localized><Localized>{'Executed on current snapshot'}</Localized><Localized>{': '}</Localized>{data.readiness.coverage.current_snapshot_executed}<Localized>{' · '}</Localized><Localized>{'Passed on current snapshot'}</Localized><Localized>{': '}</Localized>{data.readiness.coverage.current_snapshot_passed}</p>
       {!data.readiness.coverage.snapshot_match && <p className="muted"><Localized>{'Tests on an older snapshot do not verify the current snapshot, even when their content hashes are identical.'}</Localized></p>}
-      <div className="tablewrap"><table><thead><tr><th><Localized>{'Rule'}</Localized></th><th><Localized>{'Status'}</Localized></th></tr></thead><tbody>{data.readiness.rules.map(rule => <tr key={rule.rule}><td><Localized>{rule.rule}</Localized><Localized>{' · '}</Localized>{rule.evidence}</td><td><Localized>{rule.effective}</Localized></td></tr>)}</tbody></table></div>
+      <div className="tablewrap"><table><thead><tr><th><Localized>{'Rule'}</Localized></th><th><Localized>{'Status'}</Localized></th></tr></thead><tbody>{data.readiness.rules.map(rule => <tr key={releaseEvidenceRuleIdentity(rule)}><td><Localized>{rule.rule}</Localized><Localized>{' · '}</Localized>{rule.evidence}</td><td><Localized>{rule.effective}</Localized></td></tr>)}</tbody></table></div>
     </section>
   </Localized>;
 }

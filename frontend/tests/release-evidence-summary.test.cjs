@@ -124,6 +124,22 @@ test('impossible coverage counts make the evidence unavailable',async()=>{
  }
 });
 
+test('duplicate readiness rule identities make the evidence unavailable',async()=>{
+ const duplicate={...evidence.readiness.rules[0],effective:'FAIL',evidence:'0 / 3'};
+ const value={...evidence,readiness:{...evidence.readiness,rules:[...evidence.readiness.rules,duplicate]}};
+ const {html}=await render(value);
+ assert.ok(html.includes('Evidence summary unavailable.'));
+ assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+});
+
+test('the same rule label in distinct groups remains valid',async()=>{
+ const second={...evidence.readiness.rules[0],group:'Independent Review'};
+ const value={...evidence,readiness:{...evidence.readiness,rules:[...evidence.readiness.rules,second]}};
+ const {html}=await render(value);
+ assert.ok(html.includes('Formal release evidence matches the current snapshot.'));
+ assert.ok(!html.includes('Evidence summary unavailable.'));
+});
+
 test('is read-only and never links to a command form',async()=>{
  const {html}=await render(evidence);
  assert.ok(!html.includes('<form')&&!html.includes('method="post"')&&!html.includes('/commands'));
