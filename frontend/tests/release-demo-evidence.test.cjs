@@ -67,3 +67,17 @@ test('malformed list or row fails closed without throwing during SSR',async()=>{
   assert.ok(!html.includes('APR-2')&&!html.includes('RD-2'));
  }
 });
+test('impossible coverage counts never produce demonstration release proof',async()=>{
+ const impossible=[
+  {required_dvp_total:3,current_snapshot_executed:2,current_snapshot_passed:3,snapshot_match:true},
+  {required_dvp_total:3,current_snapshot_executed:4,current_snapshot_passed:3,snapshot_match:true},
+ ];
+ for(const coverage of impossible){
+  const value={sample_only:true,initialized:true,items:[{...row,current_release_confirmed:true,
+   readiness:{...row.readiness,overall:'READY',approval_eligible:true,coverage},
+   decision:{...row.decision,decision:'RELEASE',readiness_status:'READY'}}]};
+  const {html}=await render(value);
+  assert.ok(html.includes('Evidence API unavailable'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});

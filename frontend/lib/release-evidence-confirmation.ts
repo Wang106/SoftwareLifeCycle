@@ -85,6 +85,8 @@ function parseReadiness(value: unknown): ReleaseEvidenceReadiness | null {
       || !count(coverage.required_dvp_total) || !count(coverage.current_snapshot_executed)
       || !count(coverage.current_snapshot_passed) || !boolean(coverage.snapshot_match)
       || !Array.isArray(row.rules) || row.rules.length > 200) return null;
+  if (coverage.current_snapshot_passed > coverage.current_snapshot_executed
+      || coverage.current_snapshot_executed > coverage.required_dvp_total) return null;
   const rules = row.rules.map(object);
   if (rules.some(rule => !rule || !text(rule.group, 100) || !text(rule.rule, 240)
       || !text(rule.evidence, 500) || !text(rule.effective, 30))) return null;

@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 SSR/ASR 发布证据覆盖计数不变量（Codex / ChatGPT Work）
+
+以最新 main `d8f1e3dbd211efbf666ed797877cd45ca820aee7`（PR#126）为唯一事实源；启动时开放 PR 为 0。PR#126 的精确 head、受保护合并、main CI、Cloudflare 与 Render 分项证据已闭环，因此本轮只推进 `ssr-asr-release-evidence-coverage-count-safety`，分支 `codex/ssr-asr-release-evidence-coverage-count-safety`，远端实现检查点 `63cde32c3cb4aa3af78d9cb62514d9f881efa120`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+共享前端解析器现在强制 DVP 覆盖计数满足 `current_snapshot_passed <= current_snapshot_executed <= required_dvp_total`。任何“通过数大于执行数”或“执行数大于要求数”的 SSR/ASR 详情或演示响应都会整份降级为不可用，即使 Snapshot、Readiness、Approval、Release Decision 和 `current_release_confirmed` 同时声称成功，也不会显示正式发布匹配。合法的零计数保持可解析，是否可发布仍由既有 Readiness 规则决定。契约：`docs/ssr-asr-release-evidence-coverage-count-safety.md`。
+
+本地定向 20/20、完整前端 1557/1557、自动化门禁 52/52、TypeScript `--noEmit`、Worker 配置、Next/OpenNext Cloudflare 生产构建、禁用认证路由检查和 diff 检查通过；远端后端/真实 PostgreSQL 仍由本包精确 head CI 核验。本包不修改后端、数据库、迁移、Seed、依赖、认证、写入门控、CI 或部署配置。
+
+业务验收暂不增加：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；客户端拒绝矛盾计数不等于真实审批、冻结 Snapshot 绑定或正式发布验收。下一实现包保持 `null`；先完成本包完整本地验证、独立 PR、精确 head CI、受保护合并和 main/provider 分项核验。
+
 ## 2026-10-24 PR#125 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `bc28abe5afb40c4dfe8f1d784f00fe8eda66dc06` 为唯一事实源；启动时开放 PR 为 0。最新状态文件仍把 PR#125 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr125-evidence-reconciliation`，分支 `codex/ssr-asr-pr125-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
