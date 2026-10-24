@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "cf7be5abcbb59f26e932440bafe5b2a7ea348f2e",
+  "baseline_commit": "32541d9ac6fde082c59182ad113398396a051847",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-release-evidence-collection-identity-safety",
+    "package": "ssr-asr-pr131-evidence-reconciliation",
     "evidence": "docs/ssr-asr-release-evidence-collection-identity-safety.md",
     "business_acceptance_increment": 0,
-    "resume_pr": 131,
-    "branch": "codex/ssr-asr-release-evidence-collection-identity-safety",
-    "state": "pr131_open_awaiting_exact_head_ci",
+    "resume_pr": null,
+    "branch": "codex/ssr-asr-pr131-evidence-reconciliation",
+    "state": "pr131_exact_head_main_and_provider_verified",
     "implementation_commit": "d1f59ae067ef2dc4cb5a7cba5f2d0821347ea24a",
     "local_targeted_tests": 25,
     "local_frontend_tests": 1562,
@@ -18,35 +18,35 @@
     "local_disabled_auth_ssr": "passed",
     "local_typescript": "passed",
     "local_worker_config_check": "passed",
-    "verified_previous_pr": 130,
-    "verified_main": "cf7be5abcbb59f26e932440bafe5b2a7ea348f2e",
-    "verified_main_ci": 40072828359,
-    "cloudflare_build": "03d69b30-e9f7-4d54-8dd1-7ab85dd505d2",
-    "cloudflare_version": "5f9b25d6-05de-4467-a4ef-5017e1eb3725",
+    "verified_previous_pr": 131,
+    "verified_main": "32541d9ac6fde082c59182ad113398396a051847",
+    "verified_main_ci": 40075857181,
+    "cloudflare_build": "06c71a2b-fa17-47b4-974e-791d847d867f",
+    "cloudflare_version": "ecd4e6c4-b0ef-4d5d-a440-63febf94bc9d",
     "render_live_deploy": "dep-dbduk78u01pc73dvp0ag",
     "render_source_commit": "12900d6c8b26002a9eaa611a40d552e550662462",
-    "render_health": "My Workspace existing service is live; baseline read-only /health/ready returned ready, API 0.18.50, schema 0029_changeover_batch_history; no PR131 deployment has been observed or claimed",
+    "render_health": "My Workspace service has no new deploy for PR131; latest live remains the PR124 source; no prior health response is reused as current-package acceptance",
     "next_package": null,
     "limitations": [
-      "PR131 final exact-head Backend/PostgreSQL, Frontend and CI acceptance checks are pending",
+      "This documentation reconciliation package still requires its own exact-head CI, protected merge and post-merge provider evidence in its PR final comment",
       "Collection-identity validation protects the frontend read model and does not independently attest upstream release evidence",
       "CI and provider builds are not browser, device, public performance or formal release acceptance",
-      "Render live source remains PR124; this frontend-only package does not expect a new backend deployment"
+      "Render live source remains PR124; no new backend deployment is expected for the frontend-only PR131 package"
     ],
     "actions_deploy": {
-      "run_id": 40073573471,
+      "run_id": 40076599848,
       "conclusion": "skipped"
     },
     "actions_wake": {
-      "run_id": 40073573697,
+      "run_id": 40076599830,
       "conclusion": "skipped"
     },
-    "render_status": "live_previous_backend_source_baseline_health_verified_no_pr131_deployment",
-    "verified_pr_head": null,
-    "verified_pr_ci": null,
+    "render_status": "live_previous_backend_source_no_pr131_deployment",
+    "verified_pr_head": "a752e8c0ed9c45ccdaa4f623fecf431bddbfadd4",
+    "verified_pr_ci": 40075128706,
     "cloudflare_preview_build": null,
-    "final_evidence_url": null,
-    "evidence_reconciliation_status": "pr131_pending_exact_head_ci_merge_and_provider_verification"
+    "final_evidence_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/131#issuecomment-6381776816",
+    "evidence_reconciliation_status": "pr131_exact_head_main_and_provider_verified"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [

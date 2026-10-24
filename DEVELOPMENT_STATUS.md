@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-24 PR#131 已合并证据对账（Codex / ChatGPT Work）
+
+本轮以最新 main `32541d9ac6fde082c59182ad113398396a051847` 为唯一事实源；启动时开放 PR 为 0。状态文件仍把 PR#131 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr131-evidence-reconciliation`，分支 `codex/ssr-asr-pr131-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+[PR#131](https://github.com/Wang106/SoftwareLifeCycle/pull/131) 精确 head `a752e8c0ed9c45ccdaa4f623fecf431bddbfadd4`（实现检查点 `d1f59ae067ef2dc4cb5a7cba5f2d0821347ea24a`）已受保护 squash 合并为 main `32541d9ac6fde082c59182ad113398396a051847`。PR 精确 head CI [40075128706](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40075128706) 与合并后 main CI [40075857181](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40075857181) 的 Backend/PostgreSQL/migrations、Frontend/build、CI acceptance 三项均 success：后端 2368 passed，真实 PostgreSQL 模块 258 且无 skip，迁移 `0029_changeover_batch_history` 往返通过；前端 1562 passed、0 failed、0 skipped，TypeScript、Next.js 16.4.2、OpenNext 1.20.12 与禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/131#issuecomment-6381776816 。
+
+提供方证据分开核验：同一 main 的 Cloudflare production build `06c71a2b-fa17-47b4-974e-791d847d867f` / version `ecd4e6c4-b0ef-4d5d-a440-63febf94bc9d` success。Actions deployment [40076599848](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40076599848) 与 continuation/wake [40076599830](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40076599830) 均 skipped，不能称 Actions 部署成功。Render `My Workspace` 服务未为此前端/文档包产生新 deploy；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`（PR#124），不能把既有 live source 称为 PR#131 部署。
+
+本轮只对账证据，业务验收增量 0：36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共样例继续只读，OIDC、真实身份、业务写入与公司内网部署关闭；集合身份安全降级、CI 或 provider 构建成功不等于真实审批、冻结 Snapshot 绑定或正式发布。本次文档变更自己的精确 head CI、受保护合并及合并后 provider 证据只记录在本包 PR 最终评论，避免递归对账。下一实现包保持 `null`，下轮从最新 main/HANDOFF 重新划定一个不重复的 SSR/ASR 小包。
+
 ## 2026-10-24 SSR/ASR 发布证据集合身份安全降级（Codex / ChatGPT Work）
 
 从最新 main `cf7be5abcbb59f26e932440bafe5b2a7ea348f2e`（PR#130）建立独立分支 `codex/ssr-asr-release-evidence-collection-identity-safety`；启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮唯一包为 `ssr-asr-release-evidence-collection-identity-safety`，实现检查点 `d1f59ae067ef2dc4cb5a7cba5f2d0821347ea24a`，当前 [PR#131](https://github.com/Wang106/SoftwareLifeCycle/pull/131) 已开放。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
