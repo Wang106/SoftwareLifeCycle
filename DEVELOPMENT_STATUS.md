@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-25 SSR/ASR Readiness Snapshot 身份绑定安全降级（Codex / ChatGPT Work）
+
+本轮以最新 main `3ca3fd0e636f913588c15bfb33dc548b1cd54eaf` 为唯一事实源；启动时开放 PR 为 0，PR#136 已闭环，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮只推进 `ssr-asr-release-evidence-readiness-snapshot-binding-safety`，独立分支 `codex/ssr-asr-readiness-snapshot-binding-safety`，实现检查点 `44a2254c59591f28d8b819859a591f704ed1b8ac`。 当前为 [PR#137](https://github.com/Wang106/SoftwareLifeCycle/pull/137)，远端初始检查点 `c75834e5259305feb8495972a8ae6c281ed5fddf`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+共享 SSR/ASR 只读解析器现在保留并校验 `readiness.coverage.snapshot_id` 与 `snapshot_no`：存在顶层 Snapshot 时，两者必须分别等于其 `id` 与 `snapshot_no`；没有 Snapshot 时，两者必须为 null 且 `snapshot_match=false`。矛盾响应会沿既有不可用状态安全降级，不拼接来自不同 Snapshot 的 Readiness，也不确认正式发布。`snapshot_match=false` 在 Snapshot 存在时仍是合法、可审阅的未匹配证据。契约见 `docs/ssr-asr-release-evidence-readiness-snapshot-binding-safety.md`。
+
+本地验证已通过：定向 31/31、完整前端 1568/1568（0 failed/0 skipped）、自动化 52/52、TypeScript `--noEmit`、Worker 配置、Next.js 16.4.2、OpenNext 1.20.12 Cloudflare 构建及禁用认证双语 SSR/路由。后端与真实 PostgreSQL 留给本包最终精确 head 的远端三项必需 CI 独立验证。
+
+基线 PR#136 最终 head `b449dc276e0800d354c8579e57842f5dbd5c1929` 已受保护合并为 main `3ca3fd0e636f913588c15bfb33dc548b1cd54eaf`；main CI `40148541216` 三项 success，后端 2368、PostgreSQL 模块 258 且无 skip、前端 1566。Cloudflare production build `0c94f92b-a8c6-4c66-82b6-cb9af5ab1ccd` / version `3b99890d-dd4a-4535-9fdf-4540467bf9bd` success；Actions deploy `40149185972` 与 continuation `40149185994` skipped。Render `My Workspace` 没有该前端/文档基线包的新部署；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。这些只证明本包起点，不得冒充当前分支结果。
+
+本包不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；响应内部 Snapshot 身份一致也不证明真实审批、权限、内容来源或正式发布。下一包为 `ssr-asr-pr137-evidence-reconciliation`，仅在本包完成精确 head CI、受保护合并及 main/Cloudflare/Render/Actions 分项核验后进行。
+
 ## 2026-10-25 PR#135 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` 为唯一事实源；启动时开放 PR 为 0，PR#135 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr135-evidence-reconciliation`，分支 `codex/ssr-asr-pr135-evidence-reconciliation`，不重复绑定一致性实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。当前为 [PR#136](https://github.com/Wang106/SoftwareLifeCycle/pull/136)，初始对账提交 `309dc6471402caee6b82da396c5c25957a0ff81e`。

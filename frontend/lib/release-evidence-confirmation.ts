@@ -11,6 +11,8 @@ export type ReleaseEvidenceReadiness = {
   overall: string;
   approval_eligible: boolean;
   coverage: {
+    snapshot_id: string | null;
+    snapshot_no: string | null;
     required_dvp_total: number;
     current_snapshot_executed: number;
     current_snapshot_passed: number;
@@ -88,6 +90,8 @@ function parseSnapshot(value: unknown): ReleaseEvidenceSnapshot | null | undefin
 function parseReadiness(value: unknown): ReleaseEvidenceReadiness | null {
   const row = object(value), coverage = object(row?.coverage);
   if (!row || !coverage || !text(row.overall, 30) || !boolean(row.approval_eligible)
+      || !(coverage.snapshot_id === null || text(coverage.snapshot_id, 64))
+      || !(coverage.snapshot_no === null || text(coverage.snapshot_no, 80))
       || !count(coverage.required_dvp_total) || !count(coverage.current_snapshot_executed)
       || !count(coverage.current_snapshot_passed) || !boolean(coverage.snapshot_match)
       || !Array.isArray(row.rules) || row.rules.length > 200) return null;
@@ -102,6 +106,8 @@ function parseReadiness(value: unknown): ReleaseEvidenceReadiness | null {
     overall: row.overall,
     approval_eligible: row.approval_eligible,
     coverage: {
+      snapshot_id: coverage.snapshot_id,
+      snapshot_no: coverage.snapshot_no,
       required_dvp_total: coverage.required_dvp_total,
       current_snapshot_executed: coverage.current_snapshot_executed,
       current_snapshot_passed: coverage.current_snapshot_passed,
@@ -135,6 +141,11 @@ function parseEvidenceCore(value: JsonObject) {
   if (snapshot === undefined || !readiness || approval === undefined || decision === undefined
       || !boolean(value.current_release_confirmed)) return null;
   if (approval?.current_snapshot_bound === true && snapshot === null) return null;
+  if (snapshot === null
+      ? readiness.coverage.snapshot_id !== null || readiness.coverage.snapshot_no !== null
+        || readiness.coverage.snapshot_match
+      : readiness.coverage.snapshot_id !== snapshot.id
+        || readiness.coverage.snapshot_no !== snapshot.snapshot_no) return null;
   if (decision?.current_evidence_bound === true
       && (snapshot === null || approval?.current_snapshot_bound !== true
         || decision.snapshot_id !== snapshot.id)) return null;

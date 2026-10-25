@@ -1,5 +1,15 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-25 SSR/ASR Readiness Snapshot 身份绑定安全降级（Codex / ChatGPT Work）
+
+从最新 main `3ca3fd0e636f913588c15bfb33dc548b1cd54eaf` 建立独立分支 `codex/ssr-asr-readiness-snapshot-binding-safety`；启动时开放 PR 为 0，PR#136 已闭环，旧候选已被 main 覆盖。本轮唯一包 `ssr-asr-release-evidence-readiness-snapshot-binding-safety` 的实现检查点为 `44a2254c59591f28d8b819859a591f704ed1b8ac`。 当前为 [PR#137](https://github.com/Wang106/SoftwareLifeCycle/pull/137)，远端初始检查点 `c75834e5259305feb8495972a8ae6c281ed5fddf`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+共享 SSR/ASR 解析器现在要求 Readiness coverage 的 `snapshot_id` / `snapshot_no` 与顶层 Snapshot 身份一致；顶层 Snapshot 缺失时，两个字段必须为 null 且 `snapshot_match=false`。任何矛盾都会让详情摘要或完整演示响应沿既有不可用路径安全降级，不组合跨 Snapshot 证据、不确认正式发布；合法的 `snapshot_match=false` 仍保留。契约：`docs/ssr-asr-release-evidence-readiness-snapshot-binding-safety.md`。
+
+本地已通过定向 31/31、完整前端 1568/1568、自动化 52/52、TypeScript、Worker 配置、Next/OpenNext 构建和禁用认证双语 SSR/路由。后端和真实 PostgreSQL 由最终精确 head 的三项远端 CI 验证。基线 main CI `40148541216` 与 Cloudflare build `0c94f92b-a8c6-4c66-82b6-cb9af5ab1ccd` / version `3b99890d-dd4a-4535-9fdf-4540467bf9bd` success；Actions deploy `40149185972`、wake `40149185994` skipped。Render `My Workspace` 没有基线包的新部署，最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。不得复用这些基线结果作为当前分支证据。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；Snapshot 身份校验不等于真实审批或正式发布。恢复时只处理本包：先确认最终精确 head 包含最新 main，等待 Backend/PostgreSQL、Frontend、CI acceptance 三项 success，再受保护合并并分别核验 main CI、Cloudflare、Render 与 Actions。完成后下一包为 `ssr-asr-pr137-evidence-reconciliation`。
+
 ## 2026-10-25 PR#135 已合并证据对账（Codex / ChatGPT Work）
 
 从最新 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` 建立独立分支 `codex/ssr-asr-pr135-evidence-reconciliation`。启动时开放 PR 为 0；本轮唯一包 `ssr-asr-pr135-evidence-reconciliation` 只将 PR#135 已完成的精确 CI、Cloudflare、Render 和 Actions 证据写回账本，不重复代码实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。当前为 [PR#136](https://github.com/Wang106/SoftwareLifeCycle/pull/136)，初始对账提交 `309dc6471402caee6b82da396c5c25957a0ff81e`。
