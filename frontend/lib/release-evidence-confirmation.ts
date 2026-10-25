@@ -74,6 +74,8 @@ const object = (value: unknown): JsonObject | null =>
   value !== null && typeof value === 'object' && !Array.isArray(value) ? value as JsonObject : null;
 const text = (value: unknown, max: number): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= max;
+const canonicalUuid = (value: unknown): value is string =>
+  typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value);
 const sha256Hex = (value: unknown): value is string =>
   typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
 const boolean = (value: unknown): value is boolean => typeof value === 'boolean';
@@ -82,7 +84,7 @@ const count = (value: unknown): value is number => Number.isSafeInteger(value) &
 function parseSnapshot(value: unknown): ReleaseEvidenceSnapshot | null | undefined {
   if (value === null) return null;
   const row = object(value);
-  return row && text(row.id, 64) && text(row.snapshot_no, 80) && text(row.status, 30) && sha256Hex(row.content_hash)
+  return row && canonicalUuid(row.id) && text(row.snapshot_no, 80) && text(row.status, 30) && sha256Hex(row.content_hash)
     ? {id: row.id, snapshot_no: row.snapshot_no, status: row.status, content_hash: row.content_hash}
     : undefined;
 }
@@ -90,7 +92,7 @@ function parseSnapshot(value: unknown): ReleaseEvidenceSnapshot | null | undefin
 function parseReadiness(value: unknown): ReleaseEvidenceReadiness | null {
   const row = object(value), coverage = object(row?.coverage);
   if (!row || !coverage || !text(row.overall, 30) || !boolean(row.approval_eligible)
-      || !(coverage.snapshot_id === null || text(coverage.snapshot_id, 64))
+      || !(coverage.snapshot_id === null || canonicalUuid(coverage.snapshot_id))
       || !(coverage.snapshot_no === null || text(coverage.snapshot_no, 80))
       || !count(coverage.required_dvp_total) || !count(coverage.current_snapshot_executed)
       || !count(coverage.current_snapshot_passed) || !boolean(coverage.snapshot_match)
@@ -129,7 +131,7 @@ function parseDecision(value: unknown): ReleaseEvidenceDecision | null | undefin
   if (value === null) return null;
   const row = object(value);
   return row && text(row.decision_no, 50) && text(row.decision, 30) && text(row.readiness_status, 30)
-    && text(row.snapshot_id, 64) && boolean(row.current_evidence_bound)
+    && canonicalUuid(row.snapshot_id) && boolean(row.current_evidence_bound)
     ? {decision_no: row.decision_no, decision: row.decision, readiness_status: row.readiness_status,
       snapshot_id: row.snapshot_id, current_evidence_bound: row.current_evidence_bound}
     : undefined;
@@ -154,7 +156,7 @@ function parseEvidenceCore(value: JsonObject) {
 
 export function parseReleaseEvidenceSummary(value: unknown): ReleaseEvidenceSummary | null {
   const root = object(value), release = object(root?.release);
-  if (!root || !release || !text(release.id, 64) || !text(release.version, 100)
+  if (!root || !release || !canonicalUuid(release.id) || !text(release.version, 100)
       || !text(release.release_type, 20) || !text(release.record_status, 30)) return null;
   const core = parseEvidenceCore(root);
   return core ? {release: {id: release.id, version: release.version, release_type: release.release_type,
@@ -163,11 +165,11 @@ export function parseReleaseEvidenceSummary(value: unknown): ReleaseEvidenceSumm
 
 function parseDemoRow(value: unknown): ReleaseEvidenceDemoRow | null {
   const row = object(value);
-  if (!row || !text(row.release_id, 64) || !text(row.version, 100) || !text(row.release_type, 20)
+  if (!row || !canonicalUuid(row.release_id) || !text(row.version, 100) || !text(row.release_type, 20)
       || !text(row.record_status, 30) || !text(row.change_request_no, 50) || !Array.isArray(row.dvp_items)
       || row.dvp_items.length > 200) return null;
   const items = row.dvp_items.map(object);
-  if (items.some(item => !item || !text(item.id, 64) || !text(item.item_no, 50))) return null;
+  if (items.some(item => !item || !canonicalUuid(item.id) || !text(item.item_no, 50))) return null;
   if (new Set(items.map(item => item?.id)).size !== items.length) return null;
   const core = parseEvidenceCore(row);
   return core ? {release_id: row.release_id, version: row.version, release_type: row.release_type,
