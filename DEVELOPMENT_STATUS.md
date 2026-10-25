@@ -2,7 +2,7 @@
 
 ## 2026-10-25 SSR/ASR Readiness Snapshot 身份绑定安全降级（Codex / ChatGPT Work）
 
-本轮以最新 main `3ca3fd0e636f913588c15bfb33dc548b1cd54eaf` 为唯一事实源；启动时开放 PR 为 0，PR#136 已闭环，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮只推进 `ssr-asr-release-evidence-readiness-snapshot-binding-safety`，独立分支 `codex/ssr-asr-readiness-snapshot-binding-safety`，实现检查点 `44a2254c59591f28d8b819859a591f704ed1b8ac`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+本轮以最新 main `3ca3fd0e636f913588c15bfb33dc548b1cd54eaf` 为唯一事实源；启动时开放 PR 为 0，PR#136 已闭环，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮只推进 `ssr-asr-release-evidence-readiness-snapshot-binding-safety`，独立分支 `codex/ssr-asr-readiness-snapshot-binding-safety`，实现检查点 `44a2254c59591f28d8b819859a591f704ed1b8ac`。 当前为 [PR#137](https://github.com/Wang106/SoftwareLifeCycle/pull/137)，远端初始检查点 `c75834e5259305feb8495972a8ae6c281ed5fddf`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
 
 共享 SSR/ASR 只读解析器现在保留并校验 `readiness.coverage.snapshot_id` 与 `snapshot_no`：存在顶层 Snapshot 时，两者必须分别等于其 `id` 与 `snapshot_no`；没有 Snapshot 时，两者必须为 null 且 `snapshot_match=false`。矛盾响应会沿既有不可用状态安全降级，不拼接来自不同 Snapshot 的 Readiness，也不确认正式发布。`snapshot_match=false` 在 Snapshot 存在时仍是合法、可审阅的未匹配证据。契约见 `docs/ssr-asr-release-evidence-readiness-snapshot-binding-safety.md`。
 
