@@ -2,7 +2,7 @@
 
 ## 2026-10-25 PR#135 已合并证据对账（Codex / ChatGPT Work）
 
-从最新 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` 建立独立分支 `codex/ssr-asr-pr135-evidence-reconciliation`。启动时开放 PR 为 0；本轮唯一包 `ssr-asr-pr135-evidence-reconciliation` 只将 PR#135 已完成的精确 CI、Cloudflare、Render 和 Actions 证据写回账本，不重复代码实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+从最新 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` 建立独立分支 `codex/ssr-asr-pr135-evidence-reconciliation`。启动时开放 PR 为 0；本轮唯一包 `ssr-asr-pr135-evidence-reconciliation` 只将 PR#135 已完成的精确 CI、Cloudflare、Render 和 Actions 证据写回账本，不重复代码实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。当前为 [PR#136](https://github.com/Wang106/SoftwareLifeCycle/pull/136)，初始对账提交 `309dc6471402caee6b82da396c5c25957a0ff81e`。
 
 已核验 PR#135 最终 head `476889c954d897b2697290c043b0e54ed73930f0`、PR CI `40146000294` 和 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` / CI `40146814780` 三项必需检查全部 success；main 后端 `2368 passed`、258 个 PostgreSQL 模块用例无 skip，前端 `1566/1566`、0 failed/0 skipped。Cloudflare Preview deployment `1387c69f-9fb3-4519-a267-5e57bd594311`、production build `7d7b8576-88fb-46e5-bf2b-cdc970173f09` / version `1088cb62-53f2-4d24-ab3d-53780e3f08de` success。Actions deploy `40147577631` 与 continuation `40147577642` skipped。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/135#issuecomment-6391524711 。
 
