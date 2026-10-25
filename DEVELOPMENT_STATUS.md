@@ -1,6 +1,6 @@
 ## 2026-10-25 PR#145 已合并证据对账（Codex / ChatGPT Work）
 
-本轮以最新 main `0597364a958cd06776bafbb892680dbd7c02c80b` 为唯一事实源；启动时开放 PR 为 0，[PR#145](https://github.com/Wang106/SoftwareLifeCycle/pull/145) 已完成精确 head CI、受保护合并及 main/Cloudflare/Render/Actions 分项核验。因此本轮只推进文档包 `ssr-asr-pr145-evidence-reconciliation`，独立分支 `codex/ssr-asr-pr145-evidence-reconciliation`，对账 PR 待创建，不重复 UUID 身份安全实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+本轮以最新 main `0597364a958cd06776bafbb892680dbd7c02c80b` 为唯一事实源；启动时开放 PR 为 0，[PR#145](https://github.com/Wang106/SoftwareLifeCycle/pull/145) 已完成精确 head CI、受保护合并及 main/Cloudflare/Render/Actions 分项核验。因此本轮只推进文档包 `ssr-asr-pr145-evidence-reconciliation`，独立分支 `codex/ssr-asr-pr145-evidence-reconciliation`，[PR#146](https://github.com/Wang106/SoftwareLifeCycle/pull/146)，不重复 UUID 身份安全实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
 
 PR#145 实现检查点 `bdc006e5ff107b09d0d6ad5cc91caf96c7796aaa`，最终 head `8d6241c5ef96aa351d64ccca9e22866c9fee3596`，在 behind 0 时受保护 squash 合并为 main `0597364a958cd06776bafbb892680dbd7c02c80b`。PR CI [40193312961](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40193312961) 与 main CI [40194000706](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40194000706) 的 Backend/PostgreSQL、Frontend、CI acceptance 三项均 success：后端 2368 passed，PostgreSQL 模块 258 项且无 skip；前端 1574/1574、0 failed、0 skipped。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/145#issuecomment-6397856500 。
 

@@ -1,7 +1,7 @@
 ## 2026-10-25 PR#145 已合并证据对账交接（Codex / ChatGPT Work）
 
 - 唯一事实源：main `0597364a958cd06776bafbb892680dbd7c02c80b`；启动时开放 PR 为 0。
-- 本轮唯一包：`ssr-asr-pr145-evidence-reconciliation`；分支 `codex/ssr-asr-pr145-evidence-reconciliation`；对账 PR 待创建。使用 Codex / ChatGPT Work，无额外付费模型 API、额度购买或用户本地常驻 CLI。
+- 本轮唯一包：`ssr-asr-pr145-evidence-reconciliation`；分支 `codex/ssr-asr-pr145-evidence-reconciliation`；[PR#146](https://github.com/Wang106/SoftwareLifeCycle/pull/146)。使用 Codex / ChatGPT Work，无额外付费模型 API、额度购买或用户本地常驻 CLI。
 - 已对账 PR#145：实现检查点 `bdc006e5ff107b09d0d6ad5cc91caf96c7796aaa`，最终 head `8d6241c5ef96aa351d64ccca9e22866c9fee3596`，受保护 squash 合并 main `0597364a958cd06776bafbb892680dbd7c02c80b`。
 - CI：PR [40193312961](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40193312961) 与 main [40194000706](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40194000706) 三项必需检查全部 success；后端 2368 passed，258 个 PostgreSQL 模块用例无 skip，前端 1574/1574、0 fail/skip。
 - Provider：Cloudflare Preview 精确 head build `b3c62482-7989-4d95-9e17-edfb5835eb7c` success；production 精确 main build `43d9f252-d78a-4a2d-90f8-cb0ea559dcbe`、version `af5840a4-f66f-4c33-b938-b8ad2be0ddc2` success。Actions deployment `40194823489` 与 continuation `40194823530` skipped。Render 无 PR#145 新 deploy/event，服务未暂停，仍为旧 live `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。
