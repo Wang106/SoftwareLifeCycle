@@ -1,3 +1,23 @@
+## 2026-10-25 PR#148 用户授权安全修复（Codex / ChatGPT Work）
+
+PR#148 在 head `176dd6b74890c9e6ccbc65e04405b65b27200f9c` 的完整 CI [40203654766](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40203654766) 三项 success（后端 2381 passed、271 个 PostgreSQL 模块用例无 skip；前端 1574/1574；acceptance success），新 artifact `12602947135` 也已把 `source_commit` 正确绑定到精确 head，并完成真实 native dump/restore、append-only 拒绝和清理。然而独立安全复核随后发现三项未闭环边界，并在[检查点](https://github.com/Wang106/SoftwareLifeCycle/pull/148#issuecomment-6399058742)要求保持未合并；用户已在[授权记录](https://github.com/Wang106/SoftwareLifeCycle/pull/148#issuecomment-6399128661)明确允许只在现有 PR/分支修复这三项。PR 保持 Draft，上述成功运行属于旧 head 证据，不能作为当前修复的合并依据。
+
+本次同包修复：所有 psycopg/SQLAlchemy 路径遇到继承 `PG*` libpq 设置时失败关闭，native 客户端清除继承 `PG*` 并仅传显式密码；控制主机只接受字面量 `127.0.0.1` / `::1`。每个本轮新建数据库使用随机 token 数据库 comment 加持久化 proof 双向绑定，清理要求 proof、精确名称、控制身份、数据库所有者和 live marker 全部一致，同所有者预先存在数据库不得被删除。恢复核验改为逐字段校验 supplier/software/customer/project/release/audit 的规范值、外键关系和 payload，等行数不能掩盖字段或 customer/project 关系损坏。
+
+本地 23 项 fail-closed 定向测试通过；连同既有领域/配置测试为 50 passed、1 个仅因本地无 PostgreSQL client/service 的 native 集成用例明确 deselected。compileall、52 项自动化恢复/发布契约、进度账本和 diff 检查均通过。没有修改 CI、调度、权限、身份、凭据、计费或 provider 配置。下一步只发布同一 PR 的修复 head，等待新的完整精确 head CI 与 artifact；三项必需检查、最新 main ancestry 和新 native 证据全部合格后才可解除 Draft 并受保护合并。
+
+业务验收保持 36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`。合成演练仍不等于公司保留/灾备或正式发布；公共/演示只读、OIDC/真实身份/真实业务写入/公司内网继续关闭。
+
+## 2026-10-25 隔离合成 PostgreSQL 原生备份恢复演练（Codex / ChatGPT Work）
+
+本轮以最新 main `c8c6f415d1c1aacd52d909f686b000c96b6a5e16` 为唯一事实源；启动时开放 PR 为 0。[PR#147](https://github.com/Wang106/SoftwareLifeCycle/pull/147) 的规划 head `c98d4708cb9476fc12d4ab7856dd70f2c0598ebb`、PR CI `40197455166`、受保护 squash main、main CI `40198315366`、Cloudflare、Render 与 Actions 已由其[最终评论](https://github.com/Wang106/SoftwareLifeCycle/pull/147#issuecomment-6398468205)闭环。本轮只推进 `isolated-synthetic-postgresql-backup-restore-rehearsal`，独立分支 `codex/isolated-synthetic-postgresql-backup-restore-rehearsal`；使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+新增 fail-closed 运维模块与原生 PostgreSQL 集成回归：只接受 loopback PostgreSQL，拒绝 URL 选项、默认应用库、既有/相同目标和非本轮所有名称；程序生成唯一 source/target 库，迁移并装入确定性合成关系与审计事件，执行 `pg_dump` custom archive、manifest 大小/SHA-256/目录校验后才新建目标并 `pg_restore --exit-on-error`。恢复后逐项比对 revision、表、约束、索引、触发器、行数、关系、UUID 与审计 payload，并证明 append-only 触发器仍阻止修改且源/目标证据未变。密码只经 `PGPASSWORD` 传给客户端；成功清理先核对精确名称与所有者，失败保留脱敏诊断和本轮资源供检查，后续仅可按精确 run ID 清理。
+
+本地 12 项 fail-closed 定向测试通过；当前 Work 环境没有 PostgreSQL 客户端/本地服务，因此没有伪造原生恢复结果，也没有用 SQLite 或迁移往返替代。实际 native dump/restore、清单和清理证据必须由本包精确 head 的现有 backend/PostgreSQL CI 产生；任何 client 缺失、权限不足、restore 失败、skip 或 artifact 缺失均使既有门禁失败。未修改 CI、调度器、身份、凭据、计费、provider 或部署权限。
+
+业务验收保持 36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`，增量 0。合成演练不能勾选整个 ops-restore；公司保留策略、批准环境真实灾备、网络/数据与正式发布仍未验收。公共/演示只读、OIDC/真实身份/真实业务写入/公司内网继续关闭。恢复顺序：发布本包 PR，等待最终精确 head 三项 CI success且包含最新 main后受保护合并，再分别核验 main CI、Cloudflare、Render 与 Actions；最终证据写 PR 评论，不另建递归对账包。
+
 ## 2026-10-25 剩余验收优先级：先做隔离合成 PostgreSQL 备份恢复
 
 用户已批准“接受你的建议，请执行”，将下一阶段从重复 SSR/ASR 边界加固转向剩余验收，先做 `isolated-synthetic-postgresql-backup-restore-rehearsal`。授权协调记录：[PR145 评论](https://github.com/Wang106/SoftwareLifeCycle/pull/145#issuecomment-6397930846)。
