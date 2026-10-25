@@ -2,7 +2,7 @@
 
 ## 2026-10-25 PR#135 已合并证据对账（Codex / ChatGPT Work）
 
-本轮以最新 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` 为唯一事实源；启动时开放 PR 为 0，PR#135 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr135-evidence-reconciliation`，分支 `codex/ssr-asr-pr135-evidence-reconciliation`，不重复绑定一致性实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+本轮以最新 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` 为唯一事实源；启动时开放 PR 为 0，PR#135 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr135-evidence-reconciliation`，分支 `codex/ssr-asr-pr135-evidence-reconciliation`，不重复绑定一致性实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。当前为 [PR#136](https://github.com/Wang106/SoftwareLifeCycle/pull/136)，初始对账提交 `309dc6471402caee6b82da396c5c25957a0ff81e`。
 
 PR#135 最终 head `476889c954d897b2697290c043b0e54ed73930f0`，PR CI `40146000294` 三项必需检查 success；合并后 main CI `40146814780` 亦三项 success。main 后端 `2368 passed`，PostgreSQL 模块 258 项且无 skip；前端 `1566/1566`、0 failed、0 skipped，Next/OpenNext、Worker 配置和禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/135#issuecomment-6391524711 。
 
