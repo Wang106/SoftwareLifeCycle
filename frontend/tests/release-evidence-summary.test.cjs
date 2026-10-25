@@ -8,17 +8,17 @@ const confirmation={exports:{}};
 new Function('require','module','exports',ts.transpileModule(fs.readFileSync('lib/release-evidence-confirmation.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(require,confirmation,confirmation.exports);
 
 const evidence={
-  release:{id:'rel-uuid',version:'v1.0',release_type:'STANDARD',record_status:'DRAFT'},
-  snapshot:{id:'snap-uuid',snapshot_no:'SNAP-1',status:'FROZEN',content_hash:'a'.repeat(64)},
+  release:{id:'11111111-1111-4111-8111-111111111111',version:'v1.0',release_type:'STANDARD',record_status:'DRAFT'},
+  snapshot:{id:'22222222-2222-4222-8222-222222222222',snapshot_no:'SNAP-1',status:'FROZEN',content_hash:'a'.repeat(64)},
   readiness:{overall:'READY',approval_eligible:true,
-    coverage:{snapshot_id:'snap-uuid',snapshot_no:'SNAP-1',required_dvp_total:3,current_snapshot_executed:3,current_snapshot_passed:3,snapshot_match:true},
+    coverage:{snapshot_id:'22222222-2222-4222-8222-222222222222',snapshot_no:'SNAP-1',required_dvp_total:3,current_snapshot_executed:3,current_snapshot_passed:3,snapshot_match:true},
     rules:[{group:'Verification',rule:'Required DVP executed on current snapshot',evidence:'3 / 3',effective:'PASS'}]},
   approval:{approval_no:'APR-1',status:'APPROVED',current_snapshot_bound:true},
-  decision:{decision_no:'RD-1',decision:'RELEASE',readiness_status:'READY',snapshot_id:'snap-uuid',current_evidence_bound:true},
+  decision:{decision_no:'RD-1',decision:'RELEASE',readiness_status:'READY',snapshot_id:'22222222-2222-4222-8222-222222222222',current_evidence_bound:true},
   current_release_confirmed:true,
 };
 
-async function render(data,releaseId='rel-uuid',locale='en'){
+async function render(data,releaseId='11111111-1111-4111-8111-111111111111',locale='en'){
  const compiled=ts.transpileModule(fs.readFileSync('components/release-evidence-summary.tsx','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
  const m={exports:{}},calls=[];
  const translate=c=>typeof c==='string'?translated.exports.translateText(c,locale):Array.isArray(c)?c.map(translate):c;
@@ -30,7 +30,7 @@ async function render(data,releaseId='rel-uuid',locale='en'){
 
 test('renders the snapshot-readiness-approval-decision chain in english',async()=>{
  const {html,calls}=await render(evidence);
- assert.deepEqual(calls,['/api/v1/releases/rel-uuid/evidence-summary']);
+ assert.deepEqual(calls,['/api/v1/releases/11111111-1111-4111-8111-111111111111/evidence-summary']);
  assert.ok(html.includes('Release evidence summary'));
  assert.ok(html.includes('SNAP-1')&&html.includes('FROZEN'));
  assert.ok(html.includes('/snapshots/SNAP-1'));
@@ -42,14 +42,14 @@ test('renders the snapshot-readiness-approval-decision chain in english',async()
 });
 
 test('renders the chain in chinese',async()=>{
- const {html}=await render(evidence,'rel-uuid','zh');
+ const {html}=await render(evidence,'11111111-1111-4111-8111-111111111111','zh');
  assert.ok(html.includes('发布证据摘要'));
  assert.ok(html.includes('绑定当前快照'));
 });
 
 test('renders unknown placeholders when evidence is missing',async()=>{
  const {html,calls}=await render({
-  release:{id:'rel-uuid',version:'v2',release_type:'STANDARD',record_status:'DRAFT'},
+  release:{id:'11111111-1111-4111-8111-111111111111',version:'v2',release_type:'STANDARD',record_status:'DRAFT'},
   snapshot:null,approval:null,decision:null,
   readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{snapshot_id:null,snapshot_no:null,required_dvp_total:0,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[]},
   current_release_confirmed:false,
@@ -75,7 +75,7 @@ test('does not confirm release when any recorded invariant contradicts the API c
   value=>value.decision.decision='HOLD',
   value=>value.decision.readiness_status='NOT_READY',
   value=>value.decision.current_evidence_bound=false,
-  value=>{value.decision.snapshot_id='different-snapshot';value.decision.current_evidence_bound=false;},
+  value=>{value.decision.snapshot_id='66666666-6666-4666-8666-666666666666';value.decision.current_evidence_bound=false;},
  ];
  for(const mutate of mutations){
   const value=structuredClone(evidence);mutate(value);
@@ -121,6 +121,20 @@ test('non-canonical snapshot hashes make the evidence unavailable',async()=>{
  }
 });
 
+test('non-canonical UUID identities make the evidence unavailable',async()=>{
+ const malformed=[
+  {...evidence,release:{...evidence.release,id:'not-a-uuid'}},
+  {...evidence,snapshot:{...evidence.snapshot,id:'22222222-2222-4222-8222-22222222222A'}},
+  {...evidence,readiness:{...evidence.readiness,coverage:{...evidence.readiness.coverage,snapshot_id:'snapshot-id'}}},
+  {...evidence,decision:{...evidence.decision,snapshot_id:'22222222222242228222222222222222'}},
+ ];
+ for(const value of malformed){
+  const {html}=await render(value);
+  assert.ok(html.includes('Evidence summary unavailable.'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});
+
 test('impossible coverage counts make the evidence unavailable',async()=>{
  const impossible=[
   {...evidence.readiness.coverage,current_snapshot_executed:2,current_snapshot_passed:3},
@@ -152,7 +166,7 @@ test('contradictory binding claims make the evidence unavailable',async()=>{
  const malformed=[
   {...evidence,snapshot:null,approval:{...evidence.approval,current_snapshot_bound:true},current_release_confirmed:false},
   {...evidence,approval:{...evidence.approval,current_snapshot_bound:false},decision:{...evidence.decision,current_evidence_bound:true},current_release_confirmed:false},
-  {...evidence,decision:{...evidence.decision,snapshot_id:'different-snapshot',current_evidence_bound:true},current_release_confirmed:false},
+  {...evidence,decision:{...evidence.decision,snapshot_id:'66666666-6666-4666-8666-666666666666',current_evidence_bound:true},current_release_confirmed:false},
  ];
  for(const value of malformed){
   const {html}=await render(value);

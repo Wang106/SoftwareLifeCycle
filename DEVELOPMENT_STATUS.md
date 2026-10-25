@@ -1,4 +1,17 @@
-# DEVELOPMENT_STATUS
+Warning: truncated output (original token count: 102132)
+
+
+## 2026-10-25 SSR/ASR 发布证据 UUID 身份安全降级（Codex / ChatGPT Work）
+
+本轮以最新 main `231c3ca5028aa1eda903a77bf0e621fec97ed2c7` 为唯一事实源；启动时开放 PR 为 0，[PR#144](https://github.com/Wang106/SoftwareLifeCycle/pull/144) 已完成精确 head CI、受保护合并及 main/Cloudflare/Render/Actions 分项核验，旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。本轮只推进 `ssr-asr-release-evidence-uuid-identity-safety`，独立分支 `codex/ssr-asr-release-evidence-uuid-identity-safety`，远端实现检查点 `bdc006e5ff107b09d0d6ad5cc91caf96c7796aaa`，当前为 [PR#145](https://github.com/Wang106/SoftwareLifeCycle/pull/145)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+共享 SSR/ASR 证据解析器现在要求 Release、当前 Snapshot、Readiness Snapshot、Release Decision Snapshot 与 DVP 条目主键均为小写、连字符分隔的规范 UUID；任一非 UUID、紧凑格式或大小写变体都会让完整摘要或演示响应沿既有不可用状态安全降级，不生成畸形详情路由、不选择替代证据，也不确认正式发布。有效 UUID 的原有 Snapshot、Readiness、Approval、Decision、家族身份和绑定规则保持不变；契约见 `docs/ssr-asr-release-evidence-uuid-identity-safety.md`。
+
+本地验证通过：定向 37/37、完整前端 1574/1574（0 failed/0 skipped）、自动化 52/52、TypeScript `--noEmit`、Worker 配置、Next.js 16.4.2、OpenNext 1.20.12 构建及禁用认证双语 SSR/路由。首次本地 Git 推送因当前执行环境没有交互式 Git 凭据而未发布，随后通过 ChatGPT Work 的 GitHub 连接器以非强制引用更新发布同一已验证内容；未降低测试门禁或修改凭据。后端与真实 PostgreSQL 留给 PR#145 最终精确 head 的三项完整 CI 独立验证。
+
+PR#144 的已闭环基线证据仅证明起点：最终 head `f0bbe4f29ba9caad33e4c0d8904e2fc63da7ffac`，受保护 squash main `231c3ca5028aa1eda903a77bf0e621fec97ed2c7`；PR CI [40185493540](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40185493540) 与 main CI [40186288466](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40186288466) 三项 success。Cloudflare Preview deployment `ce2492b7-bb6b-4628-8ec2-8d04af0c9bb4` success；production 因重新登录要求阻塞、未验收。Actions deployment [40187004914](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40187004914) 与 continuation [40187004904](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40187004904) skipped。Render 无 PR#144 新 deploy/event，仍为旧 live `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/144#issuecomment-6396802795 。这些不得冒充 PR#145 结果。
+
+本包仅收紧前端只读解析并增加回归与契约文档；不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或 provider 配置。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共/演示继续只读，OIDC、真实身份、业务写入、内网部署及正式发布未验收。下一包为 `ssr-asr-pr145-evidence-reconciliation`，仅在 PR#145 最终精确 head 包含最新 main且 Backend/PostgreSQL、Frontend、CI acceptance 三项 success、受保护合并，并完成 main 与 provider 分项核验后进行。
 
 
 ## 2026-10-25 PR#143 已合并证据对账（Codex / ChatGPT Work）

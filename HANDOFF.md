@@ -1,4 +1,17 @@
-# SoftwareLifeCycle Development Handoff
+Warning: truncated output (original token count: 156720)
+
+
+## 2026-10-25 SSR/ASR 发布证据 UUID 身份安全降级交接（Codex / ChatGPT Work）
+
+- 唯一事实源：main `231c3ca5028aa1eda903a77bf0e621fec97ed2c7`；启动时开放 PR 为 0，PR#144 已闭环。
+- 本轮唯一包：`ssr-asr-release-evidence-uuid-identity-safety`；分支 `codex/ssr-asr-release-evidence-uuid-identity-safety`；远端实现检查点 `bdc006e5ff107b09d0d6ad5cc91caf96c7796aaa`；当前 [PR#145](https://github.com/Wang106/SoftwareLifeCycle/pull/145)。使用 Codex / ChatGPT Work，无额外付费模型 API、额度购买或用户本地常驻 CLI。
+- 变更：共享摘要/演示证据解析器要求 Release、Snapshot、Readiness Snapshot、Decision Snapshot 与 DVP 主键使用规范小写连字符 UUID；任一无效身份使整份响应不可用，不生成畸形路由或确认正式发布。契约：`docs/ssr-asr-release-evidence-uuid-identity-safety.md`。
+- 本地验证：定向 37/37、前端 1574/1574、自动化 52/52、TypeScript、Worker、Next 16.4.2、OpenNext 1.20.12、禁用认证双语 SSR/路由全部通过。后端/真实 PostgreSQL 由 PR 精确 head CI 验收。
+- 发布说明：本地 Git 推送因非交互执行环境无 Git 凭据而失败；随后使用 ChatGPT Work GitHub 连接器非强制发布相同内容，未修改凭据、门禁或保护规则。
+- 基线闭环：PR#144 head `f0bbe4f29ba9caad33e4c0d8904e2fc63da7ffac` / CI `40185493540`，main `231c3ca5028aa1eda903a77bf0e621fec97ed2c7` / CI `40186288466` 三项 success；Cloudflare Preview `ce2492b7-bb6b-4628-8ec2-8d04af0c9bb4` success，production 重新登录阻塞且未验收；Actions `40187004914` / `40187004904` skipped；Render 无新部署，旧 live `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/144#issuecomment-6396802795 。
+- 边界：只改前端只读解析、回归和契约；后端、数据库、迁移、Seed、依赖、身份/凭据、写入门控、CI、调度、计费与 provider 配置不变。公共/演示只读，OIDC、真实身份、业务写入、内网部署和正式发布未验收。
+- 进度：业务 36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`；增量 0。
+- 恢复顺序：只处理 PR#145；确认最终精确 head 相对最新 main behind 0，等待 Backend/PostgreSQL、Frontend、CI acceptance 三项 success 后受保护合并，再分别核验 main CI、Cloudflare、Render 与 Actions。随后只做 `ssr-asr-pr145-evidence-reconciliation`，完成前不并发新功能。
 
 
 ## 2026-10-25 PR#143 已合并证据对账交接（Codex / ChatGPT Work）
