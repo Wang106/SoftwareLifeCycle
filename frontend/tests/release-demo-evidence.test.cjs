@@ -157,3 +157,32 @@ test('duplicate DVP identities make the complete demonstration unavailable',asyn
  assert.ok(html.includes('Evidence API unavailable'));
  assert.ok(!html.includes('exact-item')&&!html.includes('CONFLICTING-DVP'));
 });
+const secondRow={...row,release_id:'second-release',version:'DEMO-EVIDENCE-SSR-C-3.0',release_type:'STANDARD',
+ snapshot:{...row.snapshot,id:'snapshot-3',snapshot_no:'SNAP-3'},
+ readiness:{...row.readiness,coverage:{...row.readiness.coverage,snapshot_id:'snapshot-3',snapshot_no:'SNAP-3'}},
+ approval:{...row.approval,approval_no:'APR-3'},
+ decision:{...row.decision,decision_no:'RD-3',snapshot_id:'snapshot-3'}};
+test('distinct evidence families may retain the same DVP identity in separate release contexts',async()=>{
+ const {html}=await render({sample_only:true,initialized:true,items:[row,secondRow]});
+ assert.ok(!html.includes('Evidence API unavailable'));
+ assert.ok(html.includes('APR-2')&&html.includes('APR-3'));
+ assert.ok(html.includes('/testing/dvp/exact-item?release_id=exact-release&amp;snapshot_no=SNAP-2'));
+ assert.ok(html.includes('/testing/dvp/exact-item?release_id=second-release&amp;snapshot_no=SNAP-3'));
+});
+test('cross-release evidence identity conflicts make the complete demonstration unavailable',async()=>{
+ const conflicts=[
+  {...secondRow,snapshot:{...secondRow.snapshot,id:row.snapshot.id},
+   readiness:{...secondRow.readiness,coverage:{...secondRow.readiness.coverage,snapshot_id:row.snapshot.id}},
+   decision:{...secondRow.decision,snapshot_id:row.snapshot.id}},
+  {...secondRow,snapshot:{...secondRow.snapshot,snapshot_no:row.snapshot.snapshot_no},
+   readiness:{...secondRow.readiness,coverage:{...secondRow.readiness.coverage,snapshot_no:row.snapshot.snapshot_no}}},
+  {...secondRow,approval:{...secondRow.approval,approval_no:row.approval.approval_no}},
+  {...secondRow,decision:{...secondRow.decision,decision_no:row.decision.decision_no}},
+ ];
+ for(const conflicting of conflicts){
+  const {html}=await render({sample_only:true,initialized:true,items:[row,conflicting]});
+  assert.ok(html.includes('Evidence API unavailable'));
+  assert.ok(!html.includes('APR-2')&&!html.includes('APR-3'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});
