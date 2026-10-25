@@ -62,3 +62,82 @@ Package: `native-postgresql-restore-negative-integration`. User requested direct
 Run the existing PostgreSQL test module normally with TEST_POSTGRES_URL; no CI workflow change is needed. Fresh `negative-integration.json` reports source/checkout commits, per-case rejection evidence, counts/fingerprints and cleanup. On unexpected failure it marks failed and retains run-owned resources for diagnosis; follow the existing reviewed exact-run cleanup process. Expected asserted rejection is successful negative evidence, not an unexpected test failure. The main happy-path artifact remains separate at the parent ci-results path.
 
 Local syntax was checked; this cloud environment lacks runtime dependencies and PostgreSQL tools. Fresh full CI and downloaded exact-head evidence are still required; no native result is claimed yet. Neither this extension nor PR148 alone completes retention, approved company disaster recovery or the ops-restore milestone.
+
+## Retained synthetic package recovery (2026-10-25)
+
+`python -m app.ops.retained_synthetic_restore` is a separate restore-only entry
+point. It consumes the **operator's own trusted synthetic** rehearsal `.dump`,
+manifest and successful `postgresql-backup-restore-rehearsal.json` baseline.
+It does not create, migrate, seed, query or require the original source database;
+the original process and both original databases may already be gone. It is not
+an arbitrary archive importer: PostgreSQL archives contain executable SQL and
+checksum/metadata agreement is **not authenticity or an untrusted-SQL sandbox**.
+Never provide downloaded/third-party/production archives. The explicit
+`--trusted-own-synthetic` acknowledgement is required.
+
+From `backend/`, using an already configured disposable loopback
+`TEST_POSTGRES_URL` (never put credentials in shell history):
+
+```sh
+python -m app.ops.retained_synthetic_restore \
+  --archive /trusted-backup/postgresql-rehearsal-0123456789ab.dump \
+  --manifest /trusted-backup/postgresql-rehearsal-0123456789ab-manifest.json \
+  --baseline /trusted-backup/postgresql-backup-restore-rehearsal.json \
+  --evidence-dir /new-evidence/recovery-20261025 \
+  --trusted-own-synthetic
+```
+
+Optional `--run-id` must be a new 12-character lowercase hex ID, never the backup
+run ID. The output directory must not exist. Before any target database write,
+the command checks version1 manifest, fixed schema0029, deterministic canonical
+fixture IDs/content/relations/audit baseline, exact report/provenance/owned-name
+binding, checksum/size/native archive catalog, exact pg_restore build and matching
+pg_dump major, exact server version and absent new target. Cross-version migration
+is deliberately unsupported, not silently attempted. Inherited `PG*` overrides
+remain rejected; only numeric loopback hosts and isolated control databases work.
+
+Original files are read-only inputs. A fresh exclusive output directory receives a
+checksum-verified package snapshot before restore, a new run ownership proof and
+`retained-synthetic-restore.json`. Original archive, manifest, baseline and old
+proof remain byte-identical. The proof covers **only the new target**, never source
+or old targets. An old proof cannot clean the new target. The report separately
+records `backup_source_commit` / `backup_checkout_commit` and
+`recovery_implementation_commit` / `recovery_checkout_commit`, plus both run IDs
+and hashes. A backup's recorded commit is not relabelled as the recovery code.
+
+Native `pg_restore --exit-on-error` populates only the newly created target.
+Canonical tables/constraints/indexes/trigger/revision, business rows/relations and
+original audit are compared with the retained baseline. Target-only append-only
+verification requires the expected audit trigger error and unchanged audit; the
+attempt is rolled back even if the trigger unexpectedly allows it. There are no
+online source reads, migrations, seeding or automatic original-backup deletion.
+
+On success the target is retained for explicit inspection/cleanup. On restore or
+verification failure, the new target/proof and bounded sanitized diagnostic report
+are retained; no blind automatic retry, overwrite or destructive cleanup. After
+review, use the existing exact-owned cleanup entry point with the **new** run ID
+and new evidence directory:
+
+```sh
+python -m app.ops.postgresql_backup_restore \
+  --evidence-dir /new-evidence/recovery-20261025 \
+  --cleanup-run-id NEW_RUN_ID
+```
+
+The native acceptance test starts/exits the producer subprocess, verifies both old
+databases absent and old proof's cleanup records, then recovers in a new subprocess.
+It checks real restored contents/audit, old-proof refusal, existing-target refusal,
+corrupt and mismatched retained packages rejected before target/output creation,
+original byte hashes, and explicit new-target-only cleanup. Evidence is under
+`ci-results/retained-synthetic-restore/` in the existing backend artifact. Unit tests
+also cover pre-write version/schema/fixture gates and retained failed-restore
+proof/diagnostics. Existing workflows, dependencies, migrations and tests remain
+unchanged. Runtime acceptance requires the current PR/main CI artifact, not syntax
+checks or previous package evidence.
+
+This closes the bounded local synthetic retained-recovery capability; it does not
+complete `ops-restore`, company RPO/RTO/retention, encrypted backup storage/access,
+actual target restore or human disaster-recovery acceptance. Do not generate more
+microtest/evidence-only packages automatically. Keep82%; next operational work
+requires the user's actual target/backup-policy/acceptance-owner decisions, not
+invented production settings or automatic retention/deletion rules.
