@@ -6,7 +6,7 @@
     "package": "ssr-asr-pr139-evidence-reconciliation",
     "evidence": "docs/ssr-asr-release-evidence-initialization-consistency-safety.md",
     "business_acceptance_increment": 0,
-    "resume_pr": null,
+    "resume_pr": 140,
     "branch": "codex/ssr-asr-pr139-evidence-reconciliation",
     "state": "pr139_evidence_reconciled_waiting_reconciliation_pr_ci",
     "implementation_commit": "04c8eca1bf963a4b3bc2b4d7b6431a5b8016187a",
@@ -44,7 +44,9 @@
       "Initialization-envelope consistency validates one synthetic response and does not attest underlying records, identities or authority",
       "CI and provider builds are not browser, device, public performance or formal release acceptance",
       "Render live source remains PR124; no new backend deployment was produced by frontend-only PR139"
-    ]
+    ],
+    "reconciliation_pr": 140,
+    "reconciliation_initial_commit": "889193858615c07276409a9cacfa08c944e3aede"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
