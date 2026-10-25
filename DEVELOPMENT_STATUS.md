@@ -1,3 +1,14 @@
+## 2026-10-25 剩余验收优先级：先做隔离合成 PostgreSQL 备份恢复
+
+用户已批准“接受你的建议，请执行”，将下一阶段从重复 SSR/ASR 边界加固转向剩余验收，先做 `isolated-synthetic-postgresql-backup-restore-rehearsal`。授权协调记录：[PR145 评论](https://github.com/Wang106/SoftwareLifeCycle/pull/145#issuecomment-6397930846)。
+
+- 基线 main：`16f16e10582ee65b84794c8930603d2d47d9f2fd`；原唯一执行方已完成 PR146，开放 PR 为 0。PR146 head `769f159dcafab9985f8adbf45246335b60063828`；PR CI `40195254158` 与 main CI `40196033038` 三项 success。完整证据：[PR146 最终评论](https://github.com/Wang106/SoftwareLifeCycle/pull/146#issuecomment-6398149775)。
+- 基线 provider：Cloudflare production build `4b60c00e-339c-4892-a473-4f2dbb22c1be` / version `c1f951f0-ca1b-4ef7-8f2d-0ca113b7fd56` success；Actions deploy `40196919935` / wake `40196919923` skipped；Render 无 PR146 新部署，仍旧 live `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。以上仅为基线，不代替本规划 PR 的结果。
+- 本轮为 `remaining-acceptance-backup-restore-priority` 规划路由包，独立分支 `codex/remaining-acceptance-backup-restore-priority`，使用 Codex / ChatGPT Work；没有实施或执行恢复。只更新计划/交接，不修改产品、身份、凭据、CI、调度器或部署权限。
+- 恢复顺序：先完成本规划 PR 的精确 head CI、受保护合并、main CI 和提供方分别核验；最终证据写本 PR 评论。然后原唯一执行方重读 main/开放 PR/分支，只推进上述恢复演练包，不并发、不为本规划另建递归对账包。
+- 下一包边界与验收：[合成恢复合同](docs/isolated-synthetic-postgresql-backup-restore-rehearsal.md)。仅临时本地合成源库和新建独立目标库，显式专用名称及所有权；禁默认/已有/远端业务库，manifest/checksum、schema/data/audit 一致性及失败保护，清理仅限本轮拥有资源。实际备份恢复不能用迁移往返替代。
+- 业务 36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`；所有固定里程碑不变。合成演练不等于公司灾备、保留策略或正式发布验收；公共只读、OIDC/真实身份/真实业务写入/内网默认关闭不变。
+
 ## 2026-10-25 PR#145 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `0597364a958cd06776bafbb892680dbd7c02c80b` 为唯一事实源；启动时开放 PR 为 0，[PR#145](https://github.com/Wang106/SoftwareLifeCycle/pull/145) 已完成精确 head CI、受保护合并及 main/Cloudflare/Render/Actions 分项核验。因此本轮只推进文档包 `ssr-asr-pr145-evidence-reconciliation`，独立分支 `codex/ssr-asr-pr145-evidence-reconciliation`，[PR#146](https://github.com/Wang106/SoftwareLifeCycle/pull/146)，不重复 UUID 身份安全实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。

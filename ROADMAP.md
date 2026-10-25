@@ -1,3 +1,7 @@
+## 当前下一包优先级（2026-10-25 用户已批准）
+
+先完成在途 PR/CI/部署核验，再由原唯一 Codex / ChatGPT Work 执行方推进 `isolated-synthetic-postgresql-backup-restore-rehearsal`，合同见 [隔离合成备份恢复演练](docs/isolated-synthetic-postgresql-backup-restore-rehearsal.md)。不再默认选择重复 SSR/ASR parser 边界加固或递归文档包；本次规划不勾选任何验收项，不改变 36/44=82% 或七计划里程碑。真实公司恢复/保留策略/内网与生产验收仍未完成。
+
 # Roadmap
 
 This roadmap is evidence-based. Checked items exist in the current repository; unchecked items are proposals, not commitments or completed functionality. Priority may change through a `规划` handoff.
