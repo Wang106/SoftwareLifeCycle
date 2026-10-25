@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import copy
+import json
 import os
 import subprocess
+from contextlib import nullcontext
 from pathlib import Path
 
 import pytest
@@ -20,6 +23,8 @@ LOCAL_URL = "postgresql+psycopg://slc_ci:secret@127.0.0.1:5432/software_lifecycl
     [
         ("sqlite:///local.db", "real PostgreSQL"),
         ("postgresql://user:secret@db.example/company", "loopback"),
+        ("postgresql://user:secret@localhost/postgres", "loopback"),
+        ("postgresql://user@127.0.0.1/postgres", "password"),
         ("postgresql://user:secret@127.0.0.1/software_lifecycle", "application/default"),
         ("postgresql://user:secret@127.0.0.1/postgres?sslmode=disable", "options"),
     ],
@@ -48,13 +53,14 @@ def test_rehearsal_refuses_equal_or_existing_database(monkeypatch):
     admin = rehearsal.PostgresAdmin.from_url(LOCAL_URL)
     with pytest.raises(rehearsal.RehearsalError, match="must be different"):
         rehearsal.require_absent(admin, "same", "same")
-    monkeypatch.setattr(rehearsal, "database_metadata", lambda *_: (True, "slc_ci"))
+    monkeypatch.setattr(rehearsal, "database_metadata", lambda *_: (True, "slc_ci", None))
     with pytest.raises(rehearsal.RehearsalError, match="existing database"):
         rehearsal.require_absent(admin, "slc_rehearsal_0123456789ab_target")
 
 
-def test_cleanup_refuses_wrong_name_before_database_access(monkeypatch):
+def test_cleanup_refuses_wrong_name_before_database_access(tmp_path, monkeypatch):
     admin = rehearsal.PostgresAdmin.from_url(LOCAL_URL)
+    proof = rehearsal.new_ownership_proof("0123456789ab", admin)
     called = False
 
     def unexpected(*_args, **_kwargs):
@@ -64,13 +70,47 @@ def test_cleanup_refuses_wrong_name_before_database_access(monkeypatch):
 
     monkeypatch.setattr(rehearsal, "database_metadata", unexpected)
     with pytest.raises(rehearsal.RehearsalError, match="unowned"):
-        rehearsal.drop_owned_database(admin, "0123456789ab", "postgres", "source")
+        rehearsal.drop_owned_database(
+            admin, "0123456789ab", "postgres", "source", proof, tmp_path / "proof.json"
+        )
     assert called is False
+
+
+def test_cleanup_requires_persisted_run_created_proof_before_database_access(tmp_path, monkeypatch):
+    admin = rehearsal.PostgresAdmin.from_url(LOCAL_URL)
+    run_id = "0123456789ab"
+    database = rehearsal.owned_database_name(run_id, "source")
+    proof = rehearsal.new_ownership_proof(run_id, admin)
+    monkeypatch.setattr(
+        rehearsal, "database_metadata", lambda *_: pytest.fail("must reject before database access")
+    )
+    with pytest.raises(rehearsal.RehearsalError, match="does not cover"):
+        rehearsal.drop_owned_database(admin, run_id, database, "source", proof, tmp_path / "proof.json")
+    with pytest.raises(rehearsal.RehearsalError, match="Persisted ownership proof"):
+        rehearsal.load_ownership_proof(tmp_path / "missing.json", run_id, admin)
+
+
+def test_cleanup_refuses_same_owner_database_without_exact_run_marker(tmp_path, monkeypatch):
+    admin = rehearsal.PostgresAdmin.from_url(LOCAL_URL)
+    run_id = "0123456789ab"
+    database = rehearsal.owned_database_name(run_id, "source")
+    proof = rehearsal.new_ownership_proof(run_id, admin)
+    marker = rehearsal.ownership_marker(run_id, "source", proof["token"])
+    proof["created_databases"]["source"] = {
+        "name": database, "marker": marker, "created_at": rehearsal.utc_now(),
+    }
+    monkeypatch.setattr(rehearsal, "connect", lambda *_args, **_kwargs: nullcontext(object()))
+    monkeypatch.setattr(rehearsal, "_database_metadata", lambda *_: (True, admin.user, "pre-existing"))
+    with pytest.raises(rehearsal.RehearsalError, match="exact run-created marker"):
+        rehearsal.drop_owned_database(admin, run_id, database, "source", proof, tmp_path / "proof.json")
 
 
 def test_native_client_password_is_environment_only(monkeypatch):
     admin = rehearsal.PostgresAdmin.from_url(LOCAL_URL)
     observed = {}
+    monkeypatch.setenv("PGHOSTADDR", "198.51.100.25")
+    monkeypatch.setenv("PGSERVICE", "unsafe-service")
+    monkeypatch.setenv("PGOPTIONS", "-c search_path=unsafe")
     monkeypatch.setattr(rehearsal.shutil, "which", lambda executable: f"/usr/bin/{executable}")
 
     def fake_run(command_line, **kwargs):
@@ -82,6 +122,25 @@ def test_native_client_password_is_environment_only(monkeypatch):
     assert rehearsal.native_version("pg_dump", admin) == "pg_dump 16.0"
     assert "secret" not in " ".join(observed["command"])
     assert observed["env"]["PGPASSWORD"] == "secret"
+    assert all(key not in observed["env"] for key in ("PGHOSTADDR", "PGSERVICE", "PGOPTIONS"))
+
+
+@pytest.mark.parametrize("key", ["PGHOSTADDR", "PGSERVICE", "PGOPTIONS", "PGPASSWORD"])
+def test_psycopg_connections_fail_closed_on_inherited_libpq_environment(key, monkeypatch):
+    admin = rehearsal.PostgresAdmin.from_url(LOCAL_URL)
+    monkeypatch.setenv(key, "unsafe")
+    monkeypatch.setattr(rehearsal.psycopg, "connect", lambda **_kwargs: pytest.fail("must not connect"))
+    with pytest.raises(rehearsal.RehearsalError, match=key):
+        with rehearsal.connect(admin):
+            pass
+
+
+def test_sqlalchemy_migration_fails_closed_on_inherited_libpq_environment(tmp_path, monkeypatch):
+    admin = rehearsal.PostgresAdmin.from_url(LOCAL_URL)
+    monkeypatch.setenv("PGOPTIONS", "-c search_path=unsafe")
+    monkeypatch.setattr(rehearsal.command, "upgrade", lambda *_args: pytest.fail("must not migrate"))
+    with pytest.raises(rehearsal.RehearsalError, match="PGOPTIONS"):
+        rehearsal.migrate_source(tmp_path, admin, "slc_rehearsal_0123456789ab_source")
 
 
 def manifest_for(path: Path, run_id: str) -> dict:
@@ -153,6 +212,24 @@ def test_pull_request_manifest_uses_exact_feature_parent(tmp_path, monkeypatch):
     assert rehearsal.git_commits(tmp_path) == (feature, merge)
 
 
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda target: target["fixture"]["supplier"].__setitem__("name", "corrupted supplier"),
+        lambda target: target["fixture"]["project"].__setitem__("customer_id", "0" * 36),
+    ],
+)
+def test_equal_counts_cannot_hide_canonical_data_or_relationship_corruption(mutate):
+    run_id = "0123456789ab"
+    fixture = rehearsal.canonical_fixture(run_id, rehearsal.fixture_ids(run_id))
+    source = {"counts": {"suppliers": 1, "projects": 1}, "fixture": fixture}
+    target = copy.deepcopy(source)
+    mutate(target)
+    assert target["counts"] == source["counts"]
+    with pytest.raises(rehearsal.RehearsalError, match="inventory differs"):
+        rehearsal.assert_restored_inventory_matches(source, target)
+
+
 def test_native_postgresql_backup_restore_rehearsal(tmp_path):
     admin_url = os.environ.get("TEST_POSTGRES_URL")
     if not admin_url:
@@ -175,3 +252,5 @@ def test_native_postgresql_backup_restore_rehearsal(tmp_path):
     }
     assert report["cleanup"] == "owned_databases_dropped"
     assert (evidence_dir / "postgresql-backup-restore-rehearsal.json").is_file()
+    proof = json.loads((evidence_dir / report["ownership_proof"]).read_text())
+    assert {item["role"] for item in proof["dropped_databases"]} == {"source", "target"}

@@ -1,3 +1,12 @@
+## 2026-10-25 PR#148 用户授权安全修复交接（Codex / ChatGPT Work）
+
+- 当前唯一工作：现有 Draft [PR#148](https://github.com/Wang106/SoftwareLifeCycle/pull/148)，分支 `codex/isolated-synthetic-postgresql-backup-restore-rehearsal`；不新建分支、PR 或并发包。用户授权边界：[PR 评论](https://github.com/Wang106/SoftwareLifeCycle/pull/148#issuecomment-6399128661)。
+- 旧 head `176dd6b74890c9e6ccbc65e04405b65b27200f9c` / CI `40203654766` 三项 success，artifact `12602947135` 的 `source_commit` 已精确绑定且 native 恢复成功；但该 head 未满足后续[安全复核](https://github.com/Wang106/SoftwareLifeCycle/pull/148#issuecomment-6399058742)，不得用于合并。
+- 当前修复范围仅三项：隔离/拒绝继承 libpq 环境覆盖；使用持久 proof 与数据库 marker 证明 exact-run 创建后才允许清理；完整规范 fixture 字段及 supplier→software→release、customer→project 关系比对。commit provenance 修复继续保留。
+- 本地验证：23 项 fail-closed 定向测试通过；含既有 domain/config 为 50 passed、1 native deselected（本地无 PostgreSQL client/service）。公共只读与身份/业务写入/内网边界未变；无 CI、调度、权限、凭据、计费或 provider 配置变更。
+- 恢复顺序：发布同一 PR 新 head；确认相对最新 main `behind 0`；等待 Backend/PostgreSQL、Frontend、CI acceptance 三项新运行 success；下载新 artifact，核验精确 `source_commit`、ownership proof/markers、完整 canonical fixture、native restore、append-only 与清理。合格后才解除 Draft、受保护合并，并分别核验 main CI、Cloudflare、Render 与 Actions。
+- 进度不变：业务 36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`。下一包为 `null`；PR#148 闭环前不选择其他包。
+
 ## 2026-10-25 隔离合成 PostgreSQL 原生备份恢复演练交接（Codex / ChatGPT Work）
 
 - 唯一事实源：main `c8c6f415d1c1aacd52d909f686b000c96b6a5e16`；启动时开放 PR 为 0。PR#147 已闭环：head `c98d4708cb9476fc12d4ab7856dd70f2c0598ebb` / CI `40197455166`，main / CI `40198315366`，精确 provider 证据见 [PR#147 最终评论](https://github.com/Wang106/SoftwareLifeCycle/pull/147#issuecomment-6398468205)。
