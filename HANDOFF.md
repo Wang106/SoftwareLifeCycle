@@ -2,7 +2,7 @@
 
 ## 2026-10-25 PR#137 已合并证据对账（Codex / ChatGPT Work）
 
-从最新 main `a02f083ab6d5741ff4d3531af268f098fb748665` 建立独立分支 `codex/ssr-asr-pr137-evidence-reconciliation`。启动时开放 PR 为 0；本轮唯一包 `ssr-asr-pr137-evidence-reconciliation` 只将 PR#137 已完成的精确 CI、合并与提供方证据写回账本，不重复实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+从最新 main `a02f083ab6d5741ff4d3531af268f098fb748665` 建立独立分支 `codex/ssr-asr-pr137-evidence-reconciliation`。启动时开放 PR 为 0；本轮唯一包 `ssr-asr-pr137-evidence-reconciliation` 只将 PR#137 已完成的精确 CI、合并与提供方证据写回账本，不重复实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。当前为 [PR#138](https://github.com/Wang106/SoftwareLifeCycle/pull/138)，初始对账 head `a1cae8ac2e62d7b802c782b37f62469d7256e3a2`。
 
 PR#137 最终 head `b83b3a62f05386c949d3e6a82c6e33fca82cc807` 已合并为 main `a02f083ab6d5741ff4d3531af268f098fb748665`。PR CI `40152473808` 与 main CI `40153058706` 三项必需检查全部 success：后端 2368 passed、PostgreSQL 模块 258 且无 skip、迁移 0029 往返成功；前端 1568/1568、0 fail/skip，Next/OpenNext、Worker 配置及禁用认证双语 SSR 通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/137#issuecomment-6392338839 。
 
