@@ -1,6 +1,19 @@
 # SoftwareLifeCycle Development Handoff
 
 
+## 2026-10-25 PR#143 已合并证据对账交接（Codex / ChatGPT Work）
+
+- 唯一事实源：main `a54f493091e1cef8361578db9ca61ebe0b807eb1`；启动时开放 PR 为 0。
+- 本轮唯一包：`ssr-asr-pr143-evidence-reconciliation`；分支 `codex/ssr-asr-pr143-evidence-reconciliation`；当前 [PR#144](https://github.com/Wang106/SoftwareLifeCycle/pull/144)。使用 Codex / ChatGPT Work，无额外付费模型 API、额度购买或用户本地常驻 CLI。
+- 已对账 PR#143：最终 head `f6c31707364c845d469efd4bc7ea945d15247022`，实现检查点 `b845925198de2c848a372d08804ee916d146dedd`，受保护 squash 合并 main `a54f493091e1cef8361578db9ca61ebe0b807eb1`。
+- CI：PR [40182987683](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40182987683) 与 main [40183850209](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40183850209) 三项必需检查全部 success；main 后端 2368 passed、258 个 PostgreSQL 模块用例无 skip、迁移单头/SQL/往返成功，前端 1572/1572、0 fail/skip，Next/OpenNext 与禁用认证双语 SSR 通过。
+- Provider：Cloudflare Preview deployment `c5edd98a-e5aa-4bd0-91d0-d5c0155c951c` success；production 因重新登录要求阻塞、未验收，未复用旧证据。Actions deployment `40184812216` 与 continuation `40184812207` skipped。Render 无 PR#143 新 deploy/event，仍为旧 live `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。
+- 最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/143#issuecomment-6396505063 。
+- 范围：仅三份状态账本；不改产品、API、数据库、迁移、Seed、依赖、身份/写入门控、CI、调度、计费或 provider 配置。公共/演示只读，OIDC、真实身份、业务写入、内网部署和正式发布未验收。
+- 进度：业务 36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`；增量 0。
+- 恢复顺序：只处理 PR#144；确认最终精确 head 相对最新 main behind 0，等待 Backend/PostgreSQL、Frontend、CI acceptance 三项 success 后受保护合并，再分别核验 main CI、Cloudflare、Render 与 Actions并把最终证据写入 PR 评论。下一实现包为 `null`，完成前不并发其他开发。
+
+
 ## 2026-10-25 SSR/ASR 跨发布证据族身份安全降级交接（Codex / ChatGPT Work）
 
 - 唯一事实源：main `575d3b47ca0fd365d20f093b063138de04358e0e`；启动时开放 PR 为 0，PR#142 已闭环。
