@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "25cfe098c43cd44806e3ef5489b658b6ca0014da",
+  "baseline_commit": "76f32c465281fc0a3e97cffbb9fe9529d6ce3cd8",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-release-evidence-initialization-consistency-safety",
+    "package": "ssr-asr-pr139-evidence-reconciliation",
     "evidence": "docs/ssr-asr-release-evidence-initialization-consistency-safety.md",
     "business_acceptance_increment": 0,
-    "resume_pr": 139,
-    "branch": "codex/ssr-asr-release-evidence-initialization-consistency-safety",
-    "state": "pr_open_waiting_exact_head_ci",
+    "resume_pr": 140,
+    "branch": "codex/ssr-asr-pr139-evidence-reconciliation",
+    "state": "pr139_evidence_reconciled_waiting_reconciliation_pr_ci",
     "implementation_commit": "04c8eca1bf963a4b3bc2b4d7b6431a5b8016187a",
     "local_targeted_tests": 32,
     "local_frontend_tests": 1569,
@@ -18,32 +18,35 @@
     "local_disabled_auth_ssr": "passed",
     "local_typescript": "passed",
     "local_worker_config_check": "passed",
-    "verified_previous_pr": 138,
-    "verified_pr_head": "a7bf911939e4e64f63b28d4ec13d8f631510655e",
-    "verified_pr_ci": 40154921476,
-    "verified_main": "25cfe098c43cd44806e3ef5489b658b6ca0014da",
-    "verified_main_ci": 40155990514,
-    "cloudflare_build": "88d7d7fb-acfe-4fb1-a09a-f4e049f245c1",
-    "cloudflare_version": "fcb800e0-3b2d-4f11-851a-c70864e54ca2",
+    "verified_previous_pr": 139,
+    "verified_pr_head": "2a9fcdb2d039c9fb6b6b286016ef64ca4da3aad0",
+    "verified_pr_ci": 40166100960,
+    "verified_main": "76f32c465281fc0a3e97cffbb9fe9529d6ce3cd8",
+    "verified_main_ci": 40166862155,
+    "cloudflare_preview_build": "d9119d6e-a647-432e-abbb-1050c258d55e",
+    "cloudflare_production_build": "a5f2b81b-06c2-4881-9283-9edfec3224b1",
+    "cloudflare_production_version": "ec487478-ef59-4be7-a870-baa4272b9c51",
     "render_live_deploy": "dep-dbduk78u01pc73dvp0ag",
     "render_source_commit": "12900d6c8b26002a9eaa611a40d552e550662462",
     "render_status": "live_previous_backend_source_no_pr139_deployment",
     "actions_deploy": {
-      "run_id": 40156697402,
+      "run_id": 40167501116,
       "conclusion": "skipped"
     },
     "actions_wake": {
-      "run_id": 40156697391,
+      "run_id": 40167501050,
       "conclusion": "skipped"
     },
-    "next_package": "ssr-asr-pr139-evidence-reconciliation",
+    "final_evidence_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/139#issuecomment-6394169918",
+    "next_package": null,
     "limitations": [
-      "The current package still requires its own exact-head CI, protected merge and post-merge provider evidence",
+      "This documentation reconciliation package still requires its own exact-head CI, protected merge and post-merge provider evidence in its PR final comment",
       "Initialization-envelope consistency validates one synthetic response and does not attest underlying records, identities or authority",
       "CI and provider builds are not browser, device, public performance or formal release acceptance",
       "Render live source remains PR124; no new backend deployment was produced by frontend-only PR139"
     ],
-    "remote_initial_commit": "04c8eca1bf963a4b3bc2b4d7b6431a5b8016187a"
+    "reconciliation_pr": 140,
+    "reconciliation_initial_commit": "889193858615c07276409a9cacfa08c944e3aede"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
