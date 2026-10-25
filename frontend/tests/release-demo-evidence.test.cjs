@@ -46,8 +46,15 @@ for(const locale of ['en','zh'])test('unknown release type stays visible without
  assert.ok(!html.includes('/releases/application/exact-release/readiness'));
  assert.ok(!html.includes('/releases/application/exact-release/passport'));
 });
-for(const [name,data,expected] of [['unavailable',null,'Evidence API unavailable'],['not installed',{sample_only:true,initialized:false,items:[row]},'Evidence samples not installed'],['foreign response',{sample_only:false,initialized:true,items:[row]},'Evidence API unavailable']])test(name+' never fabricates proof',async()=>{
+for(const [name,data,expected] of [['unavailable',null,'Evidence API unavailable'],['not installed',{sample_only:true,initialized:false,items:[]},'Evidence samples not installed'],['foreign response',{sample_only:false,initialized:true,items:[row]},'Evidence API unavailable']])test(name+' never fabricates proof',async()=>{
  const {html}=await render(data);assert.ok(html.includes(expected)&&!html.includes('APR-2')&&!html.includes('RD-2'));
+});
+test('uninitialized responses carrying evidence rows fail closed',async()=>{
+ const {html}=await render({sample_only:true,initialized:false,items:[row]});
+ assert.ok(html.includes('Evidence API unavailable'));
+ assert.ok(!html.includes('Evidence samples not installed'));
+ assert.ok(!html.includes('APR-2')&&!html.includes('RD-2'));
+ assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
 });
 test('malformed list or row fails closed without throwing during SSR',async()=>{
  const malformed=[{sample_only:true,initialized:true,items:null},

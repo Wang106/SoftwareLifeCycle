@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-25 SSR/ASR 演示初始化状态一致性安全降级（Codex / ChatGPT Work）
+
+本轮以最新 main `25cfe098c43cd44806e3ef5489b658b6ca0014da`（PR#138）为唯一事实源；启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。本轮只推进 `ssr-asr-release-evidence-initialization-consistency-safety`，独立分支 `codex/ssr-asr-release-evidence-initialization-consistency-safety`，实现检查点 `04c8eca1bf963a4b3bc2b4d7b6431a5b8016187a`，当前为 [PR#139](https://github.com/Wang106/SoftwareLifeCycle/pull/139)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+`/demo/releases` 的共享解析器现在要求 `initialized=false` 时 `items` 必须为空。合法的空响应仍显示“证据样例未安装”；若未初始化标志与一个或多个证据行同时出现，整份响应沿既有 API 不可用状态安全降级，不再静默丢弃行并把矛盾响应标成正常未安装，也不显示其中的审批、决策或正式发布结论。契约见 `docs/ssr-asr-release-evidence-initialization-consistency-safety.md`。
+
+本地验证已通过：定向 32/32、完整前端 1569/1569（0 failed/0 skipped）、自动化 52/52、TypeScript `--noEmit`、Worker 配置、Next.js 16.4.2、OpenNext 1.20.12 Cloudflare 构建及禁用认证双语 SSR/路由。后端和真实 PostgreSQL 留给 PR#139 最终精确 head 的三项远端 CI 独立验证。
+
+基线 main CI [40155990514](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40155990514) 三项 success，Cloudflare production build `88d7d7fb-acfe-4fb1-a09a-f4e049f245c1` / version `fcb800e0-3b2d-4f11-851a-c70864e54ca2` success；Actions deploy `40156697402` 与 wake `40156697391` skipped。Render `My Workspace` 未暂停且没有新部署，最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。这些只证明本包起点，不能冒充 PR#139 的 CI 或部署结果。
+
+本包不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；初始化响应一致不证明真实审批、Snapshot 来源或正式发布。下一包为 `ssr-asr-pr139-evidence-reconciliation`，仅在 PR#139 最终精确 head 三项 CI success、包含最新 main并受保护合并，且 main/Cloudflare/Render/Actions 分项核验后进行。
+
 ## 2026-10-25 PR#137 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `a02f083ab6d5741ff4d3531af268f098fb748665` 为唯一事实源；启动时开放 PR 为 0，PR#137 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr137-evidence-reconciliation`，分支 `codex/ssr-asr-pr137-evidence-reconciliation`，不重复 Readiness Snapshot 身份绑定实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。当前为 [PR#138](https://github.com/Wang106/SoftwareLifeCycle/pull/138)，初始对账 head `a1cae8ac2e62d7b802c782b37f62469d7256e3a2`。

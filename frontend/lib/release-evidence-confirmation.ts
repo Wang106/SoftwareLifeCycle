@@ -179,7 +179,9 @@ export function parseReleaseEvidenceDemo(value: unknown): ReleaseEvidenceDemo | 
   const root = object(value);
   if (!root || root.sample_only !== true || !boolean(root.initialized) || !Array.isArray(root.items)
       || root.items.length > 200) return null;
-  if (!root.initialized) return {sample_only: true, initialized: false, items: []};
+  if (!root.initialized) return root.items.length === 0
+    ? {sample_only: true, initialized: false, items: []}
+    : null;
   const items = root.items.map(parseDemoRow);
   if (items.some(item => !item)) return null;
   const parsedItems = items as ReleaseEvidenceDemoRow[];
