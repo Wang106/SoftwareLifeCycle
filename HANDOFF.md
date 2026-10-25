@@ -1,5 +1,21 @@
 # SoftwareLifeCycle Development Handoff
 
+
+## 2026-10-25 PR#141 已合并证据对账交接（Codex / ChatGPT Work）
+
+- 唯一事实源：main `8a0d95be8531e2dd70c066070bc4f62da57dd2a3`；启动时开放 PR 为 0。
+- 本轮唯一包：`ssr-asr-pr141-evidence-reconciliation`；分支 `codex/ssr-asr-pr141-evidence-reconciliation`；当前 [PR#142](https://github.com/Wang106/SoftwareLifeCycle/pull/142)。只更新 `DEVELOPMENT_STATUS.md`、`HANDOFF.md`、`docs/development-plan-progress.json`，不重复实现或并发新功能。
+- 工具边界：使用 Codex / ChatGPT Work；未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+- PR#141：实现检查点 `11f2aa5dd779b8a657b485c1c988bd5de12d6674`；最终 head `d95bae2708f160a893d648b9ac929dc194261994`；受保护 squash main `8a0d95be8531e2dd70c066070bc4f62da57dd2a3`。
+- CI：PR [40177413047](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40177413047) 与 main [40178098940](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40178098940) 的 Backend/PostgreSQL、Frontend、CI acceptance 全部 success；本地实现验证为定向 33/33、前端 1570/1570、自动化 52/52，TypeScript、Worker、Next/OpenNext 和禁用认证双语 SSR 通过。
+- 最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/141#issuecomment-6395696878 。
+- Cloudflare：Preview build `284e15a8-73c9-4294-81c2-62ea6a725a0a` success；production build `81111fbd-5af4-4cef-8ed9-6cf807761aa5` / version `503ce380-86bd-46f9-a1ee-eea63747e8dd` success。
+- Actions：deployment [40178884724](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40178884724) skipped；continuation [40178884779](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40178884779) skipped。
+- Render：PR#141 合并后无新 deploy/event；最新 live `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462` 是旧后端来源，不是本包部署。
+- 进度：业务 36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`；增量 0。
+- 验收与边界：双语、手机端、Windows 功能验收 OK；首屏性能未验收。公共/演示只读，OIDC、真实身份、业务写入和公司内网部署关闭；响应一致与审批通过均不等于正式发布。
+- 恢复顺序：PR#142 最终精确 head 三项 CI success且相对最新 main behind 0 后才受保护合并；随后分别核验 main CI、Cloudflare、Render 与 Actions，并把本对账包最终证据写入 PR#142 评论。`next_package=null`；下轮重读最新 main/HANDOFF 后再选择新的非重复 SSR/ASR 小包。
+
 ## 2026-10-25 SSR/ASR 演示空初始化证据家族安全降级（Codex / ChatGPT Work）
 
 从最新 main `4c1fa0b7314ab1f803ab43e84bd8db6166890497` 建立独立分支 `codex/ssr-asr-release-evidence-empty-initialized-family-safety`；启动时开放 PR 为 0，PR#140 已闭环，旧候选已被 main 覆盖。本轮唯一包 `ssr-asr-release-evidence-empty-initialized-family-safety` 的远端实现检查点为 `11f2aa5dd779b8a657b485c1c988bd5de12d6674`，当前为 [PR#141](https://github.com/Wang106/SoftwareLifeCycle/pull/141)。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
