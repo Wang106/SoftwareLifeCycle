@@ -1,6 +1,6 @@
 # Isolated synthetic PostgreSQL backup / restore rehearsal
 
-Status: user-authorized bounded safety repair in PR #148; draft until a fresh exact-head PostgreSQL artifact verifies all controls. Not company recovery or production acceptance. User approved this priority and the three-item safety repair on 2026-10-25.
+Status: PR #148 merged and exact-main native/provider evidence verified; see final comment6399485528. Native negative integration is implemented on the next feature branch, pending fresh exact-head CI. Not company recovery or production acceptance.
 Package: `isolated-synthetic-postgresql-backup-restore-rehearsal`.
 
 ## Ownership and order
@@ -52,3 +52,13 @@ TEST_POSTGRES_URL='postgresql+psycopg://USER:PASSWORD@127.0.0.1:5432/postgres' \
 The complete backend suite executes the same native rehearsal in `test_postgresql_backup_restore_rehearsal.py` whenever `TEST_POSTGRES_URL` is configured. Existing CI already provides an ephemeral loopback PostgreSQL service and uploads `ci-results`; no workflow, credentials, scheduler or deployment configuration is changed. Unit coverage rejects hostnames/remote/default/optioned/uncredentialed connections, inherited libpq destination/service/options/password settings on every Python connection path, invalid or unowned names, equal/existing targets, missing/mismatched ownership proof or database markers, corrupt or mismatched manifests, missing archive objects, failed native restore, and equal-count canonical data/relationship corruption before the exact-head integration rehearsal runs.
 
 This Work environment has neither PostgreSQL client binaries nor a local database, so it cannot supply native restore evidence locally. Local verification covers 23 fail-closed tests. The earlier exact-head CI artifact proved the native happy path and exact-head provenance, but an independent safety review required the additional environment, ownership and canonical-content protections above. A fresh exact-head backend CI artifact must re-prove the complete native dump/restore, run-marker cleanup and canonical comparison with no skipped test; missing clients, permissions, artifacts or any failed assertion fail the existing gate. Final exact head, CI, merge and provider evidence belongs in the package PR comment.
+
+## Native negative integration extension (pending exact-head CI)
+
+Package: `native-postgresql-restore-negative-integration`. User requested direct development; the current ChatGPT Work cloud task owns this feature branch, with the hourly executor excluded from duplicate work while it is active.
+
+`test_native_postgresql_restore_negative_integration` performs a fresh native dump/restore under `ci-results/restore-negative-integration/`, then operates only on that run's newly created restored target. It proves three real negative scenarios without mocked database metadata/inventories: equal-count supplier content corruption; equal-count customer replacement plus project FK rewire with all constraints enabled; and a mismatched live DB marker preventing cleanup while preserving database/data/proof. Each scenario independently fingerprints all persisted fields from six source fixture tables before/after. The test reverses only its own synthetic changes and confirms the target fingerprint returns to baseline, archive bytes are unchanged, and original persisted creation proof permits safe final cleanup. It never restores over an existing database or disables constraints.
+
+Run the existing PostgreSQL test module normally with TEST_POSTGRES_URL; no CI workflow change is needed. Fresh `negative-integration.json` reports source/checkout commits, per-case rejection evidence, counts/fingerprints and cleanup. On unexpected failure it marks failed and retains run-owned resources for diagnosis; follow the existing reviewed exact-run cleanup process. Expected asserted rejection is successful negative evidence, not an unexpected test failure. The main happy-path artifact remains separate at the parent ci-results path.
+
+Local syntax was checked; this cloud environment lacks runtime dependencies and PostgreSQL tools. Fresh full CI and downloaded exact-head evidence are still required; no native result is claimed yet. Neither this extension nor PR148 alone completes retention, approved company disaster recovery or the ops-restore milestone.

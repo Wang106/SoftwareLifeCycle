@@ -254,3 +254,165 @@ def test_native_postgresql_backup_restore_rehearsal(tmp_path):
     assert (evidence_dir / "postgresql-backup-restore-rehearsal.json").is_file()
     proof = json.loads((evidence_dir / report["ownership_proof"]).read_text())
     assert {item["role"] for item in proof["dropped_databases"]} == {"source", "target"}
+
+
+def test_native_postgresql_restore_negative_integration():
+    """Exercise live restored rows and live cleanup markers, never mock inventories."""
+    import uuid
+
+    from psycopg import sql
+
+    admin_url = os.environ.get("TEST_POSTGRES_URL")
+    if not admin_url:
+        pytest.skip("TEST_POSTGRES_URL required for native restore negative integration")
+    repo_root = Path(__file__).resolve().parents[2]
+    evidence_dir = repo_root / "ci-results" / "restore-negative-integration"
+    baseline = rehearsal.run_rehearsal(
+        repo_root=repo_root, admin_url=admin_url,
+        evidence_dir=evidence_dir, cleanup_on_success=False,
+    )
+    admin = rehearsal.PostgresAdmin.from_url(admin_url)
+    run_id = baseline["run_id"]
+    source, target = (baseline["owned_databases"][role] for role in ("source", "target"))
+    ids = rehearsal.fixture_ids(run_id)
+    proof_path = evidence_dir / baseline["ownership_proof"]
+    proof = rehearsal.load_ownership_proof(proof_path, run_id, admin)
+    report_path = evidence_dir / "negative-integration.json"
+    report = {
+        "status": "running", "run_id": run_id,
+        "source_commit": baseline["source_commit"],
+        "checkout_commit": baseline["checkout_commit"],
+        "owned_databases": baseline["owned_databases"],
+        "ownership_proof": baseline["ownership_proof"],
+        "scenarios": [], "cleanup": "retained_for_diagnosis",
+    }
+    tables = ("suppliers", "software_products", "customers", "projects", "releases", "audit_events")
+
+    def snapshot(database):
+        # Independent raw reads include all persisted fields, not inventory's projection.
+        with rehearsal.connect(admin, database) as connection:
+            rows = {
+                table: connection.execute(sql.SQL(
+                    "SELECT row_to_json(t) FROM {} t ORDER BY id"
+                ).format(sql.Identifier(table))).fetchall()
+                for table in tables
+            }
+        encoded = json.dumps(rows, sort_keys=True, separators=(",", ":")).encode()
+        return {"sha256": hashlib.sha256(encoded).hexdigest(),
+                "counts": {table: len(value) for table, value in rows.items()}}
+
+    def source_unchanged():
+        observed = snapshot(source)
+        assert observed == source_before
+        return observed["sha256"]
+
+    def assert_target_owned():
+        exists, owner, marker = rehearsal.database_metadata(admin, target)
+        assert exists and owner == admin.user
+        assert marker == proof["created_databases"]["target"]["marker"]
+
+    source_before = snapshot(source)
+    target_before = snapshot(target)
+    assert source_before == target_before
+    archive = evidence_dir / baseline["archive"]["file"]
+    archive_before = rehearsal.archive_digest(archive)
+    report["source_before"] = source_before
+    rehearsal.write_manifest(report_path, report)
+    try:
+        assert_target_owned()
+        with rehearsal.connect(admin, target) as connection:
+            connection.execute("UPDATE suppliers SET name = %s WHERE id = %s",
+                               ("Synthetic corrupted supplier", ids["supplier"]))
+        changed = snapshot(target)
+        assert changed["counts"] == target_before["counts"]
+        assert changed["sha256"] != target_before["sha256"]
+        with pytest.raises(rehearsal.RehearsalError, match="Canonical synthetic fixture data") as rejected:
+            rehearsal.inventory(admin, target, run_id, ids)
+        report["scenarios"].append({
+            "name": "equal_count_content_corruption", "rejected": True,
+            "diagnostic": str(rejected.value), "target_counts": changed["counts"],
+            "source_sha256_after": source_unchanged(),
+        })
+        with rehearsal.connect(admin, target) as connection:
+            connection.execute("UPDATE suppliers SET name = %s WHERE id = %s",
+                               (baseline["target_inventory"]["fixture"]["supplier"]["name"], ids["supplier"]))
+        assert snapshot(target) == target_before
+        rehearsal.inventory(admin, target, run_id, ids)
+        rehearsal.write_manifest(report_path, report)
+
+        # Replace the referenced customer inside one transaction. All FK/unique
+        # constraints stay enabled and every table still contains exactly one row.
+        alternate_id = str(uuid.uuid5(uuid.UUID(ids["customer"]), "negative-customer"))
+        assert_target_owned()
+        with rehearsal.connect(admin, target, autocommit=False) as connection:
+            connection.execute(
+                "INSERT INTO customers (id, code, name, region, status) VALUES (%s, %s, %s, 'OTHER', 'ACTIVE')",
+                (alternate_id, f"NEG-{run_id}", "Synthetic alternate customer"),
+            )
+            connection.execute("UPDATE projects SET customer_id = %s WHERE id = %s", (alternate_id, ids["project"]))
+            connection.execute("DELETE FROM customers WHERE id = %s", (ids["customer"],))
+            connection.commit()
+        changed = snapshot(target)
+        assert changed["counts"] == target_before["counts"]
+        assert changed["sha256"] != target_before["sha256"]
+        with rehearsal.connect(admin, target) as connection:
+            observed_customer = connection.execute("SELECT customer_id::text FROM projects WHERE id = %s", (ids["project"],)).fetchone()[0]
+        assert observed_customer == alternate_id and observed_customer != ids["customer"]
+        with pytest.raises(rehearsal.RehearsalError, match="Canonical synthetic fixture row is missing") as rejected:
+            rehearsal.inventory(admin, target, run_id, ids)
+        report["scenarios"].append({
+            "name": "equal_count_relationship_corruption", "rejected": True,
+            "diagnostic": str(rejected.value), "target_counts": changed["counts"],
+            "expected_customer_id": ids["customer"], "observed_customer_id": observed_customer,
+            "source_sha256_after": source_unchanged(),
+        })
+        customer = baseline["target_inventory"]["fixture"]["customer"]
+        with rehearsal.connect(admin, target, autocommit=False) as connection:
+            connection.execute(
+                "INSERT INTO customers (id, code, name, region, status) VALUES (%s, %s, %s, %s, %s)",
+                tuple(customer[key] for key in ("id", "code", "name", "region", "status")),
+            )
+            connection.execute("UPDATE projects SET customer_id = %s WHERE id = %s", (ids["customer"], ids["project"]))
+            connection.execute("DELETE FROM customers WHERE id = %s", (alternate_id,))
+            connection.commit()
+        assert snapshot(target) == target_before
+        rehearsal.inventory(admin, target, run_id, ids)
+        rehearsal.write_manifest(report_path, report)
+
+        assert_target_owned()
+        marker = proof["created_databases"]["target"]["marker"]
+        mismatched_marker = marker + ":negative-test"
+        with rehearsal.connect(admin) as connection:
+            connection.execute(sql.SQL("COMMENT ON DATABASE {} IS {}").format(sql.Identifier(target), sql.Literal(mismatched_marker)))
+        with pytest.raises(rehearsal.RehearsalError, match="without exact run-created marker") as rejected:
+            rehearsal.drop_owned_database(admin, run_id, target, "target", proof, proof_path)
+        assert rehearsal.database_metadata(admin, target) == (True, admin.user, mismatched_marker)
+        assert snapshot(target) == target_before
+        assert rehearsal.load_ownership_proof(proof_path, run_id, admin) == proof
+        report["scenarios"].append({
+            "name": "live_marker_mismatch_cleanup", "rejected": True,
+            "diagnostic": str(rejected.value), "database_preserved": True,
+            "target_sha256_after": snapshot(target)["sha256"],
+            "source_sha256_after": source_unchanged(),
+        })
+        # This is only undoing our own marker mutation on this run-created DB.
+        with rehearsal.connect(admin) as connection:
+            connection.execute(sql.SQL("COMMENT ON DATABASE {} IS {}").format(sql.Identifier(target), sql.Literal(marker)))
+        assert_target_owned()
+        assert rehearsal.archive_digest(archive) == archive_before
+        assert snapshot(target) == target_before
+        report["source_after"] = snapshot(source)
+        report["archive_sha256"] = archive_before
+        rehearsal.write_manifest(report_path, report)
+        for role, database in (("target", target), ("source", source)):
+            proof = rehearsal.load_ownership_proof(proof_path, run_id, admin)
+            rehearsal.drop_owned_database(admin, run_id, database, role, proof, proof_path)
+            assert rehearsal.database_metadata(admin, database)[0] is False
+        proof = rehearsal.load_ownership_proof(proof_path, run_id, admin)
+        assert {entry["role"] for entry in proof["dropped_databases"]} == {"source", "target"}
+        report.update(status="passed", cleanup="owned_databases_dropped")
+    except BaseException as exc:
+        report.update(status="failed", error_type=type(exc).__name__)
+        raise
+    finally:
+        rehearsal.write_manifest(report_path, report)
