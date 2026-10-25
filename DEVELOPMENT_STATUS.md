@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-25 PR#135 已合并证据对账（Codex / ChatGPT Work）
+
+本轮以最新 main `61a63a402b843a8670b88b4d5ab45490adb0a7b8` 为唯一事实源；启动时开放 PR 为 0，PR#135 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr135-evidence-reconciliation`，分支 `codex/ssr-asr-pr135-evidence-reconciliation`，不重复绑定一致性实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+PR#135 最终 head `476889c954d897b2697290c043b0e54ed73930f0`，PR CI `40146000294` 三项必需检查 success；合并后 main CI `40146814780` 亦三项 success。main 后端 `2368 passed`，PostgreSQL 模块 258 项且无 skip；前端 `1566/1566`、0 failed、0 skipped，Next/OpenNext、Worker 配置和禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/135#issuecomment-6391524711 。
+
+Cloudflare Preview deployment `1387c69f-9fb3-4519-a267-5e57bd594311` success；精确 main production build `7d7b8576-88fb-46e5-bf2b-cdc970173f09` / version `1088cb62-53f2-4d24-ab3d-53780e3f08de` success。Actions deployment `40147577631` 与 continuation `40147577642` 均 skipped。Render `My Workspace` 服务未暂停，但本前端/文档包没有新 deploy 或 event；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`，明确记为无本包新部署，不复用旧健康证据冒充成功。
+
+本对账包只更新 `DEVELOPMENT_STATUS.md`、`HANDOFF.md` 和 `docs/development-plan-progress.json`。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共/演示继续只读，OIDC、真实身份、业务写入、内网部署及正式发布未验收。发布本对账 PR 后，须等待其精确 head Backend/PostgreSQL、Frontend、CI acceptance 全部 success 且包含最新 main 才受保护合并；下一实现包为 `null`。
+
 ## 2026-10-25 SSR/ASR 发布证据绑定一致性安全降级（Codex / ChatGPT Work）
 
 本轮以最新 main `e5ce4249cd3f6636ab10fdff2a45c5e95dfc348e`（PR#134）为唯一事实源；启动时开放 PR 为 0，PR#134 的精确 head、main CI 与 Cloudflare 已核验，Render `My Workspace` 没有该纯文档包的新部署。旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。本轮只推进 `ssr-asr-release-evidence-binding-consistency-safety`，独立分支 `codex/ssr-asr-release-evidence-binding-consistency-safety`，实现检查点 `a436ffd6f6271184308b0a4a2e9a1f1533dd496c`。 当前为 [PR#135](https://github.com/Wang106/SoftwareLifeCycle/pull/135)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
