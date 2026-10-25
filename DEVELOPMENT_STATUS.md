@@ -2,7 +2,7 @@
 
 ## 2026-10-25 PR#137 已合并证据对账（Codex / ChatGPT Work）
 
-本轮以最新 main `a02f083ab6d5741ff4d3531af268f098fb748665` 为唯一事实源；启动时开放 PR 为 0，PR#137 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr137-evidence-reconciliation`，分支 `codex/ssr-asr-pr137-evidence-reconciliation`，不重复 Readiness Snapshot 身份绑定实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+本轮以最新 main `a02f083ab6d5741ff4d3531af268f098fb748665` 为唯一事实源；启动时开放 PR 为 0，PR#137 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr137-evidence-reconciliation`，分支 `codex/ssr-asr-pr137-evidence-reconciliation`，不重复 Readiness Snapshot 身份绑定实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。当前为 [PR#138](https://github.com/Wang106/SoftwareLifeCycle/pull/138)，初始对账 head `a1cae8ac2e62d7b802c782b37f62469d7256e3a2`。
 
 [PR#137](https://github.com/Wang106/SoftwareLifeCycle/pull/137) 最终 head `b83b3a62f05386c949d3e6a82c6e33fca82cc807`（实现检查点 `44a2254c59591f28d8b819859a591f704ed1b8ac`）已受保护 squash 合并为 main `a02f083ab6d5741ff4d3531af268f098fb748665`。PR 精确 head CI [40152473808](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40152473808) 与合并后 main CI [40153058706](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40153058706) 的 Backend/PostgreSQL、Frontend、CI acceptance 三项均 success：后端 2368 passed，PostgreSQL 模块 258 项且无 skip，迁移 `0029_changeover_batch_history` 往返成功；前端 1568/1568、0 failed、0 skipped，TypeScript、Next/OpenNext、Worker 配置与禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/137#issuecomment-6392338839 。
 
