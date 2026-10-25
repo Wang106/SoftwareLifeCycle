@@ -1,3 +1,15 @@
+## 2026-10-25 Native PostgreSQL restore negative integration — implementation checkpoint
+
+User requested direct development ("直接继续执行开发"). The current ChatGPT Work cloud task is the single implementation owner on `codex/native-postgresql-restore-negative-integration`; the hourly executor must not duplicate this active branch/package. [Ownership handoff](https://github.com/Wang106/SoftwareLifeCycle/pull/148#issuecomment-6399668902). No separate planning/reconciliation package.
+
+- Base main: `98c11b120f7e953fdd085f74db59bbf7b39f146a`, merged PR148. Its final PR head `798f75f3c767164c7aec1ab4c0601bb305358d5a`, PR CI40204772735 and main CI40205665065 passed; backend2392 / PostgreSQL282 / frontend1574, no skips. Main artifact12603958013 independently checked. [Final evidence](https://github.com/Wang106/SoftwareLifeCycle/pull/148#issuecomment-6399485528) supersedes older pending/draft snapshots below.
+- PR148 exact-main Cloudflare production build `9177c70b-f9c8-4e8f-8089-284cf7c47d26` succeeded; Render `dep-dbf1nmlg1s2s739rsu4g` is live at the same main. Actions40206539822/40206539931 were skipped. These are PREVIOUS-package evidence, not this feature's CI/deploy result.
+- This implementation adds a real native PostgreSQL negative integration test: committed equal-count content corruption, committed equal-count valid-FK relationship replacement, and live database-marker cleanup refusal. Independent raw all-field snapshots prove source preservation and target recovery; original archive checksum is unchanged; only exact run-created resources are cleaned with persisted proof.
+- Local cloud Python syntax compilation passed. This environment has neither pytest/backend dependencies nor PostgreSQL clients/service; native runtime acceptance is NOT locally verified. Existing unchanged full CI must execute the new native test, expose `ci-results/restore-negative-integration/negative-integration.json`, and pass exact-head backend/PostgreSQL/frontend checks before protected merge.
+- Current package CI, PR head, merge and deployment evidence are pending publication/verification, not inherited from PR148. Stop on unexpected failures and preserve owned diagnostic resources; expected asserted rejection is a passing negative case. No credentials, identity, CI/scheduler, production or deployment-permission changes.
+- Business remains36/44=82%; modules100/100-demo/100-demo/100/89/60/17; plans100/100/20/33/40/40/0. Synthetic negative evidence does not complete company disaster recovery, retention, production acceptance or `ops-restore`.
+- Next action: finish this feature's exact-head CI/artifact review and protected publication, then verify fresh main/provider states. No overlapping next package; select further acceptance only after this closes, without recursive evidence-only PRs.
+
 ## 2026-10-25 PR#148 用户授权安全修复交接（Codex / ChatGPT Work）
 
 - 当前唯一工作：现有 Draft [PR#148](https://github.com/Wang106/SoftwareLifeCycle/pull/148)，分支 `codex/isolated-synthetic-postgresql-backup-restore-rehearsal`；不新建分支、PR 或并发包。用户授权边界：[PR 评论](https://github.com/Wang106/SoftwareLifeCycle/pull/148#issuecomment-6399128661)。
