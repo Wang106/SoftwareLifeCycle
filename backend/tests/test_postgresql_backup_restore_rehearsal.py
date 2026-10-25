@@ -141,13 +141,15 @@ def test_pull_request_manifest_uses_exact_feature_parent(tmp_path, monkeypatch):
     merge = "3" * 40
     base = "1" * 40
     monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
-    monkeypatch.setattr(
-        rehearsal.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            ["git"], 0, stdout=f"{merge} {base} {feature}\n", stderr=""
-        ),
-    )
+    def fake_run(command_line, **_kwargs):
+        output = (
+            f"tree {'4' * 40}\nparent {base}\nparent {feature}\n"
+            "author Synthetic <synthetic@example.test> 0 +0000\n\nMerge\n"
+            if "cat-file" in command_line else f"{merge}\n"
+        )
+        return subprocess.CompletedProcess(command_line, 0, stdout=output, stderr="")
+
+    monkeypatch.setattr(rehearsal.subprocess, "run", fake_run)
     assert rehearsal.git_commits(tmp_path) == (feature, merge)
 
 

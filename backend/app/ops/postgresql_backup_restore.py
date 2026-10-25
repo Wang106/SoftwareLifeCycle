@@ -417,19 +417,32 @@ def prove_append_only(admin: PostgresAdmin, source: str, target: str, audit_id: 
 
 def git_commits(repo_root: Path) -> tuple[str, str]:
     completed = subprocess.run(
-        ["git", "rev-list", "--parents", "-n", "1", "HEAD"],
+        ["git", "cat-file", "-p", "HEAD"],
         cwd=repo_root,
         text=True,
         capture_output=True,
         check=False,
     )
-    parts = completed.stdout.strip().split()
-    if completed.returncode or not parts or any(not re.fullmatch(r"[0-9a-f]{40}", item) for item in parts):
+    checkout = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    checkout_commit = checkout.stdout.strip()
+    parents = [line.split()[1] for line in completed.stdout.splitlines() if line.startswith("parent ")]
+    if (
+        completed.returncode
+        or checkout.returncode
+        or not re.fullmatch(r"[0-9a-f]{40}", checkout_commit)
+        or any(not re.fullmatch(r"[0-9a-f]{40}", item) for item in parents)
+    ):
         raise RehearsalError("Unable to determine exact source commit")
-    checkout_commit = parts[0]
     # actions/checkout tests a synthetic merge ref for pull_request events.  Its
+    # commit object retains both parent SHAs even in a depth-one clone.  The
     # second parent is the exact feature head whose bytes are under review.
-    source_commit = parts[2] if os.environ.get("GITHUB_EVENT_NAME") == "pull_request" and len(parts) == 3 else checkout_commit
+    source_commit = parents[1] if os.environ.get("GITHUB_EVENT_NAME") == "pull_request" and len(parents) == 2 else checkout_commit
     return source_commit, checkout_commit
 
 
