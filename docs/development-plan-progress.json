@@ -46,7 +46,9 @@
       "Binding consistency validates one response and does not independently attest the underlying records or identities",
       "CI and provider builds are not browser, device, public performance or formal release acceptance",
       "Render live source remains PR124; no new backend deployment was produced by frontend-only PR135"
-    ]
+    ],
+    "reconciliation_pr": 136,
+    "reconciliation_initial_commit": "309dc6471402caee6b82da396c5c25957a0ff81e"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
