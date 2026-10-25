@@ -1,5 +1,15 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-25 PR#137 已合并证据对账（Codex / ChatGPT Work）
+
+本轮以最新 main `a02f083ab6d5741ff4d3531af268f098fb748665` 为唯一事实源；启动时开放 PR 为 0，PR#137 已受保护 squash 合并。本轮只推进文档包 `ssr-asr-pr137-evidence-reconciliation`，分支 `codex/ssr-asr-pr137-evidence-reconciliation`，不重复 Readiness Snapshot 身份绑定实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。当前为 [PR#138](https://github.com/Wang106/SoftwareLifeCycle/pull/138)，初始对账 head `a1cae8ac2e62d7b802c782b37f62469d7256e3a2`。
+
+[PR#137](https://github.com/Wang106/SoftwareLifeCycle/pull/137) 最终 head `b83b3a62f05386c949d3e6a82c6e33fca82cc807`（实现检查点 `44a2254c59591f28d8b819859a591f704ed1b8ac`）已受保护 squash 合并为 main `a02f083ab6d5741ff4d3531af268f098fb748665`。PR 精确 head CI [40152473808](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40152473808) 与合并后 main CI [40153058706](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40153058706) 的 Backend/PostgreSQL、Frontend、CI acceptance 三项均 success：后端 2368 passed，PostgreSQL 模块 258 项且无 skip，迁移 `0029_changeover_batch_history` 往返成功；前端 1568/1568、0 failed、0 skipped，TypeScript、Next/OpenNext、Worker 配置与禁用认证双语 SSR 均通过。最终证据：https://github.com/Wang106/SoftwareLifeCycle/pull/137#issuecomment-6392338839 。
+
+提供方证据分开核验：Cloudflare Preview 对精确 head 的 build/deployment success，deployment `34a595b3-aee8-462d-aac7-7bdfb9396498`。Cloudflare production 因 Dashboard 要求重新登录而阻塞、未验收；不复用旧 production build/version，也不把 Preview 成功改称 production 成功。Actions deployment [40153618671](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40153618671) 与 continuation [40153618713](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40153618713) 均 skipped。Render `My Workspace` 服务未暂停，PR#137 合并后无新 deploy 或 service event；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`，明确记为无本包新部署，不复用旧健康或部署证据冒充本轮成功。
+
+本对账包只更新 `DEVELOPMENT_STATUS.md`、`HANDOFF.md` 和 `docs/development-plan-progress.json`。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0。公共/演示继续只读，OIDC、真实身份、业务写入、内网部署及正式发布未验收。发布本对账 PR 后，须等待其精确 head Backend/PostgreSQL、Frontend、CI acceptance 全部 success且包含最新 main才受保护合并；下一实现包为 `null`。
+
 ## 2026-10-25 SSR/ASR Readiness Snapshot 身份绑定安全降级（Codex / ChatGPT Work）
 
 本轮以最新 main `3ca3fd0e636f913588c15bfb33dc548b1cd54eaf` 为唯一事实源；启动时开放 PR 为 0，PR#136 已闭环，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮只推进 `ssr-asr-release-evidence-readiness-snapshot-binding-safety`，独立分支 `codex/ssr-asr-readiness-snapshot-binding-safety`，实现检查点 `44a2254c59591f28d8b819859a591f704ed1b8ac`。 当前为 [PR#137](https://github.com/Wang106/SoftwareLifeCycle/pull/137)，远端初始检查点 `c75834e5259305feb8495972a8ae6c281ed5fddf`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
