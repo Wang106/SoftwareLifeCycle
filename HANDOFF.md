@@ -1,5 +1,17 @@
 # SoftwareLifeCycle Development Handoff
 
+## 2026-10-25 SSR/ASR 发布证据绑定一致性安全降级（Codex / ChatGPT Work）
+
+从最新 main `e5ce4249cd3f6636ab10fdff2a45c5e95dfc348e` 建立独立分支 `codex/ssr-asr-release-evidence-binding-consistency-safety`；启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮唯一包为 `ssr-asr-release-evidence-binding-consistency-safety`，实现检查点 `a436ffd6f6271184308b0a4a2e9a1f1533dd496c`。 当前为 [PR#135](https://github.com/Wang106/SoftwareLifeCycle/pull/135)。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+
+共享 SSR/ASR 证据解析器现在拒绝三类矛盾绑定声明：没有当前 Snapshot 却声称 Approval 已绑定；Approval 未绑定却声称 Decision 已绑定；Decision 声称已绑定但其 `snapshot_id` 不等于当前 Snapshot `id`。任一矛盾使整份详情摘要或演示响应降级为不可用，不显示该绑定链或确认正式发布；明确未绑定的可审阅证据仍合法。契约：`docs/ssr-asr-release-evidence-binding-consistency-safety.md`。
+
+本地已通过定向 29/29、完整前端 1566/1566、自动化 52/52、TypeScript、Worker 配置、Next/OpenNext 生产构建及禁用认证双语 SSR/路由。后端、真实 PostgreSQL 和三项必需检查留给当前 PR 精确 head CI 验证。
+
+基线 main CI `40086292165` 与 Cloudflare production build `42fb3091-b772-445b-874b-bb7e0e3382da` / version `932baa1f-e2a8-479b-aed0-450a9935fa3b` success；Actions deploy `40087048018`、wake `40087048028` skipped。Render `My Workspace` 没有 PR#134 新部署；最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。不得复用这些基线结果作为当前分支部署证据。
+
+业务 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共只读、OIDC/真实身份/业务写入关闭、内网未部署；客户端绑定关系校验不等于正式发布。恢复时只处理本包 PR：确认精确 head 包含最新 main，等待 Backend/PostgreSQL、Frontend、CI acceptance 三项 success 后受保护合并，再分别核验 main CI、Cloudflare、Render 与 Actions。下一实现包为 `null`。
+
 ## 2026-10-24 PR#133 已合并证据对账（Codex / ChatGPT Work）
 
 从最新 main `aa39384247653050a198be642cf991c9d38432d5` 建立独立分支 `codex/ssr-asr-pr133-evidence-reconciliation`；启动时开放 PR 为 0，本轮只对账 PR#133 已完成证据，不重复内容哈希安全实现或并发新功能。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。

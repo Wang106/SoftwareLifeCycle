@@ -71,11 +71,11 @@ test('does not confirm release when any recorded invariant contradicts the API c
   value=>value.readiness.approval_eligible=false,
   value=>value.readiness.coverage.snapshot_match=false,
   value=>value.approval.status='PENDING',
-  value=>value.approval.current_snapshot_bound=false,
+  value=>{value.approval.current_snapshot_bound=false;value.decision.current_evidence_bound=false;},
   value=>value.decision.decision='HOLD',
   value=>value.decision.readiness_status='NOT_READY',
   value=>value.decision.current_evidence_bound=false,
-  value=>value.decision.snapshot_id='different-snapshot',
+  value=>{value.decision.snapshot_id='different-snapshot';value.decision.current_evidence_bound=false;},
  ];
  for(const mutate of mutations){
   const value=structuredClone(evidence);mutate(value);
@@ -130,6 +130,19 @@ test('impossible coverage counts make the evidence unavailable',async()=>{
   const {html}=await render({...evidence,readiness:{...evidence.readiness,coverage}});
   assert.ok(html.includes('Evidence summary unavailable.'));
   assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});
+
+test('contradictory binding claims make the evidence unavailable',async()=>{
+ const malformed=[
+  {...evidence,snapshot:null,approval:{...evidence.approval,current_snapshot_bound:true},current_release_confirmed:false},
+  {...evidence,approval:{...evidence.approval,current_snapshot_bound:false},decision:{...evidence.decision,current_evidence_bound:true},current_release_confirmed:false},
+  {...evidence,decision:{...evidence.decision,snapshot_id:'different-snapshot',current_evidence_bound:true},current_release_confirmed:false},
+ ];
+ for(const value of malformed){
+  const {html}=await render(value);
+  assert.ok(html.includes('Evidence summary unavailable.'));
+  assert.ok(!html.includes('Current snapshot bound')&&!html.includes('Current evidence bound'));
  }
 });
 

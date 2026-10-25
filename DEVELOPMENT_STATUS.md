@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-25 SSR/ASR 发布证据绑定一致性安全降级（Codex / ChatGPT Work）
+
+本轮以最新 main `e5ce4249cd3f6636ab10fdff2a45c5e95dfc348e`（PR#134）为唯一事实源；启动时开放 PR 为 0，PR#134 的精确 head、main CI 与 Cloudflare 已核验，Render `My Workspace` 没有该纯文档包的新部署。旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。本轮只推进 `ssr-asr-release-evidence-binding-consistency-safety`，独立分支 `codex/ssr-asr-release-evidence-binding-consistency-safety`，实现检查点 `a436ffd6f6271184308b0a4a2e9a1f1533dd496c`。 当前为 [PR#135](https://github.com/Wang106/SoftwareLifeCycle/pull/135)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+共享运行时解析器现在验证证据绑定标志与对象关系一致：`approval.current_snapshot_bound=true` 必须存在当前 Snapshot；`decision.current_evidence_bound=true` 必须同时存在当前 Snapshot、已绑定的 Approval，且 `decision.snapshot_id` 必须等于该 Snapshot `id`。任一矛盾都会让 SSR/ASR 详情摘要或完整演示响应沿既有不可用路径安全降级，不显示误导性的“已绑定”证据，也不确认正式发布。明确为 false 的绑定仍保留为合法、可审阅的未确认记录。契约见 `docs/ssr-asr-release-evidence-binding-consistency-safety.md`。
+
+本地验证已通过：定向 29/29、完整前端 1566/1566（0 failed/0 skipped）、自动化 52/52、TypeScript `--noEmit`、Worker 配置、Next.js 16.4.2 生产构建、OpenNext 1.20.12 Cloudflare 构建及禁用认证双语 SSR/路由。首次定向测试因新 worktree 缺少依赖目录而未进入源码；首次构建因依赖目录为工作树外符号链接被 Turbopack 的工作区边界拒绝；在工作树内复用同锁文件依赖树后所有门禁通过，未修改依赖或锁文件。本地未重跑后端或真实 PostgreSQL，须由本包精确 head 的三项远端 CI 独立验证。
+
+基线 PR#134 精确 head `6a0176d0a2df35cd878f84e7a2bcb45e028162e4`、PR CI `40085410935` 与合并后 main CI `40086292165` 三项必需检查均 success；Cloudflare Preview build `124c7c60-d37a-4ea9-afec-a0349f1cea93`、production build `42fb3091-b772-445b-874b-bb7e0e3382da` / version `932baa1f-e2a8-479b-aed0-450a9935fa3b` success；Actions deploy `40087048018` 与 wake `40087048028` skipped。Render `My Workspace` 最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`，没有 PR#134 新部署。这些只证明本包起点，不得冒充当前分支结果。
+
+本包只收紧前端只读证据解析，不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；响应内部绑定一致也不证明真实审批、权限、冻结来源或正式发布。下一实现包为 `null`；先发布本包 PR，等待最终精确 head Backend/PostgreSQL、Frontend、CI acceptance 全部成功且包含最新 main 后受保护合并，再分别核验 main CI、Cloudflare、Render 与 Actions。
+
 ## 2026-10-24 PR#133 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `aa39384247653050a198be642cf991c9d38432d5` 为唯一事实源；启动时开放 PR 为 0。状态文件仍把 PR#133 标为等待远端 CI、合并与 provider 核验，因此只推进 `ssr-asr-pr133-evidence-reconciliation`，分支 `codex/ssr-asr-pr133-evidence-reconciliation`，不并发新的 SSR/ASR 功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。

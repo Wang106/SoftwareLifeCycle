@@ -134,6 +134,10 @@ function parseEvidenceCore(value: JsonObject) {
   const approval = parseApproval(value.approval), decision = parseDecision(value.decision);
   if (snapshot === undefined || !readiness || approval === undefined || decision === undefined
       || !boolean(value.current_release_confirmed)) return null;
+  if (approval?.current_snapshot_bound === true && snapshot === null) return null;
+  if (decision?.current_evidence_bound === true
+      && (snapshot === null || approval?.current_snapshot_bound !== true
+        || decision.snapshot_id !== snapshot.id)) return null;
   return {snapshot, readiness, approval, decision, current_release_confirmed: value.current_release_confirmed};
 }
 
