@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "3ca3fd0e636f913588c15bfb33dc548b1cd54eaf",
+  "baseline_commit": "a02f083ab6d5741ff4d3531af268f098fb748665",
   "maintenance_checkpoint": {
-    "package": "ssr-asr-release-evidence-readiness-snapshot-binding-safety",
+    "package": "ssr-asr-pr137-evidence-reconciliation",
     "evidence": "docs/ssr-asr-release-evidence-readiness-snapshot-binding-safety.md",
     "business_acceptance_increment": 0,
-    "resume_pr": 137,
-    "branch": "codex/ssr-asr-readiness-snapshot-binding-safety",
-    "state": "pr_open_waiting_exact_head_ci",
+    "resume_pr": null,
+    "branch": "codex/ssr-asr-pr137-evidence-reconciliation",
+    "state": "pr137_exact_head_main_verified_cloudflare_production_blocked",
     "implementation_commit": "44a2254c59591f28d8b819859a591f704ed1b8ac",
     "local_targeted_tests": 31,
     "local_frontend_tests": 1568,
@@ -18,31 +18,35 @@
     "local_disabled_auth_ssr": "passed",
     "local_typescript": "passed",
     "local_worker_config_check": "passed",
-    "verified_previous_pr": 136,
-    "verified_pr_head": "b449dc276e0800d354c8579e57842f5dbd5c1929",
-    "verified_main": "3ca3fd0e636f913588c15bfb33dc548b1cd54eaf",
-    "verified_main_ci": 40148541216,
-    "cloudflare_build": "0c94f92b-a8c6-4c66-82b6-cb9af5ab1ccd",
-    "cloudflare_version": "3b99890d-dd4a-4535-9fdf-4540467bf9bd",
+    "verified_previous_pr": 137,
+    "verified_pr_head": "b83b3a62f05386c949d3e6a82c6e33fca82cc807",
+    "verified_pr_ci": 40152473808,
+    "verified_main": "a02f083ab6d5741ff4d3531af268f098fb748665",
+    "verified_main_ci": 40153058706,
+    "cloudflare_preview_deployment": "34a595b3-aee8-462d-aac7-7bdfb9396498",
+    "cloudflare_production_status": "blocked_fresh_sign_in_required_not_accepted",
     "render_live_deploy": "dep-dbduk78u01pc73dvp0ag",
     "render_source_commit": "12900d6c8b26002a9eaa611a40d552e550662462",
-    "render_status": "live_previous_backend_source_no_pr136_deployment",
+    "render_health": "My Workspace has no new deploy or event for PR137; latest live remains the PR124 source and no prior health response is reused as current-package acceptance",
+    "render_status": "live_previous_backend_source_no_pr137_deployment",
     "actions_deploy": {
-      "run_id": 40149185972,
+      "run_id": 40153618671,
       "conclusion": "skipped"
     },
     "actions_wake": {
-      "run_id": 40149185994,
+      "run_id": 40153618713,
       "conclusion": "skipped"
     },
-    "next_package": "ssr-asr-pr137-evidence-reconciliation",
+    "final_evidence_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/137#issuecomment-6392338839",
+    "evidence_reconciliation_status": "pr137_exact_head_main_verified_cloudflare_production_blocked",
+    "next_package": null,
     "limitations": [
-      "The current package still requires its own exact-head CI, protected merge and post-merge provider evidence",
-      "Snapshot identity consistency validates one response and does not attest underlying records, identities or authority",
-      "CI and provider builds are not browser, device, public performance or formal release acceptance",
-      "Render live source remains PR124; no new backend deployment was produced by frontend-only PR136"
-    ],
-    "remote_initial_commit": "c75834e5259305feb8495972a8ae6c281ed5fddf"
+      "This documentation reconciliation package still requires its own exact-head CI, protected merge and post-merge provider evidence in its PR final comment",
+      "Cloudflare production for PR137/main a02f083ab6d5741ff4d3531af268f098fb748665 was blocked by fresh sign-in and remains unaccepted",
+      "Snapshot identity consistency validates one response and does not independently attest underlying records, identities or authority",
+      "CI and provider preview builds are not browser, device, public performance or formal release acceptance",
+      "Render live source remains PR124; no new backend deployment was produced by frontend-only PR137"
+    ]
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
