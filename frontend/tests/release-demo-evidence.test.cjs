@@ -5,7 +5,7 @@ const dict=require('../lib/i18n/zh.json'),templates=require('../lib/i18n/templat
 const code=ts.transpileModule(fs.readFileSync('lib/i18n.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;
 const i18n={exports:{}};new Function('require','module','exports',code)(n=>n.endsWith('zh.json')?dict:templates,i18n,i18n.exports);
 const confirmation={exports:{}};new Function('require','module','exports',ts.transpileModule(fs.readFileSync('lib/release-evidence-confirmation.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(require,confirmation,confirmation.exports);
-const row={release_id:'exact-release',version:'DEMO-EVIDENCE-ASR-B-2.0',release_type:'APPLICATION',record_status:'DRAFT',snapshot:{id:'snapshot-2',snapshot_no:'SNAP-2',status:'FROZEN',content_hash:'a'.repeat(64)},readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{required_dvp_total:3,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[{group:'Verification',rule:'Required DVP executed on current snapshot',effective:'FAIL',evidence:'0 / 3'}]},approval:{approval_no:'APR-2',status:'APPROVED',current_snapshot_bound:true},decision:{decision_no:'RD-2',decision:'HOLD',readiness_status:'NOT_READY',snapshot_id:'snapshot-2',current_evidence_bound:true},current_release_confirmed:false,change_request_no:'SCR-DEMO',dvp_items:[{id:'exact-item',item_no:'DVP-SOFTWARE'}]};
+const row={release_id:'exact-release',version:'DEMO-EVIDENCE-ASR-B-2.0',release_type:'APPLICATION',record_status:'DRAFT',snapshot:{id:'snapshot-2',snapshot_no:'SNAP-2',status:'FROZEN',content_hash:'a'.repeat(64)},readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{snapshot_id:'snapshot-2',snapshot_no:'SNAP-2',required_dvp_total:3,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[{group:'Verification',rule:'Required DVP executed on current snapshot',effective:'FAIL',evidence:'0 / 3'}]},approval:{approval_no:'APR-2',status:'APPROVED',current_snapshot_bound:true},decision:{decision_no:'RD-2',decision:'HOLD',readiness_status:'NOT_READY',snapshot_id:'snapshot-2',current_evidence_bound:true},current_release_confirmed:false,change_request_no:'SCR-DEMO',dvp_items:[{id:'exact-item',item_no:'DVP-SOFTWARE'}]};
 async function render(data,locale='en'){
  const compiled=ts.transpileModule(fs.readFileSync('app/demo/releases/page.tsx','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
  const module={exports:{}},calls=[];
@@ -79,14 +79,27 @@ test('non-canonical snapshot hashes never produce demonstration release proof',a
 });
 test('impossible coverage counts never produce demonstration release proof',async()=>{
  const impossible=[
-  {required_dvp_total:3,current_snapshot_executed:2,current_snapshot_passed:3,snapshot_match:true},
-  {required_dvp_total:3,current_snapshot_executed:4,current_snapshot_passed:3,snapshot_match:true},
+  {...row.readiness.coverage,current_snapshot_executed:2,current_snapshot_passed:3,snapshot_match:true},
+  {...row.readiness.coverage,current_snapshot_executed:4,current_snapshot_passed:3,snapshot_match:true},
  ];
  for(const coverage of impossible){
   const value={sample_only:true,initialized:true,items:[{...row,current_release_confirmed:true,
    readiness:{...row.readiness,overall:'READY',approval_eligible:true,coverage},
    decision:{...row.decision,decision:'RELEASE',readiness_status:'READY'}}]};
   const {html}=await render(value);
+  assert.ok(html.includes('Evidence API unavailable'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});
+test('readiness snapshot identity contradictions make the complete demonstration unavailable',async()=>{
+ const malformed=[
+  {...row,readiness:{...row.readiness,coverage:{...row.readiness.coverage,snapshot_id:'different-snapshot'}}},
+  {...row,readiness:{...row.readiness,coverage:{...row.readiness.coverage,snapshot_no:'SNAP-DIFFERENT'}}},
+  {...row,snapshot:null,approval:null,decision:null,current_release_confirmed:false,
+   readiness:{...row.readiness,coverage:{...row.readiness.coverage,snapshot_match:true}}},
+ ];
+ for(const item of malformed){
+  const {html}=await render({sample_only:true,initialized:true,items:[item]});
   assert.ok(html.includes('Evidence API unavailable'));
   assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
  }

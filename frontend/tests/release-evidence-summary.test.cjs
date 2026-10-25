@@ -11,7 +11,7 @@ const evidence={
   release:{id:'rel-uuid',version:'v1.0',release_type:'STANDARD',record_status:'DRAFT'},
   snapshot:{id:'snap-uuid',snapshot_no:'SNAP-1',status:'FROZEN',content_hash:'a'.repeat(64)},
   readiness:{overall:'READY',approval_eligible:true,
-    coverage:{required_dvp_total:3,current_snapshot_executed:3,current_snapshot_passed:3,snapshot_match:true},
+    coverage:{snapshot_id:'snap-uuid',snapshot_no:'SNAP-1',required_dvp_total:3,current_snapshot_executed:3,current_snapshot_passed:3,snapshot_match:true},
     rules:[{group:'Verification',rule:'Required DVP executed on current snapshot',evidence:'3 / 3',effective:'PASS'}]},
   approval:{approval_no:'APR-1',status:'APPROVED',current_snapshot_bound:true},
   decision:{decision_no:'RD-1',decision:'RELEASE',readiness_status:'READY',snapshot_id:'snap-uuid',current_evidence_bound:true},
@@ -51,7 +51,7 @@ test('renders unknown placeholders when evidence is missing',async()=>{
  const {html,calls}=await render({
   release:{id:'rel-uuid',version:'v2',release_type:'STANDARD',record_status:'DRAFT'},
   snapshot:null,approval:null,decision:null,
-  readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{required_dvp_total:0,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[]},
+  readiness:{overall:'NOT_READY',approval_eligible:false,coverage:{snapshot_id:null,snapshot_no:null,required_dvp_total:0,current_snapshot_executed:0,current_snapshot_passed:0,snapshot_match:false},rules:[]},
   current_release_confirmed:false,
  });
  assert.ok(html.includes('Current evidence does not confirm a formal release.'));
@@ -123,11 +123,26 @@ test('non-canonical snapshot hashes make the evidence unavailable',async()=>{
 
 test('impossible coverage counts make the evidence unavailable',async()=>{
  const impossible=[
-  {required_dvp_total:3,current_snapshot_executed:2,current_snapshot_passed:3,snapshot_match:true},
-  {required_dvp_total:3,current_snapshot_executed:4,current_snapshot_passed:3,snapshot_match:true},
+  {...evidence.readiness.coverage,current_snapshot_executed:2,current_snapshot_passed:3},
+  {...evidence.readiness.coverage,current_snapshot_executed:4,current_snapshot_passed:3},
  ];
  for(const coverage of impossible){
   const {html}=await render({...evidence,readiness:{...evidence.readiness,coverage}});
+  assert.ok(html.includes('Evidence summary unavailable.'));
+  assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
+ }
+});
+
+test('readiness snapshot identity contradictions make the evidence unavailable',async()=>{
+ const malformed=[
+  {...evidence,readiness:{...evidence.readiness,coverage:{...evidence.readiness.coverage,snapshot_id:'different-snapshot'}}},
+  {...evidence,readiness:{...evidence.readiness,coverage:{...evidence.readiness.coverage,snapshot_no:'SNAP-DIFFERENT'}}},
+  {...evidence,snapshot:null,approval:null,decision:null,current_release_confirmed:false,
+   readiness:{...evidence.readiness,overall:'NOT_READY',approval_eligible:false,
+    coverage:{...evidence.readiness.coverage,snapshot_match:true}}},
+ ];
+ for(const value of malformed){
+  const {html}=await render(value);
   assert.ok(html.includes('Evidence summary unavailable.'));
   assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
  }
