@@ -1,6 +1,6 @@
 # Isolated synthetic PostgreSQL backup / restore rehearsal
 
-Status: planned, not implemented or accepted. User approved this priority on 2026-10-25.
+Status: implementation ready for exact-head PostgreSQL CI; not company recovery or production acceptance. User approved this priority on 2026-10-25.
 Package: `isolated-synthetic-postgresql-backup-restore-rehearsal`.
 
 ## Ownership and order
@@ -23,3 +23,29 @@ The existing sole Codex / ChatGPT Work executor must first resume any unfinished
 
 ## Acceptance accounting
 Business acceptance stays 36/44 (82%); seven module and seven plan percentages remain unchanged for this planning package. Do not tick the whole `ops-restore` milestone solely for a synthetic rehearsal: retention policy, approved environment/company disaster-recovery acceptance and any real data/network work remain separate, unaccepted and require appropriate authorization. Never call approval or a synthetic test a formal release.
+
+## Implemented rehearsal
+
+`backend/app/ops/postgresql_backup_restore.py` is the single entry point. It accepts only a loopback PostgreSQL control connection, rejects URL options and the application/default database, generates `slc_rehearsal_<run-id>_source` and `slc_rehearsal_<run-id>_target` itself, and refuses an existing or equal database. Passwords are passed to PostgreSQL clients only through `PGPASSWORD`; command arguments, manifest and report contain no connection URL or password.
+
+The rehearsal creates and migrates the source, inserts one deterministic synthetic relationship chain and one audit event, runs native custom-format `pg_dump`, writes an archive manifest, verifies the archive size, SHA-256 and `pg_restore --list` catalog before creating the target, and restores with `--exit-on-error`. Source and target inventories must match on Alembic revision, table set, selected constraints/indexes/triggers, canonical row counts, relationship joins, UUID identities and audit payload. A forbidden update against the restored audit event must be rejected by `trg_audit_events_append_only`; fresh reads then prove both source and target audit evidence remain unchanged.
+
+Successful runs drop only the two exact run-owned databases after owner verification. Failed runs write a redacted report and retain owned databases for diagnosis. After reviewing the report, an operator can request cleanup by exact run ID; the command never terminates connections or uses forced drop.
+
+Run from `backend` with a disposable local PostgreSQL whose role may create databases:
+
+```bash
+TEST_POSTGRES_URL='postgresql+psycopg://USER:PASSWORD@127.0.0.1:5432/postgres' \
+  python -m app.ops.postgresql_backup_restore --evidence-dir ../ci-results
+```
+
+To clean a failed run after preserving its diagnostics:
+
+```bash
+TEST_POSTGRES_URL='postgresql+psycopg://USER:PASSWORD@127.0.0.1:5432/postgres' \
+  python -m app.ops.postgresql_backup_restore --cleanup-run-id 0123456789ab
+```
+
+The complete backend suite executes the same native rehearsal in `test_postgresql_backup_restore_rehearsal.py` whenever `TEST_POSTGRES_URL` is configured. Existing CI already provides an ephemeral loopback PostgreSQL service and uploads `ci-results`; no workflow, credentials, scheduler or deployment configuration is changed. Unit coverage rejects remote/default/optioned connections, invalid or unowned names, equal/existing targets, corrupt or mismatched manifests, missing archive objects, failed native restore and unsafe cleanup before the exact-head integration rehearsal runs.
+
+This Work environment has neither PostgreSQL client binaries nor a local database, so it cannot supply native restore evidence locally. Local verification covers 12 fail-closed tests. The package's exact-head backend CI must supply the first actual native dump/restore report; a missing client, insufficient create-database permission, restore failure, skipped test or absent artifact fails the existing gate. Final exact head, CI, merge and provider evidence belongs in the package PR comment.

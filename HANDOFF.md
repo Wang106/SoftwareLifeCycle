@@ -1,3 +1,13 @@
+## 2026-10-25 隔离合成 PostgreSQL 原生备份恢复演练交接（Codex / ChatGPT Work）
+
+- 唯一事实源：main `c8c6f415d1c1aacd52d909f686b000c96b6a5e16`；启动时开放 PR 为 0。PR#147 已闭环：head `c98d4708cb9476fc12d4ab7856dd70f2c0598ebb` / CI `40197455166`，main / CI `40198315366`，精确 provider 证据见 [PR#147 最终评论](https://github.com/Wang106/SoftwareLifeCycle/pull/147#issuecomment-6398468205)。
+- 本轮唯一包：`isolated-synthetic-postgresql-backup-restore-rehearsal`；分支 `codex/isolated-synthetic-postgresql-backup-restore-rehearsal`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+- 实现：`app.ops.postgresql_backup_restore` 强制 loopback、唯一 run-owned source/target、新目标/所有者检查；原生 `pg_dump` / `pg_restore`；manifest 大小/SHA-256/catalog；revision/表/约束/索引/触发器/关系/数据/审计一致性；恢复后的 append-only 保护；成功安全清理与失败脱敏诊断保留。契约及命令见 `docs/isolated-synthetic-postgresql-backup-restore-rehearsal.md`。
+- 安全回归：拒绝远端/默认/带选项连接、非法或非所有名称、相同/既有目标、损坏或错配清单、缺对象 archive、native restore 非零以及不安全清理。密码不进入参数、manifest 或报告。无 CI/调度/身份/凭据/计费/provider/部署权限变更。
+- 本地验证：12 项 fail-closed 测试通过。当前 Work 无 PostgreSQL 客户端和本地服务，真实 native 演练明确等待精确 head CI；禁止以 SQLite、schema/迁移往返或旧证据替代。
+- 恢复顺序：只处理本包 PR；确认最终 head 相对最新 main behind 0，等待 Backend/PostgreSQL、Frontend、CI acceptance 三项 success，其中 backend artifact 必须含实际 native dump/restore 报告且无 skip；随后受保护合并并分别核验 main CI、Cloudflare、Render 与 Actions，最终证据写 PR 评论。完成前不并发新包，不另建递归对账包。
+- 进度保持：36/44=82%；七模块 `100/100演示/100演示/100/89/60/17`；七计划 `100/100/20/33/40/40/0`。合成演练不等于公司保留/灾备或正式发布；公共只读，OIDC/真实身份/业务写入/内网关闭。
+
 ## 2026-10-25 剩余验收优先级：先做隔离合成 PostgreSQL 备份恢复
 
 用户已批准“接受你的建议，请执行”，将下一阶段从重复 SSR/ASR 边界加固转向剩余验收，先做 `isolated-synthetic-postgresql-backup-restore-rehearsal`。授权协调记录：[PR145 评论](https://github.com/Wang106/SoftwareLifeCycle/pull/145#issuecomment-6397930846)。
