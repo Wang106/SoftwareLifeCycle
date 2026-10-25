@@ -2,7 +2,7 @@
 
 ## 2026-10-25 SSR/ASR 发布证据绑定一致性安全降级（Codex / ChatGPT Work）
 
-本轮以最新 main `e5ce4249cd3f6636ab10fdff2a45c5e95dfc348e`（PR#134）为唯一事实源；启动时开放 PR 为 0，PR#134 的精确 head、main CI 与 Cloudflare 已核验，Render `My Workspace` 没有该纯文档包的新部署。旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。本轮只推进 `ssr-asr-release-evidence-binding-consistency-safety`，独立分支 `codex/ssr-asr-release-evidence-binding-consistency-safety`，实现检查点 `a436ffd6f6271184308b0a4a2e9a1f1533dd496c`。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+本轮以最新 main `e5ce4249cd3f6636ab10fdff2a45c5e95dfc348e`（PR#134）为唯一事实源；启动时开放 PR 为 0，PR#134 的精确 head、main CI 与 Cloudflare 已核验，Render `My Workspace` 没有该纯文档包的新部署。旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。本轮只推进 `ssr-asr-release-evidence-binding-consistency-safety`，独立分支 `codex/ssr-asr-release-evidence-binding-consistency-safety`，实现检查点 `a436ffd6f6271184308b0a4a2e9a1f1533dd496c`。 当前为 [PR#135](https://github.com/Wang106/SoftwareLifeCycle/pull/135)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
 
 共享运行时解析器现在验证证据绑定标志与对象关系一致：`approval.current_snapshot_bound=true` 必须存在当前 Snapshot；`decision.current_evidence_bound=true` 必须同时存在当前 Snapshot、已绑定的 Approval，且 `decision.snapshot_id` 必须等于该 Snapshot `id`。任一矛盾都会让 SSR/ASR 详情摘要或完整演示响应沿既有不可用路径安全降级，不显示误导性的“已绑定”证据，也不确认正式发布。明确为 false 的绑定仍保留为合法、可审阅的未确认记录。契约见 `docs/ssr-asr-release-evidence-binding-consistency-safety.md`。
 

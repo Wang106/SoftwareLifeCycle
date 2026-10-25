@@ -2,7 +2,7 @@
 
 ## 2026-10-25 SSR/ASR 发布证据绑定一致性安全降级（Codex / ChatGPT Work）
 
-从最新 main `e5ce4249cd3f6636ab10fdff2a45c5e95dfc348e` 建立独立分支 `codex/ssr-asr-release-evidence-binding-consistency-safety`；启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮唯一包为 `ssr-asr-release-evidence-binding-consistency-safety`，实现检查点 `a436ffd6f6271184308b0a4a2e9a1f1533dd496c`。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
+从最新 main `e5ce4249cd3f6636ab10fdff2a45c5e95dfc348e` 建立独立分支 `codex/ssr-asr-release-evidence-binding-consistency-safety`；启动时开放 PR 为 0，旧候选 `release-decision-supersession-backend-read` 已由 main 覆盖。本轮唯一包为 `ssr-asr-release-evidence-binding-consistency-safety`，实现检查点 `a436ffd6f6271184308b0a4a2e9a1f1533dd496c`。 当前为 [PR#135](https://github.com/Wang106/SoftwareLifeCycle/pull/135)。使用 Codex / ChatGPT Work；无额外付费模型 API、额度购买或用户本地常驻 CLI。
 
 共享 SSR/ASR 证据解析器现在拒绝三类矛盾绑定声明：没有当前 Snapshot 却声称 Approval 已绑定；Approval 未绑定却声称 Decision 已绑定；Decision 声称已绑定但其 `snapshot_id` 不等于当前 Snapshot `id`。任一矛盾使整份详情摘要或演示响应降级为不可用，不显示该绑定链或确认正式发布；明确未绑定的可审阅证据仍合法。契约：`docs/ssr-asr-release-evidence-binding-consistency-safety.md`。
 
