@@ -46,7 +46,9 @@
       "Snapshot identity consistency validates one response and does not independently attest underlying records, identities or authority",
       "CI and provider preview builds are not browser, device, public performance or formal release acceptance",
       "Render live source remains PR124; no new backend deployment was produced by frontend-only PR137"
-    ]
+    ],
+    "reconciliation_pr": 138,
+    "reconciliation_initial_commit": "a1cae8ac2e62d7b802c782b37f62469d7256e3a2"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
