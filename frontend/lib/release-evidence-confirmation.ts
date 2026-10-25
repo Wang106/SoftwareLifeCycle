@@ -187,6 +187,13 @@ export function parseReleaseEvidenceDemo(value: unknown): ReleaseEvidenceDemo | 
   if (items.some(item => !item)) return null;
   const parsedItems = items as ReleaseEvidenceDemoRow[];
   if (new Set(parsedItems.map(item => item.release_id)).size !== parsedItems.length) return null;
+  const currentSnapshots = parsedItems.flatMap(item => item.snapshot ? [item.snapshot] : []);
+  const approvalNumbers = parsedItems.flatMap(item => item.approval ? [item.approval.approval_no] : []);
+  const decisionNumbers = parsedItems.flatMap(item => item.decision ? [item.decision.decision_no] : []);
+  if (new Set(currentSnapshots.map(snapshot => snapshot.id)).size !== currentSnapshots.length
+      || new Set(currentSnapshots.map(snapshot => snapshot.snapshot_no)).size !== currentSnapshots.length
+      || new Set(approvalNumbers).size !== approvalNumbers.length
+      || new Set(decisionNumbers).size !== decisionNumbers.length) return null;
   return {sample_only: true, initialized: true, items: parsedItems};
 }
 
