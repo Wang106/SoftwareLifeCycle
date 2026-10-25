@@ -91,6 +91,18 @@ test('impossible coverage counts never produce demonstration release proof',asyn
   assert.ok(!html.includes('Formal release evidence matches the current snapshot.'));
  }
 });
+test('contradictory binding claims make the complete demonstration unavailable',async()=>{
+ const malformed=[
+  {...row,snapshot:null,approval:{...row.approval,current_snapshot_bound:true}},
+  {...row,approval:{...row.approval,current_snapshot_bound:false},decision:{...row.decision,current_evidence_bound:true}},
+  {...row,decision:{...row.decision,snapshot_id:'different-snapshot',current_evidence_bound:true}},
+ ];
+ for(const item of malformed){
+  const {html}=await render({sample_only:true,initialized:true,items:[item]});
+  assert.ok(html.includes('Evidence API unavailable'));
+  assert.ok(!html.includes('Current snapshot bound')&&!html.includes('Current evidence bound'));
+ }
+});
 test('duplicate readiness rule identities never produce demonstration release proof',async()=>{
  const duplicate={...row.readiness.rules[0],effective:'PASS',evidence:'3 / 3'};
  const value={sample_only:true,initialized:true,items:[{...row,current_release_confirmed:true,
