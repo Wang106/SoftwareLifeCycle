@@ -1,5 +1,17 @@
 # DEVELOPMENT_STATUS
 
+## 2026-10-25 SSR/ASR 演示空初始化证据家族安全降级（Codex / ChatGPT Work）
+
+本轮以最新 main `4c1fa0b7314ab1f803ab43e84bd8db6166890497` 为唯一事实源；启动时开放 PR 为 0，PR#140 的精确 CI、受保护合并和提供方证据已闭环，旧候选 `release-decision-supersession-backend-read` 已被 main 覆盖。本轮只推进 `ssr-asr-release-evidence-empty-initialized-family-safety`，独立分支 `codex/ssr-asr-release-evidence-empty-initialized-family-safety`，远端实现检查点 `11f2aa5dd779b8a657b485c1c988bd5de12d6674`，当前为 [PR#141](https://github.com/Wang106/SoftwareLifeCycle/pull/141)。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。
+
+`/demo/releases` 的共享解析器现在要求 `initialized=true` 时至少有一条完整、有效的证据行。合法的 `initialized=false`、`items=[]` 仍显示“证据样例未安装”；合法的已初始化非空集合继续通过原有 Snapshot、Readiness、Approval、Decision、身份与确认校验；矛盾的已初始化空集合则整份响应沿既有 API 不可用状态安全降级，不再渲染空白成功页面，也不改写成未安装或确认正式发布。契约见 `docs/ssr-asr-release-evidence-empty-initialized-family-safety.md`。
+
+本地验证已通过：定向 33/33、完整前端 1570/1570（0 failed/0 skipped）、自动化 52/52、TypeScript `--noEmit`、Worker 配置、Next.js 16.4.2、OpenNext 1.20.12 Cloudflare 构建及禁用认证双语 SSR/路由。首次认证检查在生产构建前按预期报告缺少 `.next`；完成工作树内依赖准备与生产构建后重跑通过，未修改依赖或锁文件。后端和真实 PostgreSQL 留给 PR#141 最终精确 head 的三项远端 CI 独立验证。
+
+基线 main CI [40172952335](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40172952335) 三项 success；Cloudflare production build `d00357d4-8b80-4bc8-9e9f-e43242d522d4` / version `89c663bd-79bb-49f5-8988-e3c112281891` success。Actions deployment [40173635527](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40173635527) 与 continuation [40173635490](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40173635490) 均 skipped。Render `My Workspace` 未产生新 deploy/event，最新 live 仍为 `dep-dbduk78u01pc73dvp0ag` / source `12900d6c8b26002a9eaa611a40d552e550662462`。这些只证明本包起点，不能冒充 PR#141 的 CI 或部署结果。
+
+本包只收紧前端只读证据解析，不改 API、后端、数据库、迁移、Seed、依赖、身份、凭据、写入门控、CI、调度、计费或部署配置。用户已报告双语、手机端与 Windows 功能验收 OK；首屏性能仍未验收。业务验收保持 36/44=82%；七模块 100/100演示/100演示/100/89/60/17；七计划 100/100/20/33/40/40/0，增量 0。公共/演示继续只读，OIDC、真实身份、业务写入和公司内网部署关闭；包络一致不证明真实审批、证据完整性或正式发布。下一包为 `ssr-asr-pr141-evidence-reconciliation`，仅在 PR#141 最终精确 head 三项 CI success、包含最新 main并受保护合并，且 main/Cloudflare/Render/Actions 分项核验后进行。
+
 ## 2026-10-25 PR#139 已合并证据对账（Codex / ChatGPT Work）
 
 本轮以最新 main `76f32c465281fc0a3e97cffbb9fe9529d6ce3cd8` 为唯一事实源；启动时开放 PR 为 0，PR#139 已完成精确 head CI、受保护合并及 main/Cloudflare/Render/Actions 分项核验。本轮只推进文档包 `ssr-asr-pr139-evidence-reconciliation`，独立分支 `codex/ssr-asr-pr139-evidence-reconciliation`，不重复初始化一致性实现或并发新功能。实际使用 Codex / ChatGPT Work，未调用额外付费模型 API、购买额度或依赖用户本地常驻 CLI。 当前为 [PR#140](https://github.com/Wang106/SoftwareLifeCycle/pull/140)，初始对账提交 `889193858615c07276409a9cacfa08c944e3aede`。

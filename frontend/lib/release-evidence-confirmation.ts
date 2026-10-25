@@ -182,6 +182,7 @@ export function parseReleaseEvidenceDemo(value: unknown): ReleaseEvidenceDemo | 
   if (!root.initialized) return root.items.length === 0
     ? {sample_only: true, initialized: false, items: []}
     : null;
+  if (root.items.length === 0) return null;
   const items = root.items.map(parseDemoRow);
   if (items.some(item => !item)) return null;
   const parsedItems = items as ReleaseEvidenceDemoRow[];
