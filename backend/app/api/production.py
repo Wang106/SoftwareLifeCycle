@@ -628,3 +628,23 @@ def correct_batch(
                 "ended_at": row.ended_at, "note": row.note}
     except ProductionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.get("/deployments/{deployment_no}/changeovers/{changeover_no}/history")
+def changeover_history(deployment_no: str, changeover_no: str, db: Session = Depends(get_db)):
+    """Public sample-read contract; exact parent binding is not write permission."""
+    from app.services.production_correction_history import correction_history
+    result = correction_history(db, deployment_no, 'changeover', changeover_no)
+    if result is None:
+        raise HTTPException(status_code=404, detail="production history target not found")
+    return result
+
+
+@router.get("/deployments/{deployment_no}/batches/{batch_no}/history")
+def batch_history(deployment_no: str, batch_no: str, db: Session = Depends(get_db)):
+    """Public sample-read contract; no actor identities or command payloads."""
+    from app.services.production_correction_history import correction_history
+    result = correction_history(db, deployment_no, 'batch', batch_no)
+    if result is None:
+        raise HTTPException(status_code=404, detail="production history target not found")
+    return result
