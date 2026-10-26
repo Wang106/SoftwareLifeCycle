@@ -572,6 +572,22 @@ def create_batch(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
+def _require_correction_target(db: Session, deployment_no: str, model, number_column, target_no: str) -> None:
+    """Bind the child to the already-authorized parent before writes or replay.
+
+    Never resolve a global child first or disclose a foreign child's existence.
+    Lock the scoped child until the existing service commits or rolls back;
+    history guards do not independently freeze every attribution column.
+    """
+    target_id = db.scalar(
+        select(model.id).join(Deployment, model.deployment_id == Deployment.id)
+        .where(Deployment.deployment_no == deployment_no, number_column == target_no)
+        .limit(1).with_for_update(of=model)
+    )
+    if target_id is None:
+        raise HTTPException(status_code=404, detail="production correction target not found")
+
+
 @router.post("/deployments/{deployment_no}/changeovers/{changeover_no}/correction")
 def correct_changeover(
     deployment_no: str,
@@ -581,6 +597,7 @@ def correct_changeover(
     request: Request = None,
 ):
     authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
+    _require_correction_target(db, deployment_no, SoftwareChangeover, SoftwareChangeover.changeover_no, changeover_no)
     actor = resolve_actor(request)
     try:
         row = ProductionService(db).correct_changeover(
@@ -601,6 +618,7 @@ def correct_batch(
     request: Request = None,
 ):
     authorize_deployment(request, db, deployment_no, "PRODUCTION_OPERATOR")
+    _require_correction_target(db, deployment_no, ProductionBatch, ProductionBatch.batch_no, batch_no)
     actor = resolve_actor(request)
     try:
         row = ProductionService(db).correct_batch(
