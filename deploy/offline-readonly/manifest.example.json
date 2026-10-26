@@ -1,0 +1,23 @@
+{
+  "format": "slc-offline-readonly-v1",
+  "source_commit": "REPLACE_WITH_VERIFIED_40_HEX_COMMIT",
+  "required_db_revision": "0029_changeover_batch_history",
+  "images": {
+    "api": {
+      "archive": "api.tar",
+      "size": 0,
+      "sha256": "REPLACE_WITH_ARCHIVE_SHA256",
+      "image_id": "sha256:REPLACE_WITH_CONFIG_SHA256",
+      "platform": "linux/amd64",
+      "source_commit": "REPLACE_WITH_VERIFIED_40_HEX_COMMIT"
+    },
+    "web": {
+      "archive": "web.tar",
+      "size": 0,
+      "sha256": "REPLACE_WITH_ARCHIVE_SHA256",
+      "image_id": "sha256:REPLACE_WITH_CONFIG_SHA256",
+      "platform": "linux/amd64",
+      "source_commit": "REPLACE_WITH_VERIFIED_40_HEX_COMMIT"
+    }
+  }
+}

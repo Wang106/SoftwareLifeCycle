@@ -1,0 +1,7 @@
+{
+  "profile": "linux-localhost-readonly",
+  "database_env_file": "database.env",
+  "database_preprovisioned": false,
+  "database_readonly_role": false,
+  "data_classification": "synthetic-only"
+}
