@@ -532,7 +532,8 @@ class ProductionService:
                 **actor.audit_fields(),
                 "summary": "Software changeover facts corrected",
                 "occurred_at": actual_time,
-                "payload": {"before": before, "after": after,
+                "payload": {"deployment_no": deployment.deployment_no,
+                    "before": before, "after": after,
                     "correction_reason": correction_reason, "actor_source": actor.source,
                     "request": request_content},
             })
