@@ -75,6 +75,6 @@ export default async function ProductionCorrectionHistory({ kind, deploymentNo, 
         <p><Localized>{'Correction reason'}</Localized>: <span style={{ whiteSpace: 'pre-wrap' }}>{row.correction_reason}</span></p>
         <Facts kind={kind} facts={row.values}/><Link href={`/activity/${encodeURIComponent(row.audit_event_no)}`}>{row.audit_event_no}</Link>
       </article>)}
-    </section><p>{back} · <Link href={`/production/${plural[kind]}`}><Localized>{'Back to production catalog'}</Localized></Link></p>
+    </section>{kind==='batch'&&<p><Link href={`/deployments/${encodeURIComponent(deploymentNo)}/batches/${encodeURIComponent(recordNo)}/correct`} prefetch={false}><Localized>{'Open controlled batch correction workbench'}</Localized></Link></p>}<p>{back} · <Link href={`/production/${plural[kind]}`}><Localized>{'Back to production catalog'}</Localized></Link></p>
   </></Localized>;
 }

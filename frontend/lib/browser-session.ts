@@ -943,3 +943,57 @@ export async function executeReleaseChainRevocationCommand(config:SessionConfig,
 }
 
 
+
+/** Private Batch context is authenticated by the backend, never a public-history capability. */
+export async function readBatchCorrectionContext(config:SessionConfig,cookie:string|undefined,
+  input:import('./batch-correction-transport').BatchCorrectionTarget,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseBatchCorrectionTarget,parseBatchCorrectionContext,batchCorrectionContextPath}=await import('./batch-correction-transport');
+  const target=parseBatchCorrectionTarget(input);
+  if (!target) return {status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if (!identity) return {status:401,value:{error:'session_required'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const result=await privateRequest(config,batchCorrectionContextPath(target),envelope.token,fetcher,{},envelope.sid);
+  if (result?.status === 200) {
+    const context=parseBatchCorrectionContext(result.value,target);
+    if (context) return {status:200,value:context};
+  }
+  const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found'};
+  return result && denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'outcome_unknown'}};
+}
+
+export async function executeBatchCorrectionCommand(config:SessionConfig,cookie:string|undefined,
+  input:import('./batch-correction-transport').BatchCorrectionCommand,mode:'submit'|'recover',fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseBatchCorrectionCommand,batchCorrectionPath,batchCorrectionEvent}=await import('./batch-correction-transport');
+  const {projectBatchCorrectionAudit}=await import('./batch-correction-audit');
+  const command=parseBatchCorrectionCommand(input);
+  if (!command || !['submit','recover'].includes(mode)) return {status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if (!identity) return {status:401,value:{error:'session_required'}};
+  if (mode === 'submit' && identity.read_only_mode) return {status:403,value:{error:'read_only_mode'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const unknown={status:502,value:{error:'outcome_unknown'}};
+  if (mode === 'submit') {
+    // Do not refresh/replace context here: a successful original key can now have a newer head.
+    // The backend reauthorizes the exact parent before its original-key replay path.
+    const result=await privateRequest(config,batchCorrectionPath(command),envelope.token,fetcher,
+      {method:'POST',body:JSON.stringify(command.body)},envelope.sid);
+    if (!result) return unknown;
+    if (result.status !== 200) {
+      const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',422:'invalid_request'};
+      if (denied[result.status]) return {status:result.status,value:{error:denied[result.status]}};
+      if (result.status === 409) {
+        const detail=result.value && typeof result.value === 'object'?(result.value as Record<string,unknown>).detail:null;
+        const error=typeof detail === 'string' && /^(revision conflict:|predecessor_id does not match)/.test(detail)?'version_conflict':
+          typeof detail === 'string' && /^request_id already used/.test(detail)?'request_conflict':'submission_conflict';
+        return {status:409,value:{error}};
+      }
+      return unknown;
+    }
+  }
+  // Own original receipt may be read after membership changes, never a fresh write permission.
+  const audit=await privateRequest(config,'/api/v1/activity/'+batchCorrectionEvent(command),envelope.token,fetcher,{},envelope.sid);
+  if (!audit || audit.status !== 200) return unknown;
+  const receipt=projectBatchCorrectionAudit(audit.value,command,identity.principal.id);
+  return receipt?{status:200,value:receipt}:unknown;
+}
