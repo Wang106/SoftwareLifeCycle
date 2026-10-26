@@ -11,13 +11,13 @@
     "business_acceptance_increment": 0,
     "next_package": null,
     "evidence": "docs/batch-correction-workbench.md",
-    "local_validation": "39newbackend_19SQLite_pass20PG_pending;86relatedbackend_pass;34newfrontend_pass;1634fullfrontend_pass0skip;typecheck_Workerconfig_Nextbuild_52automation_pass;external_dependency_symlink_replaced_same_lock_then_build_pass;nonfatal_Wrangler_logdirectory_diagnostic",
+    "local_validation": "39newbackend_19SQLite_pass20PG_pending;86relatedbackend_pass;34newfrontend_pass;1634fullfrontend_pass0skip;typecheck_Workerconfig_Nextbuild_52automation_pass;external_dependency_symlink_replaced_same_lock_then_build_pass;nonfatal_Wrangler_logdirectory_diagnostic;offline_inventory_repair34pass26subtests;firstCI39new_including20PG_pass0skip_but_global1failure",
     "verified_previous_pr": 154,
     "verified_pr_head": "37f83c262c611c2e8d62b0bd43935ef51edf78b4",
     "verified_main": "609394fdd55ac01dc40d06c888d37c1bc3edf833",
     "verified_main_ci": 40288975381,
     "final_evidence_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/154#issuecomment-6411270207",
-    "current_pr_ci": "pending",
+    "current_pr_ci": "first_head40295471580_failed_offline_gate_inventory;additive_disabled_inventory_repair_pending_fresh_head_ci",
     "current_main_ci": "not_merged",
     "current_deployment": "not_merged",
     "limitations": [
@@ -230,7 +230,8 @@
           }
         }
       }
-    }
+    },
+    "current_pr": 155
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
