@@ -59,6 +59,7 @@ export default async function Page({ params }: { params: Promise<{ batchNo: stri
         <span><Localized>{"Changeover deployment"}</Localized></span><b><Localized>{batch.changeover ? matchLabel(batch.matches.changeover_deployment) : 'No changeover linked'}</Localized></b>
       </div>
     </section>
+    {batch.deployment && <p><Link href={`/deployments/${encodeURIComponent(batch.deployment.deployment_no)}/batches/${encodeURIComponent(batch.batch_no)}/history`}><Localized>{'View correction history'}</Localized></Link></p>}
     <p className="datasource"><Link href="/production/batches"><Localized>{"← All batches"}</Localized></Link></p>
   </>;
 }
