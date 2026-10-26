@@ -648,3 +648,20 @@ def batch_history(deployment_no: str, batch_no: str, db: Session = Depends(get_d
     if result is None:
         raise HTTPException(status_code=404, detail="production history target not found")
     return result
+
+
+@router.get("/deployments/{deployment_no}/batches/{batch_no}/correction-context")
+def private_batch_correction_context(deployment_no: str, batch_no: str, request: Request,
+                                     db: Session = Depends(get_db)):
+    """Authenticated preparation observation, never a write grant or reservation."""
+    from app.api.current_identity import current_principal
+    from app.core.config import settings
+    from app.services.batch_correction_context import batch_correction_context
+    if settings.auth_mode != 'oidc':
+        raise HTTPException(401, 'oidc_not_enabled', headers={'WWW-Authenticate': 'Bearer'})
+    current_principal(request, db)  # ACTIVE recheck and token-bound browser-session validation.
+    authorize_deployment(request, db, deployment_no, 'PRODUCTION_OPERATOR')
+    result = batch_correction_context(db, deployment_no, batch_no)
+    if result is None:
+        raise HTTPException(404, 'production correction target not found')
+    return result

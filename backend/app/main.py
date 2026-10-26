@@ -131,7 +131,9 @@ async def read_only_guard(request: Request, call_next):
     is_session_control = request.method == 'POST' and (path == '/api/v1/security/me/browser-sessions' or
         re.fullmatch(r'/api/v1/security/me/browser-sessions/[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}/revoke', path) is not None)
     is_admin_control = path.startswith("/api/v1/security/admin/")
-    is_private = is_identity_read or is_session_control or is_admin_control
+    is_batch_correction_context = request.method in {'GET', 'HEAD'} and re.fullmatch(
+        r'/api/v1/deployments/[^/]+/batches/[^/]+/correction-context', path) is not None
+    is_private = is_identity_read or is_session_control or is_admin_control or is_batch_correction_context
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
     if settings.read_only_mode and is_write and not is_session_control:
         return JSONResponse(
@@ -158,7 +160,7 @@ async def read_only_guard(request: Request, call_next):
         vary = response.headers.get("Vary", "")
         if "authorization" not in {part.strip().lower() for part in vary.split(',')}:
             response.headers["Vary"] = (vary + ", Authorization").lstrip(', ')
-        if is_identity_read or is_admin_control:
+        if is_identity_read or is_admin_control or is_batch_correction_context:
             response.headers['Vary'] += ', X-Browser-Session'
     return response
 

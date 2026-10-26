@@ -693,7 +693,8 @@ class ProductionService:
                 **actor.audit_fields(),
                 "summary": "Production batch facts corrected",
                 "occurred_at": start_val,
-                "payload": {"before": before, "after": after,
+                "payload": {"deployment_no": deployment.deployment_no,
+                    "before": before, "after": after,
                     "correction_reason": correction_reason, "actor_source": actor.source,
                     "request": request_content},
             })
