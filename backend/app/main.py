@@ -201,3 +201,15 @@ def readiness():
         "version": APP_VERSION,
         "database_revision": revision,
     }
+
+
+# Last added user middleware observes read-only/auth guard rejections too.
+# Starlette ServerErrorMiddleware still wraps it; pre-response errors have status 0.
+# Default off; enabling this in any deployed environment is a separate operator step.
+from app.ops.request_telemetry import RequestTelemetryMiddleware
+
+app.add_middleware(
+    RequestTelemetryMiddleware,
+    enabled=settings.request_telemetry_enabled,
+    route_templates=tuple(route.path for route in app.routes if hasattr(route, "path")),
+)
