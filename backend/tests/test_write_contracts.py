@@ -2,7 +2,7 @@ import inspect
 
 from app.main import app
 from app.security_roles import ALL_ROLES
-from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS
+from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS
 
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -19,7 +19,8 @@ def registered_write_routes():
 def test_every_registered_write_route_has_exactly_one_reviewed_contract():
     assert not set(WRITE_CONTRACTS) & set(SESSION_CONTROL_CONTRACTS)
     assert not set(ADMIN_CONTROL_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS))
-    assert set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) == registered_write_routes()
+    assert not set(PRODUCTION_APPROVAL_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS))
+    assert set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) == registered_write_routes()
 
 
 def test_current_write_contracts_remain_non_public_and_explicitly_protected():
@@ -108,3 +109,17 @@ def test_operator_protocol_is_separate_from_http_and_explicitly_infrastructure_a
         assert contract.target_binding=='DATABASE_SCHEMA_ROLE_AND_PROVIDER_FINGERPRINT'
     assert 'admin_operator' not in Path('entrypoint.sh').read_text()
     assert not any('bootstrap' in path or 'recover' in path or 'operator' in path for _,path in registered_write_routes())
+
+
+def test_production_approval_has_separate_required_dual_person_contract():
+    assert set(PRODUCTION_APPROVAL_CONTRACTS) == {
+        ('POST', '/api/v1/authorizations/{authorization_no}/approval')}
+    contract = next(iter(PRODUCTION_APPROVAL_CONTRACTS.values()))
+    assert contract.authentication == 'OIDC_REQUIRED'
+    assert contract.authorization == 'ACTIVE_USER_EXACT_PROJECT_PRODUCTION_AUTHORITY_NOT_CREATOR'
+    assert contract.actor_binding == 'AUTHENTICATED_PRINCIPAL'
+    assert contract.public_exposure == 'READ_ONLY_BLOCKED'
+    assert contract.audit == 'ATOMIC_APPEND'
+    assert contract.idempotency == 'REQUEST_UUID_EXACT_TARGET_ACTOR_CONTEXT_AND_REASON'
+    assert contract.concurrency == 'ADMIN_TRANSACTION_GATE_AND_PRINCIPAL_MEMBERSHIP_CHAIN_ROW_LOCKS'
+    assert contract.precondition == 'DRAFT_TRUSTED_CREATOR_DISTINCT_APPROVER_AND_UNREVOKED_FROZEN_CHAIN'
