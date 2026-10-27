@@ -2,6 +2,7 @@
 import { Localized, LocalizedAttributes } from "./localized";
 
 import Link from 'next/link';
+import PrivateDistributionSelector from './private-distribution-selector';
 import { useEffect, useRef, useState } from 'react';
 import { exportBusinessRecovery, importBusinessRecovery, recoveryTextLimit, type ImportedBusinessRecovery } from '../lib/business-recovery';
 import EvidenceResourceCommandResult from './evidence-resource-command-result';
@@ -24,14 +25,17 @@ const labels: Record<Operation, string> = {
   delivery: 'Create Delivery Package', distribution: 'Record Distribution', authorization: 'Create Production Authorization',
   impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
-export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, submissionEnabled = false, recoveryEnabled = false, governanceSubmissionEnabled = false, governanceRecoveryEnabled = false, distributionSubmissionEnabled = false, distributionRecoveryEnabled = false, productionSubmissionEnabled = false, productionRecoveryEnabled = false, evidenceSubmissionEnabled = false, evidenceRecoveryEnabled = false, resourceSubmissionEnabled = false, resourceRecoveryEnabled = false }: {
-  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; submissionEnabled?: boolean; recoveryEnabled?: boolean; governanceSubmissionEnabled?: boolean; governanceRecoveryEnabled?: boolean; distributionSubmissionEnabled?: boolean; distributionRecoveryEnabled?: boolean; productionSubmissionEnabled?: boolean; productionRecoveryEnabled?: boolean; evidenceSubmissionEnabled?: boolean; evidenceRecoveryEnabled?: boolean; resourceSubmissionEnabled?: boolean; resourceRecoveryEnabled?: boolean;
+export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, selectionEnabled = false, submissionEnabled = false, recoveryEnabled = false, governanceSubmissionEnabled = false, governanceRecoveryEnabled = false, distributionSubmissionEnabled = false, distributionRecoveryEnabled = false, productionSubmissionEnabled = false, productionRecoveryEnabled = false, evidenceSubmissionEnabled = false, evidenceRecoveryEnabled = false, resourceSubmissionEnabled = false, resourceRecoveryEnabled = false }: {
+  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; selectionEnabled?: boolean; submissionEnabled?: boolean; recoveryEnabled?: boolean; governanceSubmissionEnabled?: boolean; governanceRecoveryEnabled?: boolean; distributionSubmissionEnabled?: boolean; distributionRecoveryEnabled?: boolean; productionSubmissionEnabled?: boolean; productionRecoveryEnabled?: boolean; evidenceSubmissionEnabled?: boolean; evidenceRecoveryEnabled?: boolean; resourceSubmissionEnabled?: boolean; resourceRecoveryEnabled?: boolean;
 }) {
   const [operation, setOperation] = useState<Operation>(initialOperation);
   const [fields, setFields] = useState<Fields>({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
   const [review, setReview] = useState<Review | null>(null);
   const [message, setMessage] = useState('');
   const [copying, setCopying] = useState(false);
+  const [selectionLocks,setSelectionLocks]=useState<(keyof Fields)[]>([]),[selectorRevision,setSelectorRevision]=useState(0);
+  const selectionLocksRef=useRef(selectionLocks);selectionLocksRef.current=selectionLocks;
+  const selectionCapability=useRef(selectionEnabled);selectionCapability.current=selectionEnabled;
   const [importText, setImportText] = useState('');
   const importSource = useRef('');
   const imported = useRef(false);
@@ -64,7 +68,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
     previousKey.current = contextKey;
     if (!controller.current) {
       setOperation(initialOperation); setFields({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
-      setReview(null); setMessage('');
+      setReview(null); setMessage('');setSelectionLocks([]);selectionLocksRef.current=[];setSelectorRevision(v=>v+1);
     }
   }, [contextKey]);
   useEffect(() => {
@@ -94,17 +98,30 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
     if (activeReview.current !== currentReview || copyPending.current || (controller.current && controller.current.state.review !== currentReview) || (controller.current && !['confirmed', 'rejected'].includes(controller.current.state.phase))) return;
     if (!controller.current && (activeReview.current !== currentReview || currentKey.current !== contextKey)) return;
     controller.current = null; imported.current = false; importSource.current = ''; setImportText(''); activeReview.current = null; setResult(null); setReview(null); setMessage('');
-    setOperation(initialOperation); setFields({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
+    setOperation(initialOperation); setFields({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });setSelectionLocks([]);selectionLocksRef.current=[];setSelectorRevision(v=>v+1);
   }
   function edit(name: keyof Fields, value: string) {
-    if (copyPending.current || controller.current) return;
+    if (copyPending.current || controller.current || selectionLocksRef.current.includes(name)) return;
     activeReview.current = null; preparation.current = null;
-    setFields(current => ({ ...current, [name]: value }));
+    if(name==='target'){const clear=Object.fromEntries(selectionLocksRef.current.map(key=>[key,'']));setSelectionLocks([]);selectionLocksRef.current=[];setSelectorRevision(v=>v+1);setFields(current=>({...current,...clear,[name]:value}));}
+    else setFields(current => ({ ...current, [name]: value }));
     setReview(null); setMessage('');
   }
   function input(name: keyof Fields, label: string, required = true, maxLength?: number) {
     return <label><Localized>{label}</Localized><input name={name} value={fields[name]} required={required}
-      maxLength={maxLength} onChange={event => edit(name, event.target.value)} /></label>;
+      maxLength={maxLength} readOnly={selectionLocks.includes(name)} onChange={event => edit(name, event.target.value)} /></label>;
+  }
+  const selectorKey=JSON.stringify([contextKey,operation,fields.target,operation==='delivery'?[fields.recipientType,fields.recipientCode,fields.purpose]:null,selectorRevision]);
+  const selectorKeyRef=useRef(selectorKey);selectorKeyRef.current=selectorKey;
+  function applySelection(patch:Partial<Fields>,capturedKey:string){
+    if(!selectionCapability.current||copyPending.current||controller.current||currentKey.current!==contextKey||capturedKey!==selectorKeyRef.current||preparation.current?.operation!==operation)return false;
+    const allowed:(keyof Fields)[]=operation==='delivery'?['artifacts','recipientType','recipientCode','purpose']:operation==='distribution'?['recipientType','recipientCode']:operation==='authorization'?['release','customer','project','purpose','site','line']:[];
+    if(!allowed.length||Object.keys(patch).some(key=>!allowed.includes(key as keyof Fields)))return false;
+    activeReview.current=null;preparation.current=null;setReview(null);setMessage('');selectionLocksRef.current=allowed;setSelectionLocks(allowed);setFields(current=>({...current,...patch}));return true;
+  }
+  function manualSelection(){
+    if(copyPending.current||controller.current||currentKey.current!==contextKey)return;
+    const clear=Object.fromEntries(selectionLocksRef.current.map(key=>[key,'']));selectionLocksRef.current=[];setSelectionLocks([]);setSelectorRevision(v=>v+1);activeReview.current=null;preparation.current=null;setReview(null);setFields(current=>({...current,...clear}));setMessage('');
   }
   async function copy(recovery = false) {
     if (!currentReview?.confirmed || copyPending.current || activeReview.current !== currentReview) return;
@@ -133,6 +150,10 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   return <>
     <section className="panel">
       <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software, batch, approval action, release decision, delivery package, distribution, production authorization, test release, deployment, changeover, impact assessment, acceptance-to-DVP and resource reference submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
+      <Localized>{!imported.current&&['delivery','distribution','authorization'].includes(operation)&&<>
+        <PrivateDistributionSelector key={selectorKey} contextKey={selectorKey} operation={operation as 'delivery'|'distribution'|'authorization'} fields={fields} enabled={selectionEnabled} locked={locked||copying||selectionLocks.length>0} onApply={applySelection}/>
+        {selectionLocks.length>0&&<button type="button" disabled={copying||locked} onClick={manualSelection}><Localized>{'Switch to manual entry and clear selected context'}</Localized></button>}
+      </>}</Localized>
       <form className="commandform" hidden={imported.current} onSubmit={event => {
         event.preventDefault();
         if (copyPending.current || controller.current || currentKey.current !== contextKey || activeReview.current ||
@@ -157,7 +178,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
         <fieldset disabled={copying || locked} className="commandfields">
         <label><Localized>{"Command"}</Localized><select value={operation} onChange={event => {
           if (copyPending.current || controller.current) return; activeReview.current = null; preparation.current = null;
-          setOperation(event.target.value as Operation); setFields({ ...blankFields }); setReview(null); setMessage('');
+          setOperation(event.target.value as Operation);setSelectionLocks([]);selectionLocksRef.current=[];setSelectorRevision(v=>v+1); setFields({ ...blankFields }); setReview(null); setMessage('');
         }}><Localized>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}><Localized>{label}</Localized></option>)}</Localized></select></label>
         <Localized>{input('target', operation === 'deployment' ? 'Authorization UUID' : operation === 'test-release' || operation === 'delivery' ? 'Release UUID' : operation === 'distribution' ? 'Delivery package UUID — exact revision' : operation === 'authorization' ? 'Distribution UUID' : operation === 'resource' ? 'Resource object UUID' : operation === 'impact' ? 'Issue number' : operation === 'acceptance' ? 'SCR number' : operation === 'snapshot' ? 'Release UUID' : operation === 'approval' || operation === 'decision' ? 'Approval number' : 'Deployment number', true, ['snapshot','resource','delivery','distribution','authorization','test-release','deployment'].includes(operation) ? 36 : 50)}</Localized>
         <Localized>{operation === 'test-release' && <>
@@ -182,7 +203,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
           <Localized>{operation === 'delivery' && <>
             <Localized>{input('packageNo', 'Package number', true, 50)}</Localized><Localized>{input('revision', 'Package revision — explicit positive integer', true, 10)}</Localized>
             <Localized>{input('actor', 'Optional declared creator — text, not authenticated identity', false, 120)}</Localized>
-            <label><Localized>{"Snapshot artifact UUIDs — one per line"}</Localized><textarea required maxLength={8000} value={fields.artifacts} onChange={event => edit('artifacts', event.target.value)} /></label>
+            <label><Localized>{"Snapshot artifact UUIDs — one per line"}</Localized><textarea required maxLength={8000} readOnly={selectionLocks.includes('artifacts')} value={fields.artifacts} onChange={event => edit('artifacts', event.target.value)} /></label>
             <p className="muted"><Localized>{"Choose exact frozen artifact UUIDs from the approved decision snapshot. The API selects the latest RELEASE decision and checks approval, file membership, INTERNAL_ONLY and recipient/purpose rules. This form cannot pin a decision or certify eligibility."}</Localized></p>
           </>}</Localized>
           <Localized>{operation === 'distribution' && <>

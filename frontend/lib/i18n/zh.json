@@ -2380,5 +2380,21 @@
   "This attempt was rejected before a confirmed result. Reload private approval context before preparing another request.": "此次尝试已拒绝且未确认结果。准备其他请求前请重新读取私有批准上下文。",
   "Reload private approval context before preparing another request.": "准备其他请求前请重新读取私有批准上下文。",
   "This receipt proves only the original APPROVED decision. It does not prove current eligibility, deployment, physical production or formal release.": "此回执仅证明原始 APPROVED 决策，不证明当前可用资格、部署、实际生产或正式发布。",
-  "Open controlled authorization approval": "打开受控生产授权批准"
+  "Open controlled authorization approval": "打开受控生产授权批准",
+  "Switch to manual entry and clear selected context": "切换到手工输入并清除所选上下文",
+  "Private distribution selection": "私有分发选择",
+  "Load only the exact private target. Selection is not permission, approval or a pinned write decision; submission revalidates current state and may reject changes.": "仅加载精确的私有目标。选择不代表权限、批准或写入决策锁定；提交会重新验证当前状态，变化时可能拒绝。",
+  "Private selection is disabled or unavailable for this session. Manual preparation remains available.": "私有选择已禁用或当前会话不可用。仍可手工准备。",
+  "Load private selection context": "加载私有选择上下文",
+  "Choose eligible frozen artifacts explicitly. File names and hashes are original evidence.": "请明确选择符合条件的冻结文件。文件名和哈希为原始证据。",
+  "Selected artifacts": "已选文件",
+  "Select an active site and line in this exact project": "选择此精确项目中的有效场地和产线",
+  "Select a site and line": "选择场地和产线",
+  "No eligible choices returned on this page.": "本页未返回符合条件的选项。",
+  "Load next private choices page": "加载下一页私有选项",
+  "Apply selected values to preparation": "将所选值应用到准备表单",
+  "Enter the exact target and required recipient/purpose before loading. Nothing was sent.": "加载前请输入精确目标及必需的接收方和用途。未发送任何请求。",
+  "Private selection unavailable or changed. Reload the exact context; no fields were applied.": "私有选择不可用或已变化。请重新加载精确上下文；未应用任何字段。",
+  "Select at most 200 artifacts.": "最多选择 200 个文件。",
+  "Selected values applied to preparation only. No request was sent.": "所选值仅应用到准备表单，未发送业务请求。"
 }

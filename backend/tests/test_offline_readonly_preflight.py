@@ -210,7 +210,7 @@ class OfflinePreflightTests(unittest.TestCase):
         import re
         discovered = set()
         for path in (ROOT / "frontend/lib").glob("*.ts"):
-            discovered.update(re.findall(r"\b[A-Z_]+_(?:SUBMISSION|SESSION|OIDC)_MODE\b", path.read_text()))
+            discovered.update(re.findall(r"\b[A-Z_]+_(?:SUBMISSION|SESSION|OIDC|SELECTION)_MODE\b", path.read_text()))
         self.assertEqual(discovered, set(preflight.GATES))
 
 
