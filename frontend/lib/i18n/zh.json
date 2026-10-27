@@ -2300,5 +2300,8 @@
   "Retry original changeover correction": "重试原换线更正",
   "Changeover correction workbench": "换线更正工作台",
   "Back to recorded changeover history": "返回已记录的换线历史",
-  "Open controlled changeover correction workbench": "打开受控换线更正工作台"
+  "Open controlled changeover correction workbench": "打开受控换线更正工作台",
+  "Read this history again": "重新读取此历史",
+  "Loading correction history": "正在读取更正历史",
+  "Waiting for read-only history. No recorded facts have been confirmed yet.": "正在等待只读历史，尚未确认任何记录事实。"
 }

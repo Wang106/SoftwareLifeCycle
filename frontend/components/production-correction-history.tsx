@@ -38,7 +38,7 @@ function Facts({ kind, facts }: { kind: Kind; facts: Values }) {
 export default async function ProductionCorrectionHistory({ kind, deploymentNo, recordNo }: {
   kind: Kind; deploymentNo: string; recordNo: string;
 }) {
-  const data = await apiGet<History>(`/api/v1/deployments/${encodeURIComponent(deploymentNo)}/${plural[kind]}/${encodeURIComponent(recordNo)}/history`);
+  const data = await apiGet<History>(`/api/v1/deployments/${encodeURIComponent(deploymentNo)}/${plural[kind]}/${encodeURIComponent(recordNo)}/history`, { timeoutMs: 15000 });
   const back = <Link href={`/deployments/${encodeURIComponent(deploymentNo)}`}><Localized>{'Back to deployment'}</Localized></Link>;
   // A mismatched upstream response is not substitute evidence for this route.
   if (!data || data.kind !== kind || data.deployment_no !== deploymentNo || data.record_no !== recordNo ||
@@ -46,7 +46,7 @@ export default async function ProductionCorrectionHistory({ kind, deploymentNo, 
       (data.recorded_baseline !== null && (!object(data.recorded_baseline) || !validFacts(data.recorded_baseline.values) || typeof data.recorded_baseline.source !== 'string' || !nullableText(data.recorded_baseline.recorded_at) || !nullableText(data.recorded_baseline.baseline_event_no))) ||
       typeof data.stored_status !== 'string' || typeof data.history_state !== 'string' || !Number.isSafeInteger(data.correction_count) || !Array.isArray(data.corrections) || data.corrections.slice(0, 50).some(row => !object(row) || !validFacts(row.values) || typeof row.id !== 'string' || !Number.isSafeInteger(row.revision) || !nullableText(row.predecessor_id) || typeof row.correction_reason !== 'string' || !nullableText(row.recorded_at) || typeof row.audit_event_no !== 'string')) {
     return <Localized><section className="panel"><h1><Localized>{'Correction history unavailable'}</Localized></h1>
-      <p><Localized>{'No matching history was returned. No substitute history is shown.'}</Localized></p>{back}</section></Localized>;
+      <p><Localized>{'No matching history was returned. No substitute history is shown.'}</Localized></p><p><a href={`/deployments/${encodeURIComponent(deploymentNo)}/${plural[kind]}/${encodeURIComponent(recordNo)}/history`}><Localized>{'Read this history again'}</Localized></a></p>{back}</section></Localized>;
   }
   const corrections = data.corrections.slice(0, 50);
   return <Localized><>
