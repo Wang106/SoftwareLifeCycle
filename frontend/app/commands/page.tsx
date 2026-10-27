@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { authConfig, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured, evidenceSubmissionConfigured, resourceSubmissionConfigured, acceptanceCorrectionSubmissionConfigured, impactCorrectionSubmissionConfigured, impactWithdrawalSubmissionConfigured, releaseDecisionSupersessionSubmissionConfigured, releaseChainRevocationSubmissionConfigured } from '../../lib/browser-auth';
+import { authConfig, privateDistributionSelectionConfigured, firstSubmissionConfigured, governanceSubmissionConfigured, distributionSubmissionConfigured, productionSubmissionConfigured, evidenceSubmissionConfigured, resourceSubmissionConfigured, acceptanceCorrectionSubmissionConfigured, impactCorrectionSubmissionConfigured, impactWithdrawalSubmissionConfigured, releaseDecisionSupersessionSubmissionConfigured, releaseChainRevocationSubmissionConfigured } from '../../lib/browser-auth';
 import { resolveSession, SESSION_COOKIE } from '../../lib/browser-session';
 
 import { Localized, LocalizedAttributes } from "../../components/localized";
@@ -20,6 +20,7 @@ export default async function Page({ searchParams }: {
     entityType: resourceTypes.includes(bounded('entity_type', 30)) ? bounded('entity_type', 30) : '' };
   let config = null;
   try { config = await authConfig(process.env); } catch { /* Do not expose configuration details. */ }
+  const selectionConfigured=['delivery','distribution','authorization'].includes(operation)&&privateDistributionSelectionConfigured(process.env,config);
   const configured = firstSubmissionConfigured(process.env, config);
   const governanceConfigured = governanceSubmissionConfigured(process.env, config);
   const distributionConfigured = distributionSubmissionConfigured(process.env, config);
@@ -41,7 +42,7 @@ export default async function Page({ searchParams }: {
   const ReleaseDecisionSupersessionWorkbench = decisionSupersessionContextRequested ? (await import('../../components/release-decision-supersession-workbench')).default : null;
   const releaseChainRevocationConfigured = releaseChainRevocationContextRequested && releaseChainRevocationSubmissionConfigured(process.env, config);
   const ReleaseChainRevocationWorkbench = releaseChainRevocationContextRequested ? (await import('../../components/release-chain-revocation-workbench')).default : null;
-  const anyConfigured = configured || governanceConfigured || distributionConfigured || productionConfigured || evidenceConfigured || resourceConfigured || correctionConfigured || impactCorrectionConfigured || impactWithdrawalConfigured || decisionSupersessionConfigured || releaseChainRevocationConfigured;
+  const anyConfigured = selectionConfigured || configured || governanceConfigured || distributionConfigured || productionConfigured || evidenceConfigured || resourceConfigured || correctionConfigured || impactCorrectionConfigured || impactWithdrawalConfigured || decisionSupersessionConfigured || releaseChainRevocationConfigured;
   const values = anyConfigured ? (await cookies()).getAll(SESSION_COOKIE) : [];
   const identity = anyConfigured && config && values.length === 1 ? await resolveSession(config.session, values[0].value) : null;
   const recoveryEnabled = configured && identity !== null;
@@ -79,7 +80,7 @@ export default async function Page({ searchParams }: {
       targetId:bounded('target'),releaseId:bounded('release'),snapshotId:bounded('snapshot'),decisionId:bounded('decision'),deliveryId:bounded('delivery'),distributionId:bounded('distribution'),authorizationId:bounded('authorization')}}
       submissionEnabled={releaseChainRevocationConfigured && identity !== null && identity.read_only_mode === false}
       recoveryEnabled={releaseChainRevocationConfigured && identity !== null}/> }
-    {!decisionSupersessionContextRequested && !releaseChainRevocationContextRequested && <CommandWorkbench initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} productionSubmissionEnabled={productionSubmissionEnabled} productionRecoveryEnabled={productionRecoveryEnabled} evidenceSubmissionEnabled={evidenceSubmissionEnabled} evidenceRecoveryEnabled={evidenceRecoveryEnabled} resourceSubmissionEnabled={resourceSubmissionEnabled} resourceRecoveryEnabled={resourceRecoveryEnabled} />}
+    {!decisionSupersessionContextRequested && !releaseChainRevocationContextRequested && <CommandWorkbench selectionEnabled={selectionConfigured&&identity?.principal.principal_type==='USER'} initialOperation={operation} initialTarget={target} initialStep={step} initialContext={initialContext} submissionEnabled={submissionEnabled} recoveryEnabled={recoveryEnabled} governanceSubmissionEnabled={governanceSubmissionEnabled} governanceRecoveryEnabled={governanceRecoveryEnabled} distributionSubmissionEnabled={distributionSubmissionEnabled} distributionRecoveryEnabled={distributionRecoveryEnabled} productionSubmissionEnabled={productionSubmissionEnabled} productionRecoveryEnabled={productionRecoveryEnabled} evidenceSubmissionEnabled={evidenceSubmissionEnabled} evidenceRecoveryEnabled={evidenceRecoveryEnabled} resourceSubmissionEnabled={resourceSubmissionEnabled} resourceRecoveryEnabled={resourceRecoveryEnabled} />}
   </>;
 }
 
