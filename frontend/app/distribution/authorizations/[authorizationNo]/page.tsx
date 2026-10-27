@@ -67,6 +67,7 @@ export default async function Page({ params }: { params: Promise<{ authorization
       <p><Link href={`/production/batches?${new URLSearchParams({authorization_id: authorization.id})}`}><Localized>{authorization.history_counts.batches}</Localized><Localized>{" recorded batches →"}</Localized></Link></p>
       <p className="muted"><Localized>{"Review software observations and binding evidence in paginated catalogs scoped to this exact authorization."}</Localized></p>
     </section>
+    <p><Link href={`/distribution/authorizations/${encodeURIComponent(authorization.authorization_no)}/approve`} prefetch={false}><Localized>{"Open controlled authorization approval"}</Localized></Link></p>
     <p className="datasource"><Link href="/distribution/authorizations"><Localized>{"← All authorizations"}</Localized></Link></p>
   <p><Link href={`/activity?${new URLSearchParams({entity_type: 'SOFTWARE_AUTHORIZATION', entity_id: authorization.id})}`}><Localized>{"Recorded audit events →"}</Localized></Link></p></>;
 }

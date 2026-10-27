@@ -136,7 +136,7 @@ async def read_only_guard(request: Request, call_next):
     is_changeover_correction_context = request.method in {'GET', 'HEAD'} and re.fullmatch(
         r'/api/v1/deployments/[^/]+/changeovers/[^/]+/correction-context', path) is not None
     is_authorization_approval = re.fullmatch(
-        r'/api/v1/authorizations/[^/]+/(?:approval-context|approval)', path) is not None
+        r'/api/v1/authorizations/[^/]+/(?:approval-context|approval|approval-receipts/[^/]+)', path) is not None
     is_private = is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
     if settings.read_only_mode and is_write and not is_session_control:

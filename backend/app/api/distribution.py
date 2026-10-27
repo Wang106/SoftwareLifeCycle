@@ -548,3 +548,13 @@ def approve_authorization(authorization_no: str, body: AuthorizationApprovalRequ
                                                         body.expected_context_digest, body.reason)
     except DistributionError as exc:
         raise HTTPException(409, str(exc)) from exc
+
+
+@router.get('/authorizations/{authorization_no}/approval-receipts/{request_id}')
+def authorization_approval_receipt(authorization_no: str, request_id: uuid.UUID, request: Request,
+                                   db: Session = Depends(get_db)):
+    from app.services.authorization_approval import AuthorizationApprovalService
+    try:
+        return AuthorizationApprovalService(db).receipt(authorization_no, request, request_id)
+    except DistributionError as exc:
+        raise HTTPException(409, str(exc)) from exc
