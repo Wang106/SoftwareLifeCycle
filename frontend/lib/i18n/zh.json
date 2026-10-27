@@ -2303,5 +2303,12 @@
   "Open controlled changeover correction workbench": "打开受控换线更正工作台",
   "Read this history again": "重新读取此历史",
   "Loading correction history": "正在读取更正历史",
-  "Waiting for read-only history. No recorded facts have been confirmed yet.": "正在等待只读历史，尚未确认任何记录事实。"
+  "Waiting for read-only history. No recorded facts have been confirmed yet.": "正在等待只读历史，尚未确认任何记录事实。",
+  "Clipboard unavailable. Select and copy the recovery text below.": "剪贴板不可用，请选中并复制下方恢复文本。",
+  "Recovery text is invalid or does not match this site and batch. Nothing was sent.": "恢复文本无效或与本站及当前批次不匹配，未发送任何请求。",
+  "Imported batch context — unverified evidence": "导入的批次上下文 — 尚未验证的证据",
+  "Copy batch correction recovery text": "复制批次更正恢复文本",
+  "Batch recovery text contains business metadata, the original context and request, not proof of execution or permission. Store it securely.": "批次恢复文本包含业务元数据、原始上下文和请求，不是执行或权限证明，请妥善保管。",
+  "Paste recovery text for this exact site and batch. Import never submits, retries or queries automatically.": "请粘贴本站此精确批次的恢复文本。导入绝不自动提交、重试或查询。",
+  "Request state is kept only in this page. Manually save recovery text before leaving an unknown outcome; nothing is stored automatically.": "请求状态仅保存在当前页面。结果未知时离开前请手动保存恢复文本；系统不会自动存储。"
 }
