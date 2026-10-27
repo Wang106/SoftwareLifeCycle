@@ -1,0 +1,63 @@
+'use strict';
+const {test,after}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const output=fs.mkdtempSync(path.join(require('node:os').tmpdir(),'slc-changeover-correction-ui-'));
+require('node:child_process').execFileSync(process.execPath,[require.resolve('typescript/bin/tsc'),'components/changeover-correction-workbench.tsx','--target','ES2021','--module','commonjs','--jsx','react-jsx','--esModuleInterop','--resolveJsonModule','--strict','--skipLibCheck','--outDir',output]);
+fs.symlinkSync(path.resolve('node_modules'),path.join(output,'node_modules'),'dir');
+const React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+const Component=require(path.join(output,'components/changeover-correction-workbench.js')).default,Result=require(path.join(output,'components/changeover-correction-workbench.js')).ChangeoverCorrectionResult;
+const {LanguageProvider}=require(path.join(output,'components/localized.js')),dictionary=require('../lib/i18n/zh.json'),ts=require('typescript');
+after(()=>fs.rmSync(output,{recursive:true,force:true}));
+const id=n=>`${n.repeat(8)}-${n.repeat(4)}-${n.repeat(4)}-${n.repeat(4)}-${n.repeat(12)}`;
+const context={deployment_no:'DEP-原始',changeover_no:'CHANGEOVER-原始',changeover_id:id('1'),from_release_id:id('2'),to_release_id:id('3'),history_state:'IMPORTED_CORRECTED',expected_revision:2,predecessor_id:id('4'),changed_at:'2026-10-26T01:00:00.123456Z',note:'Original note'};
+const props={deploymentNo:context.deployment_no,changeoverNo:context.changeover_no,contextEnabled:true,submissionEnabled:true,recoveryEnabled:true};
+const render=(locale,node)=>renderToStaticMarkup(React.createElement(LanguageProvider,{initialLocale:locale},node));
+const load='Load private correction context',send='Send confirmed changeover correction',retry='Retry original changeover correction',query='Query original audit without resubmitting',reset='Reload context for a new correction';
+function receipt(c){return {operation:c.operation,target:c.target,request_id:c.body.request_id,audit_event_no:'EVT-CC-'+c.body.request_id.replaceAll('-',''),result:{changeover_id:c.context.changeover_id,changeover_no:c.target.changeover_no,from_release_id:c.body.from_release_id,to_release_id:c.context.to_release_id,changed_at:c.body.changed_at,note:c.body.note,correction_reason:c.body.correction_reason,revision:c.body.expected_revision+1,predecessor_id:c.body.predecessor_id}};}
+// Compiled handlers plus real transport, isolated hooks; not browser acceptance.
+function harness(initial=props,clipboard=async()=>{}){
+ const values=[],effects=[],listeners=new Map();let index=0,tree,work=[],current=initial;
+ const hooks={useState(initial){const i=index++;if(!(i in values))values[i]=initial;return[values[i],next=>{values[i]=typeof next==='function'?next(values[i]):next;}];},useRef(initial){const i=index++;if(!(i in values))values[i]={current:initial};return values[i];},useEffect(fn,deps){const i=index++,old=effects[i];if(!old||deps.some((d,j)=>!Object.is(d,old.deps[j])))work.push(()=>{old?.cleanup?.();effects[i]={deps,cleanup:fn()};});}};
+ const exports={};vm.runInNewContext(fs.readFileSync(path.join(output,'components/changeover-correction-workbench.js'),'utf8'),{exports,require:name=>name==='react'?hooks:name==='./localized'?{Localized:({children})=>children}:name==='react/jsx-runtime'||name==='next/link'?require(name):require(path.resolve(output,'components',name)),fetch:(...args)=>globalThis.fetch(...args),AbortSignal,crypto:globalThis.crypto,navigator:{clipboard:{writeText:clipboard}},window:{location:{origin:'https://example.test'},addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)},Error,JSON});
+ function nodes(node){if(arguments.length===0)node=tree;if(Array.isArray(node))return node.flatMap(n=>nodes(n));if(!node||typeof node!=='object')return[];return[node,...nodes(node.props?.children)];}
+ function text(node){if(Array.isArray(node))return node.map(text).join('');if(typeof node==='string')return node;return node&&typeof node==='object'?text(node.props?.children):'';}
+ function rerender(next=current){current=next;index=0;work=[];tree=exports.default(current);for(const fn of work)fn();return tree;}
+ function change(name,value){nodes().find(n=>n.props?.name===name).props.onChange({target:{value}});rerender();}
+ function prepare(){nodes().find(n=>n.type==='form').props.onSubmit({preventDefault(){}});rerender();}
+ function check(checked=true){nodes().find(n=>n.props?.type==='checkbox').props.onChange({target:{checked}});rerender();}
+ function button(label){return nodes().find(n=>n.type==='button'&&text(n)===label);}
+ function state(){return nodes().find(n=>n.props?.state?.command)?.props.state||null;}
+ rerender();return {render:rerender,change,prepare,check,button,nodes,state,listeners,props:()=>current,text:()=>text(tree)};
+}
+async function ready(h){const old=globalThis.fetch;try{globalThis.fetch=async(url,init)=>{assert.equal(url,'/auth/changeover-correction-context');assert.deepEqual(JSON.parse(init.body),{deployment_no:context.deployment_no,changeover_no:context.changeover_no});return Response.json(context);};await h.button(load).props.onClick();h.render();h.change('correction_reason','Original reason\n原文');h.prepare();}finally{globalThis.fetch=old;}}
+const copy='Copy changeover correction recovery text',restore='Import correction recovery without sending';
+async function exportedUnknown(){let text;const h=harness(props,async value=>{text=value;});await ready(h);h.change('changed_at','2026-10-27T13:00:00.654321+08:00');h.prepare();h.check();const old=globalThis.fetch;try{globalThis.fetch=async()=>{throw Error('lost');};await h.button(send).props.onClick();h.render();await h.button(copy).props.onClick();h.render();return {h,text,command:h.state().command};}finally{globalThis.fetch=old;}}
+function stage(h,text){h.change('importText',text);h.button(restore).props.onClick();h.render();}
+test('explicit copy of unknown freezes original metadata; fresh import makes zero requests and has no submit or retry',async()=>{
+ const {h,text,command}=await exportedUnknown();assert.equal(h.state().phase,'unknown');assert.ok(text.includes(command.body.request_id));assert.ok(h.text().includes('not proof of execution or permission'));
+ const fresh=harness();let calls=0;const old=globalThis.fetch;try{globalThis.fetch=async()=>{calls++;throw Error('unexpected');};stage(fresh,text);assert.equal(calls,0);assert.equal(fresh.state().phase,'unknown');assert.deepEqual(fresh.state().command,command);assert.equal(command.body.changed_at,'2026-10-27T05:00:00.654321Z');assert.equal(command.context.to_release_id,context.to_release_id);assert.notEqual(command.body.from_release_id,command.context.to_release_id);assert.equal(fresh.button(send),undefined);assert.equal(fresh.button(retry),undefined);assert.equal(fresh.button(load),undefined);assert.equal(fresh.nodes().find(n=>n.type==='form'),undefined);assert.ok(fresh.text().includes('Imported changeover context — unverified evidence'));}finally{globalThis.fetch=old;}
+});
+test('imported recovery only explicitly queries original audit in read-only session and respects revoked capability',async()=>{
+ const {text,command}=await exportedUnknown(),h=harness({...props,submissionEnabled:false});stage(h,text);let calls=0;const old=globalThis.fetch;
+ try{globalThis.fetch=async(url,init)=>{calls++;assert.equal(url,'/auth/changeover-correction-receipt');assert.deepEqual(JSON.parse(init.body),command);return Response.json(receipt(command));};const stale=h.button(query).props.onClick;h.render({...props,submissionEnabled:false,recoveryEnabled:false});await stale();assert.equal(calls,0);assert.equal(h.state().phase,'unknown');h.render({...props,submissionEnabled:false});await h.button(query).props.onClick();h.render();assert.equal(calls,1);assert.equal(h.state().phase,'confirmed');assert.equal(h.button(retry),undefined);}finally{globalThis.fetch=old;}
+});
+test('invalid, other-site and foreign-target imports are local-only and cannot replace frozen unknown',async()=>{
+ const {text}=await exportedUnknown();const old=globalThis.fetch;let calls=0;try{globalThis.fetch=async()=>{calls++;throw Error('unexpected');};for(const value of ['{}','not-json',text.replace('example.test','foreign.test'),text.replaceAll('changeover-correction','batch-correction')]){const h=harness();stage(h,value);assert.equal(h.state(),null);assert.ok(h.text().includes('Nothing was sent.'));}const foreign=harness({...props,changeoverNo:'OTHER'});stage(foreign,text);assert.equal(foreign.state(),null);
+ const h=harness();h.change('importText',text);const stale=h.button(restore).props.onClick;h.render({...props,changeoverNo:'OTHER'});stale();h.render();assert.equal(h.state(),null);assert.equal(calls,0);
+ }finally{globalThis.fetch=old;}
+});
+test('clipboard failure exposes canonical recovery fallback and duplicate copy interlocks',async()=>{
+ const {text}=await exportedUnknown();let finish,copies=0;const h=harness(props,()=>{copies++;return new Promise((_resolve,reject)=>{finish=reject;});});stage(h,text);const click=h.button(copy).props.onClick,pending=click();await click();assert.equal(copies,1);finish(Error('clipboard denied'));await pending;h.render();assert.ok(h.text().includes('Clipboard unavailable. Select and copy the recovery text below.'));assert.ok(h.text().includes(text));assert.equal(h.state().phase,'unknown');
+});
+test('imported original survives route changes and double queries without issuing a new request',async()=>{
+ const {text,command}=await exportedUnknown(),h=harness();stage(h,text);h.render({...props,deploymentNo:'OTHER',changeoverNo:'OTHER'});assert.deepEqual(h.state().command,command);let finish,calls=0;const old=globalThis.fetch;try{globalThis.fetch=async(url,init)=>{calls++;assert.equal(url,'/auth/changeover-correction-receipt');assert.deepEqual(JSON.parse(init.body),command);return new Promise(resolve=>{finish=resolve;});};const click=h.button(query).props.onClick,pending=click();await click();assert.equal(calls,1);h.render();assert.equal(h.button(restore),undefined);assert.equal(h.button(load),undefined);finish(Response.json({error:'submission_forbidden'},{status:403}));await pending;h.render();assert.equal(h.state().phase,'unknown');assert.equal(h.button(reset),undefined);assert.equal(h.button(send),undefined);assert.equal(h.button(retry),undefined);}finally{globalThis.fetch=old;}
+});
+test('context request already in flight prevents import, and old importer cannot replace confirmed review',async()=>{
+ const {text}=await exportedUnknown(),h=harness();h.change('importText',text);const oldImport=h.button(restore).props.onClick;let finish;const old=globalThis.fetch;try{globalThis.fetch=async()=>new Promise(resolve=>{finish=resolve;});const pending=h.button(load).props.onClick();oldImport();assert.equal(h.state(),null);finish(Response.json(context));await pending;h.render();h.change('correction_reason','reason');h.prepare();h.check();const command=h.state().command;oldImport();h.render();assert.equal(h.state().command,command);}finally{globalThis.fetch=old;}
+});
+for(const locale of ['zh','en'])test(`${locale}: import controls and privacy notice are translated without enabling submission`,()=>{
+ const html=render(locale,React.createElement(Component,{...props,contextEnabled:false,submissionEnabled:false,recoveryEnabled:false}));for(const label of ['Paste recovery text for this exact site and changeover. Import never submits, retries or queries automatically.','Import correction recovery without sending','Request state is kept only in this page. Manually save recovery text before leaving an unknown outcome; nothing is stored automatically.'])assert.ok(html.includes(locale==='zh'?dictionary[label]:label));assert.ok(!html.includes(send));
+});
+test('nullable original time remains null while exported explicit replacement instant never drifts',async()=>{
+ let text;const h=harness(props,async value=>{text=value;}),old=globalThis.fetch;
+ try{globalThis.fetch=async()=>Response.json({...context,changed_at:null});await h.button(load).props.onClick();h.render();h.change('changed_at','2026-10-27T13:00:00.000009+08:00');h.change('correction_reason','Original missing time');h.prepare();h.check();await h.button(copy).props.onClick();h.render();const fresh=harness({...props,submissionEnabled:false});stage(fresh,text);assert.equal(fresh.state().command.context.changed_at,null);assert.equal(fresh.state().command.body.changed_at,'2026-10-27T05:00:00.000009Z');assert.equal(fresh.button(send),undefined);assert.equal(fresh.button(retry),undefined);}finally{globalThis.fetch=old;}
+});

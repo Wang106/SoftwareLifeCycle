@@ -2310,5 +2310,10 @@
   "Copy batch correction recovery text": "复制批次更正恢复文本",
   "Batch recovery text contains business metadata, the original context and request, not proof of execution or permission. Store it securely.": "批次恢复文本包含业务元数据、原始上下文和请求，不是执行或权限证明，请妥善保管。",
   "Paste recovery text for this exact site and batch. Import never submits, retries or queries automatically.": "请粘贴本站此精确批次的恢复文本。导入绝不自动提交、重试或查询。",
-  "Request state is kept only in this page. Manually save recovery text before leaving an unknown outcome; nothing is stored automatically.": "请求状态仅保存在当前页面。结果未知时离开前请手动保存恢复文本；系统不会自动存储。"
+  "Request state is kept only in this page. Manually save recovery text before leaving an unknown outcome; nothing is stored automatically.": "请求状态仅保存在当前页面。结果未知时离开前请手动保存恢复文本；系统不会自动存储。",
+  "Recovery text is invalid or does not match this site and changeover. Nothing was sent.": "恢复文本无效或与本站及当前换线不匹配，未发送任何请求。",
+  "Imported changeover context — unverified evidence": "导入的换线上下文 — 尚未验证的证据",
+  "Copy changeover correction recovery text": "复制换线更正恢复文本",
+  "Changeover recovery text contains business metadata, the original context and request, not proof of execution or permission. Store it securely.": "换线恢复文本包含业务元数据、原始上下文和请求，不是执行或权限证明，请妥善保管。",
+  "Paste recovery text for this exact site and changeover. Import never submits, retries or queries automatically.": "请粘贴本站此精确换线的恢复文本。导入绝不自动提交、重试或查询。"
 }
