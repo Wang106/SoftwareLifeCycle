@@ -315,3 +315,24 @@ OPERATOR_CONTROL_CONTRACTS = {
     'bootstrap': OperatorControlContract('Create first local USER administrator only without any prior admin assignments'),
     'recover': OperatorControlContract('Restore an existing local USER administrator only while no effective admin remains'),
 }
+
+
+@dataclass(frozen=True)
+class ProductionApprovalContract:
+    operation: str
+    authentication: str = 'OIDC_REQUIRED'
+    authorization: str = 'ACTIVE_USER_EXACT_PROJECT_PRODUCTION_AUTHORITY_NOT_CREATOR'
+    actor_binding: str = 'AUTHENTICATED_PRINCIPAL'
+    public_exposure: str = 'READ_ONLY_BLOCKED'
+    audit: str = 'ATOMIC_APPEND'
+    concurrency: str = 'ADMIN_TRANSACTION_GATE_AND_PRINCIPAL_MEMBERSHIP_CHAIN_ROW_LOCKS'
+    idempotency: str = 'REQUEST_UUID_EXACT_TARGET_ACTOR_CONTEXT_AND_REASON'
+    precondition: str = 'DRAFT_TRUSTED_CREATOR_DISTINCT_APPROVER_AND_UNREVOKED_FROZEN_CHAIN'
+
+
+# A separate strict business approval, not one of the fourteen ordinary commands,
+# not an administrator control, and never an auth-disabled or admin-bypass route.
+PRODUCTION_APPROVAL_CONTRACTS = {
+    ('POST', '/api/v1/authorizations/{authorization_no}/approval'):
+        ProductionApprovalContract('Approve production authorization with dual-person separation'),
+}

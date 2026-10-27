@@ -135,7 +135,9 @@ async def read_only_guard(request: Request, call_next):
         r'/api/v1/deployments/[^/]+/batches/[^/]+/correction-context', path) is not None
     is_changeover_correction_context = request.method in {'GET', 'HEAD'} and re.fullmatch(
         r'/api/v1/deployments/[^/]+/changeovers/[^/]+/correction-context', path) is not None
-    is_private = is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context
+    is_authorization_approval = re.fullmatch(
+        r'/api/v1/authorizations/[^/]+/(?:approval-context|approval)', path) is not None
+    is_private = is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
     if settings.read_only_mode and is_write and not is_session_control:
         return JSONResponse(
@@ -162,7 +164,7 @@ async def read_only_guard(request: Request, call_next):
         vary = response.headers.get("Vary", "")
         if "authorization" not in {part.strip().lower() for part in vary.split(',')}:
             response.headers["Vary"] = (vary + ", Authorization").lstrip(', ')
-        if is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context:
+        if is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval:
             response.headers['Vary'] += ', X-Browser-Session'
     return response
 

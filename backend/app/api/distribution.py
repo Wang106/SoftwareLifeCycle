@@ -521,3 +521,30 @@ def create_authorization(
         return {"id": str(row.id), "authorization_no": row.authorization_no, "status": row.status}
     except DistributionError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+class AuthorizationApprovalRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    request_id: uuid.UUID
+    expected_context_digest: str = Field(pattern=r'^[0-9a-f]{64}$')
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+@router.get('/authorizations/{authorization_no}/approval-context')
+def authorization_approval_context(authorization_no: str, request: Request, db: Session = Depends(get_db)):
+    from app.services.authorization_approval import AuthorizationApprovalService
+    try:
+        return AuthorizationApprovalService(db).context(authorization_no, request)
+    except DistributionError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@router.post('/authorizations/{authorization_no}/approval')
+def approve_authorization(authorization_no: str, body: AuthorizationApprovalRequest, request: Request,
+                          db: Session = Depends(get_db)):
+    from app.services.authorization_approval import AuthorizationApprovalService
+    try:
+        return AuthorizationApprovalService(db).approve(authorization_no, request, body.request_id,
+                                                        body.expected_context_digest, body.reason)
+    except DistributionError as exc:
+        raise HTTPException(409, str(exc)) from exc
