@@ -866,3 +866,42 @@ export async function handleAdminRegistrationRecovery(request: Request, env: Env
   const result = await recoverAdminRegistration(config.session, readCookie(request, SESSION_COOKIE), review, config.issuer, fetcher);
   return Response.json(result.value, { status: result.status, headers: privateHeaders });
 }
+
+export function authorizationApprovalSubmissionConfigured(env:Environment,config:AuthConfig|null):boolean {
+  return env.AUTHORIZATION_APPROVAL_SUBMISSION_MODE === 'enabled' && !!config &&
+    env.AUTHORIZATION_APPROVAL_APPROVED_API_BASE_URL === config.session.apiBase &&
+    env.AUTHORIZATION_APPROVAL_APPROVED_APP_ORIGIN === config.session.origin;
+}
+export async function handleAuthorizationApproval(request:Request,env:Environment,
+  mode:'context'|'submit'|'recover',fetcher:typeof fetch=fetch):Promise<Response> {
+  if (!['context','submit','recover'].includes(mode)) return json('invalid_request',400);
+  if (request.method !== 'POST') { const response=json('method_not_allowed',405);response.headers.set('Allow','POST');return response; }
+  if (env.AUTHORIZATION_APPROVAL_SUBMISSION_MODE !== 'enabled') return json('authorization_approval_disabled',503);
+  let config:AuthConfig|null;
+  try { config=await authConfig(env); } catch { return json('authorization_approval_disabled',503); }
+  if (!config || !authorizationApprovalSubmissionConfigured(env,config)) return json('authorization_approval_disabled',503);
+  if (!sameOrigin(request,config)) return json('cross_origin_request',403);
+  if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') return json('json_required',415);
+  if (Number(request.headers.get('content-length') || '0') > 8192) return json('request_too_large',413);
+  const reader=request.body?.getReader();if (!reader) return json('invalid_request',400);
+  let value:unknown;
+  try {
+    const chunks:Uint8Array[]=[];let size=0;
+    for (;;) { const part=await reader.read();if (part.done) break;size+=part.value.length;
+      if (size>8192) { await reader.cancel();return json('request_too_large',413); } chunks.push(part.value); }
+    const bytes=new Uint8Array(size);let offset=0;
+    for (const chunk of chunks) { bytes.set(chunk,offset);offset+=chunk.length; }
+    value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+  } catch { return json('invalid_request',400); } finally { reader.releaseLock(); }
+  const {parseAuthorizationApprovalTarget,parseAuthorizationApprovalCommand}=await import('./authorization-approval-transport');
+  const {readAuthorizationApprovalContext,executeAuthorizationApprovalCommand}=await import('./browser-session');
+  let result:{status:number;value:unknown};
+  if (mode === 'context') {
+    const target=parseAuthorizationApprovalTarget(value);if (!target) return json('invalid_request',400);
+    result=await readAuthorizationApprovalContext(config.session,readCookie(request,SESSION_COOKIE),target,fetcher);
+  } else {
+    const command=parseAuthorizationApprovalCommand(value);if (!command) return json('invalid_request',400);
+    result=await executeAuthorizationApprovalCommand(config.session,readCookie(request,SESSION_COOKIE),command,mode,fetcher);
+  }
+  return Response.json(result.value,{status:result.status,headers:privateHeaders});
+}

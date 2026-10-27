@@ -134,6 +134,68 @@ class AuthorizationApprovalService:
         finally:
             self.db.rollback()  # GET reserves nothing and releases all bounded read locks.
 
+    def receipt(self, authorization_no, request, request_id):
+        """Current authority to read an immutable original result, never to reapprove."""
+        try:
+            row, chain, creation, actor = self._load(authorization_no, request, write=False)
+            if not isinstance(request_id, uuid.UUID):
+                fail('approval_receipt_not_found', 404)
+            event_no = 'EVT-PAA-'+request_id.hex
+            event = self.db.scalar(select(AuditEvent).where(AuditEvent.event_no == event_no))
+            if (event is None or event.event_type != 'AUTHORIZATION_APPROVED' or event.action != 'APPROVED' or
+                    event.entity_type != 'SOFTWARE_AUTHORIZATION' or event.entity_id != row.id or
+                    event.entity_ref != row.authorization_no or event.actor_principal_id != actor.id or
+                    event.declared_actor_name is not None):
+                fail('approval_receipt_not_found', 404)
+            payload = event.payload_json
+            if not isinstance(payload, dict) or set(payload) != {'version', 'request', 'context', 'receipt', 'actor_source'} or \
+                    type(payload['version']) is not int or payload['version'] != 1 or payload['actor_source'] != 'AUTHENTICATED_PRINCIPAL':
+                fail('approval_receipt_not_found', 404)
+            original, context, result = payload['request'], payload['context'], payload['receipt']
+            fields = {'authorization_id', 'authorization_no', 'request_id', 'audit_event_no', 'applied_status',
+                      'approved_at', 'creator_principal_id', 'approver_principal_id', 'expected_context_digest', 'reason'}
+            context_fields = {'authorization_id', 'authorization_no', 'release_id', 'snapshot_id', 'release_decision_id',
+                'distribution_id', 'delivery_package_id', 'package_revision', 'customer_id', 'project_id', 'site_code',
+                'line_code', 'purpose', 'batch_limit', 'restriction_note', 'creation_event_id', 'creator_principal_id'}
+            if (not isinstance(result, dict) or set(result) != fields or not isinstance(context, dict) or
+                    set(context) != context_fields or not isinstance(original, dict) or
+                    set(original) != {'authorization_id', 'authorization_no', 'expected_context_digest', 'reason'}):
+                fail('approval_receipt_not_found', 404)
+            try:
+                uuid_fields = ('authorization_id', 'release_id', 'snapshot_id', 'release_decision_id', 'distribution_id',
+                    'delivery_package_id', 'customer_id', 'project_id', 'creation_event_id', 'creator_principal_id')
+                if any(not isinstance(context[k], str) or str(uuid.UUID(context[k])) != context[k] for k in uuid_fields):
+                    fail('approval_receipt_not_found', 404)
+                fixed = {'release_id': str(row.release_id), 'snapshot_id': str(row.snapshot_id),
+                    'distribution_id': str(row.distribution_id), 'delivery_package_id': str(chain.package.id),
+                    'package_revision': chain.package.revision, 'customer_id': str(row.customer_id),
+                    'project_id': str(row.project_id), 'site_code': row.site_code, 'line_code': row.line_code,
+                    'purpose': row.purpose, 'batch_limit': row.batch_limit, 'restriction_note': row.restriction_note}
+                if (any(context[k] != v for k, v in fixed.items()) or type(context['package_revision']) is not int or
+                        (context['batch_limit'] is not None and type(context['batch_limit']) is not int)):
+                    fail('approval_receipt_not_found', 404)
+                digest = hashlib.sha256(json.dumps({'version': 1, 'context': context}, ensure_ascii=False,
+                    sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+                approved = datetime.fromisoformat(result['approved_at'])
+                occurred = event.occurred_at.replace(tzinfo=event.occurred_at.tzinfo or timezone.utc)
+                valid_time = approved.tzinfo is not None and approved == occurred
+            except (TypeError, ValueError, UnicodeError):
+                fail('approval_receipt_not_found', 404)
+            reason = result['reason']
+            expected = {'authorization_id': str(row.id), 'authorization_no': row.authorization_no,
+                'request_id': str(request_id), 'audit_event_no': event_no, 'applied_status': 'APPROVED',
+                'creator_principal_id': str(creation.actor_principal_id), 'approver_principal_id': str(actor.id),
+                'expected_context_digest': digest}
+            if (not valid_time or any(result[k] != v for k, v in expected.items()) or
+                    not isinstance(reason, str) or not 1 <= len(reason.strip()) <= 2000 or reason != reason.strip() or
+                    original != {k: result[k] for k in ('authorization_id', 'authorization_no', 'expected_context_digest', 'reason')} or
+                    context['authorization_id'] != str(row.id) or context['authorization_no'] != row.authorization_no or
+                    context['creation_event_id'] != str(creation.id) or context['creator_principal_id'] != str(creation.actor_principal_id)):
+                fail('approval_receipt_not_found', 404)
+            return dict(result)
+        finally:
+            self.db.rollback()
+
     def approve(self, authorization_no, request, request_id, expected_context_digest, reason):
         with atomic_command(self.db, DistributionError):
             if (not isinstance(request_id, uuid.UUID) or not isinstance(expected_context_digest, str) or

@@ -1068,3 +1068,62 @@ export async function recoverAdminRegistration(config:SessionConfig,cookie:strin
   const receipt=await projectAdminRegistrationAudit(result.value,review,identity.principal.id,trustedIssuer);
   return receipt?{status:200,value:receipt}:unknown;
 }
+
+/** Approval context is private, backend-authorized and digest-bound, not public demo authority. */
+export async function readAuthorizationApprovalContext(config:SessionConfig,cookie:string|undefined,
+  input:import('./authorization-approval-transport').AuthorizationApprovalTarget,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseAuthorizationApprovalTarget,parseAuthorizationApprovalContext,authorizationApprovalContextPath,
+    validateAuthorizationApprovalContextDigest}=await import('./authorization-approval-transport');
+  const target=parseAuthorizationApprovalTarget(input);
+  if(!target)return{status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if(!identity)return{status:401,value:{error:'session_required'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const result=await privateRequest(config,authorizationApprovalContextPath(target),envelope.token,fetcher,{},envelope.sid,32768);
+  if(result?.status===200){
+    const context=parseAuthorizationApprovalContext(result.value,target);
+    if(context&&context.context.creator_principal_id!==identity.principal.id&&await validateAuthorizationApprovalContextDigest(context))
+      return{status:200,value:context};
+  }
+  const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',409:'version_conflict'};
+  return result&&denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'outcome_unknown'}};
+}
+
+/** Recovery is a strict current-role GET of the original receipt, never a write replay. */
+export async function executeAuthorizationApprovalCommand(config:SessionConfig,cookie:string|undefined,
+  input:import('./authorization-approval-transport').AuthorizationApprovalCommand,mode:'submit'|'recover',fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseAuthorizationApprovalCommand,authorizationApprovalPath,projectAuthorizationApprovalReceipt,
+    validateAuthorizationApprovalContextDigest}=await import('./authorization-approval-transport');
+  const command=parseAuthorizationApprovalCommand(input);
+  if(!command||!['submit','recover'].includes(mode)||!await validateAuthorizationApprovalContextDigest(command.context))
+    return{status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if(!identity)return{status:401,value:{error:'session_required'}};
+  if(identity.principal.id===command.context.context.creator_principal_id)return{status:403,value:{error:'submission_forbidden'}};
+  if(mode==='submit'&&identity.read_only_mode)return{status:403,value:{error:'read_only_mode'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const unknown={status:502,value:{error:'outcome_unknown'}};
+  if(mode==='submit'){
+    // Do not replace the frozen digest: an explicit same-key replay may follow a prior success.
+    const result=await privateRequest(config,authorizationApprovalPath(command),envelope.token,fetcher,
+      {method:'POST',body:JSON.stringify(command.body)},envelope.sid);
+    if(!result)return unknown;
+    if(result.status!==200){
+      const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',422:'invalid_request'};
+      if(denied[result.status])return{status:result.status,value:{error:denied[result.status]}};
+      if(result.status===409){
+        const detail=result.value&&typeof result.value==='object'?(result.value as Record<string,unknown>).detail:null;
+        return{status:409,value:{error:detail==='approval_context_conflict'?'version_conflict':
+          detail==='approval_request_conflict'?'request_conflict':'submission_conflict'}};
+      }
+      return unknown;
+    }
+    // A malformed success response is inconclusive, never silently converted to a second operation.
+    if(!projectAuthorizationApprovalReceipt(result.value,command,identity.principal.id))return unknown;
+  }
+  const path='/api/v1/authorizations/'+encodeURIComponent(command.target.authorization_no)+'/approval-receipts/'+command.body.request_id;
+  const result=await privateRequest(config,path,envelope.token,fetcher,{},envelope.sid);
+  if(!result||result.status!==200)return unknown;
+  const receipt=projectAuthorizationApprovalReceipt(result.value,command,identity.principal.id);
+  return receipt?{status:200,value:receipt}:unknown;
+}
