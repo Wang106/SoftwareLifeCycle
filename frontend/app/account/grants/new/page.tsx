@@ -22,6 +22,6 @@ export default async function RegistrationPage() {
     <Localized>{result.state==='forbidden' && <p role="alert"><Localized>{'Administrator permission is required.'}</Localized></p>}</Localized>
     <Localized>{(result.state==='unavailable' || result.state==='invalid_filter') && <p role="alert">
       <Localized>{'Grant information is unavailable. Please retry.'}</Localized></p>}</Localized>
-    <Localized>{result.state==='ready' && <AdminRegistrationPreparation submissionEnabled={registrationSubmissionConfigured(process.env,config) && !result.read_only_mode} />}</Localized>
+    <Localized>{result.state==='ready' && <AdminRegistrationPreparation recoveryEnabled={registrationSubmissionConfigured(process.env,config)} submissionEnabled={registrationSubmissionConfigured(process.env,config) && !result.read_only_mode} />}</Localized>
   </section></Localized>;
 }
