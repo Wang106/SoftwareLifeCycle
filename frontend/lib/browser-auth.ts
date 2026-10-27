@@ -831,3 +831,38 @@ export async function handleChangeoverCorrection(request:Request,env:Environment
   }
   return Response.json(result.value,{status:result.status,headers:privateHeaders});
 }
+
+export async function handleAdminRegistrationRecovery(request: Request, env: Environment,
+  fetcher: typeof fetch = fetch): Promise<Response> {
+  if (request.method !== 'POST') {
+    const response = json('method_not_allowed', 405); response.headers.set('Allow', 'POST'); return response;
+  }
+  if (env.ADMIN_REGISTRATION_SUBMISSION_MODE !== 'enabled') return json('registration_submission_disabled', 503);
+  let config: AuthConfig | null;
+  try { config = await authConfig(env); } catch { return json('registration_submission_disabled', 503); }
+  if (!registrationSubmissionConfigured(env, config) || !config) return json('registration_submission_disabled', 503);
+  if (!sameOrigin(request, config)) return json('cross_origin_request', 403);
+  if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json')
+    return json('json_required', 415);
+  if (Number(request.headers.get('content-length') || '0') > 8192) return json('request_too_large', 413);
+  const reader = request.body?.getReader(); if (!reader) return json('invalid_request', 400);
+  let review: RegistrationReview;
+  try {
+    const chunks: Uint8Array[] = []; let size = 0;
+    for (;;) {
+      const part = await reader.read(); if (part.done) break;
+      size += part.value.length;
+      if (size > 8192) { await reader.cancel(); return json('request_too_large', 413); }
+      chunks.push(part.value);
+    }
+    const bytes = new Uint8Array(size); let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+    const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+    review = prepareRegistration(value as RegistrationInput);
+  } catch { return json('invalid_request', 400); } finally { reader.releaseLock(); }
+  const { scalarUnicode } = await import('./admin-registration-audit');
+  if (Object.values(review.request.body).some(v => !scalarUnicode(v))) return json('invalid_request', 400);
+  const { recoverAdminRegistration } = await import('./browser-session');
+  const result = await recoverAdminRegistration(config.session, readCookie(request, SESSION_COOKIE), review, config.issuer, fetcher);
+  return Response.json(result.value, { status: result.status, headers: privateHeaders });
+}

@@ -1050,3 +1050,21 @@ export async function executeChangeoverCorrectionCommand(config:SessionConfig,co
   const receipt=projectChangeoverCorrectionAudit(audit.value,command,identity.principal.id);
   return receipt?{status:200,value:receipt}:unknown;
 }
+
+/** Every recovery rechecks USER session and backend admin-read authorization; GET only. */
+export async function recoverAdminRegistration(config:SessionConfig,cookie:string|undefined,
+  review:RegistrationReview,trustedIssuer:string,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const unknown={status:502,value:{error:'outcome_unknown'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if (!identity || identity.principal.principal_type!=='USER') return {status:401,value:{error:'session_required'}};
+  const admin=await readAdminGrants(config,cookie,'GLOBAL','',0,fetcher);
+  if (admin.state!=='ready') return admin.state==='session_required'?{status:401,value:{error:'session_required'}}:
+    admin.state==='forbidden'?{status:403,value:{error:'submission_forbidden'}}:unknown;
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const result=await privateRequest(config,'/api/v1/activity/'+encodeURIComponent(review.request.body.event_no),
+    envelope.token,fetcher,{},envelope.sid);
+  if (!result || result.status!==200) return unknown;
+  const {projectAdminRegistrationAudit}=await import('./admin-registration-audit');
+  const receipt=await projectAdminRegistrationAudit(result.value,review,identity.principal.id,trustedIssuer);
+  return receipt?{status:200,value:receipt}:unknown;
+}
