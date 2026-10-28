@@ -10,12 +10,23 @@ Dated sections below retain historical preparation-only states.
 | Priority | Commands | UI status | Remaining submission work |
 | --- | --- | --- | --- |
 | First | Snapshot, actual-software report/correction, Batch | Default-disabled bilingual prepare/submit/query/retry/result UI | Approved identity/target, real browser acceptance and real cross-session acceptance |
-| Next | Approval Action, Release Decision | Default-disabled bilingual prepare/submit/query/retry/result UI; exact step UUID | Permission-aware pickers, real-provider acceptance and real cross-session acceptance |
-| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Default-disabled bilingual prepare/submit/query/retry/result UI | Permission-aware context pickers, real-provider acceptance and real cross-session acceptance |
-| Next | Delivery, Distribution, Authorization | Default-disabled bilingual prepare/submit/query/retry/result UI | Artifact policy/recipient/scope pickers, real-provider acceptance and real cross-session acceptance |
-| Next | Test Release, Deployment, Changeover | Default-disabled bilingual prepare/submit/query/retry/result UI | Real-provider acceptance, real cross-session acceptance and activation/revocation contracts where absent |
+| Next | Approval Action, Release Decision | Default-disabled bilingual prepare/submit/query/retry/result UI; exact step UUID | Current-step private selector implemented under explicit project REVIEWER policy; real-provider/browser and cross-session acceptance pending |
+| Next | Impact Assessment, Acceptance-to-DVP Link, Resource | Default-disabled bilingual prepare/submit/query/retry/result UI | Same-SCR criterion/DVP, exact Issue/release frozen snapshot and scoped resource selectors implemented under explicit minimum-read policy; real-provider/browser acceptance pending |
+| Next | Delivery, Distribution, Authorization | Default-disabled bilingual prepare/submit/query/retry/result UI | Bounded frozen artifact policy, fixed package recipient/revision and distribution scope selectors implemented; real-provider/browser acceptance pending |
+| Next | Test Release, Deployment, Changeover | Default-disabled bilingual prepare/submit/query/retry/result UI | Real-provider/browser and cross-session acceptance; new work retains existing chain revocation checks, historical corrections are not physical reversal |
 
-## Implemented workspace
+## Current specialized workflows and remaining acceptance — 2026-10-28
+
+Production authorization creation remains DRAFT; [dual-person approval](production-authorization-dual-approval.md) and its [default-off workbench](production-authorization-approval-workbench.md) require a trusted creator and another currently authorized same-project approver. No platform-admin bypass or fabricated legacy creator. Previously seeded/imported APPROVED records retain old semantics, not a dual-approval label.
+
+[Private distribution selectors](private-distribution-selectors.md) and [private evidence selectors](private-evidence-selectors.md) are bounded exact-target observations under the separately approved read roles; they do not authorize submission or make the public demo a private catalogue. Manual fallback retains existing writer semantics. No global selection catalogue or unscoped Supplier/Customer selector is added.
+
+Batch/Changeover correction, administrator registration, [release-decision replacement](release-decision-supersession-manual-recovery.md), and [principal/grant status](admin-status-manual-recovery.md) have their own canonical manual audit-only recovery. Import cannot send/retry; historical success is not current permission/status. Status recovery requires the same original administrator with current authorization; another administrator cannot adopt that imported event.
+
+Real OIDC/provider, read-only/denial/multiuser/browser interruption and cross-session acceptance on an approved target remain required. These code capabilities do not complete the roadmap's broad real acceptance milestone. Below are the original preparation-era descriptions and dated evolution; statements there about pending submission/pickers are historical, not current feature gaps.
+
+## Historical preparation-era workspace (original description)
+
 
 Entry points are `/create`, exact SSR/ASR release profiles and deployment detail.
 Release links prefill its UUID for Snapshot. Deployment links prefill the exact
