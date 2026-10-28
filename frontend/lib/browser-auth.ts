@@ -969,3 +969,19 @@ export async function handlePrivateEvidenceSelection(request:Request,env:Environ
   const result=await readPrivateEvidenceSelection(config.session,readCookie(request,SESSION_COOKIE),input,fetcher);
   return Response.json(result.value,{status:result.status,headers:privateHeaders});
 }
+
+/** Audit-only status recovery reuses the corresponding existing independent submit gate. */
+export async function handleAdminStatusRecovery(request:Request,env:Environment,fetcher:typeof fetch=fetch):Promise<Response>{
+ if(request.method!=='POST'){const r=json('method_not_allowed',405);r.headers.set('Allow','POST');return r;}
+ let config:AuthConfig|null;try{config=await authConfig(env);}catch{return json('principal_submission_disabled',503);}
+ if(!config||(!principalSubmissionConfigured(env,config)&&!grantSubmissionConfigured(env,config)))return json('principal_submission_disabled',503);
+ if(!sameOrigin(request,config))return json('cross_origin_request',403);
+ if(request.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')return json('json_required',415);
+ if(Number(request.headers.get('content-length')||'0')>8192)return json('request_too_large',413);
+ const reader=request.body?.getReader();if(!reader)return json('invalid_request',400);let value:unknown;
+ try{const chunks:Uint8Array[]=[];let size=0;for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>8192){await reader.cancel();return json('request_too_large',413);}chunks.push(part.value);}const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}catch{return json('invalid_request',400);}finally{reader.releaseLock();}
+ const {parseAdminStatusRecoveryCommand}=await import('./admin-status-recovery');const command=parseAdminStatusRecoveryCommand(value);if(!command)return json('invalid_request',400);
+ if(command.kind==='PRINCIPAL'?!principalSubmissionConfigured(env,config):!grantSubmissionConfigured(env,config))return json(command.kind==='PRINCIPAL'?'principal_submission_disabled':'grant_submission_disabled',503);
+ const {recoverAdminStatus}=await import('./browser-session');const result=await recoverAdminStatus(config.session,readCookie(request,SESSION_COOKIE),command,fetcher);
+ return Response.json(result.value,{status:result.status,headers:privateHeaders});
+}
