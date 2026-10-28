@@ -42,6 +42,7 @@ export default async function GrantDetailPage({ params, searchParams }: {
       <p><Localized>{'Effective grant'}</Localized><Localized>{': '}</Localized><Localized>{result.grant.effective ? 'Effective' : 'Not effective'}</Localized></p>
       <GrantStatusPreparation key={[result.grant.scope, result.grant.id, result.grant.principal.id,
         result.grant.role].join(':')}
+        recoveryEnabled={grantSubmissionConfigured(process.env, config)}
         submissionEnabled={grantSubmissionConfigured(process.env, config) && !result.read_only_mode}
         target={{ id: result.grant.id, scope: result.grant.scope, status: result.grant.status,
           historyStatus: result.current_status, role: result.grant.role, principalId: result.grant.principal.id }} />

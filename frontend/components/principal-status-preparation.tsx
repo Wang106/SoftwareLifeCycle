@@ -1,12 +1,16 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import AdminStatusRecoveryPanel from './admin-status-recovery-panel';
 import { Localized } from './localized';
 import PrincipalStatusResult from './principal-status-result';
 import { PrincipalSubmission, type PrincipalSubmissionState } from '../lib/principal-status-transport';
 import { preparePrincipalStatus, confirmPrincipalStatus, exportPrincipalStatus, principalPreparationError,
   samePrincipalTarget, type PrincipalTarget, type PrincipalReview } from '../lib/principal-status-draft';
 
-export default function PrincipalStatusPreparation({ target, submissionEnabled = false }: { target: PrincipalTarget; submissionEnabled?: boolean }) {
+export default function PrincipalStatusPreparation({ target, submissionEnabled = false, recoveryEnabled = false }: { target: PrincipalTarget; submissionEnabled?: boolean; recoveryEnabled?: boolean }) {
+  const recoveryLock = useRef(false);
+  const [recoveryLocked,setRecoveryLocked]=useState(false);
+  const localReview=useRef<PrincipalReview | null>(null);
   const [eventNo, setEventNo] = useState('');
   const [reason, setReason] = useState('');
   const [review, setReview] = useState<PrincipalReview | null>(null);
@@ -17,7 +21,7 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
   const copyPending = useRef(false);
   const capability = useRef(submissionEnabled);
   capability.current = submissionEnabled;
-  const locked = result !== null;
+  const locked = result !== null || recoveryLocked;
   const displayedTarget = result?.review.target ?? target;
   const targetKey = JSON.stringify([target.id.toLowerCase(), target.principalType, target.status,
     target.historyStatus, target.protectedAdministrator, target.issuerMatchesConfiguration]);
@@ -27,7 +31,7 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
   const error = principalPreparationError(target);
   const currentReview = result?.review ?? (review && !error && samePrincipalTarget(review.target, target) ? review : null);
   const activeReview = useRef(currentReview);
-  activeReview.current = currentReview;
+  activeReview.current = currentReview;localReview.current=currentReview;
   useEffect(() => {
     if (previousKey.current !== targetKey) {
       previousKey.current = targetKey;
@@ -41,7 +45,7 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
     return () => window.removeEventListener('beforeunload', warn);
   }, [result?.phase]);
   async function send() {
-    if (!currentReview?.confirmed || !capability.current || copyPending.current) return;
+    if (recoveryLock.current || !currentReview?.confirmed || !capability.current || copyPending.current) return;
     if (!submission.current) {
       if (activeReview.current !== currentReview || currentKey.current !== targetKey || error || !samePrincipalTarget(currentReview.target, target)) return;
       submission.current = new PrincipalSubmission(currentReview);
@@ -52,18 +56,18 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
     setResult(await pending);
   }
   function newRequest() {
-    if (copyPending.current || !submission.current ||
+    if (recoveryLock.current || copyPending.current || !submission.current ||
       !['confirmed', 'rejected'].includes(submission.current.state.phase)) return;
     submission.current = null; activeReview.current = null; setResult(null); setReview(null);
     setEventNo('ADM-' + crypto.randomUUID()); setReason('');
     setMessage('A new audit number was generated. Review current detail and history before preparing another operation.');
   }
   function edit(change: () => void) {
-    if (copyPending.current || submission.current) return;
+    if (recoveryLock.current || copyPending.current || submission.current) return;
     change(); activeReview.current = null; setReview(null); setMessage('');
   }
   async function copy() {
-    if (!currentReview?.confirmed || copyPending.current || activeReview.current !== currentReview) return;
+    if (recoveryLock.current || !currentReview?.confirmed || copyPending.current || activeReview.current !== currentReview) return;
     const key = targetKey;
     copyPending.current = true; setCopying(true);
     try {
@@ -88,8 +92,8 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
         <Localized>{' · '}</Localized><Localized>{'Requested status'}</Localized><Localized>{': '}</Localized>
         <Localized>{displayedTarget.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE'}</Localized></p>
       <form className="commandform" onSubmit={event => {
-        event.preventDefault(); if (copyPending.current || submission.current) return;
-        try { setReview(preparePrincipalStatus(target, eventNo, reason)); setMessage('Review the exact identity, status change, reason and audit number.'); }
+        event.preventDefault(); if (recoveryLock.current || copyPending.current || submission.current) return;
+        try { const next=preparePrincipalStatus(target,eventNo,reason);activeReview.current=next;setReview(next); setMessage('Review the exact identity, status change, reason and audit number.'); }
         catch (caught) { setReview(null); setMessage(caught instanceof Error ? caught.message : 'Unable to prepare request.'); }
       }}>
         <fieldset disabled={copying || locked} className="commandfields">
@@ -107,7 +111,7 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
       <Localized>{currentReview && <>
         <pre><code><Localized>{JSON.stringify(currentReview.request, null, 2)}</Localized></code></pre>
         <label><input type="checkbox" checked={currentReview.confirmed} disabled={copying || locked}
-          onChange={event => { if (!copyPending.current && !submission.current && currentKey.current === targetKey && activeReview.current === currentReview) { const next = confirmPrincipalStatus(currentReview, event.target.checked); activeReview.current = next; setReview(next); setMessage(''); } }} />
+          onChange={event => { if (!recoveryLock.current && !copyPending.current && !submission.current && currentKey.current === targetKey && activeReview.current === currentReview) { const next = confirmPrincipalStatus(currentReview, event.target.checked); activeReview.current = next; setReview(next); setMessage(''); } }} />
           <Localized>{'I reviewed the exact identity, status change, session consequences, reason and audit number.'}</Localized></label>
         <button className="btn" type="button" disabled={!currentReview.confirmed || copying} onClick={copy}>
           <Localized>{'Copy confirmed identity request'}</Localized></button>
@@ -120,6 +124,9 @@ export default function PrincipalStatusPreparation({ target, submissionEnabled =
           disabled={copying} onClick={newRequest}><Localized>{'Prepare another operation with a new audit number'}</Localized></button>}</Localized>
       </>}</Localized>
     </>}</Localized>
+    <AdminStatusRecoveryPanel kind={'PRINCIPAL'} id={target.id} review={currentReview} recoveryEnabled={recoveryEnabled}
+      guard={mode=>!recoveryLock.current && !copyPending.current && (mode==='import' ? !submission.current&&!activeReview.current : !!activeReview.current?.confirmed && !['sending'].includes(submission.current?.state.phase??''))}
+      onLock={value=>{recoveryLock.current=value;setRecoveryLocked(value);}}/>
   </section></Localized>;
 }
 

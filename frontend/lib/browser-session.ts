@@ -1153,3 +1153,19 @@ export async function readPrivateEvidenceSelection(config:SessionConfig,cookie:s
  const errors:Record<number,string>={401:'session_required',403:'selection_forbidden',404:'target_not_found',409:'selection_context_changed',422:'invalid_request'};
  return response&&errors[response.status]?{status:response.status,value:{error:errors[response.status]}}:{status:502,value:{error:'selection_unavailable'}};
 }
+
+/** Current administrator authorization is required again for every historical status query. */
+export async function recoverAdminStatus(config:SessionConfig,cookie:string|undefined,
+ command:import('./admin-status-recovery').AdminStatusRecoveryCommand,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}>{
+ const unknown={status:502,value:{error:'outcome_unknown'}};
+ const identity=await resolveSession(config,cookie,fetcher);
+ if(!identity||identity.principal.principal_type!=='USER')return{status:401,value:{error:'session_required'}};
+ const admin=await readAdminGrants(config,cookie,'GLOBAL','',0,fetcher);
+ if(admin.state!=='ready')return admin.state==='session_required'?{status:401,value:{error:'session_required'}}:admin.state==='forbidden'?{status:403,value:{error:'submission_forbidden'}}:unknown;
+ const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+ const result=await privateRequest(config,'/api/v1/activity/'+encodeURIComponent(command.event_no),envelope.token,fetcher,{},envelope.sid);
+ if(!result||result.status!==200)return unknown;
+ const {projectAdminStatusAudit}=await import('./admin-status-audit');
+ const receipt=projectAdminStatusAudit(result.value,command,identity.principal.id);
+ return receipt?{status:200,value:receipt}:unknown;
+}

@@ -37,7 +37,7 @@ export default async function PrincipalDetailPage({ params, searchParams }: {
       <p><Localized>{result.principal.admin_principal_protected ? 'Protected administrator identity' : 'No administrator assignment observed'}</Localized></p>
       <p><Localized>{result.principal.issuer_matches_configuration ? 'Matches configuration' : 'Does not match configuration'}</Localized></p>
       <p className="muted"><Localized>{'Issuer matching and administrator protection are read snapshots, not permission to change an identity.'}</Localized></p>
-      <PrincipalStatusPreparation submissionEnabled={principalSubmissionConfigured(process.env, config) && result.read_only_mode === false} target={{ id: result.principal.id, principalType: result.principal.principal_type,
+      <PrincipalStatusPreparation recoveryEnabled={principalSubmissionConfigured(process.env, config)} submissionEnabled={principalSubmissionConfigured(process.env, config) && result.read_only_mode === false} target={{ id: result.principal.id, principalType: result.principal.principal_type,
         status: result.principal.status, historyStatus: result.current_status,
         protectedAdministrator: result.principal.admin_principal_protected,
         issuerMatchesConfiguration: result.principal.issuer_matches_configuration }} />

@@ -1,11 +1,15 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import AdminStatusRecoveryPanel from './admin-status-recovery-panel';
 import { Localized } from './localized';
 import GrantStatusResult from './grant-status-result';
 import { GrantSubmission, type SubmissionState } from '../lib/grant-status-submission';
 import { prepareGrantStatus, confirmGrantStatus, exportGrantStatus, type GrantTarget, type GrantReview } from '../lib/grant-status-draft';
 
-export default function GrantStatusPreparation({ target, submissionEnabled = false }: { target: GrantTarget; submissionEnabled?: boolean }) {
+export default function GrantStatusPreparation({ target, submissionEnabled = false, recoveryEnabled = false }: { target: GrantTarget; submissionEnabled?: boolean; recoveryEnabled?: boolean }) {
+  const recoveryLock = useRef(false),copyPending=useRef(false);
+  const [recoveryLocked,setRecoveryLocked]=useState(false);
+  const localReview=useRef<GrantReview | null>(null);
   const [eventNo, setEventNo] = useState('');
   const [reason, setReason] = useState('');
   const [review, setReview] = useState<GrantReview | null>(null);
@@ -13,8 +17,9 @@ export default function GrantStatusPreparation({ target, submissionEnabled = fal
   const [copying, setCopying] = useState(false);
   const submission = useRef<GrantSubmission | null>(null);
   const [result, setResult] = useState<SubmissionState | null>(null);
-  const locked = result !== null;
+  const locked = result !== null || recoveryLocked;
   const displayedTarget = result?.review.target ?? target;
+  localReview.current=result?.review??review;
   const sameTarget = (value: GrantReview) => value.target.id === target.id.toLowerCase() &&
     value.target.scope === target.scope && value.target.principalId === target.principalId.toLowerCase() &&
     value.target.role === target.role && value.target.status === target.status &&
@@ -32,11 +37,11 @@ export default function GrantStatusPreparation({ target, submissionEnabled = fal
     return () => window.removeEventListener('beforeunload', warn);
   }, [result?.phase]);
   function edit(change: () => void) {
-    if (submission.current) return;
+    if (recoveryLock.current || copyPending.current || submission.current) return;
     change(); setReview(null); setMessage('');
   }
   async function send() {
-    if (!review?.confirmed || !submissionEnabled || copying) return;
+    if (recoveryLock.current || copyPending.current || !review?.confirmed || !submissionEnabled || copying) return;
     if (!submission.current) {
       if (!sameTarget(review)) { setReview(null); setMessage('Refresh the grant before preparing a status change.'); return; }
       submission.current = new GrantSubmission(review);
@@ -47,20 +52,20 @@ export default function GrantStatusPreparation({ target, submissionEnabled = fal
     setResult(await pending);
   }
   function newRequest() {
-    if (!result || !['confirmed', 'rejected'].includes(result.phase)) return;
+    if (recoveryLock.current || copyPending.current || !result || !['confirmed', 'rejected'].includes(result.phase)) return;
     submission.current = null; setResult(null); setReview(null);
     setEventNo('ADM-' + crypto.randomUUID());
     setMessage('A new audit number was generated. Review current detail and history before preparing another operation.');
   }
   async function copy() {
-    if (!review?.confirmed || copying) return;
-    setCopying(true);
+    if (recoveryLock.current || copyPending.current || !review?.confirmed || copying) return;
+    copyPending.current=true;setCopying(true);
     try {
       await navigator.clipboard.writeText(exportGrantStatus(review));
       setMessage(submission.current ? 'Original grant request copied. Copying does not send another operation.' :
         'Grant request copied. No permission change was sent.');
     } catch { setMessage('Clipboard unavailable. Select and copy the confirmed request below.'); }
-    finally { setCopying(false); }
+    finally { copyPending.current=false;setCopying(false); }
   }
   return <Localized><section className="panel">
     <h2><Localized>{'Prepare grant status change'}</Localized></h2>
@@ -77,8 +82,8 @@ export default function GrantStatusPreparation({ target, submissionEnabled = fal
     </p>}</Localized>
     <form className="commandform" onSubmit={event => {
       event.preventDefault();
-      if (submission.current) return;
-      try { setReview(prepareGrantStatus(target, eventNo, reason)); setMessage('Review the exact grant, reason and audit number.'); }
+      if (recoveryLock.current || copyPending.current || submission.current) return;
+      try { const next=prepareGrantStatus(target,eventNo,reason);localReview.current=next;setReview(next); setMessage('Review the exact grant, reason and audit number.'); }
       catch (error) { setReview(null); setMessage(error instanceof Error ? error.message : 'Unable to prepare request.'); }
     }}>
       <fieldset disabled={copying || locked} className="commandfields">
@@ -99,7 +104,7 @@ export default function GrantStatusPreparation({ target, submissionEnabled = fal
         <Localized>{' · '}</Localized><Localized>{review.target.id}</Localized><Localized>{' · '}</Localized><Localized>{review.target.principalId}</Localized></p>
       <pre><code><Localized>{JSON.stringify(review.request, null, 2)}</Localized></code></pre>
       <label><input type="checkbox" checked={review.confirmed} disabled={copying || locked}
-        onChange={event => { setReview(confirmGrantStatus(review, event.target.checked)); setMessage(''); }} />
+        onChange={event => { if(recoveryLock.current||copyPending.current||submission.current)return;const next=confirmGrantStatus(review,event.target.checked);localReview.current=next;setReview(next); setMessage(''); }} />
         <Localized>{'I reviewed the exact grant, recipient, status change, reason and audit number.'}</Localized>
       </label>
       <button className="btn" type="button" disabled={!review.confirmed || copying} onClick={copy}>
@@ -113,5 +118,8 @@ export default function GrantStatusPreparation({ target, submissionEnabled = fal
       <Localized>{result && ['confirmed', 'rejected'].includes(result.phase) && <button className="btn" type="button"
         disabled={copying} onClick={newRequest}><Localized>{'Prepare another operation with a new audit number'}</Localized></button>}</Localized>
     </>}</Localized>
+    <AdminStatusRecoveryPanel kind={target.scope} id={target.id} review={result?.review??review} recoveryEnabled={recoveryEnabled}
+      guard={mode=>!recoveryLock.current && !copyPending.current && (mode==='import' ? !submission.current&&!localReview.current : !!localReview.current?.confirmed && !['sending'].includes(submission.current?.state.phase??''))}
+      onLock={value=>{recoveryLock.current=value;setRecoveryLocked(value);}}/>
   </section></Localized>;
 }
