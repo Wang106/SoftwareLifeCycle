@@ -17,6 +17,7 @@ module.exports = defineConfig({
   reporter: [['list'], ['json', { outputFile: path.resolve(__dirname, '../browser-results/results.json') }]],
   use: {
     browserName: 'chromium',
+    channel: 'chrome',
     headless: true,
     launchOptions: { chromiumSandbox: true },
     serviceWorkers: 'block',

@@ -5,9 +5,9 @@
   "maintenance_checkpoint": {
     "package": "isolated-browser-foundation",
     "branch": "test/isolated-browser-foundation",
-    "state": "implemented_pending_real_browser_exact_head_ci",
+    "state": "approved_installed_chrome_adjustment_pending_new_head_ci",
     "owner": "current_ChatGPT_Work_cloud_task",
-    "ownership_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/169#issuecomment-6462915895",
+    "ownership_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/170",
     "business_acceptance_increment": 0,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
@@ -18,14 +18,15 @@
     "verified_previous_pr": 169,
     "verified_pr_head": "5342edbd2c83856f21d4362a9f990fc8626ee2d5",
     "verified_main": "ad9147366f00c68bf3f20a93e62e185eea773dc9",
-    "current_pr_ci": "pending",
+    "current_pr_ci": "first_head_browser_sandbox_launch_failed_new_head_pending",
     "current_main_ci": "not_merged",
     "current_deployment": "not_merged",
     "limitations": [
       "Local standard sandbox-enabled Chromium blocked by socket policy; no bypass",
       "Browser must actually execute in approved isolated CI job; discovery/build not acceptance",
       "Synthetic HTTP API is not real FastAPI PostgreSQL or identity acceptance",
-      "No actual server identity business write permissions or notifications enabled"
+      "No actual server identity business write permissions or notifications enabled",
+      "Existing official Chrome channel approved; read-only installation/profile checks do not prove effective sandbox; same actual browser journeys must pass without fallback"
     ],
     "previous_checkpoint_history": {
       "package": "operational-readiness-acceptance-p7a",
