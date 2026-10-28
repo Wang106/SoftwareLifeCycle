@@ -105,18 +105,60 @@ jobs:
       - name: Verify disabled authentication routes and bilingual account SSR
         run: npm run auth:check
 
+  browser:
+    name: Isolated Chromium browser journey
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      API_BASE_URL: ""
+      NEXT_PUBLIC_API_BASE_URL: ""
+      NEXT_PUBLIC_API_URL: ""
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend lockfile
+        run: npm ci
+      - name: Install pinned Playwright Chromium and runner libraries
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Build isolated production app
+        run: npm run build
+      - name: Run real-browser synthetic read-only journey
+        run: npm run test:browser
+      - name: Save synthetic browser evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-evidence
+          path: frontend/browser-results/
+          if-no-files-found: error
+          retention-days: 14
+
   acceptance:
     name: CI acceptance
-    needs: [backend, frontend]
+    needs: [backend, frontend, browser]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions: {}
     steps:
-      - name: Require both validation jobs to succeed
+      - name: Require all validation jobs to succeed
         env:
           BACKEND_RESULT: ${{ needs.backend.result }}
           FRONTEND_RESULT: ${{ needs.frontend.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
         run: |
           test "$BACKEND_RESULT" = success
           test "$FRONTEND_RESULT" = success
+          test "$BROWSER_RESULT" = success

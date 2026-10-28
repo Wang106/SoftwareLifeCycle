@@ -10,3 +10,4 @@ node_modules/
 postgres_data/
 storage_data/
 ci-results/
+frontend/browser-results/
