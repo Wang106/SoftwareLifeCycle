@@ -1140,3 +1140,16 @@ export async function readPrivateDistributionSelection(config:SessionConfig,cook
  const errors:Record<number,string>={401:'session_required',403:'selection_forbidden',404:'target_not_found',409:'selection_context_changed',422:'invalid_request'};
  return response&&errors[response.status]?{status:response.status,value:{error:errors[response.status]}}:{status:502,value:{error:'selection_unavailable'}};
 }
+
+/** Read-only selectors require current USER and backend target-role authorization. */
+export async function readPrivateEvidenceSelection(config:SessionConfig,cookie:string|undefined,
+ input:import('./private-evidence-selection').PrivateEvidenceSelectionRequest,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}>{
+ const {parsePrivateEvidenceSelectionRequest,parsePrivateEvidenceSelectionResponse,privateEvidenceSelectionPath}=await import('./private-evidence-selection');
+ const request=parsePrivateEvidenceSelectionRequest(input);if(!request)return{status:400,value:{error:'invalid_request'}};
+ const identity=await resolveSession(config,cookie,fetcher);if(!identity)return{status:401,value:{error:'session_required'}};
+ const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+ const response=await privateRequest(config,privateEvidenceSelectionPath(request),envelope.token,fetcher,{},envelope.sid,131072);
+ if(response?.status===200){const value=parsePrivateEvidenceSelectionResponse(response.value,request);if(value)return{status:200,value};}
+ const errors:Record<number,string>={401:'session_required',403:'selection_forbidden',404:'target_not_found',409:'selection_context_changed',422:'invalid_request'};
+ return response&&errors[response.status]?{status:response.status,value:{error:errors[response.status]}}:{status:502,value:{error:'selection_unavailable'}};
+}

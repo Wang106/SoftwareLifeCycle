@@ -3,6 +3,7 @@ import { Localized, LocalizedAttributes } from "./localized";
 
 import Link from 'next/link';
 import PrivateDistributionSelector from './private-distribution-selector';
+import PrivateEvidenceSelector from './private-evidence-selector';
 import { useEffect, useRef, useState } from 'react';
 import { exportBusinessRecovery, importBusinessRecovery, recoveryTextLimit, type ImportedBusinessRecovery } from '../lib/business-recovery';
 import EvidenceResourceCommandResult from './evidence-resource-command-result';
@@ -25,8 +26,8 @@ const labels: Record<Operation, string> = {
   delivery: 'Create Delivery Package', distribution: 'Record Distribution', authorization: 'Create Production Authorization',
   impact: 'Record Impact Assessment', acceptance: 'Link Acceptance to DVP', resource: 'Register Resource Reference',
 };
-export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, selectionEnabled = false, submissionEnabled = false, recoveryEnabled = false, governanceSubmissionEnabled = false, governanceRecoveryEnabled = false, distributionSubmissionEnabled = false, distributionRecoveryEnabled = false, productionSubmissionEnabled = false, productionRecoveryEnabled = false, evidenceSubmissionEnabled = false, evidenceRecoveryEnabled = false, resourceSubmissionEnabled = false, resourceRecoveryEnabled = false }: {
-  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; selectionEnabled?: boolean; submissionEnabled?: boolean; recoveryEnabled?: boolean; governanceSubmissionEnabled?: boolean; governanceRecoveryEnabled?: boolean; distributionSubmissionEnabled?: boolean; distributionRecoveryEnabled?: boolean; productionSubmissionEnabled?: boolean; productionRecoveryEnabled?: boolean; evidenceSubmissionEnabled?: boolean; evidenceRecoveryEnabled?: boolean; resourceSubmissionEnabled?: boolean; resourceRecoveryEnabled?: boolean;
+export default function CommandWorkbench({ initialOperation, initialTarget, initialStep, initialContext, selectionEnabled = false, evidenceSelectionEnabled = false, submissionEnabled = false, recoveryEnabled = false, governanceSubmissionEnabled = false, governanceRecoveryEnabled = false, distributionSubmissionEnabled = false, distributionRecoveryEnabled = false, productionSubmissionEnabled = false, productionRecoveryEnabled = false, evidenceSubmissionEnabled = false, evidenceRecoveryEnabled = false, resourceSubmissionEnabled = false, resourceRecoveryEnabled = false }: {
+  initialOperation: Operation; initialTarget: string; initialStep: string; initialContext: Partial<Fields>; selectionEnabled?: boolean; evidenceSelectionEnabled?: boolean; submissionEnabled?: boolean; recoveryEnabled?: boolean; governanceSubmissionEnabled?: boolean; governanceRecoveryEnabled?: boolean; distributionSubmissionEnabled?: boolean; distributionRecoveryEnabled?: boolean; productionSubmissionEnabled?: boolean; productionRecoveryEnabled?: boolean; evidenceSubmissionEnabled?: boolean; evidenceRecoveryEnabled?: boolean; resourceSubmissionEnabled?: boolean; resourceRecoveryEnabled?: boolean;
 }) {
   const [operation, setOperation] = useState<Operation>(initialOperation);
   const [fields, setFields] = useState<Fields>({ ...blankFields, ...initialContext, target: initialTarget, step: initialStep });
@@ -35,7 +36,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   const [copying, setCopying] = useState(false);
   const [selectionLocks,setSelectionLocks]=useState<(keyof Fields)[]>([]),[selectorRevision,setSelectorRevision]=useState(0);
   const selectionLocksRef=useRef(selectionLocks);selectionLocksRef.current=selectionLocks;
-  const selectionCapability=useRef(selectionEnabled);selectionCapability.current=selectionEnabled;
+  const selectionCapability=useRef({distribution:selectionEnabled,evidence:evidenceSelectionEnabled});selectionCapability.current={distribution:selectionEnabled,evidence:evidenceSelectionEnabled};
   const [importText, setImportText] = useState('');
   const importSource = useRef('');
   const imported = useRef(false);
@@ -103,7 +104,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
   function edit(name: keyof Fields, value: string) {
     if (copyPending.current || controller.current || selectionLocksRef.current.includes(name)) return;
     activeReview.current = null; preparation.current = null;
-    if(name==='target'){const clear=Object.fromEntries(selectionLocksRef.current.map(key=>[key,'']));setSelectionLocks([]);selectionLocksRef.current=[];setSelectorRevision(v=>v+1);setFields(current=>({...current,...clear,[name]:value}));}
+    if(name==='target'||operation==='impact'&&name==='release'||operation==='resource'&&name==='entityType'){const clear=Object.fromEntries(selectionLocksRef.current.map(key=>[key,'']));setSelectionLocks([]);selectionLocksRef.current=[];setSelectorRevision(v=>v+1);setFields(current=>({...current,...clear,[name]:value}));}
     else setFields(current => ({ ...current, [name]: value }));
     setReview(null); setMessage('');
   }
@@ -111,11 +112,11 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
     return <label><Localized>{label}</Localized><input name={name} value={fields[name]} required={required}
       maxLength={maxLength} readOnly={selectionLocks.includes(name)} onChange={event => edit(name, event.target.value)} /></label>;
   }
-  const selectorKey=JSON.stringify([contextKey,operation,fields.target,operation==='delivery'?[fields.recipientType,fields.recipientCode,fields.purpose]:null,selectorRevision]);
+  const selectorKey=JSON.stringify([contextKey,operation,fields.target,operation==='delivery'?[fields.recipientType,fields.recipientCode,fields.purpose]:operation==='impact'?fields.release:operation==='resource'?fields.entityType:null,selectorRevision]);
   const selectorKeyRef=useRef(selectorKey);selectorKeyRef.current=selectorKey;
   function applySelection(patch:Partial<Fields>,capturedKey:string){
-    if(!selectionCapability.current||copyPending.current||controller.current||currentKey.current!==contextKey||capturedKey!==selectorKeyRef.current||preparation.current?.operation!==operation)return false;
-    const allowed:(keyof Fields)[]=operation==='delivery'?['artifacts','recipientType','recipientCode','purpose']:operation==='distribution'?['recipientType','recipientCode']:operation==='authorization'?['release','customer','project','purpose','site','line']:[];
+    if(!( ['approval','acceptance','impact','resource'].includes(operation)?selectionCapability.current.evidence:selectionCapability.current.distribution)||copyPending.current||controller.current||currentKey.current!==contextKey||capturedKey!==selectorKeyRef.current||preparation.current?.operation!==operation)return false;
+    const allowed:(keyof Fields)[]=operation==='delivery'?['artifacts','recipientType','recipientCode','purpose']:operation==='distribution'?['recipientType','recipientCode']:operation==='authorization'?['release','customer','project','purpose','site','line']:operation==='approval'?['step']:operation==='acceptance'?['criterion','dvp']:operation==='impact'?['snapshot']:operation==='resource'?['target','entityType']:[];
     if(!allowed.length||Object.keys(patch).some(key=>!allowed.includes(key as keyof Fields)))return false;
     activeReview.current=null;preparation.current=null;setReview(null);setMessage('');selectionLocksRef.current=allowed;setSelectionLocks(allowed);setFields(current=>({...current,...patch}));return true;
   }
@@ -152,6 +153,10 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
       <p className="notice"><Localized>{"Fourteen commands can be prepared. Snapshot, actual software, batch, approval action, release decision, delivery package, distribution, production authorization, test release, deployment, changeover, impact assessment, acceptance-to-DVP and resource reference submission require an approved environment and current signed-in session. Requests are kept only in page memory; preserve the exact request ID and body until an uncertain result is resolved."}</Localized></p>
       <Localized>{!imported.current&&['delivery','distribution','authorization'].includes(operation)&&<>
         <PrivateDistributionSelector key={selectorKey} contextKey={selectorKey} operation={operation as 'delivery'|'distribution'|'authorization'} fields={fields} enabled={selectionEnabled} locked={locked||copying||selectionLocks.length>0} onApply={applySelection}/>
+        {selectionLocks.length>0&&<button type="button" disabled={copying||locked} onClick={manualSelection}><Localized>{'Switch to manual entry and clear selected context'}</Localized></button>}
+      </>}</Localized>
+      <Localized>{!imported.current&&['approval','acceptance','impact','resource'].includes(operation)&&<>
+        <PrivateEvidenceSelector key={selectorKey} contextKey={selectorKey} operation={operation as 'approval'|'acceptance'|'impact'|'resource'} fields={fields} enabled={evidenceSelectionEnabled} locked={locked||copying||selectionLocks.length>0} onApply={applySelection}/>
         {selectionLocks.length>0&&<button type="button" disabled={copying||locked} onClick={manualSelection}><Localized>{'Switch to manual entry and clear selected context'}</Localized></button>}
       </>}</Localized>
       <form className="commandform" hidden={imported.current} onSubmit={event => {
@@ -246,7 +251,7 @@ export default function CommandWorkbench({ initialOperation, initialTarget, init
             <Localized>{fields.target.trim() && <Link href={`/changes/${encodeURIComponent(fields.target.trim())}/coverage`}><Localized>{"Review exact SCR coverage →"}</Localized></Link>}</Localized>
           </>}</Localized>
           <Localized>{operation === 'resource' && <>
-            <label><Localized>{"Resource object type"}</Localized><select required value={fields.entityType} onChange={event => edit('entityType', event.target.value)}>
+            <label><Localized>{"Resource object type"}</Localized><select required disabled={selectionLocks.includes('entityType')} value={fields.entityType} onChange={event => edit('entityType', event.target.value)}>
               <option value=""><Localized>{"Select an object type"}</Localized></option><Localized>{resourceTypes.map(value => <option value={value} key={value}><Localized>{value}</Localized></option>)}</Localized>
             </select></label>
             <Localized>{input('title', 'Resource title', true, 240)}</Localized>

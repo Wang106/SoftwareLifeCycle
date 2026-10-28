@@ -5,7 +5,7 @@ const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarge
 async function page({configured=true,governanceConfigured=false,distributionConfigured=false,productionConfigured=false,evidenceConfigured=false,resourceConfigured=false,identity={read_only_mode:false},cookies=[{value:'opaque'}],query={}}={}){
  let cookieReads=0,sessionReads=0;const Workbench=()=>null,exports={};
  vm.runInNewContext(compiled,{exports,process:{env:{}},require:name=>name==='next/headers'?{cookies:async()=>{cookieReads++;return{getAll:()=>cookies};}}:
-  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),firstSubmissionConfigured:()=>configured,governanceSubmissionConfigured:()=>governanceConfigured,distributionSubmissionConfigured:()=>distributionConfigured,productionSubmissionConfigured:()=>productionConfigured,evidenceSubmissionConfigured:()=>evidenceConfigured,resourceSubmissionConfigured:()=>resourceConfigured}:
+  name==='../../lib/browser-auth'?{authConfig:async()=>({session:{}}),privateEvidenceSelectionConfigured:()=>false,firstSubmissionConfigured:()=>configured,governanceSubmissionConfigured:()=>governanceConfigured,distributionSubmissionConfigured:()=>distributionConfigured,productionSubmissionConfigured:()=>productionConfigured,evidenceSubmissionConfigured:()=>evidenceConfigured,resourceSubmissionConfigured:()=>resourceConfigured}:
   name==='../../lib/browser-session'?{SESSION_COOKIE:'__Host-slc_session',resolveSession:async()=>{sessionReads++;return identity;}}:
   name==='../../components/command-workbench'?{__esModule:true,default:Workbench}:
   name==='../../components/localized'?{Localized:({children})=>children}:

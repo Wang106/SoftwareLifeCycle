@@ -36,6 +36,7 @@ from app.api.releases import router as releases_router
 from app.api.dashboard import router as dashboard_router
 from app.api.approvals import router as approvals_router
 from app.api.private_distribution_selection import router as private_distribution_selection_router
+from app.api.private_evidence_selection import router as private_evidence_selection_router
 from app.api.distribution import router as distribution_router
 from app.api.production import router as production_router
 from app.api.activity import router as activity_router
@@ -92,6 +93,7 @@ app.include_router(asr_passport_router)
 app.include_router(asr_readiness_router)
 app.include_router(approvals_router)
 app.include_router(private_distribution_selection_router)
+app.include_router(private_evidence_selection_router)
 app.include_router(distribution_router)
 app.include_router(production_router)
 app.include_router(activity_router)
@@ -139,7 +141,7 @@ async def read_only_guard(request: Request, call_next):
         r'/api/v1/deployments/[^/]+/changeovers/[^/]+/correction-context', path) is not None
     is_authorization_approval = re.fullmatch(
         r'/api/v1/authorizations/[^/]+/(?:approval-context|approval|approval-receipts/[^/]+)', path) is not None
-    is_distribution_selection = path.startswith('/api/v1/selection-context/')
+    is_distribution_selection = path.startswith(('/api/v1/selection-context/', '/api/v1/evidence-selection-context/'))
     is_private = is_distribution_selection or is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
     if settings.read_only_mode and is_write and not is_session_control:
