@@ -64,3 +64,8 @@ technical completion and P7's pending choice separately, then stop inventing fur
 packages. Real operations, identity or deployment actions require their own approved target
 and decisions. Unpublished detailed operational comments are not republished here through
 an alternative file path.
+
+
+## Later P7A decision (2026-10-28)
+
+P8已随PR168完成技术核验。用户已明确选择P7A：整理已有运营工具、验收和外部依赖，不新增通知适配器或重复离线工具、不外发告警。[运营验收清单](operational-readiness-acceptance.md) 是本次有限交付；本包远端核验前仍为7/8，完成后仅有限计划8/8。上文“P7决定待明确/P8在途”保留为原检查点，不再是当前队列。真实采集、SLO、通知送达/确认、保留/RPO/RTO、恢复、身份/浏览器/公司验收仍未完成；总体36/44=82%与原分母不变。实际AI、VIN和二进制存储边界不变，不自动增加新工作包。
