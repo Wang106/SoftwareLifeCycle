@@ -2418,5 +2418,15 @@
   "SCR UUID": "SCR UUID",
   "Issue UUID": "Issue UUID",
   "Resource object reference": "资源对象编号",
-  "Project UUIDs": "项目 UUID 列表"
+  "Project UUIDs": "项目 UUID 列表",
+  "Replacement recovery contains approval and release identifiers, declared authority, reasons and notes. Store it securely on your device; do not share or upload it. It contains no session credentials and is not proof of execution.": "替代决定恢复文本包含审批和发布编号、声明的授权人员、原因及备注。请安全保存在自己的设备上，不要分享或上传。文本不含会话凭据，也不证明已执行。",
+  "Predecessor number, decision and readiness are unverified preparation metadata, including after audit confirmation. The original audit verifies the original request and predecessor UUID, not those descriptive labels or the current effective decision.": "前序编号、决定和就绪声明属于未经核实的准备元数据，审计确认后仍然如此。原审计核验原始请求和前序 UUID，不核验这些描述标签，也不证明当前生效的决定。",
+  "Reveal replacement recovery text": "显示替代决定恢复文本",
+  "Copy replacement recovery text": "复制替代决定恢复文本",
+  "Replacement recovery text": "替代决定恢复文本",
+  "Recover a saved replacement request": "恢复已保存的替代决定请求",
+  "Import is audit-only and makes no request. A fresh valid session for the original authority may query its original audit; imported data cannot submit, retry or grant permission.": "导入仅用于审计查询，不发送请求。原操作人员的新有效会话可查询原审计；导入数据不能提交、重试或授予权限。",
+  "Import replacement request for audit query only": "导入替代决定请求，仅查询审计",
+  "Imported replacement request — unverified preparation metadata": "已导入替代决定请求——未经核实的准备元数据",
+  "Replacement recovery text is invalid or belongs to another site or approval. Nothing was sent.": "替代决定恢复文本无效，或属于其他站点或审批。未发送任何请求。"
 }
