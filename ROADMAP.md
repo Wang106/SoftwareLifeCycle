@@ -1,6 +1,8 @@
-## 当前下一包优先级（2026-10-25 用户已批准）
+## 当前有限收口（2026-10-28）
 
-先完成在途 PR/CI/部署核验，再由原唯一 Codex / ChatGPT Work 执行方推进 `isolated-synthetic-postgresql-backup-restore-rehearsal`，合同见 [隔离合成备份恢复演练](docs/isolated-synthetic-postgresql-backup-restore-rehearsal.md)。不再默认选择重复 SSR/ASR parser 边界加固或递归文档包；本次规划不勾选任何验收项，不改变 36/44=82% 或七计划里程碑。真实公司恢复/保留策略/内网与生产验收仍未完成。
+以最新 main 与 [非部署有限计划](docs/nondeployment-completion-plan.md) 为准：P1–P6 已实现并合并，P8 正在补真实 DRAFT 授权到生产追溯/更正/撤销的合成集成回归及事实文档对账。P7 通知渠道/负责人/保留决定仍待用户明确选择，不启用外发、不新造重复离线工具。此前“下一包备份恢复”的2026-10-25排序已被后续有限计划替代；隔离合成恢复工具不等于公司恢复验收。
+
+总体仍36/44=82%，以下44项分母与复选框不变。已实现默认关闭的代码、合成CI与真实身份/浏览器/公司运营验收必须分开；P8本轮完整CI与provider另核验。
 
 # Roadmap
 
@@ -58,19 +60,19 @@ Exit gate: protected operations reject unauthenticated and out-of-scope actors; 
 
 ## Phase 6 — Controlled write experience (safety slices and all 14 request-preparation forms implemented)
 
-- [x] Prioritize which existing command APIs require UI forms — all 14 are grouped in docs/controlled-write-ui.md; Snapshot/actual/Batch/Approval Action/Release Decision/Impact/Acceptance-to-DVP/Resource/Delivery/Distribution/Authorization/Test Release/Deployment/Changeover request preparation is implemented, authenticated submission remains pending
+- [x] Prioritize which existing command APIs require UI forms — all 14 are grouped in docs/controlled-write-ui.md; preparation, independently default-disabled submission/result/own-audit recovery and manual cross-session recovery are implemented; real provider/browser acceptance remains pending
 - [x] Add idempotency keys and explicit conflict behavior where absent — all 14 current command routes support request-ID contracts; optional no-key legacy semantics remain documented
 - [x] Add concurrency protection for approval and other state transitions — all 14 current routes serialize their command scope; actual reports add expected-version conflicts for keyed calls
-- [ ] Provide correction/revocation flows using new history records, not destructive edits — actual-report corrections append full before/after audit; other lifecycle correction/revocation workflows remain
-- [ ] Add validation, confirmation and trace links to every write result
+- [ ] Provide correction/revocation flows using new history records, not destructive edits — append-only actual, Batch/Changeover, review/impact/acceptance and chain revocation code exists; approved target end-to-end correction/revocation acceptance remains pending
+- [ ] Accept validation, confirmation and trace links for every exposed write in the approved real target — default-off command and specialized workflows are implemented; real identity/multiuser/browser end-to-end acceptance remains pending
 
 Exit gate: every exposed write is authorized, auditable, retry-safe where required and covered by end-to-end tests.
 
 ## Phase 7 — Production operations
 
 - [x] Add CI for backend tests, migration validation and frontend production build — PR#1 merged; current main push run37248330054 passes both validations and CI acceptance
-- [ ] Add supported backup/restore, retention and disaster-recovery procedures
-- [ ] Define metrics, structured logs, alerting and incident runbooks
+- [ ] Accept supported backup/restore, retention and disaster recovery — isolated synthetic PostgreSQL rehearsal/runbooks exist; target retention, restore objectives and operational rehearsal remain pending
+- [ ] Accept metrics, structured logs, alerting and incident response — opt-in content-free telemetry, bounded offline evaluation and runbook exist; approved collection/channel, delivery/acknowledgment and live acceptance remain pending
 - [ ] Separate demo, staging and company environments and disable seed in non-demo databases
 - [ ] Establish an approved network path between frontend, API and company data
 - [ ] Load real data only after privacy, security and authorization review
@@ -86,25 +88,19 @@ Use `规划：<目标>` to agree on scope and acceptance criteria. A roadmap ite
 Checked roadmap items are now 36/44 (82%): Phase 1 5/5, Phase 2 5/5 (demo),
 Phase 3 5/5 (demo), Phase 4 9/9, Phase 5 8/9, Phase 6 3/5 (60%) and Phase 7 1/6.
 All 14 write routes declare request-ID, row serialization, exact scope, trusted actor
-and atomic audit. Actual keyed reports require expected_version and replacement
-reason. Legacy no-key paths remain compatible and weaker; broad correction/revocation,
-UI and result confirmation/trace are incomplete. These percentages are checked scope,
-not provider configuration or production-readiness certification.
+and atomic audit. Actual keyed reports require expected_version and replacement reason. Legacy no-key paths
+remain compatible and weaker. Default-disabled UI, historical confirmation/trace and
+bounded correction/revocation implementations now exist; unchecked milestones still
+require their approved target end-to-end and operational acceptance. Percentages are
+checked acceptance scope, not coding hours, provider configuration or production readiness.
 
-1. All 14 preparation forms are implemented; configure approved identity/session
-   and a controlled target before adding authenticated submission.
-2. Connect first request-preparation forms to approved identity/session and define
-   authenticated submission, uncertain-result recovery and successful result trace;
-   keep public staging read-only and use a separately approved controlled target.
-3. Extend append-only correction/revocation contracts beyond actual reporting;
-   never infer physical flashing reversal or alter existing batch history.
-4. All17 read-consumer groups and the fixed53-candidate compatibility review are complete; preserve bounded ownership and growth evidence for future additions.
-5. Configure an approved OIDC provider, provider-backed tests, audited grant
-   administration and browser login/session flow before protected multi-user use.
-6. CI backend/PostgreSQL/migration/frontend checks are complete; add backup/restore, retention,
-   monitoring, alerts and incident procedures.
-7. Separate demo/staging/company environments, disable non-demo seed, approve
-   network/data governance and validate recovery before loading company data.
+1. Complete the bounded P8 synthetic joined-flow regression and current-document reconciliation; do not invent an unlimited feature queue.
+2. Resolve P7's explicit operational/channel choice. Existing offline evaluation does not send notifications or prove delivery/acknowledgment; no channel is configured by assumption.
+3. Select approved OIDC/provider/target and real multiuser/browser acceptance separately; current command, approval, selector and recovery code remains default-off.
+4. Preserve fixed53-candidate compatibility retirement and all17 consumer-group bounded reads; no duplicate retirement package.
+5. Validate target backup/restore, retention, monitoring and recovery objectives using approved operations, not synthetic CI as a substitute.
+6. Separate demo/staging/company data and approve network/privacy before company deployment or loading real data.
+7. VIN/vehicle scope, actual AI service and binary attachment storage/transfer remain explicitly deferred or undecided; resource links are not uploaded files.
 
 ## Bilingual UI and planning estimate — 2026-10-02
 
