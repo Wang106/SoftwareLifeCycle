@@ -5,7 +5,7 @@
   "maintenance_checkpoint": {
     "package": "isolated-browser-foundation",
     "branch": "test/isolated-browser-foundation",
-    "state": "approved_installed_chrome_adjustment_pending_new_head_ci",
+    "state": "installed_chrome_trust_guard_blocked_pending_bounded_diagnostics",
     "owner": "current_ChatGPT_Work_cloud_task",
     "ownership_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/170",
     "business_acceptance_increment": 0,
@@ -18,7 +18,7 @@
     "verified_previous_pr": 169,
     "verified_pr_head": "5342edbd2c83856f21d4362a9f990fc8626ee2d5",
     "verified_main": "ad9147366f00c68bf3f20a93e62e185eea773dc9",
-    "current_pr_ci": "first_head_browser_sandbox_launch_failed_new_head_pending",
+    "current_pr_ci": "sandbox_launch_then_existing_file_guard_failed_diagnostics_pending",
     "current_main_ci": "not_merged",
     "current_deployment": "not_merged",
     "limitations": [
