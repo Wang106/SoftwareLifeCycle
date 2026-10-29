@@ -138,7 +138,11 @@ jobs:
           import os, pathlib, platform, plistlib, stat, subprocess
 
           def output(*args):
-              return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT).strip()
+              try:
+                  return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT).strip()
+              except subprocess.CalledProcessError as error:
+                  print(error.output or '', end='', flush=True)
+                  raise
 
           assert platform.system() == 'Darwin' and platform.machine() == 'arm64', 'Expected macOS ARM64 runner'
           print('Runner image:', os.environ.get('ImageOS', 'unknown'), os.environ.get('ImageVersion', 'unknown'), flush=True)
