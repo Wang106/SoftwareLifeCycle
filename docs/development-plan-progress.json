@@ -5,7 +5,7 @@
   "maintenance_checkpoint": {
     "package": "isolated-browser-foundation",
     "branch": "test/isolated-browser-foundation",
-    "state": "installed_chrome_trust_guard_blocked_pending_bounded_diagnostics",
+    "state": "implementation_head_ci_passed_pending_documentation_head_and_protected_closure",
     "owner": "current_ChatGPT_Work_cloud_task",
     "ownership_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/170",
     "business_acceptance_increment": 0,
@@ -16,17 +16,22 @@
     "next_package": "coordinate_B2_dual_person_approval_browser_flow_after_B1_closure",
     "evidence": "docs/isolated-browser-foundation.md",
     "verified_previous_pr": 169,
-    "verified_pr_head": "5342edbd2c83856f21d4362a9f990fc8626ee2d5",
+    "verified_previous_pr_head": "5342edbd2c83856f21d4362a9f990fc8626ee2d5",
+    "verified_pr_head": "6da7ec0f12bc1841c4dbdbf0de391f177550ded5",
+    "verified_pr": 170,
+    "verified_pr_ci_run": "40868393983",
+    "verified_pr_ci": "success",
+    "verified_pr_cloudflare_preview_build": "3452b36a-39e7-4f71-9707-50085e7e6b8b",
     "verified_main": "ad9147366f00c68bf3f20a93e62e185eea773dc9",
-    "current_pr_ci": "sandbox_launch_then_existing_file_guard_failed_diagnostics_pending",
+    "current_pr_ci": "documentation_head_pending_verification",
     "current_main_ci": "not_merged",
     "current_deployment": "not_merged",
     "limitations": [
       "Local standard sandbox-enabled Chromium blocked by socket policy; no bypass",
-      "Browser must actually execute in approved isolated CI job; discovery/build not acceptance",
+      "Two real sandbox-configured Chrome journeys passed on verified implementation head; final documentation head and fresh-main CI remain separate",
       "Synthetic HTTP API is not real FastAPI PostgreSQL or identity acceptance",
       "No actual server identity business write permissions or notifications enabled",
-      "Existing official Chrome channel approved; read-only installation/profile checks do not prove effective sandbox; same actual browser journeys must pass without fallback"
+      "Approved macos-26 preinstalled Chrome passed read-only signature/file guard and actual journeys; hosted SIP disabled, Gatekeeper enabled; no production security attestation"
     ],
     "previous_checkpoint_history": {
       "package": "operational-readiness-acceptance-p7a",

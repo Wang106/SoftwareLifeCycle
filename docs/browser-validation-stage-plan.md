@@ -17,6 +17,12 @@
 
 当前Work云端已有Chromium155和PythonPlaywright1.62.0，但标准沙箱启用启动在2026-10-28失败于 `socket() failed: Operation not permitted`，没有页面渲染。未关闭浏览器沙箱、提升权限、改内核设置、重试受限浏览器路径或使用个人电脑。
 
-用户随后明确允许新增GitHub Actions隔离浏览器任务及必要依赖。仅在既有CI的Ubuntu临时runner安装固定Playwright关联Chromium及运行库；原backend/frontend检查步骤与三个必需检查名称保留，既有CI acceptance增加browser依赖和成功断言。无新事件/调度器、秘密、仓库权限、分支保护、计费方案或真实环境变更。浏览器运行本身保持sandbox开启；如果该runner也不支持，失败并报告，不加`--no-sandbox`或降低门禁。运行时间会增加，不购买额外额度或自动改变计费。
+用户随后明确允许新增GitHub Actions隔离浏览器任务及必要依赖。最初方案仅在既有CI的Ubuntu临时runner安装固定Playwright关联Chromium及运行库，随后因沙箱/文件信任检查失败而停止；该安装方案不是当前配置。用户后续明确批准仅browser任务改用标准 `macos-26` ARM64及预装官方Chrome，执行只读签名/文件/版本检查，不再安装浏览器或改变系统设置；原backend/frontend检查步骤与三个必需检查名称保留，既有CI acceptance增加browser依赖和成功断言。无新事件/调度器、秘密、仓库权限、分支保护、计费方案或真实环境变更。浏览器运行本身保持sandbox开启；如果该runner也不支持，失败并报告，不加`--no-sandbox`或降低门禁。运行时间会增加，不购买额外额度或自动改变计费。
 
 仅用合成数据、loopback应用/API，无真实业务写入、OIDC、凭据或通知外发；不进行公司服务器、Docker/Hyper-V安装。通知适配器、材料二进制存储、AI、VIN均不属于本阶段。真实公司运营与身份验收仍未完成。
+
+## B1 当前检查点（2026-10-29）
+
+PR #170 实现head `6da7ec0f12bc1841c4dbdbf0de391f177550ded5` 的[完整CI 40868393983](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/40868393983)与精确head Cloudflare预览构建已成功；真实浏览器两条旅程均通过、零跳过/失败/重试，backend/PostgreSQL/migrations、frontend与aggregate门禁均通过。[复现边界及下载核验的artifact证据](isolated-browser-foundation.md#verified-implementation-head-evidence-2026-10-29)区分实际浏览器与合成API、签名检查与生产安全验收。
+
+这是固定实现head证据，不声称随后文档提交已通过CI。最终文档head完整CI、保护合并及新main/provider分别核验仍待完成；无需为了记录自身CI无限新增文档提交。当前PR未合并，B1阶段账本保持0/4，总体82%与七模块/七计划百分比不变，不开启B2、不冒充真实身份或公司运营验收。
