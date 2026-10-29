@@ -1,3 +1,7 @@
+# 当前入口 — 2026-10-29 页面加载优先级独立需求
+
+PR170/B1已保护合并到main `1be2baf41ba88afe172efb5a33ed81e6e17cd551`，新main CI40876032522、Cloudflare生产构建c7779ef5成功；B1技术闭环1/4，真实提供方runtime仍未验收。当前只实施用户新增的[页面加载优先级与左栏背景修复](docs/priority-page-loading.md)，分支`feat/priority-page-loading`；不是B2。总体82%与七组百分比不变，当前UI精确head测试/审查/CI/合并仍待核验。以下较旧pending0/4不再代表B1当前状态。
+
 # 当前下一阶段入口 — 2026-10-28 隔离真实浏览器验证
 
 基线main `ad9147366f00c68bf3f20a93e62e185eea773dc9`，此前有限P1–P8已技术闭环8/8，PR169最终证据已发布。按[浏览器验证阶段计划](docs/browser-validation-stage-plan.md) 开始B1，阶段0/4；以下旧“P7在途”是发布前历史检查点。当前只实施首个隔离浏览器包，不部署公司服务器、不使用用户个人电脑、不增加真实身份/写入。总体仍36/44=82%；实际浏览器结果必须以精确head的独立browser CI证据为准，fixture不冒充真实API/OIDC验收。

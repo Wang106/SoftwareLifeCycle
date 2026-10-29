@@ -1,5 +1,9 @@
 # Isolated real-browser foundation (B1)
 
+## B1 closure and subsequent UI insertion (2026-10-29)
+
+B1 is technically closed at protected main `1be2baf41ba88afe172efb5a33ed81e6e17cd551`: main CI40876032522 and Cloudflare production buildc7779ef5 succeeded; stage1/4. Render's earlier99de backend remained live and unchanged; current runtime is not accepted from that fact. The owner's separate [priority-page-loading](priority-page-loading.md) request adds four loading/navigation/layout browser cases to the original two, so current feature report acceptance requires six exact title/file pairs. The original two-case evidence below remains historical B1 evidence, not acceptance of the new UI feature. No B2 work, runner/security/workflow or dependency change is included.
+
 ## What this package proves — and does not prove
 
 This is the first package of the [four-package browser stage](browser-validation-stage-plan.md), based on main `ad9147366f00c68bf3f20a93e62e185eea773dc9`. It exercises actual Chromium, React hydration, Next production HTML/JavaScript, DOM links/buttons, locale persistence and native retry navigation. A real loopback HTTP fixture supplies only synthetic Batch/detail/history responses; it is **not** FastAPI, PostgreSQL, real identities or actual authorization acceptance. No production fixture/auth bypass route is added.

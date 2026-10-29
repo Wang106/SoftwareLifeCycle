@@ -38,9 +38,9 @@ function appEnvironment(apiOrigin){
  for(const match of gateSource.matchAll(/\b[A-Z][A-Z0-9_]*_MODE\b/g))env[match[0]]='disabled';
  return env;
 }
-async function startApp(){
+async function startApp(createFixture = startFixtureServer){
  if(!existsSync(path.join(root,'.next/BUILD_ID')))throw Error('Build the actual Next production app before browser acceptance.');
- const fixture=await startFixtureServer();let child,logs='';
+ const fixture=await createFixture();let child,logs='';
  const stop=async()=>{try{if(child&&child.pid&&child.exitCode===null){const exit=once(child,'exit');child.kill('SIGTERM');const timer=setTimeout(()=>child.kill('SIGKILL'),5000);try{await exit;}finally{clearTimeout(timer);}}}finally{await fixture.close();}};
  try{
   const reservation=http.createServer();const port=await listen(reservation);await closeServer(reservation);
