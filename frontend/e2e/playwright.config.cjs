@@ -5,7 +5,7 @@ const { defineConfig } = require('@playwright/test');
 // must fail this job; there is deliberately no unsandboxed fallback.
 module.exports = defineConfig({
   testDir: '.',
-  testMatch: 'readonly.spec.ts',
+  testMatch: ['readonly.spec.ts', 'page-loading.spec.ts'],
   fullyParallel: false,
   workers: 1,
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],

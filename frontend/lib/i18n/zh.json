@@ -2447,5 +2447,8 @@
   "Recipient principal UUID": "接收者身份 UUID",
   "Scope UUID": "范围 UUID",
   "Import makes no request and cannot submit, retry or generate another audit number. Query requires the original administrator with current authorization; revoked access stays unknown. Another administrator cannot query this original event through this import. If access cannot be restored, use a separately approved recovery procedure without bypassing authorization.": "导入不发送请求，不能提交、重试或生成新审计编号。查询要求原操作管理员当前仍有授权；权限撤销后结果仍为未知。其他管理员不能通过此导入查询该原始事件。若无法恢复访问，请采用另行批准的恢复流程，不绕过授权。",
-  "PRINCIPAL": "身份"
+  "PRINCIPAL": "身份",
+  "Loading page data": "正在加载页面数据",
+  "The page is ready to navigate. Data will appear when the server responds.": "页面已可导航，服务器响应后将补齐数据。",
+  "Read dashboard again": "重新读取仪表板"
 }

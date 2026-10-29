@@ -5,12 +5,12 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { validateBrowserReport, readBrowserReport, REQUIRED_TITLES, MAX_REPORT_BYTES } = require('../scripts/check-browser-report.cjs');
+const { validateBrowserReport, readBrowserReport, REQUIRED_TITLES, REQUIRED_FILES, MAX_REPORT_BYTES } = require('../scripts/check-browser-report.cjs');
 const cli = path.resolve(__dirname, '../scripts/check-browser-report.cjs');
 function fixture() {
   return { config: { forbidOnly: true, projects: [{ id: 'chromium', name: 'chromium', retries: 0, repeatEach: 1 }] },
-    errors: [], stats: { expected: 2, unexpected: 0, flaky: 0, skipped: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 1000 },
-    suites: [{ title: 'readonly.spec.ts', specs: REQUIRED_TITLES.map(title => ({ title, file: 'readonly.spec.ts', ok: true,
+    errors: [], stats: { expected: 6, unexpected: 0, flaky: 0, skipped: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 1000 },
+    suites: [{ title: 'readonly.spec.ts', specs: REQUIRED_TITLES.map(title => ({ title, file: REQUIRED_FILES[title], ok: true,
       tests: [{ projectId: 'chromium', projectName: 'chromium', expectedStatus: 'passed', status: 'expected', results: [{
         status: 'passed', retry: 0, workerIndex: 0, parallelIndex: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 100, errors: [], annotations: [{ type: 'browser-engine', description: 'chromium' },
           { type: 'synthetic-loopback-fixture', description: 'verified' }, { type: 'browser-worker-index', description: '0' }],
@@ -18,10 +18,10 @@ function fixture() {
     })) }] };
 }
 function first(report) { return report.suites[0].specs[0].tests[0]; }
-test('synthetic complete JSON validates both exact journeys, including nested suites', () => {
+test('synthetic complete JSON validates all six exact journeys, including nested suites', () => {
   const value = fixture(); const specs = value.suites[0].specs; value.suites[0].specs = [];
   value.suites[0].suites = [{ specs }];
-  assert.deepEqual(validateBrowserReport(value), { tests: 2, passed: 2, skipped: 0, retried: 0, project: 'chromium' });
+  assert.deepEqual(validateBrowserReport(value), { tests: 6, passed: 6, skipped: 0, retried: 0, project: 'chromium' });
 });
 for (const [name, change] of [
   ['empty suites', r => { r.suites = []; }], ['missing journey', r => r.suites[0].specs.pop()],
@@ -77,9 +77,11 @@ test('bounded CLI requires real report file, redacts all malformed content and a
       assert.ok(!result.stderr.includes('PRIVATE_SECRET') && !result.stderr.includes(directory));
     }
     fs.writeFileSync(filename, JSON.stringify(fixture()));
-    assert.equal(readBrowserReport(filename).passed, 2);
+    assert.equal(readBrowserReport(filename).passed, 6);
     assert.equal(spawnSync(process.execPath, [cli, filename], { encoding: 'utf8' }).status, 0);
     assert.equal(spawnSync(process.execPath, [cli, filename+'-missing'], { encoding: 'utf8' }).status, 1);
     assert.throws(() => readBrowserReport(directory));
   } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });
+
+test('old two-journey evidence cannot pass expanded loading acceptance', () => { const value = fixture(); value.stats.expected = 2; value.suites[0].specs = value.suites[0].specs.slice(0, 2); assert.throws(() => validateBrowserReport(value)); });
