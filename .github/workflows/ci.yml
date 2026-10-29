@@ -105,18 +105,108 @@ jobs:
       - name: Verify disabled authentication routes and bilingual account SSR
         run: npm run auth:check
 
+  browser:
+    name: Isolated Chromium browser journey
+    runs-on: macos-26
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      API_BASE_URL: ""
+      NEXT_PUBLIC_API_BASE_URL: ""
+      NEXT_PUBLIC_API_URL: ""
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend lockfile
+        run: npm ci
+      - name: Verify existing official Chrome and unchanged sandbox policy
+        shell: bash
+        run: |
+          mkdir -p browser-results
+          python3 - <<'PYTHON' | tee browser-results/runner-browser.txt
+          import os, pathlib, platform, plistlib, stat, subprocess
+
+          def output(*args):
+              return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT).strip()
+
+          assert platform.system() == 'Darwin' and platform.machine() == 'arm64', 'Expected macOS ARM64 runner'
+          print('Runner image:', os.environ.get('ImageOS', 'unknown'), os.environ.get('ImageVersion', 'unknown'), flush=True)
+          print('OS:', output('/usr/bin/sw_vers', '-productVersion'), '; architecture:', platform.machine(), flush=True)
+          # Observe only. Hosted-runner SIP/Gatekeeper state is not modified or mistaken for sandbox proof.
+          for command in (('/usr/bin/csrutil', 'status'), ('/usr/sbin/spctl', '--status')):
+              result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+              print('Existing security state:', command, 'exit:', result.returncode, result.stdout.strip(), flush=True)
+
+          bundle = pathlib.Path('/Applications/Google Chrome.app')
+          binary = bundle / 'Contents/MacOS/Google Chrome'
+          assert bundle.resolve(strict=True) == bundle, 'Unexpected Chrome bundle symlink'
+          assert binary.resolve(strict=True) == binary and binary.is_file(), 'Unexpected Chrome executable path'
+          assert os.access(binary, os.X_OK), 'Official Chrome is not executable'
+          # Homebrew casks may belong to the ephemeral runner, rather than root. Reject other owners
+          # and group/world-writable bundle members. Internal framework symlinks must stay in the bundle.
+          trusted_owners = {0, os.getuid()}
+          count = 0
+          for path in (bundle, *bundle.rglob('*')):
+              info = path.lstat()
+              if stat.S_ISLNK(info.st_mode):
+                  target = path.resolve(strict=True)
+                  assert target.is_relative_to(bundle), f'Chrome symlink escapes bundle: {path}'
+                  continue
+              assert stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode), f'Unexpected Chrome member: {path}'
+              assert info.st_uid in trusted_owners and not info.st_mode & 0o022, f'Untrusted Chrome member: {path} uid={info.st_uid} mode={oct(stat.S_IMODE(info.st_mode))}'
+              count += 1
+          print('Checked bundle members:', count, '; allowed owners:', sorted(trusted_owners), flush=True)
+          requirement = 'anchor apple generic and identifier "com.google.Chrome" and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = "EQHXZ8M8AV"'
+          print(output('/usr/bin/codesign', '--verify', '--deep', '--strict', '--verbose=2', '-R', '=' + requirement, str(bundle)), flush=True)
+          print(output('/usr/bin/codesign', '--display', '--verbose=4', str(bundle)), flush=True)
+          with (bundle / 'Contents/Info.plist').open('rb') as stream:
+              metadata = plistlib.load(stream)
+          assert metadata['CFBundleIdentifier'] == 'com.google.Chrome', 'Unexpected Chrome bundle identifier'
+          version = metadata['CFBundleShortVersionString']
+          actual = output(str(binary), '--version')
+          assert actual == 'Google Chrome ' + version, 'Bundle/binary version mismatch'
+          print('Channel: chrome; chromiumSandbox: true; retries: 0', flush=True)
+          print('Verified Google Developer ID; binary:', actual, '; path:', binary, flush=True)
+          print('Signature and file checks are not runtime sandbox proof or production security acceptance.', flush=True)
+          PYTHON
+      - name: Build isolated production app
+        run: npm run build
+      - name: Run real-browser synthetic read-only journey
+        run: npm run test:browser
+      - name: Save synthetic browser evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-evidence
+          path: frontend/browser-results/
+          if-no-files-found: error
+          retention-days: 14
+
   acceptance:
     name: CI acceptance
-    needs: [backend, frontend]
+    needs: [backend, frontend, browser]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions: {}
     steps:
-      - name: Require both validation jobs to succeed
+      - name: Require all validation jobs to succeed
         env:
           BACKEND_RESULT: ${{ needs.backend.result }}
           FRONTEND_RESULT: ${{ needs.frontend.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
         run: |
           test "$BACKEND_RESULT" = success
           test "$FRONTEND_RESULT" = success
+          test "$BROWSER_RESULT" = success
