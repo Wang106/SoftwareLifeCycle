@@ -1,4 +1,5 @@
 {
+  "Read projects again": "重新读取项目",
   "Governance observation unavailable": "治理状态暂无法确认",
   "The exact target or a valid governance response could not be confirmed. No active authority is inferred.": "未能确认精确对象或有效治理响应，不能据此认定许可有效。",
   "Release-chain governance": "发布链治理",

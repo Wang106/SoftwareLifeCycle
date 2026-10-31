@@ -1,3 +1,7 @@
+# 当前入口 — 2026-10-31 项目目录有界失败修复
+
+真实main `00b92aa40860feaea4a712926fed56854be842cf`（PR171），开放PR=0；此前main CI40929885162四job/六浏览器用例成功，CF生产buildc1f0cae7成功，不等于数据库可用。当前只做`fix/project-catalog-read-timeout`本地候选：项目目录15秒读取上限、明确不可用与原生GET手动重读；客户/供应商及全局apiGet不变。数据库已过期暂停，用户选择不保留、不重建；不改连接/费用/服务配置。先读HANDOFF/DEVELOPMENT_STATUS最新条目；本包未发布、未CI/合并。整体82%、B1阶段1/4不变，不开始B2。
+
 # 当前入口 — 2026-10-29 页面加载优先级独立需求
 
 PR170/B1已保护合并到main `1be2baf41ba88afe172efb5a33ed81e6e17cd551`，新main CI40876032522、Cloudflare生产构建c7779ef5成功；B1技术闭环1/4，真实提供方runtime仍未验收。当前只实施用户新增的[页面加载优先级与左栏背景修复](docs/priority-page-loading.md)，分支`feat/priority-page-loading`；不是B2。总体82%与七组百分比不变，当前UI精确head测试/审查/CI/合并仍待核验。以下较旧pending0/4不再代表B1当前状态。

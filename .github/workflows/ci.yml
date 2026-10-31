@@ -130,12 +130,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install frontend lockfile
         run: npm ci
-      - name: Verify existing official Chrome and unchanged sandbox policy
+      - name: Diagnose official Chrome read-only; never launch browser
         shell: bash
         run: |
           mkdir -p browser-results
           python3 - <<'PYTHON' | tee browser-results/runner-browser.txt
-          import os, pathlib, platform, plistlib, stat, subprocess
+          import hashlib, json, os, pathlib, platform, plistlib, stat, subprocess, urllib.parse, urllib.request
 
           def output(*args):
               try:
@@ -152,37 +152,182 @@ jobs:
               result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
               print('Existing security state:', command, 'exit:', result.returncode, result.stdout.strip(), flush=True)
 
-          bundle = pathlib.Path('/Applications/Google Chrome.app')
-          binary = bundle / 'Contents/MacOS/Google Chrome'
-          assert bundle.resolve(strict=True) == bundle, 'Unexpected Chrome bundle symlink'
-          assert binary.resolve(strict=True) == binary and binary.is_file(), 'Unexpected Chrome executable path'
-          assert os.access(binary, os.X_OK), 'Official Chrome is not executable'
-          # Homebrew casks may belong to the ephemeral runner, rather than root. Reject other owners
-          # and group/world-writable bundle members. Internal framework symlinks must stay in the bundle.
-          trusted_owners = {0, os.getuid()}
-          count = 0
-          for path in (bundle, *bundle.rglob('*')):
-              info = path.lstat()
-              if stat.S_ISLNK(info.st_mode):
-                  target = path.resolve(strict=True)
-                  assert target.is_relative_to(bundle), f'Chrome symlink escapes bundle: {path}'
-                  continue
-              assert stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode), f'Unexpected Chrome member: {path}'
-              assert info.st_uid in trusted_owners and not info.st_mode & 0o022, f'Untrusted Chrome member: {path} uid={info.st_uid} mode={oct(stat.S_IMODE(info.st_mode))}'
-              count += 1
-          print('Checked bundle members:', count, '; allowed owners:', sorted(trusted_owners), flush=True)
-          requirement = 'anchor apple generic and identifier "com.google.Chrome" and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = "EQHXZ8M8AV"'
-          print(output('/usr/bin/codesign', '--verify', '--deep', '--strict', '--verbose=2', '-R', '=' + requirement, str(bundle)), flush=True)
-          print(output('/usr/bin/codesign', '--display', '--verbose=4', str(bundle)), flush=True)
-          with (bundle / 'Contents/Info.plist').open('rb') as stream:
-              metadata = plistlib.load(stream)
-          assert metadata['CFBundleIdentifier'] == 'com.google.Chrome', 'Unexpected Chrome bundle identifier'
-          version = metadata['CFBundleShortVersionString']
-          actual = output(str(binary), '--version')
-          assert actual == 'Google Chrome ' + version, 'Bundle/binary version mismatch'
-          print('Channel: chrome; chromiumSandbox: true; retries: 0', flush=True)
-          print('Verified Google Developer ID; binary:', actual, '; path:', binary, flush=True)
-          print('Signature and file checks are not runtime sandbox proof or production security acceptance.', flush=True)
+          # Official Mac DMG: https://support.google.com/chrome/a/answer/12818048
+          url = 'https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg'
+          def official_url(value):
+              parsed = urllib.parse.urlsplit(value)
+              assert parsed.scheme == 'https' and parsed.netloc == 'dl.google.com', 'Non-official download origin'
+              assert not parsed.fragment and not parsed.query, 'Unexpected download URL parameters'
+              assert parsed.path.endswith('/googlechrome.dmg'), 'Unexpected download resource'
+              return value
+
+          class OfficialRedirect(urllib.request.HTTPRedirectHandler):
+              max_redirections = 3
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  official_url(newurl)  # Reject before any follow-up request.
+                  print('Official redirect:', newurl, flush=True)
+                  return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+          runner_temp = pathlib.Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+          assert runner_temp.is_absolute() and runner_temp.is_dir(), 'Missing runner temporary directory'
+          staging = runner_temp / 'slc-official-chrome'
+          staging.mkdir(mode=0o700)  # Fail if present; never reuse or overwrite a previous candidate.
+          dmg = staging / 'googlechrome.dmg'
+          mount = staging / 'mount'
+          mount.mkdir()
+          digest = hashlib.sha256()
+          size = 0
+          print('Official download:', official_url(url), flush=True)
+          opener = urllib.request.build_opener(OfficialRedirect())
+          with opener.open(url, timeout=120) as response, dmg.open('xb') as target:
+              official_url(response.geturl())
+              assert response.status == 200, 'Unexpected download status'
+              print('Final download URL:', response.geturl(), flush=True)
+              while chunk := response.read(1024 * 1024):
+                  size += len(chunk)
+                  assert size <= 1024 * 1024 * 1024, 'DMG exceeds bounded download size'
+                  digest.update(chunk)
+                  target.write(chunk)
+          assert size > 0, 'Empty DMG'
+          print('DMG SHA256:', digest.hexdigest(), '; bytes:', size, flush=True)
+          print(output('/usr/bin/hdiutil', 'verify', str(dmg)), flush=True)
+
+          def verify_bundle(bundle):
+              binary = bundle / 'Contents/MacOS/Google Chrome'
+              assert bundle.resolve(strict=True) == bundle, 'Unexpected Chrome bundle symlink'
+              assert binary.resolve(strict=True) == binary and binary.is_file(), 'Unexpected Chrome executable path'
+              assert os.access(binary, os.X_OK), 'Official Chrome is not executable'
+              # Homebrew casks may belong to the ephemeral runner, rather than root. Reject other owners
+              # and group/world-writable bundle members. Internal framework symlinks must stay in the bundle.
+              trusted_owners = {0, os.getuid()}
+              count = 0
+              for path in (bundle, *bundle.rglob('*')):
+                  info = path.lstat()
+                  if stat.S_ISLNK(info.st_mode):
+                      target = path.resolve(strict=True)
+                      assert target.is_relative_to(bundle), f'Chrome symlink escapes bundle: {path}'
+                      continue
+                  assert stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode), f'Unexpected Chrome member: {path}'
+                  assert info.st_uid in trusted_owners and not info.st_mode & 0o022, f'Untrusted Chrome member: {path} uid={info.st_uid} mode={oct(stat.S_IMODE(info.st_mode))}'
+                  count += 1
+              print('Checked bundle members:', count, '; allowed owners:', sorted(trusted_owners), flush=True)
+              requirement = 'anchor apple generic and identifier "com.google.Chrome" and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = "EQHXZ8M8AV"'
+              print(output('/usr/bin/codesign', '--verify', '--deep', '--strict', '--verbose=2', '-R', '=' + requirement, str(bundle)), flush=True)
+              print(output('/usr/bin/codesign', '--display', '--verbose=4', str(bundle)), flush=True)
+              with (bundle / 'Contents/Info.plist').open('rb') as stream:
+                  metadata = plistlib.load(stream)
+              assert metadata['CFBundleIdentifier'] == 'com.google.Chrome', 'Unexpected Chrome bundle identifier'
+              return metadata
+
+          def file_digest(path):
+              digest = hashlib.sha256()
+              with path.open('rb') as stream:
+                  while chunk := stream.read(1024 * 1024):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+          # These are the only app objects inspected. Never traverse arbitrary runner files.
+          components = (
+              '.',
+              'Contents/Frameworks/Google Chrome Framework.framework/Versions/Current/Helpers/app_mode_loader',
+              'Contents/Frameworks/Google Chrome Framework.framework/Versions/Current/Helpers/Google Chrome Helper (GPU).app',
+          )
+          def diagnostics(source, phase):
+              print('DIAGNOSTICS:', phase, flush=True)
+              for relative in components:
+                  target = source / relative
+                  try:
+                      resolved = target.resolve(strict=True)
+                      assert resolved.is_relative_to(source), 'Diagnostic path escapes candidate'
+                      info = target.lstat()
+                      print('Object:', relative, '; resolved:', str(resolved.relative_to(source)),
+                            '; mode:', oct(stat.S_IMODE(info.st_mode)), '; uid:', info.st_uid,
+                            '; gid:', info.st_gid, '; size:', info.st_size, flush=True)
+                      # Only names, lengths and hashes, never arbitrary attribute contents.
+                      for name in sorted(os.listxattr(target)):
+                          value = os.getxattr(target, name)
+                          print('Attribute:', relative, json.dumps(name), '; length:', len(value),
+                                '; sha256:', hashlib.sha256(value).hexdigest(), flush=True)
+                      if target.is_dir():
+                          for child in ('Contents/Info.plist', 'Contents/_CodeSignature/CodeResources'):
+                              item = target / child
+                              if not item.exists():
+                                  print('Missing:', relative, child, flush=True)
+                                  continue
+                              assert item.resolve(strict=True).is_relative_to(source), 'Diagnostic resource escapes candidate'
+                              assert item.is_file(), 'Expected diagnostic regular file'
+                              print('Resource:', relative, child, '; size:', item.stat().st_size,
+                                    '; sha256:', file_digest(item), flush=True)
+                              if child.endswith('Info.plist'):
+                                  with item.open('rb') as stream:
+                                      metadata = plistlib.load(stream)
+                                  print('Plist:', relative, json.dumps({key: metadata.get(key) for key in
+                                        ('CFBundleIdentifier', 'CFBundleShortVersionString', 'CFBundleVersion')}), flush=True)
+                      result = subprocess.run(('/usr/bin/codesign', '--display', '--verbose=4', str(target)),
+                                              text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                      print('Signature display:', relative, '; exit:', result.returncode, flush=True)
+                      # Do not dump entitlements, certificates or unrelated process/environment data.
+                      for line in result.stdout.splitlines():
+                          if line.startswith(('Identifier=', 'Format=', 'CodeDirectory ', 'Authority=',
+                                              'TeamIdentifier=', 'Sealed Resources ', 'Signature=')):
+                              print(line, flush=True)
+                  except Exception as error:
+                      print('Diagnostic unavailable:', relative, type(error).__name__, flush=True)
+
+          def mount_state(mount):
+              assert mount.resolve(strict=True) == mount and os.path.ismount(mount), 'Unexpected diagnostic mount point'
+              # Standard statvfs flags, not undocumented diskutil plist key guesses.
+              # https://docs.python.org/3/library/os.html#os.statvfs
+              try:
+                  flag = os.statvfs(mount).f_flag
+                  readonly = getattr(os, 'ST_RDONLY', None)
+                  if type(flag) is not int or flag < 0 or type(readonly) is not int or readonly <= 0:
+                      return 'unknown'
+                  return 'readonly' if flag & readonly else 'not_readonly'
+              except (OSError, AttributeError) as error:
+                  print('Mount observation unavailable:', type(error).__name__, flush=True)
+                  return 'unknown'
+
+          def shadow_state(image):
+              # Missing/null/false fields do not prove absence under an undocumented schema.
+              values = [image.get(key) for key in ('shadow-path', 'shadow')]
+              return 'present' if any(value is True or (isinstance(value, str) and value) for value in values) else 'unknown'
+
+          print('codesign SHA256:', file_digest(pathlib.Path('/usr/bin/codesign')), flush=True)
+          print('OS build:', output('/usr/bin/sw_vers', '-buildVersion'), flush=True)
+          # No installer, copying, package repair or browser execution in this diagnostic run.
+          print(output('/usr/bin/hdiutil', 'attach', '-readonly', '-nobrowse', '-noautoopen', '-mountpoint', str(mount), str(dmg)), flush=True)
+          try:
+              disk = plistlib.loads(subprocess.check_output(('/usr/sbin/diskutil', 'info', '-plist', str(mount))))
+              print('Candidate mount:', json.dumps({key: disk.get(key) for key in
+                    ('FilesystemType', 'FilesystemName', 'ReadOnlyMedia', 'ReadOnlyVolume', 'MountPoint')}), flush=True)
+              readonly = mount_state(mount)
+              print('Candidate statvfs readonly state:', readonly, flush=True)
+              assert readonly != 'not_readonly', 'Diagnostic mount is explicitly not read-only'
+              # Unknown permits read-only diagnostics, never browser execution or acceptance.
+              images = plistlib.loads(subprocess.check_output(('/usr/bin/hdiutil', 'info', '-plist')))
+              matching = [item for item in images.get('images', []) if item.get('image-path') == str(dmg)]
+              assert len(matching) == 1, 'Candidate image metadata missing or ambiguous'
+              image = matching[0]
+              shadow = shadow_state(image)
+              print('Candidate image:', json.dumps({'image-type': image.get('image-type'),
+                    'writeable': image.get('writeable'), 'shadow-state': shadow}), flush=True)
+              assert shadow != 'present', 'Unexpected shadow image'
+              source = mount / 'Google Chrome.app'
+              diagnostics(source, 'before strict verification')
+              try:
+                  verify_bundle(source)  # Original strict guard and Google identity remain mandatory.
+              finally:
+                  diagnostics(source, 'after strict verification')
+          finally:
+              # A detach failure must not mask the original strict-verification failure.
+              try:
+                  result = subprocess.run(('/usr/bin/hdiutil', 'detach', str(mount)),
+                                          text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                  print('Candidate detach exit:', result.returncode, result.stdout.strip(), flush=True)
+              except OSError as error:
+                  print('Candidate detach unavailable:', type(error).__name__, flush=True)
+          raise RuntimeError('Diagnostic-only run: browser execution and acceptance intentionally prohibited')
           PYTHON
       - name: Build isolated production app
         run: npm run build
