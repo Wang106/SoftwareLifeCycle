@@ -130,12 +130,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install frontend lockfile
         run: npm ci
-      - name: Verify existing official Chrome for Testing and unchanged sandbox policy
+      - name: Verify isolated official Chrome and unchanged sandbox policy
         shell: bash
         run: |
           mkdir -p browser-results
           python3 - <<'PYTHON' | tee browser-results/runner-browser.txt
-          import os, pathlib, platform, plistlib, stat, subprocess
+          import hashlib, os, pathlib, platform, plistlib, stat, subprocess, urllib.parse, urllib.request
 
           def output(*args):
               try:
@@ -152,37 +152,92 @@ jobs:
               result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
               print('Existing security state:', command, 'exit:', result.returncode, result.stdout.strip(), flush=True)
 
-          bundle = pathlib.Path('/Applications/Google Chrome for Testing.app')
-          binary = bundle / 'Contents/MacOS/Google Chrome for Testing'
+          # Official Mac DMG: https://support.google.com/chrome/a/answer/12818048
+          url = 'https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg'
+          def official_url(value):
+              parsed = urllib.parse.urlsplit(value)
+              assert parsed.scheme == 'https' and parsed.netloc == 'dl.google.com', 'Non-official download origin'
+              assert not parsed.fragment and not parsed.query, 'Unexpected download URL parameters'
+              assert parsed.path.endswith('/googlechrome.dmg'), 'Unexpected download resource'
+              return value
+
+          class OfficialRedirect(urllib.request.HTTPRedirectHandler):
+              max_redirections = 3
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  official_url(newurl)  # Reject before any follow-up request.
+                  print('Official redirect:', newurl, flush=True)
+                  return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+          runner_temp = pathlib.Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+          assert runner_temp.is_absolute() and runner_temp.is_dir(), 'Missing runner temporary directory'
+          staging = runner_temp / 'slc-official-chrome'
+          staging.mkdir(mode=0o700)  # Fail if present; never reuse or overwrite a previous candidate.
+          dmg = staging / 'googlechrome.dmg'
+          mount = staging / 'mount'
+          mount.mkdir()
+          digest = hashlib.sha256()
+          size = 0
+          print('Official download:', official_url(url), flush=True)
+          opener = urllib.request.build_opener(OfficialRedirect())
+          with opener.open(url, timeout=120) as response, dmg.open('xb') as target:
+              official_url(response.geturl())
+              assert response.status == 200, 'Unexpected download status'
+              print('Final download URL:', response.geturl(), flush=True)
+              while chunk := response.read(1024 * 1024):
+                  size += len(chunk)
+                  assert size <= 1024 * 1024 * 1024, 'DMG exceeds bounded download size'
+                  digest.update(chunk)
+                  target.write(chunk)
+          assert size > 0, 'Empty DMG'
+          print('DMG SHA256:', digest.hexdigest(), '; bytes:', size, flush=True)
+          print(output('/usr/bin/hdiutil', 'verify', str(dmg)), flush=True)
+
+          def verify_bundle(bundle):
+              binary = bundle / 'Contents/MacOS/Google Chrome'
+              assert bundle.resolve(strict=True) == bundle, 'Unexpected Chrome bundle symlink'
+              assert binary.resolve(strict=True) == binary and binary.is_file(), 'Unexpected Chrome executable path'
+              assert os.access(binary, os.X_OK), 'Official Chrome is not executable'
+              # Homebrew casks may belong to the ephemeral runner, rather than root. Reject other owners
+              # and group/world-writable bundle members. Internal framework symlinks must stay in the bundle.
+              trusted_owners = {0, os.getuid()}
+              count = 0
+              for path in (bundle, *bundle.rglob('*')):
+                  info = path.lstat()
+                  if stat.S_ISLNK(info.st_mode):
+                      target = path.resolve(strict=True)
+                      assert target.is_relative_to(bundle), f'Chrome symlink escapes bundle: {path}'
+                      continue
+                  assert stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode), f'Unexpected Chrome member: {path}'
+                  assert info.st_uid in trusted_owners and not info.st_mode & 0o022, f'Untrusted Chrome member: {path} uid={info.st_uid} mode={oct(stat.S_IMODE(info.st_mode))}'
+                  count += 1
+              print('Checked bundle members:', count, '; allowed owners:', sorted(trusted_owners), flush=True)
+              requirement = 'anchor apple generic and identifier "com.google.Chrome" and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = "EQHXZ8M8AV"'
+              print(output('/usr/bin/codesign', '--verify', '--deep', '--strict', '--verbose=2', '-R', '=' + requirement, str(bundle)), flush=True)
+              print(output('/usr/bin/codesign', '--display', '--verbose=4', str(bundle)), flush=True)
+              with (bundle / 'Contents/Info.plist').open('rb') as stream:
+                  metadata = plistlib.load(stream)
+              assert metadata['CFBundleIdentifier'] == 'com.google.Chrome', 'Unexpected Chrome bundle identifier'
+              return metadata
+
+          # No installer runs. The source image is mounted read-only and never repaired.
+          print(output('/usr/bin/hdiutil', 'attach', '-readonly', '-nobrowse', '-noautoopen', '-mountpoint', str(mount), str(dmg)), flush=True)
+          try:
+              source = mount / 'Google Chrome.app'
+              source_metadata = verify_bundle(source)
+              bundle = staging / 'Google Chrome.app'
+              assert not bundle.exists(), 'Destination must be new'
+              print(output('/usr/bin/ditto', '--rsrc', '--extattr', '--acl', str(source), str(bundle)), flush=True)
+              metadata = verify_bundle(bundle)
+              assert metadata == source_metadata, 'Copied bundle metadata differs'
+          finally:
+              print(output('/usr/bin/hdiutil', 'detach', str(mount)), flush=True)
+          binary = bundle / 'Contents/MacOS/Google Chrome'
           configured_binary = output('node', '-e', "process.stdout.write(require('./e2e/playwright.config.cjs').use.launchOptions.executablePath)")
           assert configured_binary == str(binary), 'Guard and Playwright executable paths differ'
-          assert bundle.resolve(strict=True) == bundle, 'Unexpected Chrome bundle symlink'
-          assert binary.resolve(strict=True) == binary and binary.is_file(), 'Unexpected Chrome executable path'
-          assert os.access(binary, os.X_OK), 'Official Chrome is not executable'
-          # Homebrew casks may belong to the ephemeral runner, rather than root. Reject other owners
-          # and group/world-writable bundle members. Internal framework symlinks must stay in the bundle.
-          trusted_owners = {0, os.getuid()}
-          count = 0
-          for path in (bundle, *bundle.rglob('*')):
-              info = path.lstat()
-              if stat.S_ISLNK(info.st_mode):
-                  target = path.resolve(strict=True)
-                  assert target.is_relative_to(bundle), f'Chrome symlink escapes bundle: {path}'
-                  continue
-              assert stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode), f'Unexpected Chrome member: {path}'
-              assert info.st_uid in trusted_owners and not info.st_mode & 0o022, f'Untrusted Chrome member: {path} uid={info.st_uid} mode={oct(stat.S_IMODE(info.st_mode))}'
-              count += 1
-          print('Checked bundle members:', count, '; allowed owners:', sorted(trusted_owners), flush=True)
-          requirement = 'anchor apple generic and identifier "com.google.chrome.for.testing" and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = "EQHXZ8M8AV"'
-          print(output('/usr/bin/codesign', '--verify', '--deep', '--strict', '--verbose=2', '-R', '=' + requirement, str(bundle)), flush=True)
-          print(output('/usr/bin/codesign', '--display', '--verbose=4', str(bundle)), flush=True)
-          with (bundle / 'Contents/Info.plist').open('rb') as stream:
-              metadata = plistlib.load(stream)
-          assert metadata['CFBundleIdentifier'] == 'com.google.chrome.for.testing', 'Unexpected Chrome bundle identifier'
           version = metadata['CFBundleShortVersionString']
           actual = output(str(binary), '--version')
-          assert actual == 'Google Chrome for Testing ' + version, 'Bundle/binary version mismatch'
-          print('Candidate: installed Chrome for Testing; chromiumSandbox: true; retries: 0', flush=True)
+          assert actual == 'Google Chrome ' + version, 'Bundle/binary version mismatch'
+          print('Candidate: isolated official Stable Chrome; chromiumSandbox: true; retries: 0', flush=True)
           print('Verified Google Developer ID; binary:', actual, '; path:', binary, flush=True)
           print('Signature and file checks are not runtime sandbox proof or production security acceptance.', flush=True)
           PYTHON
