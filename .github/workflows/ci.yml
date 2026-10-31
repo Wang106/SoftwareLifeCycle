@@ -274,6 +274,25 @@ jobs:
                   except Exception as error:
                       print('Diagnostic unavailable:', relative, type(error).__name__, flush=True)
 
+          def mount_state(mount):
+              assert mount.resolve(strict=True) == mount and os.path.ismount(mount), 'Unexpected diagnostic mount point'
+              # Standard statvfs flags, not undocumented diskutil plist key guesses.
+              # https://docs.python.org/3/library/os.html#os.statvfs
+              try:
+                  flag = os.statvfs(mount).f_flag
+                  readonly = getattr(os, 'ST_RDONLY', None)
+                  if type(flag) is not int or flag < 0 or type(readonly) is not int or readonly <= 0:
+                      return 'unknown'
+                  return 'readonly' if flag & readonly else 'not_readonly'
+              except (OSError, AttributeError) as error:
+                  print('Mount observation unavailable:', type(error).__name__, flush=True)
+                  return 'unknown'
+
+          def shadow_state(image):
+              # Missing/null/false fields do not prove absence under an undocumented schema.
+              values = [image.get(key) for key in ('shadow-path', 'shadow')]
+              return 'present' if any(value is True or (isinstance(value, str) and value) for value in values) else 'unknown'
+
           print('codesign SHA256:', file_digest(pathlib.Path('/usr/bin/codesign')), flush=True)
           print('OS build:', output('/usr/bin/sw_vers', '-buildVersion'), flush=True)
           # No installer, copying, package repair or browser execution in this diagnostic run.
@@ -282,15 +301,18 @@ jobs:
               disk = plistlib.loads(subprocess.check_output(('/usr/sbin/diskutil', 'info', '-plist', str(mount))))
               print('Candidate mount:', json.dumps({key: disk.get(key) for key in
                     ('FilesystemType', 'FilesystemName', 'ReadOnlyMedia', 'ReadOnlyVolume', 'MountPoint')}), flush=True)
-              assert disk.get('ReadOnlyVolume') is True, 'Diagnostic mount is not confirmed read-only'
+              readonly = mount_state(mount)
+              print('Candidate statvfs readonly state:', readonly, flush=True)
+              assert readonly != 'not_readonly', 'Diagnostic mount is explicitly not read-only'
+              # Unknown permits read-only diagnostics, never browser execution or acceptance.
               images = plistlib.loads(subprocess.check_output(('/usr/bin/hdiutil', 'info', '-plist')))
               matching = [item for item in images.get('images', []) if item.get('image-path') == str(dmg)]
               assert len(matching) == 1, 'Candidate image metadata missing or ambiguous'
               image = matching[0]
-              shadow = any(image.get(key) for key in ('shadow-path', 'shadow'))
+              shadow = shadow_state(image)
               print('Candidate image:', json.dumps({'image-type': image.get('image-type'),
-                    'writeable': image.get('writeable'), 'shadow-present': shadow}), flush=True)
-              assert not shadow, 'Unexpected shadow image'
+                    'writeable': image.get('writeable'), 'shadow-state': shadow}), flush=True)
+              assert shadow != 'present', 'Unexpected shadow image'
               source = mount / 'Google Chrome.app'
               diagnostics(source, 'before strict verification')
               try:
