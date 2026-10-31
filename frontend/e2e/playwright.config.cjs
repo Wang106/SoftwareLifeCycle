@@ -17,9 +17,8 @@ module.exports = defineConfig({
   reporter: [['list'], ['json', { outputFile: path.resolve(__dirname, '../browser-results/results.json') }]],
   use: {
     browserName: 'chromium',
-    channel: 'chrome',
     headless: true,
-    launchOptions: { chromiumSandbox: true },
+    launchOptions: { executablePath: '/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing', chromiumSandbox: true },
     serviceWorkers: 'block',
     acceptDownloads: false,
     viewport: { width: 1280, height: 900 },
