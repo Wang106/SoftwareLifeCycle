@@ -135,7 +135,7 @@ jobs:
         run: |
           mkdir -p browser-results
           python3 - <<'PYTHON' | tee browser-results/runner-browser.txt
-          import hashlib, json, os, pathlib, platform, plistlib, stat, subprocess, urllib.parse, urllib.request
+          import hashlib, json, os, pathlib, platform, plistlib, re, stat, subprocess, urllib.parse, urllib.request
 
           def output(*args):
               try:
@@ -232,6 +232,60 @@ jobs:
               'Contents/Frameworks/Google Chrome Framework.framework/Versions/Current/Helpers/app_mode_loader',
               'Contents/Frameworks/Google Chrome Framework.framework/Versions/Current/Helpers/Google Chrome Helper (GPU).app',
           )
+          def diagnostic_error(relative, stage, error):
+              # Avoid parser payloads and arbitrary filenames in exception strings.
+              detail = {'type': type(error).__name__, 'errno': getattr(error, 'errno', None)}
+              if isinstance(error, OSError):
+                  detail['reason'] = error.strerror
+              print('Diagnostic unavailable:', relative, stage, json.dumps(detail), flush=True)
+
+          def diagnostic_command(relative, stage, args):
+              try:
+                  result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20)
+              except (OSError, subprocess.TimeoutExpired) as error:
+                  diagnostic_error(relative, stage, error)
+                  return None
+              if result.returncode:
+                  # Never emit captured stdout (it may be attribute values), or arbitrary stderr.
+                  # Preserve exit, errno and recognized original error phrases, plus a digest.
+                  message = result.stderr.decode('utf-8', errors='replace')
+                  reasons = re.findall(r'(?i)no such (?:file(?: or directory)?|xattr)|permission denied|operation not permitted|not supported|invalid argument', message)
+                  errnos = re.findall(r'\[Errno ([0-9]+)\]', message)
+                  print('Diagnostic command failed:', relative, stage, '; exit:', result.returncode,
+                        '; reasons:', json.dumps(reasons), '; errno:', json.dumps(errnos),
+                        '; stderr bytes:', len(result.stderr),
+                        '; stderr sha256:', hashlib.sha256(result.stderr).hexdigest(), flush=True)
+                  return None
+              return result.stdout, result.stderr
+
+          def attribute_summary(target, relative):
+              # Apple file_cmds/xattr/xattr.1: no mode lists names; -p -x reads hex.
+              # No -l/-r/-v, write/delete/clear mode, shell, or Python Linux-only xattr API.
+              result = diagnostic_command(relative, 'attribute names', ('/usr/bin/xattr', str(target)))
+              if result is None:
+                  return
+              try:
+                  names = result[0].decode('utf-8').splitlines()
+              except UnicodeError as error:
+                  diagnostic_error(relative, 'attribute names decode', error)
+                  return
+              print('Attributes:', relative, '; count:', len(names), flush=True)
+              for name in sorted(set(names)):
+                  if not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.:#-]{0,254}', name):
+                      print('Attribute name rejected:', relative, '; name sha256:',
+                            hashlib.sha256(name.encode('utf-8')).hexdigest(), flush=True)
+                      continue
+                  result = diagnostic_command(relative, 'attribute read ' + name,
+                                              ('/usr/bin/xattr', '-p', '-x', name, str(target)))
+                  if result is None:
+                      continue
+                  try:
+                      value = bytes.fromhex(result[0].decode('ascii'))
+                      print('Attribute:', relative, json.dumps(name), '; length:', len(value),
+                            '; sha256:', hashlib.sha256(value).hexdigest(), flush=True)
+                  except (UnicodeError, ValueError) as error:
+                      diagnostic_error(relative, 'attribute hex decode ' + name, error)
+
           def diagnostics(source, phase):
               print('DIAGNOSTICS:', phase, flush=True)
               for relative in components:
@@ -240,16 +294,20 @@ jobs:
                       resolved = target.resolve(strict=True)
                       assert resolved.is_relative_to(source), 'Diagnostic path escapes candidate'
                       info = target.lstat()
+                      assert stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode), 'Unexpected diagnostic object'
                       print('Object:', relative, '; resolved:', str(resolved.relative_to(source)),
                             '; mode:', oct(stat.S_IMODE(info.st_mode)), '; uid:', info.st_uid,
                             '; gid:', info.st_gid, '; size:', info.st_size, flush=True)
-                      # Only names, lengths and hashes, never arbitrary attribute contents.
-                      for name in sorted(os.listxattr(target)):
-                          value = os.getxattr(target, name)
-                          print('Attribute:', relative, json.dumps(name), '; length:', len(value),
-                                '; sha256:', hashlib.sha256(value).hexdigest(), flush=True)
-                      if target.is_dir():
-                          for child in ('Contents/Info.plist', 'Contents/_CodeSignature/CodeResources'):
+                  except Exception as error:
+                      diagnostic_error(relative, 'object boundary', error)
+                      continue  # Invalid paths must never reach any command or resource read.
+                  try:
+                      attribute_summary(target, relative)
+                  except Exception as error:
+                      diagnostic_error(relative, 'attributes', error)
+                  if stat.S_ISDIR(info.st_mode):
+                      for child in ('Contents/Info.plist', 'Contents/_CodeSignature/CodeResources'):
+                          try:
                               item = target / child
                               if not item.exists():
                                   print('Missing:', relative, child, flush=True)
@@ -263,16 +321,20 @@ jobs:
                                       metadata = plistlib.load(stream)
                                   print('Plist:', relative, json.dumps({key: metadata.get(key) for key in
                                         ('CFBundleIdentifier', 'CFBundleShortVersionString', 'CFBundleVersion')}), flush=True)
-                      result = subprocess.run(('/usr/bin/codesign', '--display', '--verbose=4', str(target)),
-                                              text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                      print('Signature display:', relative, '; exit:', result.returncode, flush=True)
-                      # Do not dump entitlements, certificates or unrelated process/environment data.
-                      for line in result.stdout.splitlines():
-                          if line.startswith(('Identifier=', 'Format=', 'CodeDirectory ', 'Authority=',
-                                              'TeamIdentifier=', 'Sealed Resources ', 'Signature=')):
-                              print(line, flush=True)
+                          except Exception as error:
+                              diagnostic_error(relative, child, error)
+                  try:
+                      result = diagnostic_command(relative, 'signature display',
+                                                  ('/usr/bin/codesign', '--display', '--verbose=4', str(target)))
+                      if result is not None:
+                          print('Signature display:', relative, '; exit: 0', flush=True)
+                          # Successful display metadata only; no entitlements or certificates.
+                          for line in (result[0] + result[1]).decode('utf-8', errors='replace').splitlines():
+                              if line.startswith(('Identifier=', 'Format=', 'CodeDirectory ', 'Authority=',
+                                                  'TeamIdentifier=', 'Sealed Resources ', 'Signature=')):
+                                  print(line, flush=True)
                   except Exception as error:
-                      print('Diagnostic unavailable:', relative, type(error).__name__, flush=True)
+                      diagnostic_error(relative, 'signature display', error)
 
           def mount_state(mount):
               assert mount.resolve(strict=True) == mount and os.path.ismount(mount), 'Unexpected diagnostic mount point'
