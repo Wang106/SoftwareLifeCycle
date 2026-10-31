@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import textwrap
 
-WORKFLOW = Path(__file__).resolve().parents[3] / '.github/workflows/ci.yml'
+WORKFLOW = Path(__file__).resolve().parents[3] / '.github/workflows/browser-diagnostics.yml'
 if not __debug__:
     raise RuntimeError('Contract assertions require Python without -O')
 

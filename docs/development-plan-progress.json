@@ -3,29 +3,31 @@
   "as_of_api": "0.18.50",
   "baseline_commit": "af8c0241edb06d4f742197dc443e155dc19924f2",
   "maintenance_checkpoint": {
-    "package": "project-catalog-read-timeout",
+    "package": "project-catalog-browser-recovery",
     "branch": "fix/project-catalog-read-timeout",
-    "state": "implemented_local_verified_review_passed_not_published",
-    "owner": "current_ChatGPT_Work_cloud_tools_fallback",
+    "state": "approved_bounded_recovery_pending_exact_head_CI",
+    "owner": "current_ChatGPT_Work_cloud_task",
     "business_acceptance_increment": 0,
     "browser_stage_closed_packages": 1,
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "selected_scope": "project_catalog_bounded_read_failure_only_not_database_recovery_or_B2",
+    "selected_scope": "one_pinned_official_CfT_attempt_manual_diagnostic_separation_no_merge",
     "verified_previous_pr": 171,
     "verified_main": "00b92aa40860feaea4a712926fed56854be842cf",
     "verified_previous_main_ci_run": "40929885162",
     "evidence": "HANDOFF.md",
-    "current_pr_ci": "not_published",
+    "current_pr_ci": "pending_for_this_recovery_commit",
     "current_main_ci": "not_merged",
     "current_deployment": "not_merged",
-    "next_package": "separately_authorized_publication_exact_head_CI_and_protected_closure",
+    "next_package": "verify_single_exact_head_CI_then_stop_on_failure_or_report_evidence_no_B2",
     "limitations": [
       "Existing free database expired and suspended; user chose not to retain or rebuild",
-      "Project read timeout does not bound connection setup or entire page latency",
-      "Synthetic controlled-clock regression is not actual browser or Worker acceptance",
-      "No database connection billing identity permission security dependency or CI changes"
+      "Original strict signature rejected readonly DMG FinderInfo; origin unknown; six cases unexecuted",
+      "Official pinned CfT ZIP availability does not prove signature acceptance",
+      "Offline contracts cannot establish native signature or sandbox operation",
+      "One publication and normal full CI/Preview approved; no diagnostic dispatch rerun merge or production deployment",
+      "Public sample-only readonly; real OIDC business writes credentials security settings billing unchanged"
     ],
     "previous_checkpoint_history": {
       "package": "operational-readiness-acceptance-p7a",
@@ -623,7 +625,12 @@
       ],
       "verified_main_ci_run": "40876032522",
       "verified_main_cloudflare_production_build": "c7779ef5"
-    }
+    },
+    "ownership_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/172",
+    "verified_pr": 172,
+    "verified_pr_head": "29bffa68cbdd045280a78762ab6ca5089f562b54",
+    "verified_pr_ci_run": "41237281462",
+    "verified_pr_ci": "failure"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
