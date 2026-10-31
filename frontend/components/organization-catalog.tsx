@@ -5,12 +5,15 @@ import { organizationQuery, type OrganizationKind, type OrganizationSearch, type
 export function OrganizationRelease({row, standard = false}: {row: OrganizationRow; standard?: boolean}) {
   return <Localized>{row.release_id ? <><Link href={`/releases/${standard ? 'standard' : 'application'}/${row.release_id}`}>{standard ? 'SSR' : 'ASR'} {row.release_version}</Link> <Localized>{row.release_status ?? ''}</Localized></> : <>—</>}</Localized>;
 }
-export default async function OrganizationCatalog({kind, search}: {kind: OrganizationKind; search: OrganizationSearch}) {
+export default async function OrganizationCatalog({kind, search, readTimeoutMs}: {kind: OrganizationKind; search: OrganizationSearch; readTimeoutMs?: number}) {
   const supplier = kind === 'suppliers', customer = kind === 'customers';
   const title = supplier ? 'Suppliers' : customer ? 'Customers' : 'Projects';
   const special = supplier ? 'country' : customer ? 'region' : 'customer_id';
   const query = organizationQuery(search, ['q', 'status', special, 'limit', 'offset']);
-  const response = await apiGet<OrganizationPage>(`/api/v1/organization-views/${kind}?${query}`);
+  const endpoint = `/api/v1/organization-views/${kind}?${query}`;
+  // Opt-in only: the project catalog is bounded; other catalogs retain their existing behavior.
+  const response = readTimeoutMs === undefined ? await apiGet<OrganizationPage>(endpoint) :
+    await apiGet<OrganizationPage>(endpoint, {timeoutMs: readTimeoutMs});
   const data = response?.kind === kind ? response : null;
   const path = `/${kind}`;
   const first = new URLSearchParams(query); first.delete('offset');
@@ -46,6 +49,6 @@ export default async function OrganizationCatalog({kind, search}: {kind: Organiz
       {!data.items.length && <p className="muted"><Localized>{'No matching records on this page.'}</Localized></p>}
       <p><Link href={`${path}?${first}`}><Localized>{'First page'}</Localized></Link> {data.next_offset !== null && <Link href={`${path}?${next}`}><Localized>{'Next page →'}</Localized></Link>}</p>
       <p className="muted"><Localized>{'Open a profile to browse its related records.'}</Localized></p>
-    </section> : <section className="panel"><h2><Localized>{'Organization catalog unavailable'}</Localized></h2><p className="muted"><Localized>{'The API is unavailable or a filter is invalid.'}</Localized></p></section>}
+    </section> : <section className="panel"><h2><Localized>{'Organization catalog unavailable'}</Localized></h2><p className="muted"><Localized>{'The API is unavailable or a filter is invalid.'}</Localized></p>{kind === 'projects' && <p><a href={query.size ? `${path}?${query}` : path}><Localized>{'Read projects again'}</Localized></a></p>}</section>}
   </Localized>;
 }
