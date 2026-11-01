@@ -1,3 +1,33 @@
+# 当前入口 — 2026-11-01 PR172 原生签名通过，修复历史页定位歧义
+
+前一 head `f5cbe8b29fc0001e704372522ce01b994dd95ead` 的 [CI41295822763](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41295822763) 已首次通过固定官方 PKG 的原生信任、734个成员权限/路径、Apple/Google 深度严格签名、身份/版本与固定路径检查，并实际执行六条浏览器用例：5通过、1失败。失败是英文刷新后全局精确文本定位匹配到两个 `dd`，不是本次签名失败；重复节点的渲染来源尚未证明。该CI现已全部结束失败：后端84项浏览器契约、2846项＋26子测试（296 PG无跳过）、0029单迁移头及SQL/PG往返通过；前端2048项、0失败/取消/跳过，Next/OpenNext及禁用认证SSR通过；聚合因browser failure失败。该head不可合并。同head Cloudflare Preview检查成功，不等于main或生产验收。
+
+当前小包只修复 `readonly.spec.ts` 的定位范围：在可访问main内按精确标题选取原始/有效记录section，强化英文note/version及两类事实分离检查，并同样限定原生重读后的基线断言。不使用first/nth，不降低断言、沙箱、六条用例或报告门禁。本地TypeScript检查、原六用例/两文件发现及diff检查通过，独立审查未发现断言削弱；这些不代替新head真实浏览器验收。先读HANDOFF最新入口，核对本包精确head的CI；旧pending及旧head成功不能替代本包结果。
+
+main仍 `00b92aa40860feaea4a712926fed56854be842cf`，现有PR172草稿、未合并。全部必需检查通过且满足保护规则后再合并，随后分别核对main CI/provider，再衔接两条项目超时真实浏览器用例的明确准备包，不算B2。[仅新增付费需批准、每轮立即继续](https://github.com/Wang106/SoftwareLifeCycle/pull/172#issuecomment-6550487902)约定保持。总体36/44=82%、B1技术1/4、有限计划8/8及各模块/计划比例不变；旧库不重建，真实身份/业务写入继续关闭。
+
+---
+
+# 当前入口 — 2026-11-01 PR172 官方 PKG 候选与持续开发约定
+
+[项目所有者最新约定](https://github.com/Wang106/SoftwareLifeCycle/pull/172#issuecomment-6550487902)：除新增付费须先批准外，其余项目内工作默认同意；每轮完成立即衔接下一明确、可验证的小包。使用 Codex / ChatGPT Work，继续现有 PR172；下方历史单次许可、非付费逐次审批及“等待继续”要求已被本条覆盖。严格门禁、分支保护、只读业务边界和事实核验要求继续有效。
+
+最近核验的 main 为 `00b92aa40860feaea4a712926fed56854be842cf`，PR172 草稿、未合并，前一 head `af27f608c0f2ddca88d8455df991e265f65ab7a1` 的 [CI41239803373](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41239803373) 已结束失败：57 项契约、2846 后端＋26 子测试（296 PG 无跳过）、2048 前端通过；CfT 严格验签失败，六条浏览器用例未执行、聚合失败。旧 pending 不能覆盖此结果。
+
+本包改用固定摘要的 Google 官方普通 Chrome PKG，只做验签后展开，不执行安装脚本；展开应用仍须通过原有 Apple/Google 深度严格签名、权限/路径、版本及固定 Playwright 路径检查。先读 [候选来源、证据与门禁](docs/browser-pkg-candidate.md) 和 HANDOFF 最新入口。PKG 静态资源/证书观察不等于原生验签或浏览器通过；本包本地及独立复核84项契约通过（原57项＋新增27项），属于合成验证；本包精确提交 CI 尚待实际核验，不预报成功。
+
+下一步核对本包精确 head 的完整 CI；失败时按具体证据修复，不盲重跑；全绿并满足保护规则后再合并，随后单独核对 main CI 和 provider。之后继续下一个明确小包，不以本包自动开始 B2。总体36/44=82%、B1技术1/4、有限计划8/8不变；旧数据库不保留、不重建，真实身份和业务写入仍关闭。
+
+---
+
+# 当前入口 — 2026-11-01 PR172 已批准的受限浏览器恢复
+
+唯一开放PR172仍为草稿，main基线00b92aa、前一head29bffa68的CI41237281462已失败结束，六条浏览器用例未执行。用户批准一次固定官方CfT156.0.8078.80 mac-arm64 ZIP恢复包、原PR一次提交及一次完整CI/现有Preview。诊断移到仅手动工作流且本轮不运行；严格验签、sandbox、六条用例和聚合门禁保持。24项诊断契约和新增候选/工作流回归接入CI。先读HANDOFF最新入口及 scripts/ci/tests/README.md；这次提交自身的精确CI须核对远端，不能把旧pending当仍运行。失败即停，不重跑、不合并、不恢复数据库、不开始B2。总体82%、B1技术1/4不变。
+
+# 当前入口 — 2026-10-31 项目目录有界失败修复
+
+真实main `00b92aa40860feaea4a712926fed56854be842cf`（PR171），开放PR=0；此前main CI40929885162四job/六浏览器用例成功，CF生产buildc1f0cae7成功，不等于数据库可用。当前只做`fix/project-catalog-read-timeout`本地候选：项目目录15秒读取上限、明确不可用与原生GET手动重读；客户/供应商及全局apiGet不变。数据库已过期暂停，用户选择不保留、不重建；不改连接/费用/服务配置。先读HANDOFF/DEVELOPMENT_STATUS最新条目；本包未发布、未CI/合并。整体82%、B1阶段1/4不变，不开始B2。
+
 # 当前入口 — 2026-10-29 页面加载优先级独立需求
 
 PR170/B1已保护合并到main `1be2baf41ba88afe172efb5a33ed81e6e17cd551`，新main CI40876032522、Cloudflare生产构建c7779ef5成功；B1技术闭环1/4，真实提供方runtime仍未验收。当前只实施用户新增的[页面加载优先级与左栏背景修复](docs/priority-page-loading.md)，分支`feat/priority-page-loading`；不是B2。总体82%与七组百分比不变，当前UI精确head测试/审查/CI/合并仍待核验。以下较旧pending0/4不再代表B1当前状态。

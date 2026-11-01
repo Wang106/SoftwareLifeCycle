@@ -79,8 +79,9 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   await historyLink.click();
   await expect(page).toHaveURL(app.appOrigin + paths.historyPage);
   await expect(page.getByRole('heading', { name: '生产批次更正历史', exact: true })).toBeVisible();
-  const baseline = page.locator('section').filter({ has: page.getByRole('heading', { name: '原始记录基线', exact: true }) });
-  const effective = page.locator('section').filter({ has: page.getByRole('heading', { name: '当前有效记录事实', exact: true }) });
+  const main = page.getByRole('main');
+  const baseline = main.locator('section').filter({ has: page.getByRole('heading', { name: '原始记录基线', exact: true }) });
+  const effective = main.locator('section').filter({ has: page.getByRole('heading', { name: '当前有效记录事实', exact: true }) });
   await expect(baseline).toContainText(values.baselineNote);
   await expect(baseline).toContainText(values.baselineVersion);
   await expect(baseline).not.toContainText(values.effectiveNote);
@@ -95,8 +96,14 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   expect((await context.cookies()).find(cookie => cookie.name === 'slc_language')?.value).toBe('en');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Batch correction history', exact: true })).toBeVisible();
-  await expect(page.getByText(values.baselineNote, { exact: true })).toBeVisible();
-  await expect(page.locator('section').filter({ has: page.getByRole('heading', { name: 'Effective recorded facts', exact: true }) })).toContainText(values.effectiveNote);
+  const englishBaseline = main.locator('section').filter({ has: page.getByRole('heading', { name: 'Recorded baseline', exact: true }) });
+  const englishEffective = main.locator('section').filter({ has: page.getByRole('heading', { name: 'Effective recorded facts', exact: true }) });
+  await expect(englishBaseline.getByText(values.baselineNote, { exact: true })).toBeVisible();
+  await expect(englishBaseline).toContainText(values.baselineVersion);
+  await expect(englishBaseline).not.toContainText(values.effectiveNote);
+  await expect(englishEffective.getByText(values.effectiveNote, { exact: true })).toBeVisible();
+  await expect(englishEffective).toContainText(values.effectiveVersion);
+  await expect(englishEffective).not.toContainText(values.baselineNote);
   await info.attach('synthetic-history-english', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
   await page.getByRole('link', { name: 'Open controlled batch correction workbench', exact: true }).click();
   await expect(page.getByText('Batch correction submission is disabled or unavailable for this session.', { exact: true })).toBeVisible();
@@ -124,7 +131,8 @@ test('history failure shows no substitute evidence; native retry explicitly perf
   await expect(page.getByRole('heading', { name: '生产批次更正历史', exact: true })).toBeVisible();
   expect(await page.evaluate(() => (window as Window & { fixtureDocumentMarker?: boolean }).fixtureDocumentMarker)).toBeUndefined();
   expect(app.fixture.requests.filter(request => request.url === paths.historyApi).length).toBeGreaterThan(before);
-  await expect(page.getByText(values.baselineNote, { exact: true })).toBeVisible();
+  const baseline = page.getByRole('main').locator('section').filter({ has: page.getByRole('heading', { name: '原始记录基线', exact: true }) });
+  await expect(baseline.getByText(values.baselineNote, { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'English', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Batch correction history', exact: true })).toBeVisible();
   await info.attach('synthetic-history-recovered-english', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });

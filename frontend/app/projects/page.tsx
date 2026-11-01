@@ -1,5 +1,5 @@
 import OrganizationCatalog from '../../components/organization-catalog';
 import type { OrganizationSearch } from '../../lib/organization-views';
 export default async function Page({ searchParams }: { searchParams: Promise<OrganizationSearch> }) {
-  return <OrganizationCatalog kind="projects" search={await searchParams}/>;
+  return <OrganizationCatalog kind="projects" readTimeoutMs={15000} search={await searchParams}/>;
 }
