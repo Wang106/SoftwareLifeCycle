@@ -132,11 +132,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install frontend lockfile
         run: npm ci
-      - name: Verify isolated official Chrome for Testing candidate
+      - name: Verify isolated signed official Chrome PKG candidate
         shell: bash
         run: |
           mkdir -p browser-results
-          python3 ../scripts/ci/prepare_cft_browser.py | tee browser-results/runner-browser.txt
+          python3 ../scripts/ci/prepare_pkg_browser.py | tee browser-results/runner-browser.txt
       - name: Build isolated production app
         run: npm run build
       - name: Run real-browser synthetic read-only journey

@@ -99,16 +99,16 @@ def check_acceptance(ci):
         upload = steps.index('      - name: Save synthetic browser evidence')
         if re.search(r'^        if:', steps[:upload], re.MULTILINE):
             raise AssertionError('Required browser work cannot be skipped')
-    guard = steps.index('      - name: Verify isolated official Chrome for Testing candidate')
+    guard = steps.index('      - name: Verify isolated signed official Chrome PKG candidate')
     build = steps.index('      - name: Build isolated production app')
     test = steps.index('      - name: Run real-browser synthetic read-only journey')
     if not guard < build < test:
         raise AssertionError('Guard must precede build and browser execution')
-    expected_guard = '''      - name: Verify isolated official Chrome for Testing candidate
+    expected_guard = '''      - name: Verify isolated signed official Chrome PKG candidate
         shell: bash
         run: |
           mkdir -p browser-results
-          python3 ../scripts/ci/prepare_cft_browser.py | tee browser-results/runner-browser.txt'''
+          python3 ../scripts/ci/prepare_pkg_browser.py | tee browser-results/runner-browser.txt'''
     if steps[guard:build].strip() != expected_guard.strip():
         raise AssertionError('Candidate failure must propagate through bash pipefail')
     if '        run: npm run build' not in steps[build:test].splitlines():
@@ -148,7 +148,7 @@ class WorkflowSeparation(unittest.TestCase):
             (self.ci.replace('    runs-on: macos-26', '    if: false\n    runs-on: macos-26'), self.diagnostic),
             (self.ci.replace('        run: npm run test:browser', '        if: false\n        run: npm run test:browser'), self.diagnostic),
             (self.ci.replace('test "$BROWSER_RESULT" = success', 'true'), self.diagnostic),
-            (self.ci.replace('python3 ../scripts/ci/prepare_cft_browser.py | tee', 'python3 ../scripts/ci/prepare_cft_browser.py || true | tee'), self.diagnostic),
+            (self.ci.replace('python3 ../scripts/ci/prepare_pkg_browser.py | tee', 'python3 ../scripts/ci/prepare_pkg_browser.py || true | tee'), self.diagnostic),
             (self.ci.replace('        run: npm run test:browser', '        continue-on-error: true\n        run: npm run test:browser'), self.diagnostic),
         ]
         for ci, diagnostic in mutations:

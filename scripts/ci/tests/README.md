@@ -1,3 +1,46 @@
+# Current PKG candidate contracts
+
+Normal browser CI now selects `scripts/ci/prepare_pkg_browser.py` and the fixed
+ordinary Chrome PKG candidate described in
+[docs/browser-pkg-candidate.md](../../../docs/browser-pkg-candidate.md).
+The retained CfT guard is historical contract coverage, not the active browser
+source. The original 24 diagnostic methods and manual-only diagnostic workflow
+remain; diagnostic execution still intentionally fails and is not part of this
+package's acceptance run.
+
+The [owner's latest authorization](https://github.com/Wang106/SoftwareLifeCycle/pull/172#issuecomment-6550487902)
+supersedes the one-shot/nonpaid approval wording in the historical record below.
+Ordinary project work and necessary verification may continue; new fees require
+approval. Required strict signatures, sandbox, six journeys, report validation
+and aggregate failures remain mandatory.
+
+PKG tests use synthetic files and mocked native commands. They cover the fixed
+source/digest/size and bounded transfer, package trust before expansion, failure
+before candidate execution, and the app identity/version/configuration gates.
+They do not download or install Chrome, execute package scripts, verify a real
+Apple signature or establish macOS sandbox behavior. The historical 57 methods
+passed both locally and in previous-head CI41239803373; that run's real browser
+job nevertheless failed strict CfT verification and did not execute its six
+cases. Current local discovery and an independent rerun passed **84 methods**
+(57 retained +27 PKG).
+The exact-head native CI remains pending; prior successful jobs and these
+synthetic results do not certify this candidate.
+
+Run all retained and current contracts from the repository root:
+
+```sh
+python -m unittest discover -s scripts/ci/tests -v
+```
+
+The existing backend CI invokes this discovery command, so newly added contract
+files run automatically. A successful synthetic suite cannot replace the
+required native browser job. Any real package/app trust or browser failure
+keeps aggregate validation failed.
+
+---
+
+## Historical CfT recovery and diagnostic evidence
+
 # Browser diagnostic platform contracts
 
 Run from the repository root with Python 3.12 (standard library only):

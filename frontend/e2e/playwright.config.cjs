@@ -6,7 +6,7 @@ if (!process.env.RUNNER_TEMP || !path.isAbsolute(process.env.RUNNER_TEMP)) {
   throw new Error('An absolute RUNNER_TEMP is required for the verified Chrome candidate');
 }
 const chromeExecutable = path.join(require('node:fs').realpathSync(process.env.RUNNER_TEMP),
-  'slc-cft-chrome/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing');
+  'slc-pkg-chrome/expanded/GoogleChrome.pkg/Payload/Google Chrome.app/Contents/MacOS/Google Chrome');
 
 // Synthetic loopback only. A browser that cannot launch with its sandbox enabled
 // must fail this job; there is deliberately no unsandboxed fallback.

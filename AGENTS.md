@@ -1,3 +1,27 @@
+## Current owner authorization — 2026-11-01
+
+Use Codex / ChatGPT Work. The owner explicitly authorizes project work by default
+except actions that incur new fees, paid resource upgrades or credit purchases,
+which still require approval. After each bounded package, immediately continue
+the next concrete, verifiable package, prioritizing the existing PR. Do not
+repeatedly ask permission for ordinary investigation, implementation, tests,
+necessary downloads/CI, publication, or protected merge/deployment after all
+required evidence passes. This supersedes historical one-shot/nonpaid approval
+and "wait for continue" requirements below and in older handoffs.
+
+Retain engineering constraints: no weakened strict signatures, sandbox, browser
+journeys/report/aggregate gates or branch protection; no blind repeats of an
+unchanged failing candidate. Investigate failures and fix the identified cause.
+The expired public database is not retained or rebuilt. Public sample-only
+read-only operation and disabled real identity/business writes remain. Do not
+invent missing business inputs or claim unexecuted checks passed. Honor actual
+platform/tool restrictions; this authorization does not bypass them.
+
+Owner record: https://github.com/Wang106/SoftwareLifeCycle/pull/172#issuecomment-6550487902
+For a necessary fee approval or missing business decision, send it separately
+with the actual UTC+8 yyyy-mm-dd hh:mm:ss first line and the owner's literal
+seven groups of five stars above/below the request, without progress reporting.
+
 # Codex repository instructions
 
 Repository: Wang106/SoftwareLifeCycle. Use the current main branch as the baseline; preserve unrelated local changes.
