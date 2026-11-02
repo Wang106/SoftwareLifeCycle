@@ -1,3 +1,25 @@
+## Current verification and project timeout extension — 2026-11-02
+
+PR172 is protected-merged at main `baa9b53f2d9e331f620083fe3f3dadcb0493f7ac`;
+[main CI41312475850](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41312475850)
+passed all four jobs, including the current six real-browser journeys with zero
+failures/skips/retries. CI now verifies the pinned official Chrome PKG and its
+original expanded app before execution; see [the PKG candidate record](browser-pkg-candidate.md)
+and HANDOFF's newest evidence. The preinstalled-channel commands and older
+pending states below are historical, not the current executable source.
+
+The [project catalog timeout package](project-catalog-browser-timeout.md) adds
+header/body timeout journeys and changes the strict report requirement from six
+to eight, preserving all six prior title/file pairs. This package's eight actual
+browser results remain pending exact-head CI; local contracts/discovery and the
+baseline six-case run cannot certify them. The isolated API is synthetic and
+the production application's read timer is unchanged. B1 remains technically1/4
+of the browser stage; this extension is not B2 or real identity/database acceptance.
+After its protected closure and fresh-main/provider verification, the next scope
+is bounded B2 design separating synthetic identities and existing backend rules.
+
+---
+
 # Isolated real-browser foundation (B1)
 
 ## B1 closure and subsequent UI insertion (2026-10-29)

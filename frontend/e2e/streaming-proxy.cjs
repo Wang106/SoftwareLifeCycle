@@ -3,12 +3,31 @@
 const http=require('node:http');
 const {once}=require('node:events');
 const publicPaths=new Set(['/', '/changes', '/issues', '/projects']);
-function allowedPath(raw){if(typeof raw!=='string'||!raw.startsWith('/')||raw.startsWith('//'))return false;const url=new URL(raw,'http://127.0.0.1');return url.pathname==='/favicon.ico'||url.pathname.startsWith('/_next/static/')||(publicPaths.has(url.pathname)&&[...url.searchParams.keys()].every(key=>key==='_rsc'));}
-async function startStreamingProxy(upstream){
+const PROJECT_CATALOG_QUERY='q=A+%26+B&status=ACTIVE&customer_id=customer-one&limit=10&offset=20';
+const PROJECT_CATALOG_FIRST_PAGE_QUERY='q=A+%26+B&status=ACTIVE&customer_id=customer-one&limit=10';
+function projectCatalogEnabled(options){
+ if(options===undefined)return false;
+ if(options===null||typeof options!=='object'||Array.isArray(options)||Reflect.ownKeys(options).length!==1||!Object.hasOwn(options,'projectCatalogQuery')||options.projectCatalogQuery!==PROJECT_CATALOG_QUERY)throw Error('fixed_project_catalog_query_required');
+ return true;
+}
+function legacyAllowedPath(raw){if(typeof raw!=='string'||!raw.startsWith('/')||raw.startsWith('//'))return false;const url=new URL(raw,'http://127.0.0.1');return url.pathname==='/favicon.ico'||url.pathname.startsWith('/_next/static/')||(publicPaths.has(url.pathname)&&[...url.searchParams.keys()].every(key=>key==='_rsc'));}
+function pathAllowed(raw,projectCatalog){
+ if(legacyAllowedPath(raw))return true;
+ if(!projectCatalog||typeof raw!=='string')return false;
+ // Only these two exact serializations are added. A Next RSC token may be
+ // appended once; it cannot reorder/replace business keys or add a destination.
+ return [PROJECT_CATALOG_QUERY,PROJECT_CATALOG_FIRST_PAGE_QUERY].some(query=>{
+  const path='/projects?'+query;
+  return raw===path||(raw.startsWith(path+'&_rsc=')&&/^[A-Za-z0-9_-]+$/.test(raw.slice((path+'&_rsc=').length)));
+ });
+}
+function allowedPath(raw,options){return pathAllowed(raw,projectCatalogEnabled(options));}
+async function startStreamingProxy(upstream,options){
+ const projectCatalog=projectCatalogEnabled(options);
  const target=new URL(upstream);if(target.protocol!=='http:'||target.hostname!=='127.0.0.1'||target.origin!==upstream)throw Error('loopback_upstream_required');
  const violations=[];
  const server=http.createServer((req,res)=>{
-  if(!['GET','HEAD'].includes(req.method)||!allowedPath(req.url)||req.headers.authorization){violations.push('rejected_request');res.writeHead(400);res.end('rejected');return;}
+  if(!['GET','HEAD'].includes(req.method)||!pathAllowed(req.url,projectCatalog)||req.headers.authorization){violations.push('rejected_request');res.writeHead(400);res.end('rejected');return;}
   const read=http.request({hostname:'127.0.0.1',port:target.port,path:req.url,method:req.method,headers:{...req.headers,host:target.host}},incoming=>{
    // node:http does not follow redirects. Never forward Location or an external
    // redirect response to the browser, even if Next unexpectedly produces one.
@@ -22,4 +41,4 @@ async function startStreamingProxy(upstream){
  server.listen(0,'127.0.0.1');await once(server,'listening');
  return{origin:`http://127.0.0.1:${server.address().port}`,violations,async close(){server.closeAllConnections();await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}};
 }
-module.exports={allowedPath,startStreamingProxy};
+module.exports={allowedPath,startStreamingProxy,PROJECT_CATALOG_QUERY,PROJECT_CATALOG_FIRST_PAGE_QUERY};
