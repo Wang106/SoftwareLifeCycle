@@ -1,3 +1,13 @@
+## 2026-11-03 B2 双人审批隔离设计（已批准发布，精确head CI待核验）
+
+PR173已合并，当前main为 `e9710f6e9a1b83b4a820367ff230f58826ce1be9`。新main [CI41575618360](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41575618360) completed/success；Cloudflare production build `832b3f44-40c4-407c-953e-b9b17d771496` success，provider version `c4f7d68d-de22-4aa5-9975-8948c6bd58f4`。Actions deployment与continuation为skipped，不是Actions部署成功；线上数据库和业务健康未验收。下方PR173 pending记录是历史。
+
+当前设计分支 `docs/b2-authorization-browser-design`，新增[身份边界与验收矩阵](docs/browser-authorization-b2-design.md)。核对现有真实后端双人规则、前端工作台、HTTPS/加密session限制和匿名只读runner后，提出下一小包为独立测试产物中的组件浏览器验证；不修改生产身份逻辑，不把合成USER/403响应冒充真实身份或后端权限端到端验收。完整Next认证链的可信HTTPS拓扑仍须独立设计。
+
+本包仅文档与进度元数据；用户已明确批准本次6文件上传及创建草稿PR，允许仓库现有CI运行。本检查点尚未执行上传；发布后须核对实际head和CI结果，不据此宣称通过。未部署、未运行B2浏览器。适用离线检查记录在设计文档，不把本地文档校验当作完整CI。下一步核对草稿PR精确head完整CI；保持草稿，不合并、不更改安全配置，不据此实施B2。B2未完成，浏览器阶段1/4、有限计划8/8、总体36/44=82%、业务增量0；七模块100/100演示/100演示/100/89/60/17，七计划100/100/20/33/40/40/0不变。旧库不重建、公共样例只读、真实OIDC和业务写入保持关闭。
+
+---
+
 ## 2026-11-02 Project catalog timeout browser package — new eight-case CI pending
 
 PR172 is protected-merged/closed at main `baa9b53f2d9e331f620083fe3f3dadcb0493f7ac`. Its fresh-main [CI41312475850](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41312475850), attempt1, completed/success: backend2846+26subtests,296 PostgreSQL-module cases with no skips,84 browser guard contracts, single migration head0029_changeover_batch_history and SQL/PG roundtrip; frontend2048 with zero failures/cancellations/skips plus Next/OpenNext, Worker configuration and disabled-auth bilingual SSR; browser6/6 with zero failures/skips/retries; aggregate success. The fixed official Chrome PKG trust,734-member guard and original deep strict Apple/Google identity checks passed before sandbox-enabled execution. These completed results supersede the historical PR172 draft/unmerged/pending records below.

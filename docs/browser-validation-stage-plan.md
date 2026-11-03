@@ -1,3 +1,9 @@
+# 当前设计检查点 — 2026-11-03
+
+PR173已合并至main `e9710f6e9a1b83b4a820367ff230f58826ce1be9`，新main CI41575618360成功。当前[B2隔离设计](browser-authorization-b2-design.md)为文档与验收矩阵，已批准上传并创建草稿PR，精确head CI待核验，未实现或执行B2，不增加技术阶段1/4。后续建议独立组件浏览器小包；真实Next身份链与真实提供方验收分别保留缺口。下方“不开启B2”是早期检查点，现允许有界设计，不等于已启用审批或批准任意身份配置。
+
+---
+
 # 当前状态 — 2026-10-29
 
 B1已保护合并至main `1be2baf41ba88afe172efb5a33ed81e6e17cd551`，新main CI40876032522/Cloudflare生产构建c7779ef5成功，技术阶段**1/4**。Render旧99de backend live，后端无变更，当前runtime未验收。用户明确插入[页面加载优化](priority-page-loading.md)，独立feature，不开启B2；以下0/4记录为历史基线。总体82%及七组百分比不增加。
