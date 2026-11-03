@@ -1,3 +1,13 @@
+# 当前入口 — 2026-11-02 项目目录超时的两条真实浏览器用例
+
+PR172已保护合并并关闭，main `baa9b53f2d9e331f620083fe3f3dadcb0493f7ac` 的 [CI41312475850](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41312475850) attempt1四job全部成功：84项契约、2846后端＋26子测试（296 PG无跳过）、0029 SQL/PG往返、2048前端及原六条真实浏览器用例通过；browser零失败/跳过/重试。固定PKG信任和原Apple/Google严格签名门禁真实通过。Cloudflare生产build `b63d3f48-8510-4b68-ba6e-1f4cd629d1a8`、provider报告version `70ba6d0e-7c1e-4808-8d92-4c4804d216b9`成功；Actions deploy/wake为skipped，不是部署成功或线上健康/数据库/身份验收。下方PR172未合并及pending条目为历史。
+
+当前分支 `test/project-catalog-timeout-browser` 基于上述main，新增[项目目录header/body超时浏览器包](docs/project-catalog-browser-timeout.md)。真实Next/Chromium访问合成loopback API：实际挂起响应，由既有15秒读取预算终止，断言加载→不可用“—”→显式同查询原生GET重读→可信空结果0。原六条用例保留，报告严格要求八条；本包八条真实浏览器尚待精确head CI，不以发现测试或旧main六条成功代替。
+
+本地完整前端2069项、focused66项（含报告CLI）、84项契约、TypeScript及八条/三文件发现通过，独立审查通过；代码与上述main衔接时保持已验证源码。下一步发布并核对精确head完整CI，全绿后保护合并，再核对新main/provider；随后只做B2有界设计，先区分合成身份和真实后端授权规则，不植入身份旁路。[仅付费需批准、每轮继续下一明确包](https://github.com/Wang106/SoftwareLifeCycle/pull/172#issuecomment-6550487902)约定有效。总体36/44=82%、B1技术1/4、有限计划8/8不变；旧库不重建，真实身份/业务写入关闭。
+
+---
+
 # 当前入口 — 2026-11-01 PR172 原生签名通过，修复历史页定位歧义
 
 前一 head `f5cbe8b29fc0001e704372522ce01b994dd95ead` 的 [CI41295822763](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41295822763) 已首次通过固定官方 PKG 的原生信任、734个成员权限/路径、Apple/Google 深度严格签名、身份/版本与固定路径检查，并实际执行六条浏览器用例：5通过、1失败。失败是英文刷新后全局精确文本定位匹配到两个 `dd`，不是本次签名失败；重复节点的渲染来源尚未证明。该CI现已全部结束失败：后端84项浏览器契约、2846项＋26子测试（296 PG无跳过）、0029单迁移头及SQL/PG往返通过；前端2048项、0失败/取消/跳过，Next/OpenNext及禁用认证SSR通过；聚合因browser failure失败。该head不可合并。同head Cloudflare Preview检查成功，不等于main或生产验收。

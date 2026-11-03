@@ -9,7 +9,7 @@ const { validateBrowserReport, readBrowserReport, REQUIRED_TITLES, REQUIRED_FILE
 const cli = path.resolve(__dirname, '../scripts/check-browser-report.cjs');
 function fixture() {
   return { config: { forbidOnly: true, projects: [{ id: 'chromium', name: 'chromium', retries: 0, repeatEach: 1 }] },
-    errors: [], stats: { expected: 6, unexpected: 0, flaky: 0, skipped: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 1000 },
+    errors: [], stats: { expected: 8, unexpected: 0, flaky: 0, skipped: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 1000 },
     suites: [{ title: 'readonly.spec.ts', specs: REQUIRED_TITLES.map(title => ({ title, file: REQUIRED_FILES[title], ok: true,
       tests: [{ projectId: 'chromium', projectName: 'chromium', expectedStatus: 'passed', status: 'expected', results: [{
         status: 'passed', retry: 0, workerIndex: 0, parallelIndex: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 100, errors: [], annotations: [{ type: 'browser-engine', description: 'chromium' },
@@ -18,10 +18,10 @@ function fixture() {
     })) }] };
 }
 function first(report) { return report.suites[0].specs[0].tests[0]; }
-test('synthetic complete JSON validates all six exact journeys, including nested suites', () => {
+test('synthetic complete JSON validates all eight exact journeys, including nested suites', () => {
   const value = fixture(); const specs = value.suites[0].specs; value.suites[0].specs = [];
   value.suites[0].suites = [{ specs }];
-  assert.deepEqual(validateBrowserReport(value), { tests: 6, passed: 6, skipped: 0, retried: 0, project: 'chromium' });
+  assert.deepEqual(validateBrowserReport(value), { tests: 8, passed: 8, skipped: 0, retried: 0, project: 'chromium' });
 });
 for (const [name, change] of [
   ['empty suites', r => { r.suites = []; }], ['missing journey', r => r.suites[0].specs.pop()],
@@ -77,7 +77,7 @@ test('bounded CLI requires real report file, redacts all malformed content and a
       assert.ok(!result.stderr.includes('PRIVATE_SECRET') && !result.stderr.includes(directory));
     }
     fs.writeFileSync(filename, JSON.stringify(fixture()));
-    assert.equal(readBrowserReport(filename).passed, 6);
+    assert.equal(readBrowserReport(filename).passed, 8);
     assert.equal(spawnSync(process.execPath, [cli, filename], { encoding: 'utf8' }).status, 0);
     assert.equal(spawnSync(process.execPath, [cli, filename+'-missing'], { encoding: 'utf8' }).status, 1);
     assert.throws(() => readBrowserReport(directory));
@@ -85,3 +85,29 @@ test('bounded CLI requires real report file, redacts all malformed content and a
 });
 
 test('old two-journey evidence cannot pass expanded loading acceptance', () => { const value = fixture(); value.stats.expected = 2; value.suites[0].specs = value.suites[0].specs.slice(0, 2); assert.throws(() => validateBrowserReport(value)); });
+
+// Both older suites remain required; their successful six-case report is still
+// incomplete once project header/body timeout acceptance is added.
+test('old six-journey evidence cannot pass project timeout acceptance', () => {
+  for (const claimedCount of [6, 8]) {
+    const value = fixture(); value.stats.expected = claimedCount;
+    value.suites[0].specs = value.suites[0].specs.slice(0, 6);
+    assert.throws(() => validateBrowserReport(value));
+  }
+});
+for (const index of [6, 7]) {
+  test('requires project timeout journey ' + index + ' and its exact source', () => {
+    const missing = fixture(); missing.suites[0].specs.splice(index, 1);
+    assert.throws(() => validateBrowserReport(missing));
+    const wrongFile = fixture(); wrongFile.suites[0].specs[index].file = 'page-loading.spec.ts';
+    assert.throws(() => validateBrowserReport(wrongFile));
+  });
+  for (const [name, mutate] of [
+    ['skipped', value => { value.status = 'skipped'; }],
+    ['retried', value => { value.results[0].retry = 1; }],
+    ['unexecuted', value => { value.results = []; }],
+  ]) test('rejects ' + name + ' project timeout journey ' + index, () => {
+    const value = fixture(); mutate(value.suites[0].specs[index].tests[0]);
+    assert.throws(() => validateBrowserReport(value));
+  });
+}
