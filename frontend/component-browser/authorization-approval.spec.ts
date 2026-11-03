@@ -149,10 +149,12 @@ test('duplicate clicks submit once and a valid synthetic reply confirms without 
   const button=page.getByRole('button',{name:'Send confirmed authorization approval',exact:true});
   await button.evaluate((node: HTMLButtonElement) => {node.click();node.click();});
   await expect.poll(()=>reads.filter(r=>r.path===api[1]).length).toBe(1);
-  await expect(button).toBeDisabled();
+  // The send action is rendered only while idle, not as a disabled sending button.
+  await expect(button).toHaveCount(0);
+  const result=page.getByRole('heading',{name:'Authorization approval result',exact:true}).locator('..');
+  await expect(result).toContainText('Operation phase: sending');
   expect(reads.find(r=>r.path===api[1])?.body).toBe(JSON.stringify(command));
   release?.();
-  const result=page.getByRole('heading',{name:'Authorization approval result',exact:true}).locator('..');
   await exactFields(result,receipt(command),receiptLabels);
   await expect(result).toContainText('Operation phase: confirmed');
   await expect(result.getByText(historicalEnglish,{exact:true})).toBeVisible();
