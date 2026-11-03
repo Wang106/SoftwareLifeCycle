@@ -141,12 +141,24 @@ jobs:
         run: npm run build
       - name: Run real-browser synthetic read-only journey
         run: npm run test:browser
+      - name: Run isolated component browser journeys and strict report
+        run: |
+          node node_modules/@playwright/test/cli.js test --config=component-browser/playwright.config.cjs
+          node scripts/check-component-browser-report.cjs component-browser-results/results.json
       - name: Save synthetic browser evidence
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: browser-evidence
           path: frontend/browser-results/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save isolated component browser evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: component-browser-evidence
+          path: frontend/component-browser-results/
           if-no-files-found: error
           retention-days: 14
 
