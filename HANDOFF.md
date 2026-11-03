@@ -1,3 +1,13 @@
+## 2026-11-03 B2-C隔离组件测试候选（仅本地，浏览器未执行）
+
+PR174已合并至main `c5e38dc20b8ba7f44c1fd7b1481932aef832300e`，新main [CI41631030015](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41631030015)成功，Cloudflare生产build `6e196f9f-972e-4cb5-9d8c-9f6a8238c5ca` / version `b0c3c9c7-e34c-4c6c-9689-a69a357e9a6b`成功；Actions deploy/continuation skipped，不证明线上数据库/业务健康。下方PR174发布前状态是历史。
+
+当前 `test/b2-component-browser` 本地实现[独立组件harness与五场景](docs/browser-authorization-component.md)。真实React/工作台/transport/i18n/Next Link，临时bundle及固定loopback，无真实身份/数据库/业务写入。新suite继承原固定Chrome、sandbox和零重试，原八条Next用例/报告/CI不变。五条只覆盖组件与合成API，不代表Next认证或FastAPI授权。现有CI不会自动执行新组件suite，不得以原CI全绿冒充新浏览器验收。
+
+本地受信Chrome候选缺失，尚未执行新浏览器；不得替换浏览器或降低门禁。本地检查与独立审查结果见新文档。下一步先完成本地审查，再明确受信环境执行/CI接入范围；上传需要另行明确批准，当前不上传、不合并。B2未完成，阶段1/4、有限计划8/8、总体36/44=82%、业务增量0；七模块100/100演示/100演示/100/89/60/17、七计划100/100/20/33/40/40/0不变。旧库不重建，公共样例只读、真实OIDC和业务写入关闭。
+
+---
+
 ## 2026-11-03 B2 双人审批隔离设计（已批准发布，精确head CI待核验）
 
 PR173已合并，当前main为 `e9710f6e9a1b83b4a820367ff230f58826ce1be9`。新main [CI41575618360](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41575618360) completed/success；Cloudflare production build `832b3f44-40c4-407c-953e-b9b17d771496` success，provider version `c4f7d68d-de22-4aa5-9975-8948c6bd58f4`。Actions deployment与continuation为skipped，不是Actions部署成功；线上数据库和业务健康未验收。下方PR173 pending记录是历史。

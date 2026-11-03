@@ -3,9 +3,9 @@
   "as_of_api": "0.18.50",
   "baseline_commit": "af8c0241edb06d4f742197dc443e155dc19924f2",
   "maintenance_checkpoint": {
-    "package": "b2-authorization-browser-design",
-    "branch": "docs/b2-authorization-browser-design",
-    "state": "approved_publication_pending_exact_head_CI",
+    "package": "b2-component-browser-candidate",
+    "branch": "test/b2-component-browser",
+    "state": "local_implementation_pending_browser_execution_and_review",
     "owner": "current_ChatGPT_Work_cloud_task",
     "owner_authorization_url": "https://github.com/Wang106/SoftwareLifeCycle/pull/172#issuecomment-6550487902",
     "authorization": "ordinary_project_work_default_approved_new_fees_require_approval_continue_each_bounded_package",
@@ -14,18 +14,19 @@
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "selected_scope": "design_only_identity_permission_evidence_matrix_no_runtime_changes",
-    "evidence": "docs/browser-authorization-b2-design.md",
-    "current_pr_ci": "pending_after_authorized_publication",
+    "selected_scope": "isolated_real_component_bundle_five_synthetic_browser_cases_separate_report_no_authentication",
+    "evidence": "docs/browser-authorization-component.md",
+    "current_pr_ci": "not_published",
     "current_main_ci": "not_merged",
     "current_deployment": "not_merged",
-    "next_package": "verify_authorized_draft_PR_exact_head_CI_keep_draft_no_merge_no_implementation",
+    "next_package": "finish_local_review_then_scope_verified_runner_execution_upload_requires_explicit_approval",
     "limitations": [
-      "B2 design only; no new browser journey executed or accepted",
-      "No production identity bypass, real account provisioning, TLS trust change or business writes",
-      "Component fixtures cannot prove Next authentication, FastAPI authorization or real provider acceptance",
-      "Actions deployment and continuation skipped; online database and business health unverified",
-      "Six-file publication and draft PR authorized; existing CI only; no merge, implementation or security changes"
+      "Five new component browser journeys have not executed; verified native Chrome candidate absent locally",
+      "Existing CI still executes only eight Next journeys; new browser suite needs separately scoped integration or verified runner execution",
+      "Synthetic component identities do not prove Next authentication or FastAPI authorization",
+      "No production identity, credentials, security, API writes, dependency or CI changes",
+      "Local-only changes; uploading requires explicit user approval",
+      "Business acceptance and browser stage remain unchanged"
     ],
     "previous_checkpoint_history": {
       "package": "project-catalog-browser-recovery",
@@ -658,70 +659,55 @@
       "verified_pr_ci": "failure"
     },
     "baseline_main_evidence": {
-      "commit": "e9710f6e9a1b83b4a820367ff230f58826ce1be9",
-      "merged_pr": 173,
-      "ci_run": "41575618360",
+      "commit": "c5e38dc20b8ba7f44c1fd7b1481932aef832300e",
+      "merged_pr": 174,
+      "ci_run": "41631030015",
       "ci_result": "completed_success",
       "jobs": {
-        "browser": "125718282103",
-        "frontend": "125718282432",
-        "backend": "125718282494",
-        "aggregate": "125722271086"
+        "browser": "125900337447",
+        "frontend": "125900337559",
+        "backend": "125900337241",
+        "aggregate": "125907035258"
       },
-      "aggregate_completed_at": "2026-11-03T04:13:44Z",
       "frontend_tests_passed": 2069,
-      "frontend_failed_cancelled_skipped": 0,
       "backend_tests_passed": 2846,
       "backend_subtests_passed": 26,
       "postgresql_cases_passed": 296,
       "postgresql_skipped": 0,
-      "browser_guard_contracts_passed": 84,
       "browser_journeys_passed": 8,
       "browser_failed_skipped_retried": 0,
-      "migration": "single_head_0029_changeover_batch_history_SQL_and_PostgreSQL_roundtrip_passed",
-      "provider_check": "125719006977",
-      "provider_build": "832b3f44-40c4-407c-953e-b9b17d771496",
-      "provider_version": "c4f7d68d-de22-4aa5-9975-8948c6bd58f4",
-      "provider_result": "success_production_build_and_provider_reported_version_only",
-      "actions_deploy": {
-        "check": "125722323193",
-        "result": "skipped"
-      },
-      "actions_continuation": {
-        "check": "125722323992",
-        "result": "skipped"
-      },
-      "online_database_and_business_health": "not_accepted"
+      "provider_check": "125901589038",
+      "provider_build": "6e196f9f-972e-4cb5-9d8c-9f6a8238c5ca",
+      "provider_version": "b0c3c9c7-e34c-4c6c-9689-a69a357e9a6b",
+      "provider_result": "success_build_and_version_not_business_health",
+      "actions_deploy": "skipped",
+      "actions_continuation": "skipped"
     },
     "previous_pr_evidence": {
-      "pr": 173,
-      "head": "f0c2bb2976e7e2910bf11cda72d5e489345207e7",
-      "tested_merge_commit": "9cfb1b5c4584b140f1c6c516f9b5894663fe307e",
-      "ci_run": "41470124325",
+      "pr": 174,
+      "head": "7585a25df6d4314f67cf50958134ffcd6c512629",
+      "ci_run": "41628580938",
       "result": "completed_success",
-      "jobs": {
-        "browser": "125361180139",
-        "frontend": "125361180474",
-        "backend": "125361180525",
-        "aggregate": "125368244732"
-      },
-      "frontend_tests_passed": 2069,
-      "browser_journeys_passed": 8,
       "state": "merged_closed"
     },
     "local_validation": {
-      "scope": "B2_design_only_prepublication_worktree",
+      "scope": "B2_component_browser_local_candidate",
+      "harness_contracts_passed": 5,
+      "report_contracts_passed": 24,
+      "focused_existing_approval_and_report_tests_passed": 123,
       "browser_guard_contracts_passed": 84,
-      "automation_contracts_passed": 52,
-      "progress_ledger_check": "passed",
-      "document_links_and_test_symbols": "passed",
-      "documentation_only_scope_check": "passed",
-      "diff_check": "passed",
-      "acceptance_milestones": "unchanged",
-      "full_frontend_backend_pg_build": "not_run_for_design",
-      "B2_browser_execution": "not_implemented_not_run",
-      "remote_ci": "pending_after_authorized_publication",
-      "independent_review": "initial_two_documentation_findings_corrected_pending_rereview"
+      "typescript": "passed",
+      "component_discovery": "five_cases_one_file_not_execution",
+      "full_frontend": {
+        "passed": 2098,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "seconds": 65.63
+      },
+      "B2_browser_execution": "not_run_verified_Chrome_candidate_absent",
+      "independent_review": "initial_field_and_localization_assertion_findings_fixed_pending_final_review",
+      "remote_ci": "not_published_not_run"
     }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
