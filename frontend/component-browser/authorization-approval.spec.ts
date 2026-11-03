@@ -106,7 +106,7 @@ async function open(page: Page, path='/component/approval') {
   await expect(page.getByRole('heading',{name:'Review production authorization approval',exact:true})).toBeVisible();
   expect(reads).toEqual([]);
 }
-async function prepare(page: Page) {
+async function prepare(page: Page, submissionEnabled = true) {
   await page.getByRole('button',{name:'Load private approval context',exact:true}).click();
   const scope=page.getByRole('heading',{name:'Private approval context',exact:true}).locator('..');
   await exactFields(scope,facts,scopeLabels);
@@ -118,7 +118,14 @@ async function prepare(page: Page) {
   expect(command.context).toEqual(contextValue); expect(command.body.reason).toBe(reason);
   expect(command.body.request_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   await expect(page.getByRole('button',{name:'Send confirmed authorization approval',exact:true})).toHaveCount(0);
-  await page.getByRole('checkbox').check();
+  // Confirmation unmounts this one-shot checkbox; check() incorrectly waits
+  // for the removed input to remain checked after the real click succeeds.
+  await page.getByRole('checkbox').click();
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
+  const send = page.getByRole('button',{name:'Send confirmed authorization approval',exact:true});
+  await expect(send).toBeVisible();
+  if (submissionEnabled) await expect(send).toBeEnabled();
+  else await expect(send).toBeDisabled();
   return command;
 }
 test('synthetic creator denial never exposes an approval command or sends approval', async ({page}) => {
@@ -175,7 +182,7 @@ test('disabled and readonly capabilities never send approval while explicit reco
   await open(page,'/component/disabled');
   await expect(page.getByRole('button',{name:'Load private approval context',exact:true})).toBeDisabled();
   expect(reads).toEqual([]);
-  await open(page,'/component/readonly'); await prepare(page);
+  await open(page,'/component/readonly'); await prepare(page, false);
   await expect(page.getByRole('button',{name:'Send confirmed authorization approval',exact:true})).toBeDisabled();
   expect(reads.map(r=>r.path)).toEqual([api[0]]);
   // A separate approval instance observes an unknown synthetic outcome; recovery is explicit.
