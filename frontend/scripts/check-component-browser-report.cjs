@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const REQUIRED_TITLES = Object.freeze(["synthetic creator denial never exposes an approval command or sends approval", "private synthetic scope is explicit and confirmation freezes the exact command", "duplicate clicks submit once and a valid synthetic reply confirms without automatic recovery", "synthetic historical receipt is bilingual and raw reason is never HTML", "disabled and readonly capabilities never send approval while explicit recovery only queries"]);
+const REQUIRED_TITLES = Object.freeze(["synthetic creator denial never exposes an approval command or sends approval", "private synthetic scope is explicit and confirmation freezes the exact command", "duplicate clicks submit once and a valid synthetic reply confirms without automatic recovery", "synthetic historical receipt is bilingual and raw reason is never HTML", "disabled and readonly capabilities never send approval while explicit recovery only queries", "unknown approval survives same-origin reload only through manual audit-only import and exact query", "fresh manual recovery rejects a foreign-origin envelope without any API request", "fresh manual recovery rejects a valid wrong-target envelope without any API request"]);
 const REQUIRED_FILES = Object.freeze(Object.fromEntries(REQUIRED_TITLES.map(title => [title, "authorization-approval.spec.ts"])));
 const MAX_REPORT_BYTES = 5 * 1024 * 1024;
 const FAILURE = 'Component browser report is missing, invalid or incomplete.';
@@ -12,7 +12,7 @@ function validateBrowserReport(report) {
   requireValue(object(report) && object(report.config) && object(report.stats));
   requireValue(Array.isArray(report.errors) && report.errors.length === 0);
   const { stats, config } = report;
-  requireValue(stats.expected === 5 && stats.unexpected === 0 && stats.flaky === 0 && stats.skipped === 0);
+  requireValue(stats.expected === REQUIRED_TITLES.length && stats.unexpected === 0 && stats.flaky === 0 && stats.skipped === 0);
   requireValue(timestamp(stats.startTime) && Number.isFinite(stats.duration) && stats.duration > 0);
   requireValue(config.forbidOnly === true && Array.isArray(config.projects) && config.projects.length === 1);
   requireValue(config.shard == null && (!Array.isArray(config.argv) || !config.argv.includes('--list')));
@@ -46,7 +46,7 @@ function validateBrowserReport(report) {
   }
   suites(report.suites, 0);
   requireValue(found.size === REQUIRED_TITLES.length);
-  return { tests: 5, passed: 5, skipped: 0, retried: 0, project: 'chromium' };
+  return { tests: REQUIRED_TITLES.length, passed: REQUIRED_TITLES.length, skipped: 0, retried: 0, project: 'chromium' };
 }
 function readBrowserReport(filename) {
   const fd = fs.openSync(filename, 'r');
@@ -67,7 +67,7 @@ if (require.main === module) {
   try {
     requireValue(process.argv.length <= 3);
     readBrowserReport(process.argv[2] || path.resolve(__dirname, '../component-browser-results/results.json'));
-    console.log('Component browser evidence: 5 synthetic journeys passed; zero skips, failures or retries. Not authentication acceptance.');
+    console.log(`Component browser evidence: ${REQUIRED_TITLES.length} synthetic journeys passed; zero skips, failures or retries. Not authentication acceptance.`);
   } catch {
     console.error(FAILURE);
     process.exitCode = 1;

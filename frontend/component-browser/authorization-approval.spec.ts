@@ -1,4 +1,6 @@
 import {test, expect, type Page, type Route, type Locator} from '@playwright/test';
+import {exportAuthorizationApprovalRecovery, parseAuthorizationApprovalRecovery} from '../lib/authorization-approval-recovery';
+import {confirmAuthorizationApproval} from '../lib/authorization-approval-transport';
 const {buildHarness, startHarness} = require('./harness.cjs');
 const {createHash} = require('node:crypto');
 const target = {authorization_no: 'AUTH-原始'};
@@ -196,4 +198,101 @@ test('disabled and readonly capabilities never send approval while explicit reco
   await expect(query).toHaveCount(0);
   expect(reads.map(r=>r.path)).toEqual([api[0],api[1],api[2]]);
   expect(reads[2].body).toBe(reads[1].body);
+});
+
+
+test('unknown approval survives same-origin reload only through manual audit-only import and exact query', async ({page}) => {
+  mode='unknown'; await open(page); const command=await prepare(page); release?.();
+  await page.getByRole('button',{name:'Send confirmed authorization approval',exact:true}).click();
+  const result=page.getByRole('heading',{name:'Authorization approval result',exact:true}).locator('..');
+  await expect(result).toContainText('Operation phase: unknown');
+  await expect(result).toContainText('outcome_unknown');
+  expect(reads.map(r=>r.path)).toEqual([api[0],api[1]]);
+  const originalBytes=reads[1].body;
+  expect(originalBytes).toBe(JSON.stringify(command));
+  const review=page.getByRole('heading',{name:'Review exact authorization approval',exact:true}).locator('..');
+  await expect(review.locator('pre code')).toHaveCount(2);
+  // Read the rendered export, never clipboard APIs or a reconstructed envelope.
+  const recoveryText=await review.locator('pre code').nth(1).innerText();
+  expect(JSON.parse(recoveryText)).toEqual({format:'slc-authorization-approval-recovery',version:1,origin:server.origin,...command});
+  expect(command.target).toEqual(target);
+  expect(command.context).toEqual(contextValue);
+  expect(command.body.expected_context_digest).toBe(contextValue.context_digest);
+  expect(command.body.reason).toBe(reason);
+  const beforeReload=reads.slice(), originalURL=page.url();
+  // The actual unknown-state beforeunload warning must be accepted to reload.
+  page.once('dialog', async dialog => { expect(dialog.type()).toBe('beforeunload'); await dialog.accept(); });
+  await page.reload();
+  await expect(page).toHaveURL(originalURL);
+  await expect(page.getByRole('heading',{name:'Review production authorization approval',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Restore an original approval audit query',exact:true})).toBeVisible();
+  await expect(review).toHaveCount(0); await expect(result).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'Private approval context',exact:true})).toHaveCount(0);
+  await expect(page.locator('textarea[name="reason"]')).toHaveCount(0);
+  await expect(page.locator('textarea[name="importText"]')).toHaveValue('');
+  await expect(page.locator('pre code')).toHaveCount(0);
+  await page.waitForTimeout(200);
+  expect(reads).toEqual(beforeReload);
+  await page.locator('textarea[name="importText"]').fill(recoveryText);
+  expect(reads).toEqual(beforeReload);
+  await page.getByRole('button',{name:'Import approval recovery without sending',exact:true}).click();
+  const imported=page.getByRole('heading',{name:'Imported approval context — unverified evidence',exact:true}).locator('..');
+  await exactFields(imported,facts,scopeLabels);
+  await expect(page.getByText('Imported approval recovery is audit-only. Nothing was sent; explicitly query your original audit after signing in.',{exact:true})).toBeVisible();
+  await expect(result).toContainText('Operation phase: unknown');
+  expect(JSON.parse(await review.locator('pre code').first().innerText())).toEqual(command);
+  await expect(review.locator('pre code').nth(1)).toHaveText(recoveryText);
+  for(const name of ['Send confirmed authorization approval','Retry original authorization approval','Load private approval context','Prepare authorization approval']) {
+    await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  }
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
+  await expect(page.locator('textarea[name="reason"]')).toHaveCount(0);
+  await page.waitForTimeout(200);
+  expect(reads).toEqual(beforeReload);
+  await page.getByRole('button',{name:'Query original audit without resubmitting',exact:true}).click();
+  await exactFields(result,receipt(command),receiptLabels);
+  await expect(result).toContainText('Operation phase: confirmed');
+  await expect(result.getByText(historicalEnglish,{exact:true})).toBeVisible();
+  await expect(result.locator('dl b')).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Query original audit without resubmitting',exact:true})).toHaveCount(0);
+  expect(JSON.parse(await review.locator('pre code').first().innerText())).toEqual(command);
+  await page.waitForTimeout(200);
+  expect(reads).toEqual([...beforeReload,{path:api[2],method:'POST',body:originalBytes}]);
+});
+
+function recoveryFixture(origin: string, authorizationNo=target.authorization_no) {
+  const fixtureFacts={...facts,authorization_no:authorizationNo};
+  const digest=createHash('sha256').update(JSON.stringify({context:Object.fromEntries(
+    Object.entries(fixtureFacts).sort(([a],[b])=>a<b?-1:a>b?1:0)),version:1})).digest('hex');
+  const command={operation:'authorization-approval' as const,target:{authorization_no:authorizationNo},
+    context:{version:1 as const,context:fixtureFacts,context_digest:digest},
+    body:{request_id:id('d'),expected_context_digest:digest,reason}};
+  const text=exportAuthorizationApprovalRecovery(confirmAuthorizationApproval(command,true),origin);
+  // The wrong-target negative is otherwise valid, not merely a malformed command.
+  expect(parseAuthorizationApprovalRecovery(text,origin)).toEqual(command);
+  return text;
+}
+async function rejectRecovery(page: Page, text: string) {
+  await open(page);
+  await page.locator('textarea[name="importText"]').fill(text);
+  await page.getByRole('button',{name:'Import approval recovery without sending',exact:true}).click();
+  await expect(page.getByRole('status')).toHaveText('Recovery text is invalid or does not match this site and authorization. Nothing was sent.');
+  await expect(page.locator('textarea[name="importText"]')).toHaveValue(text);
+  for(const name of ['Review exact authorization approval','Authorization approval result','Imported approval context — unverified evidence']) {
+    await expect(page.getByRole('heading',{name,exact:true})).toHaveCount(0);
+  }
+  for(const name of ['Send confirmed authorization approval','Retry original authorization approval','Query original audit without resubmitting']) {
+    await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  }
+  await expect(page).toHaveURL(server.origin+'/component/approval');
+  await page.waitForTimeout(200);
+  expect(reads).toEqual([]);
+}
+test('fresh manual recovery rejects a foreign-origin envelope without any API request', async ({page}) => {
+  const envelope=JSON.parse(recoveryFixture(server.origin));
+  envelope.origin='https://foreign.example.test'; // Pasted text only; never navigate to this origin.
+  await rejectRecovery(page,JSON.stringify(envelope,null,2));
+});
+test('fresh manual recovery rejects a valid wrong-target envelope without any API request', async ({page}) => {
+  await rejectRecovery(page,recoveryFixture(server.origin,'AUTH-OTHER'));
 });

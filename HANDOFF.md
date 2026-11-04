@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-05（UTC+8）B3隔离恢复测试
+
+PR176已合并，基线main `69d63e4987994981b2cad3b7daa973008ecd4e9e` 的[CI41927836403](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41927836403)全部成功：2098前端、2846后端＋26子测试、296 PostgreSQL无跳过、126守卫、0029迁移往返、原8条Next＋5条组件浏览器实际通过。Chrome157.0.8103.39、sandbox=true、零重试。Cloudflare生产build `0e22a61c-00b5-4540-87bb-89882eb9637d` / version `14207e78-747c-4004-995f-31275c20b104`成功；Actions部署41929901553为skipped，不证明线上数据库/业务健康。
+
+当前分支 `test/b3-manual-recovery` 仅新增三条隔离组件恢复场景及严格报告契约：同源刷新后手动审计导入/显式回执查询、错误来源拒绝、错误目标拒绝；保留原8＋5场景。生产代码、身份/业务写入、公司服务器部署、CI安全门禁均不改变。[本包范围与验收](docs/browser-authorization-b3-recovery-tests.md)记录当前本地验证；新场景浏览器尚未执行、尚未发布，不能借用基线CI冒充本包结果。
+
+业务36/44=82%、增量0，七模块100/100演示/100演示/100/89/60/17及七计划100/100/20/33/40/40/0不变；浏览器阶段保守维持1/4。下方PR176发布前、旧Chrome固定值和“B3仅设计”均为历史，本条及新测试文档是当前工作入口，不恢复历史操作授权。
+
+---
+
 ## 当前检查点 — 2026-11-04 PR175 已合并，B3恢复设计
 
 PR175已合并至 main `43cbcc18d8020d892853d4fae30166fe274b7fef`。[main CI41655534460](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41655534460)全部成功：2098前端、2846后端＋26子测试、296 PostgreSQL无跳过、86守卫、0029迁移往返；原8条Next＋新5条组件浏览器实际通过，两份严格报告均通过，sandbox=true、零重试。Cloudflare生产build `9ecdcef7-f2a0-4715-b715-770cc7ddb4f4` / version `9697d179-ead4-476e-a5e7-360d8983e6c3`成功。Actions部署/continuation仍skipped，不代表线上数据库或业务健康验收。
