@@ -16,12 +16,12 @@ import subprocess
 import sys
 import urllib.request
 
-VERSION = '156.0.8078.80'
+VERSION = '157.0.8103.39'
 URL = ('https://dl.google.com/chrome/mac/stable/'
        'accept_tos%3Dhttps%253A%252F%252Fwww.google.com%252Fintl%252Fen_ph%252Fchrome%252Fterms%252F'
        '%26_and_accept_tos%3Dhttps%253A%252F%252Fpolicies.google.com%252Fterms/googlechrome.pkg')
-SHA256 = 'cdbcf73ec1bea87cd30af84ac98456781f78fafcafdfa70aafffa0135713b00a'
-PACKAGE_BYTES = 268605843
+SHA256 = '632913b34d7806ff0900632dba70b70d9852c82fee2a76973d36ca4d838d0169'
+PACKAGE_BYTES = 272427816
 BUNDLE_PARTS = ('expanded', 'GoogleChrome.pkg', 'Payload', 'Google Chrome.app')
 IDENTIFIER = 'com.google.Chrome'
 REQUIREMENT = ('anchor apple generic and identifier "com.google.Chrome" '
@@ -67,6 +67,11 @@ def verify_staging(staging):
 
 
 def verify_pin(size, digest):
+    if size != PACKAGE_BYTES or size > MAX_DOWNLOAD or digest != SHA256:
+        # Only locally computed counts/hashes, never response bodies or headers.
+        # Diagnostic evidence is not trust: the original checks still fail closed.
+        print('PKG pin mismatch: actual bytes:', size, '; expected bytes:', PACKAGE_BYTES,
+              '; actual SHA256:', digest, '; expected SHA256:', SHA256, flush=True)
     require(size == PACKAGE_BYTES and size <= MAX_DOWNLOAD, 'Pinned PKG byte count differs')
     require(digest == SHA256, 'Pinned PKG SHA256 differs')
 

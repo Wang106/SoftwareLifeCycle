@@ -1,0 +1,60 @@
+name: Static PKG candidate inspection (not acceptance)
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches: [main]
+    paths:
+      - '.github/workflows/browser-pkg-inspection.yml'
+      - 'scripts/ci/inspect_pkg_candidate.py'
+      - 'scripts/ci/validate_pkg_inspection_event.py'
+      - 'scripts/ci/tests/test_inspect_pkg_candidate.py'
+      - 'scripts/ci/tests/test_validate_pkg_inspection_event.py'
+      - 'docs/browser-pkg-static-inspection.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: static-pkg-inspection-pr176
+  cancel-in-progress: false
+
+jobs:
+  inspection:
+    name: Static package evidence only; never browser acceptance
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'synchronize' &&
+      github.repository == 'Wang106/SoftwareLifeCycle' &&
+      github.event.number == 176 &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.pull_request.head.ref == 'docs/b2-evidence-b3-recovery' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.before == 'c8f3deacfd4ab0d453fbed29f8d8cbe0f32dae94' &&
+      github.run_attempt == 1
+    runs-on: macos-26
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate exact head and bounded single-parent transition
+        id: scope
+        shell: bash
+        run: python3 -I scripts/ci/validate_pkg_inspection_event.py
+      - name: Inspect static official PKG without running candidate content
+        shell: bash
+        run: |
+          mkdir -p pkg-inspection-evidence
+          python3 -I scripts/ci/inspect_pkg_candidate.py | tee pkg-inspection-evidence/static-observation.txt
+      - name: Save static text evidence, not candidate binaries
+        if: ${{ !cancelled() && steps.scope.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pkg-static-inspection-not-acceptance
+          path: pkg-inspection-evidence/static-observation.txt
+          if-no-files-found: error
+          retention-days: 14

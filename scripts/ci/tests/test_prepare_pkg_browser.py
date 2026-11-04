@@ -96,10 +96,10 @@ class PackageContract(unittest.TestCase):
         return opener
 
     def test_fixed_source_pin_and_bundle_identity(self):
-        self.assertEqual(guard.VERSION, '156.0.8078.80')
+        self.assertEqual(guard.VERSION, '157.0.8103.39')
         self.assertEqual(guard.SHA256,
-                         'cdbcf73ec1bea87cd30af84ac98456781f78fafcafdfa70aafffa0135713b00a')
-        self.assertEqual(guard.PACKAGE_BYTES, 268605843)
+                         '632913b34d7806ff0900632dba70b70d9852c82fee2a76973d36ca4d838d0169')
+        self.assertEqual(guard.PACKAGE_BYTES, 272427816)
         self.assertEqual(guard.IDENTIFIER, 'com.google.Chrome')
         self.assertEqual(guard.BUNDLE_PARTS,
                          ('expanded', 'GoogleChrome.pkg', 'Payload', 'Google Chrome.app'))
@@ -225,6 +225,49 @@ class PackageContract(unittest.TestCase):
             self.package.write_bytes(SYNTHETIC[:-1])
             with self.assertRaisesRegex(RuntimeError, 'byte count'):
                 guard.verify_package_bytes(self.package)
+
+    def test_pin_mismatch_reports_only_bounded_counts_and_digests_then_fails(self):
+        expected = hashlib.sha256(SYNTHETIC).hexdigest()
+        for data, reason in ((b'', 'byte count'), (SYNTHETIC[:-1], 'byte count'),
+                             (b'X' * len(SYNTHETIC), 'SHA256')):
+            with self.subTest(reason=reason, size=len(data)):
+                self.package.unlink(missing_ok=True)
+                stream = io.StringIO()
+                opener = self.response([data, b''])
+                with self.pin_fixture(), redirect_stdout(stream), patch.object(
+                        guard.urllib.request, 'build_opener', return_value=opener):
+                    with self.assertRaisesRegex(RuntimeError, 'Pinned PKG ' + reason + ' differs'):
+                        guard.download(self.package)
+                self.assertEqual(stream.getvalue(),
+                                 'Official PKG download: ' + guard.URL + '\n'
+                                 'PKG pin mismatch: actual bytes: ' + str(len(data)) +
+                                 ' ; expected bytes: ' + str(len(SYNTHETIC)) +
+                                 ' ; actual SHA256: ' + hashlib.sha256(data).hexdigest() +
+                                 ' ; expected SHA256: ' + expected + '\n')
+                opener.open.assert_called_once_with(guard.URL, timeout=120)
+
+    def test_matching_pin_emits_no_failure_diagnostic(self):
+        stream = io.StringIO()
+        with self.pin_fixture(), redirect_stdout(stream):
+            guard.verify_pin(len(SYNTHETIC), hashlib.sha256(SYNTHETIC).hexdigest())
+        self.assertEqual(stream.getvalue(), '')
+
+    def test_download_pin_failure_never_reaches_native_trust_or_execution(self):
+        for data in (SYNTHETIC[:-1], b'X' * len(SYNTHETIC)):
+            with self.subTest(size=len(data)), tempfile.TemporaryDirectory(dir=self.root) as root:
+                package = Path(root) / 'slc-pkg-chrome/googlechrome.pkg'
+                opener = self.response([data, b''])
+                with patch.dict(os.environ, {'RUNNER_TEMP': root}), self.pin_fixture(), patch.object(
+                        guard, 'download_once', side_effect=lambda: guard.download(package)), patch.object(
+                        guard.urllib.request, 'build_opener', return_value=opener), patch.object(
+                        guard, 'verify_package_signature') as signature, patch.object(
+                        guard.subprocess, 'run') as expand, patch.object(guard, 'verify_bundle') as bundle:
+                    with self.assertRaisesRegex(RuntimeError, 'Pinned PKG'):
+                        guard.prepare()
+                    signature.assert_not_called()
+                    expand.assert_not_called()
+                    bundle.assert_not_called()
+                    opener.open.assert_called_once_with(guard.URL, timeout=120)
 
     def test_saved_package_rejects_symlink_and_unsafe_mode(self):
         self.package.write_bytes(SYNTHETIC)
