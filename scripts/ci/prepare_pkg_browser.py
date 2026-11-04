@@ -67,6 +67,11 @@ def verify_staging(staging):
 
 
 def verify_pin(size, digest):
+    if size != PACKAGE_BYTES or size > MAX_DOWNLOAD or digest != SHA256:
+        # Only locally computed counts/hashes, never response bodies or headers.
+        # Diagnostic evidence is not trust: the original checks still fail closed.
+        print('PKG pin mismatch: actual bytes:', size, '; expected bytes:', PACKAGE_BYTES,
+              '; actual SHA256:', digest, '; expected SHA256:', SHA256, flush=True)
     require(size == PACKAGE_BYTES and size <= MAX_DOWNLOAD, 'Pinned PKG byte count differs')
     require(digest == SHA256, 'Pinned PKG SHA256 differs')
 
