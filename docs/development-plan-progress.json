@@ -3,26 +3,26 @@
   "as_of_api": "0.18.50",
   "baseline_commit": "af8c0241edb06d4f742197dc443e155dc19924f2",
   "maintenance_checkpoint": {
-    "package": "b3-evidence-b4-permission-design",
-    "branch": "docs/b3-evidence-b4-boundaries",
-    "state": "local_design_reviewed_pending_exact_head_ci",
+    "package": "b4-permission-error-component-tests",
+    "branch": "test/b4-permission-rejections",
+    "state": "local_validation_and_independent_review_passed_browser_execution_pending",
     "owner": "current_ChatGPT_Work_cloud_task",
     "business_acceptance_increment": 0,
     "browser_stage_closed_packages": 1,
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "selected_scope": "reconcile_B3_subset_evidence_and_bound_B4_permission_denial_design",
-    "evidence": "docs/browser-authorization-b4-permission-design.md",
-    "current_pr_ci": "not_published_document_package",
-    "current_main_ci": "baseline_818c25b_success_not_this_package",
-    "current_deployment": "baseline_provider_success_not_this_package",
-    "next_package": "implement_reviewed_B4_fixture_denial_subset",
+    "selected_scope": "six_synthetic_B4_error_cases_preserve_original_eight_component_and_eight_Next_journeys",
+    "evidence": "docs/browser-authorization-b4-permission-tests.md",
+    "current_pr_ci": "not_uploaded_no_new_CI",
+    "current_main_ci": "not_merged",
+    "current_deployment": "not_deployed",
+    "next_package": "obtain_upload_authorization_then_verify_exact_head_full_CI_and_eight_plus_fourteen_strict_browser_reports",
     "limitations": [
-      "B3 bounded recovery subset passed actual component browser CI; broader interruption matrices remain separate",
-      "B4 design only; no new B4 browser scenarios implemented or executed",
-      "Real identities, FastAPI authorization chain and live database/business health remain unaccepted",
-      "Business36/44 and browser-stage1/4 remain unchanged; no server deployment or paid resources"
+      "Six new B4-A browser cases implemented but actual execution remains pending; discovery is not execution",
+      "Linux local workspace lacks the fixed signed macOS Chrome candidate; no browser fallback or security relaxation",
+      "Synthetic component responses do not prove real sessions identities FastAPI authorization or live business health",
+      "Business36/44 browser-stage1/4 and all module/plan percentages unchanged; no server deployment or paid resources"
     ],
     "baseline_main_evidence": {
       "commit": "818c25bf23a25852ba93af7428cfb3b93583cea2",
@@ -65,19 +65,15 @@
       "state": "merged_closed"
     },
     "local_validation": {
-      "scope": "documentation_only",
-      "targeted_existing_contracts_passed": 80,
-      "guard_contracts_passed": 126,
+      "frontend_tests_passed": 2102,
+      "targeted_contracts_passed": 81,
+      "browser_guard_contracts_passed": 126,
       "automation_contracts_passed": 52,
-      "progress_check": "passed",
-      "checkpoint_history": "preserved_exactly",
-      "business_groups": "unchanged",
-      "relative_links": "passed",
-      "diff_check": "passed",
-      "independent_review": "no_blocking_findings",
-      "new_browser_execution": "not_run_design_only",
-      "full_frontend_backend_build": "not_rerun_for_documentation_package",
-      "independent_targeted_contracts_passed": 80
+      "typecheck": "passed",
+      "component_discovered": 14,
+      "next_discovered": 8,
+      "actual_browser_execution": "not_run_fixed_macOS_candidate_absent",
+      "independent_review": "no_actionable_findings_79_report_contracts_typecheck_discovery_passed"
     },
     "previous_checkpoint_history": {
       "package": "b3-isolated-manual-audit-recovery",
@@ -946,7 +942,8 @@
           "full_frontend_backend_build": "not_rerun_for_documentation_package"
         }
       }
-    }
+    },
+    "implementation_baseline": "b25974543ad44bc46613a7b3582e5dabf4fd5bfe"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
