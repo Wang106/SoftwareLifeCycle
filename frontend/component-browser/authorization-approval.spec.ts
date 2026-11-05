@@ -46,6 +46,8 @@ type Seen = {path:string;method:string;body:string};
 let built: {bundlePath:string;dispose():Promise<void>};
 let server: {origin:string;violations:unknown[];close():Promise<void>};
 let reads: Seen[], blocked: string[], errors: string[], release: (() => void) | undefined;
+type ErrorResponse = {status:number;error:string};
+let responses: Partial<Record<'context'|'approval'|'receipt',ErrorResponse>>;
 let held: Promise<void>, mode: 'allowed'|'creator-denied'|'unknown';
 function receipt(command: any) {
   return {authorization_id:facts.authorization_id,authorization_no:target.authorization_no,
@@ -56,7 +58,7 @@ function receipt(command: any) {
 test.beforeAll(async () => { built = await buildHarness(); });
 test.afterAll(async () => { if (built) await built.dispose(); });
 test.beforeEach(async ({context, page}) => {
-  server = await startHarness({bundlePath:built.bundlePath}); reads=[]; blocked=[]; errors=[]; mode='allowed';
+  server = await startHarness({bundlePath:built.bundlePath}); reads=[]; blocked=[]; errors=[]; mode='allowed'; responses={};
   held = new Promise(resolve => { release=resolve; });
   page.on('pageerror', error => errors.push(error.message));
   await context.routeWebSocket('**/*', socket => { blocked.push('websocket'); socket.close(); });
@@ -78,16 +80,20 @@ test.beforeEach(async ({context, page}) => {
     let value; try { value=JSON.parse(body); } catch { blocked.push('invalid-json'); await route.abort('blockedbyclient');return; }
     if(path===api[0]) {
       expect(value).toEqual(target);
-      await route.fulfill({status:mode==='creator-denied'?403:200,contentType:'application/json',
-        body:JSON.stringify(mode==='creator-denied'?{error:'submission_forbidden'}:contextValue)}); return;
+      const response=responses.context;
+      await route.fulfill({status:response?.status??(mode==='creator-denied'?403:200),contentType:'application/json',
+        body:JSON.stringify(response?{error:response.error}:mode==='creator-denied'?{error:'submission_forbidden'}:contextValue)}); return;
     }
     expect(value.target).toEqual(target); expect(value.context).toEqual(contextValue);
     if(path===api[1]) {
       await held;
-      await route.fulfill({status:mode==='unknown'?502:200,contentType:'application/json',
-        body:JSON.stringify(mode==='unknown'?{error:'outcome_unknown'}:receipt(value))}); return;
+      const response=responses.approval;
+      await route.fulfill({status:response?.status??(mode==='unknown'?502:200),contentType:'application/json',
+        body:JSON.stringify(response?{error:response.error}:mode==='unknown'?{error:'outcome_unknown'}:receipt(value))}); return;
     }
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(receipt(value))});
+    const response=responses.receipt;
+    await route.fulfill({status:response?.status??200,contentType:'application/json',
+      body:JSON.stringify(response?{error:response.error}:receipt(value))});
   });
 });
 test.afterEach(async ({browser}, info) => {
@@ -295,4 +301,94 @@ test('fresh manual recovery rejects a foreign-origin envelope without any API re
 });
 test('fresh manual recovery rejects a valid wrong-target envelope without any API request', async ({page}) => {
   await rejectRecovery(page,recoveryFixture(server.origin,'AUTH-OTHER'));
+});
+
+
+for (const [title,status,error] of [
+  ['synthetic context session unavailable fails closed without approval or receipt requests',401,'session_required'],
+  ['synthetic context permission denied fails closed without approval or receipt requests',403,'submission_forbidden'],
+  ['synthetic context target unavailable fails closed without approval or receipt requests',404,'target_not_found'],
+] as const) test(title, async ({page}) => {
+  responses.context={status,error}; await open(page);
+  await page.getByRole('button',{name:'Load private approval context',exact:true}).click();
+  await expect(page.getByRole('status')).toHaveText('Private approval context could not be loaded. Nothing was sent.');
+  for (const name of ['Private approval context','Review exact authorization approval','Authorization approval result']) {
+    await expect(page.getByRole('heading',{name,exact:true})).toHaveCount(0);
+  }
+  await expect(page.locator('textarea[name="reason"]')).toHaveCount(0);
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
+  await expect(page.locator('pre code')).toHaveCount(0);
+  for (const name of ['Prepare authorization approval','Send confirmed authorization approval','Retry original authorization approval','Query original audit without resubmitting']) {
+    await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  }
+  await page.waitForTimeout(200);
+  expect(reads).toEqual([{path:api[0],method:'POST',body:JSON.stringify(target)}]);
+});
+
+async function noReceipt(page: Page, result: Locator) {
+  await expect(result.locator('dl')).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Open original approval audit',exact:true})).toHaveCount(0);
+  for (const name of ['Send confirmed authorization approval','Retry original authorization approval']) {
+    await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  }
+}
+
+test('synthetic permission loss after review rejects once and preserves the frozen command', async ({page}) => {
+  await open(page); const command=await prepare(page);
+  const review=page.getByRole('heading',{name:'Review exact authorization approval',exact:true}).locator('..');
+  const frozenText=await review.locator('pre code').first().innerText();
+  responses.approval={status:403,error:'submission_forbidden'}; release?.();
+  await page.getByRole('button',{name:'Send confirmed authorization approval',exact:true}).click();
+  const result=page.getByRole('heading',{name:'Authorization approval result',exact:true}).locator('..');
+  await expect(result).toContainText('Operation phase: rejected');
+  await expect(result.locator('code')).toHaveText('submission_forbidden');
+  await expect(result.getByText('This attempt was rejected before a confirmed result. Reload private approval context before preparing another request.',{exact:true})).toBeVisible();
+  await noReceipt(page,result);
+  for (const name of ['Query original audit without resubmitting','Reload context for a new approval']) {
+    await expect(page.getByRole('button',{name,exact:true})).toBeEnabled();
+  }
+  await expect(review.locator('pre code').first()).toHaveText(frozenText);
+  expect(JSON.parse(await review.locator('pre code').first().innerText())).toEqual(command);
+  await page.waitForTimeout(200);
+  expect(reads).toEqual([{path:api[0],method:'POST',body:JSON.stringify(target)},
+    {path:api[1],method:'POST',body:JSON.stringify(command)}]);
+});
+
+for (const [title,status,error] of [
+  ['imported synthetic recovery session unavailable preserves unknown audit-only state',401,'session_required'],
+  ['imported synthetic original receipt unavailable preserves unknown audit-only state',502,'outcome_unknown'],
+] as const) test(title, async ({page}) => {
+  responses.receipt={status,error}; await open(page);
+  const recoveryText=recoveryFixture(server.origin);
+  const command=parseAuthorizationApprovalRecovery(recoveryText,server.origin);
+  expect(command).not.toBeNull();
+  await page.locator('textarea[name="importText"]').fill(recoveryText);
+  await page.getByRole('button',{name:'Import approval recovery without sending',exact:true}).click();
+  const result=page.getByRole('heading',{name:'Authorization approval result',exact:true}).locator('..');
+  const review=page.getByRole('heading',{name:'Review exact authorization approval',exact:true}).locator('..');
+  const scope=page.getByRole('heading',{name:'Imported approval context — unverified evidence',exact:true}).locator('..');
+  await exactFields(scope,facts,scopeLabels);
+  await expect(result).toContainText('Operation phase: unknown');
+  const frozenText=await review.locator('pre code').first().innerText();
+  expect(JSON.parse(frozenText)).toEqual(command);
+  await expect(review.locator('pre code').nth(1)).toHaveText(recoveryText);
+  await page.waitForTimeout(200); expect(reads).toEqual([]);
+  const query=page.getByRole('button',{name:'Query original audit without resubmitting',exact:true});
+  await query.click();
+  await expect(result).toContainText('Operation phase: unknown');
+  await expect(result.locator('code')).toHaveText(error);
+  await expect(result.getByText('The original outcome is unknown. Keep this request and query its original audit; do not prepare a replacement.',{exact:true})).toBeVisible();
+  await noReceipt(page,result);
+  for (const name of ['Load private approval context','Prepare authorization approval','Reload context for a new approval']) {
+    await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  }
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
+  await expect(page.locator('textarea[name="reason"]')).toHaveCount(0);
+  await expect(query).toBeEnabled();
+  await exactFields(scope,facts,scopeLabels);
+  await expect(review.locator('pre code').first()).toHaveText(frozenText);
+  expect(JSON.parse(await review.locator('pre code').first().innerText())).toEqual(command);
+  await expect(review.locator('pre code').nth(1)).toHaveText(recoveryText);
+  await page.waitForTimeout(200);
+  expect(reads).toEqual([{path:api[2],method:'POST',body:JSON.stringify(command)}]);
 });
