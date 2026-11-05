@@ -3,25 +3,25 @@
   "as_of_api": "0.18.50",
   "baseline_commit": "af8c0241edb06d4f742197dc443e155dc19924f2",
   "maintenance_checkpoint": {
-    "package": "b4-evidence-layer-review",
-    "branch": "docs/b4-evidence-layer-review",
-    "state": "local_document_validation_and_independent_review_passed_not_published",
+    "package": "b3-cancel-reload-explicit-retry-tests",
+    "branch": "test/b3-cancel-retry",
+    "state": "local_validation_and_independent_review_passed_browser_pending",
     "owner": "current_ChatGPT_Work_cloud_task",
     "business_acceptance_increment": 0,
     "browser_stage_closed_packages": 1,
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "selected_scope": "reconcile_PR179_main_evidence_and_review_layer_gaps_design_two_B3_cases_only",
-    "evidence": "docs/browser-layer-evidence-review.md",
-    "current_pr_ci": "not_published_document_candidate",
-    "current_main_ci": "baseline_a460d104_success_not_this_document_candidate",
+    "selected_scope": "two_B3_component_cases_preserve_fourteen_component_and_eight_Next",
+    "evidence": "docs/browser-authorization-b3-cancel-retry.md",
+    "current_pr_ci": "not_published",
+    "current_main_ci": "baseline_07278bc_success_not_this_candidate",
     "current_deployment": "baseline_provider_success_not_live_health",
-    "next_package": "two_bounded_B3_cancel_reload_and_explicit_retry_tests_after_review",
+    "next_package": "verify_exact_head_full_CI_strict_eight_plus_sixteen_reports_then_authorized_merge_main_provider",
     "baseline_main_evidence": {
-      "commit": "a460d104880e9f0a8ba6ae99bb97d3b735537f18",
-      "merged_pr": 179,
-      "ci_run": "41998260330",
+      "commit": "07278bc53ced14950b36df9d075c361bf26f82f5",
+      "merged_pr": 180,
+      "ci_run": "42027812570",
       "ci_result": "completed_success",
       "frontend_tests_passed": 2102,
       "backend_tests_passed": 2846,
@@ -32,16 +32,16 @@
       "automation_contracts_passed": 52,
       "next_browser_journeys_passed": 8,
       "component_browser_journeys_passed": 14,
-      "provider_build": "b4796164-c4bb-45fb-b1be-f348f4597cae",
-      "provider_version": "0dfff69d-4093-4f2d-b9f9-d6f474a4d912",
-      "actions_deployment": "42000150093_skipped",
-      "continuation": "42000150130_skipped"
+      "provider_build": "cf998632-7516-4786-b772-60175c981569",
+      "provider_version": "1c6bd499-0ba4-47b1-aa8c-206886f37407",
+      "actions_deployment": "42030162686_skipped",
+      "continuation": "42030162895_skipped"
     },
     "limitations": [
-      "Component synthetic responses do not prove full Next authentication or real actors",
-      "B3/B4 bounded subsets passed; broader stages remain open",
-      "Two next B3 cases designed only; no new browser execution",
-      "No identity writes company deployment or new fees"
+      "Two new B3 cases implemented but actual16-case browser execution pending",
+      "Synthetic component flows do not prove real identities backend idempotency or company acceptance",
+      "Remaining back/forward cross-tab and full authenticated Next chain outside scope",
+      "Business and stage percentages unchanged"
     ],
     "previous_checkpoint": {
       "package": "b4-permission-error-component-tests",
@@ -987,12 +987,16 @@
       "implementation_baseline": "b25974543ad44bc46613a7b3582e5dabf4fd5bfe"
     },
     "local_validation": {
-      "targeted_contracts_passed": 81,
+      "targeted_contracts_passed": 82,
+      "typecheck": "passed",
+      "component_discovery": 16,
+      "actual_browser_execution": "not_run_fixed_signed_macOS_candidate_absent",
+      "independent_review": "code_and_documentation_passed",
+      "full_frontend": 2103,
       "browser_guard_contracts_passed": 126,
       "automation_contracts_passed": 52,
-      "progress_links_whitespace_history_business_groups": "passed",
-      "independent_review": "passed_no_blocking_findings",
-      "new_browser_execution": "not_run_document_only"
+      "next_discovery": 8,
+      "progress_links_history_business_whitespace": "passed"
     }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
