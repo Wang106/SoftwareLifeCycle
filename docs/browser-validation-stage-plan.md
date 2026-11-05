@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-05（UTC+8）B3有限恢复证据与B4设计
+
+PR177已合并至main `818c25bf23a25852ba93af7428cfb3b93583cea2`，[main CI41933756666](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41933756666)全部成功：2101前端、2846后端＋26子测试、296 PostgreSQL无跳过、126守卫、0029迁移往返；原8条Next＋8条组件浏览器实际通过，包括新3条刷新/手动恢复与错误来源/目标拒绝，严格报告零失败/跳过/重试，Chrome157.0.8103.39、sandbox=true。Cloudflare生产build `7cdbe4a1-878e-47cc-a0d0-3c1d90f405ff` / version `cc15dc98-06ca-46f7-8581-eaad34251b69`成功。Actions部署41935197399、continuation41935197373为skipped，不是线上数据库/业务健康验收。
+
+本包只收口已执行证据并设计B4有限权限拒绝测试，尚未实现或执行新B4浏览器场景。B3已验证的是同源刷新、手动审计导入、显式原请求查询及错误信封拒绝这一子集，不涵盖所有取消/后退/跨标签场景，也不证明真实身份授权。业务36/44=82%、增量0，七模块100/100演示/100演示/100/89/60/17及七计划100/100/20/33/40/40/0不变；浏览器阶段继续保守1/4，不把局部覆盖提升为整个阶段完成。
+
+当前文档包尚未发布，基线CI不能当成本包CI。公司服务器部署、真实身份/业务写入、费用与安全门禁均不改变。下方“PR177尚未发布/新3条未执行”属于先前快照，已由上述精确main证据取代。详见[B4有限设计](browser-authorization-b4-permission-design.md)。
+
+---
+
 ## 当前检查点 — 2026-11-04 PR175 已合并，B3恢复设计
 
 PR175已合并至 main `43cbcc18d8020d892853d4fae30166fe274b7fef`。[main CI41655534460](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41655534460)全部成功：2098前端、2846后端＋26子测试、296 PostgreSQL无跳过、86守卫、0029迁移往返；原8条Next＋新5条组件浏览器实际通过，两份严格报告均通过，sandbox=true、零重试。Cloudflare生产build `9ecdcef7-f2a0-4715-b715-770cc7ddb4f4` / version `9697d179-ead4-476e-a5e7-360d8983e6c3`成功。Actions部署/continuation仍skipped，不代表线上数据库或业务健康验收。
