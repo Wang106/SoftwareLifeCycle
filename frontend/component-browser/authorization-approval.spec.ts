@@ -413,9 +413,11 @@ test('cancelling an unknown approval reload retains the original document and fr
     try { expect(dialog.type()).toBe('beforeunload'); await dialog.dismiss(); resolve(); }
     catch(error) { reject(error); }
   }));
-  const [cancelled]=await Promise.all([page.reload().then(()=>false,()=>true),dismissed]);
-  expect(cancelled).toBe(true);
-  // A rejected navigation alone is insufficient: prove the old document/state survives.
+  // Schedule the native reload without waiting for navigation completion: a cancelled
+  // reload may leave Playwright's navigation promise pending until test teardown.
+  await page.evaluate(()=>{setTimeout(()=>window.location.reload(),0);});
+  await dismissed;
+  // The real dismissed warning plus retained document/state proves cancellation.
   await expect(page).toHaveURL(originalURL);
   await expect(page.locator('html')).toHaveAttribute('data-b3-document-marker',marker);
   await expect(result).toContainText('Operation phase: unknown');
