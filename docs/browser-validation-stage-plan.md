@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-05（UTC+8）PR179已合并与分层证据审查
+
+PR179已正常保护合并至main `a460d104880e9f0a8ba6ae99bb97d3b735537f18`。独立[main CI41998260330](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41998260330) attempt1四job成功：2102前端、2846后端＋26子测试、296 PG无跳过、52自动化、126守卫、0029往返及真实原8条Next＋14条组件；严格报告零失败/跳过/重试、固定签名Chrome157.0.8103.39、sandbox=true。Cloudflare生产build `b4796164-c4bb-45fb-b1be-f348f4597cae` / version `0dfff69d-4093-4f2d-b9f9-d6f474a4d912`成功；Actions部署42000150093及continuation42000150130为skipped，不证明线上数据库/业务健康。
+
+本包仅更新已完成证据、分层验收缺口和下一两条B3候选设计，不修改代码/测试/CI或身份配置；尚未上传。本轮文档自己的CI仍待后续授权发布，不借用上述main成功。下一候选是取消unknown态刷新后保留原状态，以及显式重试保持原字节/重复点击互锁；本包没有实现或执行这两条。详见[分层证据审查](browser-layer-evidence-review.md)。
+
+B2组件子集、B3有限恢复和B4-A六条错误均已有真实组件浏览器证据，但完整Next身份链、实际权限/公司验收仍缺；浏览器阶段保持1/4，有限计划8/8。业务36/44=82%、增量0，模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0不变。下方“未上传/浏览器未执行”为历史快照，现由上述精确main证据取代。
+
+---
+
 ## 当前检查点 — 2026-11-05（UTC+8）B3有限恢复证据与B4设计
 
 PR177已合并至main `818c25bf23a25852ba93af7428cfb3b93583cea2`，[main CI41933756666](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41933756666)全部成功：2101前端、2846后端＋26子测试、296 PostgreSQL无跳过、126守卫、0029迁移往返；原8条Next＋8条组件浏览器实际通过，包括新3条刷新/手动恢复与错误来源/目标拒绝，严格报告零失败/跳过/重试，Chrome157.0.8103.39、sandbox=true。Cloudflare生产build `7cdbe4a1-878e-47cc-a0d0-3c1d90f405ff` / version `cc15dc98-06ca-46f7-8581-eaad34251b69`成功。Actions部署41935197399、continuation41935197373为skipped，不是线上数据库/业务健康验收。
