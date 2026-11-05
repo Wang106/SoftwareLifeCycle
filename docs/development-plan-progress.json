@@ -5,7 +5,7 @@
   "maintenance_checkpoint": {
     "package": "b3-cancel-reload-explicit-retry-tests",
     "branch": "test/b3-cancel-retry",
-    "state": "local_validation_and_independent_review_passed_browser_pending",
+    "state": "cancelled_reload_test_wait_corrected_local_validation_new_head_CI_pending",
     "owner": "current_ChatGPT_Work_cloud_task",
     "business_acceptance_increment": 0,
     "browser_stage_closed_packages": 1,
@@ -14,7 +14,7 @@
     "previous_finite_plan_total_packages": 8,
     "selected_scope": "two_B3_component_cases_preserve_fourteen_component_and_eight_Next",
     "evidence": "docs/browser-authorization-b3-cancel-retry.md",
-    "current_pr_ci": "not_published",
+    "current_pr_ci": "PR181_initial_f99c18fd_CI42039749777_completed_failure_corrected_head_pending",
     "current_main_ci": "baseline_07278bc_success_not_this_candidate",
     "current_deployment": "baseline_provider_success_not_live_health",
     "next_package": "verify_exact_head_full_CI_strict_eight_plus_sixteen_reports_then_authorized_merge_main_provider",
@@ -997,6 +997,17 @@
       "automation_contracts_passed": 52,
       "next_discovery": 8,
       "progress_links_history_business_whitespace": "passed"
+    },
+    "first_attempt": {
+      "head": "f99c18fd1c14ffe568ab181ab28c1d8dbab24862",
+      "ci_run": "42039749777",
+      "next_browser_passed": 8,
+      "component_passed": 15,
+      "component_failed": 1,
+      "failure": "cancelled_reload_waited_for_navigation_completion_until_test_timeout",
+      "component_artifact": "13419648678",
+      "correction": "native_reload_trigger_wait_for_actual_dialog_dismissal_preserve_all_state_assertions",
+      "ci_result": "completed_failure_frontend_backend_success_browser_and_aggregate_failure"
     }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
