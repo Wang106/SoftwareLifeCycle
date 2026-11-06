@@ -1,9 +1,10 @@
 """Bounded release directories and exact legacy ASR resolution; read-only."""
 import uuid
 from typing import Annotated, Literal
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session, aliased
 from app.core.db import get_db
 from app.models.core import ApplicationReleaseDetail, Customer, Project, Release, SoftwareProduct, Supplier
@@ -43,9 +44,8 @@ def resolve_application(filters: Annotated[Resolution, Query()], db: Session = D
             'release': {'id': str(rows[0].id), 'version': rows[0].version} if len(rows) == 1 else None}
 
 
-@router.get('/{kind}')
-def release_catalog(kind: Literal['application', 'standard'], filters: Annotated[Filters, Query()],
-                    db: Session = Depends(get_db)):
+def catalog_statement(kind: Literal['application', 'standard'], filters: Filters):
+    """Shared filtering/join semantics for the directory and its child batch."""
     r, p, s = Release, SoftwareProduct, Supplier
     stmt = select(r.id, r.version, r.status, r.created_at,
         p.code.label('software_code'), p.name.label('software_name'),
@@ -69,9 +69,75 @@ def release_catalog(kind: Literal['application', 'standard'], filters: Annotated
         stmt = stmt.where(r.software_id == filters.software_id)
     if filters.q and filters.q.strip():
         stmt = stmt.where(or_(*[col.contains(filters.q.strip(), autoescape=True) for col in search]))
+    return stmt
+
+
+def catalog_page(stmt, filters):
+    return stmt.order_by(Release.created_at.desc().nulls_last(), Release.id.desc()).limit(
+        filters.limit).offset(filters.offset)
+
+
+APPLICATION_BATCH_MAX_BYTES = 2 * 1024 * 1024
+APPLICATION_PAGE_SIZE = 10
+
+
+class ApplicationBatchFilters(Filters):
+    applications_for: uuid.UUID | None = None
+    application_offset: int = Field(0, ge=0, le=100000)
+
+
+@router.get('/standard/applications')
+def standard_applications_batch(filters: Annotated[ApplicationBatchFilters, Query()],
+                                db: Session = Depends(get_db)):
+    # Recompute the bounded parent page instead of accepting an arbitrary ID list.
+    parents = db.scalars(catalog_page(catalog_statement('standard', filters).with_only_columns(
+        Release.id), filters)).all()
+    pages = []
+    if parents:
+        r, d = Release, ApplicationReleaseDetail
+        association = select(d.standard_base_release_id.label('parent_id'), r.id,
+            r.version, r.status, r.created_at).join(d, d.release_id == r.id).where(
+            d.standard_base_release_id.in_(parents))
+        # Preserve the legacy stored association, including its missing-Release
+        # exclusion and absence of inferred child type/software/status filters.
+        counts = dict(db.execute(select(d.standard_base_release_id, func.count()).select_from(r).join(
+            d, d.release_id == r.id).where(d.standard_base_release_id.in_(parents)).group_by(
+            d.standard_base_release_id)).all())
+        ranked = association.add_columns(func.row_number().over(
+            partition_by=d.standard_base_release_id,
+            order_by=(r.created_at.desc().nulls_last(), r.id.desc())).label('position')).subquery()
+        selected_offset = case((ranked.c.parent_id == filters.applications_for,
+                               filters.application_offset), else_=0)
+        rows = db.execute(select(ranked.c.parent_id, ranked.c.id, ranked.c.version, ranked.c.status).where(
+            ranked.c.position > selected_offset,
+            ranked.c.position <= selected_offset + APPLICATION_PAGE_SIZE).order_by(
+            ranked.c.parent_id, ranked.c.position)).mappings()
+        children = {parent: [] for parent in parents}
+        for row in rows:
+            children[row['parent_id']].append({'id': str(row['id']),
+                'version': row['version'], 'status': row['status']})
+        for parent in parents:
+            offset = filters.application_offset if parent == filters.applications_for else 0
+            count = counts.get(parent, 0)
+            pages.append({'release_id': str(parent), 'total': count,
+                'limit': APPLICATION_PAGE_SIZE, 'offset': offset,
+                'next_offset': offset + APPLICATION_PAGE_SIZE if offset + APPLICATION_PAGE_SIZE < count else None,
+                'items': children[parent]})
+    # Measure the actual UTF-8 bytes sent, not Python character count. A too-large
+    # response fails explicitly; it must never masquerade as a truncated page.
+    response = JSONResponse({'limit': filters.limit, 'offset': filters.offset, 'items': pages},
+                            headers={'Cache-Control': 'no-store'})
+    if len(response.body) > APPLICATION_BATCH_MAX_BYTES:
+        raise HTTPException(503, 'application_batch_response_too_large', headers={'Cache-Control': 'no-store'})
+    return response
+
+
+@router.get('/{kind}')
+def release_catalog(kind: Literal['application', 'standard'], filters: Annotated[Filters, Query()],
+                    db: Session = Depends(get_db)):
+    stmt = catalog_statement(kind, filters)
     count = db.scalar(select(func.count()).select_from(stmt.subquery()))
-    rows = db.execute(stmt.order_by(r.created_at.desc().nulls_last(), r.id.desc()).limit(
-        filters.limit).offset(filters.offset)).mappings()
+    rows = db.execute(catalog_page(stmt, filters)).mappings()
     items = []
     for row in rows:
         item = {'id': str(row['id']), 'version': row['version'], 'status': row['status']}
