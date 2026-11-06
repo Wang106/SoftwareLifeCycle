@@ -11,10 +11,10 @@
     "previous_finite_plan_total_packages": 8,
     "package": "dashboard-loading-unavailable-presentation",
     "branch": "fix/dashboard-loading-state",
-    "state": "local_validation_and_independent_review_passed_publication_pending",
+    "state": "loading_heading_corrected_local_validation_and_independent_review_passed_new_CI_pending",
     "evidence": "docs/dashboard-loading-unavailable.md",
     "selected_scope": "homepage_fallback_cards_and_unavailable_copy_only_preserve_15s_API_and_prefetch",
-    "current_pr_ci": "not_published",
+    "current_pr_ci": "PR184_initial_2e7f8b86_CI42216779715_completed_failure_corrected_head_pending",
     "current_main_ci": "baseline_1fcf1c6_success_not_candidate",
     "current_deployment": "Cloudflare_build_success_Render_backend_unavailable_not_repaired",
     "next_package": "evidence_based_performance_and_offline_preparation_no_database_rebuild",
@@ -1157,9 +1157,9 @@
     },
     "local_validation": {
       "regression_first_failures": 7,
-      "homepage_priority_tests_passed": 14,
-      "combined_timeout_catalog_tests_passed": 30,
-      "frontend_tests_passed": 2110,
+      "homepage_priority_tests_passed": 16,
+      "combined_timeout_catalog_tests_passed": 32,
+      "frontend_tests_passed": 2112,
       "typecheck": "passed",
       "next_discovery": 8,
       "component_discovery": 16,
@@ -1168,8 +1168,19 @@
       "offline_preflight_tests_passed": 15,
       "offline_npm_tests_passed": 15,
       "history_progress_links_business_groups": "passed",
-      "independent_review": "no_blocking_findings_16_focused_typecheck_progress_passed",
-      "actual_browser": "not_run_locally"
+      "independent_review": "correction_no_blocking_findings_16_focused_typecheck_passed",
+      "actual_browser": "not_run_locally",
+      "heading_regression_first_failures": 2
+    },
+    "first_attempt": {
+      "head": "2e7f8b864c9641b00f24a3b8bae51948e86c2e58",
+      "run": "42216779715",
+      "result": "failure",
+      "next_passed": 7,
+      "next_failed": 1,
+      "component_executed": false,
+      "cause": "existing_loading_heading_contract_replaced",
+      "correction": "restore_original_heading_keep_new_read_copy_and_cards_no_browser_test_changes"
     }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
