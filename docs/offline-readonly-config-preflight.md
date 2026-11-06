@@ -112,3 +112,12 @@ backup/maintenance window, capacity, import method and later network/HTTPS polic
 Identity/OIDC, real business writes, real company data, retention/RPO/RTO, production
 operations and actual company acceptance remain closed/unaccepted. No roadmap or
 plan milestone is checked merely because this preparation exists: **36/44=82%**.
+
+## Next design checkpoint — 2026-11-06
+
+[Offline image and rehearsal design](offline-readonly-image-rehearsal-design.md)
+now separates build provenance, bundle completeness and synthetic runtime acceptance.
+It does not implement those steps or change this validator. Existing unit fixtures
+remain non-runnable archives; current browser CI does not run offline containers.
+The target route above remains a candidate, not installed infrastructure. No milestone
+or server readiness is advanced by this documentation.

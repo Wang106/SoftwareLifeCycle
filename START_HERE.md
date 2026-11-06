@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-06（UTC+8）PR181已合并，离线镜像演练设计
+
+PR181正常保护合并至main `e6e03b76f8e662652cf0ad321912eeac885ee9e1`，tree `55185792709268f546468f06ed1a3a59ffe15855`与审核候选一致。独立[main CI42134422605](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42134422605) attempt1四job全部成功：2103前端、2846后端＋26子测、296 PG无skip、52自动化/126守卫/0029往返；实际8条Next＋16条组件通过严格报告，固定签名Chrome157.0.8103.39、sandbox=true、零失败/跳过/重试。Cloudflare生产build `2f18577e-ce94-425b-8906-6383ed343d18` / version `e6be5ffe-2ac6-48c9-a7ba-638e839d4360`成功；Actions部署42136123760、continuation42136123717为skipped，不等于线上数据库/业务健康。
+
+当前仅7文件文档候选：收口B3测试证据，梳理离线只读镜像与合成Linux演练的输入、缺口和验收门禁。详见[离线镜像演练设计](docs/offline-readonly-image-rehearsal-design.md)。没有构建或加载镜像、安装Docker、启动服务、配置公司服务器、真实身份/数据或费用操作。现有配置预检不等于可运行离线安装包；下一实现包必须先核实可用构建环境与固定来源。
+
+本候选尚未发布，自己的精确head CI待验证；上述main成功是基线。业务36/44=82%、增量0，模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0、浏览器阶段1/4、有限计划8/8不变。下方旧pending为历史，不重复开发已经通过的两条B3测试。
+
+---
+
 ## 当前检查点 — 2026-11-05（UTC+8）B3取消刷新与显式重试候选
 
 PR180已合并main `07278bc53ced14950b36df9d075c361bf26f82f5`；独立[main CI42027812570](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42027812570)全部成功：2102前端、2846后端＋26子测、296 PG无skip、52自动化/126守卫/0029往返及真实8＋14浏览器。Cloudflare生产build `cf998632-7516-4786-b772-60175c981569` / version `1c6bd499-0ba4-47b1-aa8c-206886f37407`成功；Actions部署42030162686、continuation42030162895为skipped，不等于线上业务健康。

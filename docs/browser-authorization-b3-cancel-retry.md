@@ -91,3 +91,27 @@ browser execution remains pending.
 
 Initial CI42039749777 subsequently completed/failure: frontend and backend
 succeeded, browser and CI acceptance failed. It was not rerun unchanged.
+
+## Verified publication and merged-main checkpoint — 2026-11-06
+
+The corrected PR181 head `0ff8e256aa35210c192ed9f829ad45d0d8cf57a4`
+passed [CI42042337722](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42042337722)
+attempt1, including actual8+16 browser journeys. It was not an unchanged rerun.
+Normal protected squash merge produced main `e6e03b76f8e662652cf0ad321912eeac885ee9e1`;
+tree `55185792709268f546468f06ed1a3a59ffe15855` matches the reviewed local candidate.
+Independent [main CI42134422605](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42134422605)
+attempt1 succeeded: browser127618824577, frontend127618824695,
+backend127618824290 and aggregate127624513499. Logs prove2103 frontend tests,
+2846 backend plus26 subtests,296 PostgreSQL cases/no skips,52 automation and126
+guard contracts, migration0029 SQL/PostgreSQL round trip. Backend pytest took773.84s.
+Actual8 Next plus16 component journeys passed strict reports, zero failures/skips/
+retries, signed Chrome157.0.8103.39 and sandbox=true. Retention-limited artifacts:
+[Next13464986841](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42134422605/artifacts/13464986841),
+[component13465580135](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42134422605/artifacts/13465580135).
+This checkpoint inspects logs and artifact identifiers, not fresh archive contents.
+
+Cloudflare check127619794117 succeeded: production build
+`2f18577e-ce94-425b-8906-6383ed343d18`, version `e6be5ffe-2ac6-48c9-a7ba-638e839d4360`.
+Actions deployment42136123760 and continuation42136123717 skipped. This is not
+live database/business-health acceptance. Earlier pending paragraphs are historical;
+B3 remains bounded, not full authentication/back-forward/cross-tab acceptance.
