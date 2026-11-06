@@ -25,7 +25,8 @@ function DashboardLoading() {
   return <div aria-busy="true">
     <DashboardCards data={null} loading/>
     <section className="panel page-loading" role="status">
-      <h2><Localized>{'Reading dashboard data'}</Localized></h2>
+      <h2><Localized>{'Loading page data'}</Localized></h2>
+      <p><Localized>{'Reading dashboard data'}</Localized></p>
       <p className="muted"><Localized>{'Dashboard metrics are not yet available. You can open a section while the read completes.'}</Localized></p>
     </section>
   </div>;
