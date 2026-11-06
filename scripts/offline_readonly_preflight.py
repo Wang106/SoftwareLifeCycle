@@ -182,6 +182,10 @@ def compose(manifest, secret):
            "environment": {**dict.fromkeys(GATES, "disabled"), "API_BASE_URL": "http://127.0.0.1:8000",
                            "NEXT_PUBLIC_API_URL": "", "NEXT_PUBLIC_API_BASE_URL": "", "NEXT_TELEMETRY_DISABLED": "1",
                            "NODE_ENV": "production"}}
+    # Fresh nested dictionaries per service: fixed policy, never operator overrides.
+    for service in (api, web):
+        service["logging"] = {"driver": "local", "options": {
+            "max-size": "10m", "max-file": "3", "compress": "true"}}
     return {"name": "slc-offline-readonly", "services": {"api": api, "web": web}}
 
 
