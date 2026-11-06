@@ -69,3 +69,25 @@ groups and whitespace checks passed. Independent review found no blocking issues
 and separately passed16 focused cases, TypeScript, progress and whitespace checks.
 Discovery is not execution; no new homepage browser timing measurement is claimed.
 The candidate is still local and awaits publication/exact-head full CI.
+
+## First exact-head failure and compatibility correction
+
+PR184 head2e7f8b864c9641b00f24a3b8bae51948e86c2e58, CI42216779715
+completed/failure: frontend and backend succeeded, browser and aggregate failed.
+Next7 passed/1 failed because the existing homepage browser contract requires
+the pending status to contain the localized Loading page data heading. The new
+dashboard-specific heading replaced it. Component16 did not execute after the
+Next failure; no complete browser acceptance is claimed for that head.
+
+The bounded correction restores the original localized heading and keeps the
+dashboard reading explanation in the same single status. Two new en/zh regressions
+failed first and then passed after correction, preserving all existing card and
+streaming checks. Existing browser tests, shared API,15s budget, requests, security
+and strict reports are unchanged. This fixes a presentation compatibility error,
+not Render startup or database availability. Corrected-head full CI remains required.
+
+Corrected candidate local validation: 2112 frontend tests passed without failures/
+skips,32 combined contracts,TypeScript and8+16 discovery passed. Independent
+correction review passed16 focused cases and TypeScript. Discovery initially lacked
+RUNNER_TEMP and was rerun with an absolute temporary directory for listing only;
+no alternate browser execution or security relaxation occurred.
