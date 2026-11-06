@@ -1,4 +1,11 @@
 {
+  "Reading dashboard data": "正在读取仪表盘数据",
+  "Dashboard metrics are not yet available. You can open a section while the read completes.": "仪表盘指标尚未获取，读取期间可打开各业务模块。",
+  "Dashboard data unavailable": "仪表盘数据暂不可用",
+  "Current release data unavailable": "当前发布数据暂不可用",
+  "Recent activity unavailable": "近期活动数据暂不可用",
+  "Dashboard data unavailable. Try reading again later.": "仪表盘数据暂不可用，请稍后重新读取。",
+  "Live dashboard unavailable": "实时仪表盘暂不可用",
   "Read projects again": "重新读取项目",
   "Governance observation unavailable": "治理状态暂无法确认",
   "The exact target or a valid governance response could not be confirmed. No active authority is inferred.": "未能确认精确对象或有效治理响应，不能据此认定许可有效。",
