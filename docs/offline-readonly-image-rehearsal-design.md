@@ -121,3 +121,11 @@ and separately passed15 preflight tests/progress/whitespace checks. No image,
 container, company environment, backend/PG suite or browser execution is claimed
 locally for this candidate. Publication and its own exact-head full CI remain
 pending; baseline PR181 success is historical evidence, not this document's CI.
+
+## Dependency-input implementation checkpoint — 2026-11-06
+
+The next bounded [npm inventory candidate](offline-npm-dependency-inventory.md)
+checks lockfile sources and local artifact bytes without network or extraction.
+It does not build images, install dependencies or close runtime acceptance.
+Python transitive locks, actual artifact acquisition, container execution and
+company log/backup/restore acceptance remain separate work.
