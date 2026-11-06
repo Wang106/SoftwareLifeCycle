@@ -99,6 +99,71 @@ class OfflinePreflightTests(unittest.TestCase):
         self.assertNotIn("alembic", serialized)
         self.assertEqual(before, {p.name: p.read_bytes() for p in self.root.iterdir()})
 
+    def test_complete_compose_contract_with_fixed_local_log_retention(self):
+        common = {
+            "platform": "linux/amd64", "pull_policy": "never", "network_mode": "host",
+            "read_only": True, "restart": "no", "cap_drop": ["ALL"],
+            "security_opt": ["no-new-privileges:true"], "user": "65532:65532",
+            "working_dir": "/app", "tmpfs": ["/tmp:rw,noexec,nosuid,size=64m"],
+            "healthcheck": {"disable": True},
+            "logging": {"driver": "local", "options": {
+                "max-size": "10m", "max-file": "3", "compress": "true"}},
+        }
+        expected = {"name": "slc-offline-readonly", "services": {
+            "api": {**copy.deepcopy(common), "image": self.manifest["images"]["api"]["image_id"],
+                    "entrypoint": ["/usr/local/bin/python", "-m", "uvicorn"],
+                    "command": ["app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+                    "env_file": [{"path": str(self.secret), "required": True, "format": "raw"}],
+                    "environment": {
+                        "READ_ONLY_MODE": "true", "AUTH_MODE": "disabled", "ADMIN_OPERATOR_ENABLED": "false",
+                        "SEED_ON_STARTUP": "false", "SEED_ZFI_DEMO": "false", "REQUIRED_DB_REVISION": preflight.REVISION,
+                        "CORS_ORIGINS": "http://127.0.0.1:3000", "PYTHONPATH": "/app", "PYTHONDONTWRITEBYTECODE": "1",
+                        "PGOPTIONS": "-c default_transaction_read_only=on"}},
+            "web": {**copy.deepcopy(common), "image": self.manifest["images"]["web"]["image_id"],
+                    "entrypoint": ["/usr/local/bin/node", "node_modules/next/dist/bin/next"],
+                    "command": ["start", "--hostname", "127.0.0.1", "--port", "3000"],
+                    "environment": {
+                        **dict.fromkeys(preflight.GATES, "disabled"), "API_BASE_URL": "http://127.0.0.1:8000",
+                        "NEXT_PUBLIC_API_URL": "", "NEXT_PUBLIC_API_BASE_URL": "", "NEXT_TELEMETRY_DISABLED": "1",
+                        "NODE_ENV": "production"}},
+        }}
+        self.assertEqual(preflight.validate(self.root), expected)
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            self.assertEqual(preflight.main([str(self.root)]), 0)
+        self.assertEqual(json.loads(out.getvalue()), expected)
+        self.assertIn("CONFIGURATION_ONLY", err.getvalue())
+        for service in json.loads(out.getvalue())["services"].values():
+            self.assertIs(type(service["logging"]["driver"]), str)
+            self.assertTrue(all(type(value) is str for value in service["logging"]["options"].values()))
+
+    def test_logging_objects_are_independent_between_services_and_calls(self):
+        expected = {"driver": "local", "options": {"max-size": "10m", "max-file": "3", "compress": "true"}}
+        for changed, unchanged in (("api", "web"), ("web", "api")):
+            with self.subTest(changed=changed):
+                services = preflight.validate(self.root)["services"]
+                self.assertEqual(services[changed]["logging"], expected)
+                self.assertIsNot(services[changed]["logging"], services[unchanged]["logging"])
+                self.assertIsNot(services[changed]["logging"]["options"], services[unchanged]["logging"]["options"])
+                services[changed]["logging"]["driver"] = "none"
+                services[changed]["logging"]["options"]["max-file"] = "999"
+                self.assertEqual(services[unchanged]["logging"], expected)
+                for service in preflight.validate(self.root)["services"].values():
+                    self.assertEqual(service["logging"], expected)
+
+    def test_log_overrides_rejected_by_exact_input_key_allowlists(self):
+        original_manifest, original_operator = copy.deepcopy(self.manifest), copy.deepcopy(self.operator)
+        for location in ("manifest", "operator", "images", "api", "web"):
+            for field, value in (("logging", {"driver": "none"}), ("log_driver", "json-file"),
+                                 ("log_opts", {"max-file": "999"})):
+                with self.subTest(location=location, field=field):
+                    self.manifest, self.operator = copy.deepcopy(original_manifest), copy.deepcopy(original_operator)
+                    target = {"manifest": self.manifest, "operator": self.operator,
+                              "images": self.manifest["images"], "api": self.manifest["images"]["api"],
+                              "web": self.manifest["images"]["web"]}[location]
+                    target[field] = value
+                    self.blocked()
+
     def test_cli_success_is_configuration_only(self):
         proc = subprocess.run([sys.executable, str(ROOT / "scripts/offline_readonly_preflight.py"), str(self.root)], capture_output=True, text=True)
         self.assertEqual(proc.returncode, 0)
