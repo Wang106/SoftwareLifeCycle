@@ -17,12 +17,16 @@ type Release = {
 };
 type Catalog = {
     kind: string;
+    limit: number;
+    offset: number;
     total: number;
     next_offset: number | null;
     items: Release[];
 };
 type Applications = {
     release_id: string;
+    limit: number;
+    offset: number;
     total: number;
     next_offset: number | null;
     items: {
@@ -31,6 +35,45 @@ type Applications = {
         status: string;
     }[];
 };
+type ApplicationBatch = { limit: number; offset: number; items: Applications[] };
+const nonnegativeInteger = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) >= 0;
+// Mirror Pydantic's integer query syntax, including integral decimals and digit
+// separators, so one invalid child offset does not hide the other visible rows.
+function applicationOffset(raw: ReleaseSearch[string]): number | null {
+    if (raw === undefined) return 0;
+    if (typeof raw !== 'string') return null;
+    const text = raw.replace(/^\p{White_Space}+|\p{White_Space}+$/gu, '');
+    if (!/^[+-]?\d(?:_?\d)*(?:\.0+)?$/.test(text)) return null;
+    const parsed = Number(text.replaceAll('_', ''));
+    return nonnegativeInteger(parsed) && parsed <= 100000 ? parsed : null;
+}
+// Reject an incomplete or stale batch as a whole; never associate child data by position.
+function validBatch(batch: ApplicationBatch | null, catalog: Catalog, selected: string | undefined, offset: number) {
+    if (!batch || !nonnegativeInteger(batch.limit) || batch.limit < 1 || batch.limit > 100 ||
+        !nonnegativeInteger(batch.offset) || batch.offset > 100000 ||
+        batch.limit !== catalog.limit || batch.offset !== catalog.offset ||
+        !Array.isArray(batch.items) || batch.items.length !== catalog.items.length || batch.items.length > batch.limit)
+        return false;
+    const parents = new Set(catalog.items.map(row => row.id));
+    if (parents.size !== catalog.items.length) return false;
+    const seen = new Set<string>();
+    for (const page of batch.items) {
+        if (!page || !parents.has(page.release_id) || seen.has(page.release_id) || page.limit !== 10 ||
+            !nonnegativeInteger(page.total) || !nonnegativeInteger(page.offset) || page.offset > 100000 ||
+            page.offset !== (page.release_id === selected ? offset : 0) ||
+            page.next_offset !== (page.offset + 10 < page.total ? page.offset + 10 : null) ||
+            !Array.isArray(page.items) || page.items.length !== Math.min(10, Math.max(0, page.total - page.offset)))
+            return false;
+        const children = new Set<string>();
+        for (const child of page.items) {
+            if (!child || typeof child.id !== 'string' || !child.id || children.has(child.id) ||
+                typeof child.version !== 'string' || typeof child.status !== 'string') return false;
+            children.add(child.id);
+        }
+        seen.add(page.release_id);
+    }
+    return true;
+}
 const value = (search: ReleaseSearch, key: string) => typeof search[key] === 'string' ? search[key] as string : 'invalid';
 export default async function SupplierReleaseCatalog({ search }: {
     search: ReleaseSearch;
@@ -42,16 +85,20 @@ export default async function SupplierReleaseCatalog({ search }: {
     const response = await apiGet<Catalog>(`/api/v1/release-catalog/standard?${query}`);
     const catalog = response?.kind === 'standard' ? response : null;
     const applications = new Map<string, Applications | null>();
-    // Bound both the number of child reads and concurrent API load to this catalog page.
     const rows = catalog?.items ?? [];
-    for (let start = 0; start < rows.length; start += 4) {
-        await Promise.all(rows.slice(start, start + 4).map(async (row) => {
-            const q = new URLSearchParams({ limit: '10' });
-            if (search.applications_for === row.id && search.application_offset !== undefined)
-                q.set('offset', value(search, 'application_offset'));
-            const page = await apiGet<Applications>(`/api/v1/releases/standard/id/${encodeURIComponent(row.id)}/applications?${q}`);
-            applications.set(row.id, page?.release_id === row.id ? page : null);
-        }));
+    if (catalog && rows.length) {
+        const batchQuery = new URLSearchParams(query);
+        const selected = rows.find(row => row.id === search.applications_for)?.id;
+        const offset = selected ? applicationOffset(search.application_offset) : 0;
+        if (selected && offset !== null) {
+            batchQuery.set('applications_for', selected);
+            if (search.application_offset !== undefined)
+                batchQuery.set('application_offset', value(search, 'application_offset'));
+        }
+        const batch = await apiGet<ApplicationBatch>(`/api/v1/release-catalog/standard/applications?${batchQuery}`);
+        if (validBatch(batch, catalog, offset === null ? undefined : selected, offset ?? 0))
+            for (const page of batch!.items)
+                if (offset !== null || page.release_id !== selected) applications.set(page.release_id, page);
     }
     const groups = new Map<string | null, {
         supplier: Release['supplier'];

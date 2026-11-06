@@ -15,11 +15,15 @@ function load(file, api){
  },m,m.exports);return m.exports;
 }
 const row=(id,code='S')=>({id,version:'5.0',status:'RELEASED',software:{name:'BMS',code:'B'},supplier:{name:'Same name',code}});
-const catalog={kind:'standard',total:105,next_offset:3,items:[row('s1'),row('s2'),row('s3','T')]};
-const appPage=id=>({release_id:id,total:30,next_offset:10,items:[{id:'new',version:'2.0',status:'DRAFT'},{id:'old',version:'10.0',status:'RELEASED'}]});
+const catalog={kind:'standard',limit:50,offset:0,total:105,next_offset:50,items:[row('s1'),row('s2'),row('s3','T')]};
+const appPage=(id,offset=0)=>({release_id:id,total:30,limit:10,offset,next_offset:offset+10<30?offset+10:null,items:[{id:'new',version:'2.0',status:'DRAFT'},{id:'old',version:'10.0',status:'RELEASED'},...Array.from({length:8},(_,i)=>({id:'extra'+i,version:'1.0',status:'DRAFT'}))]});
 const links=html=>[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));
 async function renderCatalog(search={},parent=catalog,child=appPage){
- const calls=[];const Page=load('components/supplier-release-catalog.tsx',async url=>{calls.push(url);return url.includes('/release-catalog/')?parent:child(decodeURIComponent(url.split('/id/')[1].split('/')[0]));}).default;
+ const calls=[];const Page=load('components/supplier-release-catalog.tsx',async url=>{
+  calls.push(url);const q=new URL(url,'https://test').searchParams;
+  if(!url.includes('/standard/applications?'))return parent && {...parent,limit:Number(q.get('limit')??50),offset:Number(q.get('offset')??0)};
+  return {limit:Number(q.get('limit')??50),offset:Number(q.get('offset')??0),items:parent.items.map(row=>child(row.id,q.get('applications_for')===row.id?Number(q.get('application_offset')??0):0))};
+ }).default;
  return {calls,html:renderToStaticMarkup(await Page({search}))};
 }
 test('supplier identity grouping, default disclosure and exact release links preserve API version order',async()=>{
@@ -32,7 +36,7 @@ test('supplier identity grouping, default disclosure and exact release links pre
  assert.ok(links(html).includes('/releases/application/new'));
  assert.ok(html.indexOf('ASR 2.0')<html.indexOf('ASR 10.0'));
  assert.ok(links(html).includes('/demo/releases')&&links(html).includes('/demo/zfi'));
- assert.equal(calls.length,4);assert.ok(calls.slice(1).every(x=>x.endsWith('limit=10')));
+ assert.equal(calls.length,2);assert.ok(calls[1].includes('/release-catalog/standard/applications?'));
 });
 test('child pagination retains catalog filters, opens selected card only and never reads arbitrary parent',async()=>{
  const {html,calls}=await renderCatalog({q:'_%',status:'DRAFT',limit:'3',offset:'8',applications_for:'s2',application_offset:'10',ignored:'x'});
@@ -76,14 +80,62 @@ test('no snapshot and empty approvals remain distinct from unavailable; applicat
  assert.equal(calls.length,2);assert.ok(html.includes('No snapshot is available')&&html.includes('No approval records on this page.'));
  const app=await renderReview({}, {},'application');assert.equal(app.calls.length,1);assert.ok(!app.html.includes('Software files'));assert.ok(app.html.includes('Approval records'));
 });
-test('child reads are bounded to the visible catalog page with at most four concurrent GETs',async()=>{
- let active=0,max=0,reads=0;
+test('fifty visible releases use exactly two sequential GETs, not fifty child reads',async()=>{
+ const {calls,html}=await renderCatalog({}, {...catalog,items:Array.from({length:50},(_,i)=>row('s'+i))});
+ assert.equal(calls.length,2);assert.equal((html.match(/Recorded count:/g)||[]).length,50);
+ assert.ok(calls.every(url=>!url.includes('/releases/standard/id/')));
+});
+test('batch failure, incomplete parents and malformed pagination fail closed without serial fallback',async()=>{
+ const batch={limit:50,offset:0,items:catalog.items.map(r=>appPage(r.id))};
+ const corrupt=[null, {...batch,limit:3}, {...batch,offset:1}, {...batch,items:batch.items.slice(1)},
+  {...batch,items:[...batch.items,appPage('foreign')]}, {...batch,items:[batch.items[0],batch.items[0],batch.items[2]]},
+  ...[ {offset:10}, {limit:11}, {total:-1}, {next_offset:20}, {items:[{id:'x',version:'x'}]} ].map(change=>({...batch,items:[{...batch.items[0],...change},...batch.items.slice(1)]}))];
+ for(const response of corrupt){
+  const calls=[]; const Page=load('components/supplier-release-catalog.tsx',async url=>{calls.push(url);return calls.length===1?catalog:response;}).default;
+  const html=renderToStaticMarkup(await Page({search:{}}));
+  assert.equal(calls.length,2);assert.ok(html.includes('Total releases:'));assert.ok(!html.includes('Recorded count:'));assert.equal((html.match(/Application release page unavailable/g)||[]).length,3);
+ }
+});
+test('batch associates shuffled rows by ID and validates the selected final child page only',async()=>{
+ const search={q:'中文 %_',software_id:'software',limit:'3',offset:'8',applications_for:'s2',application_offset:'10'};
+ const calls=[];
  const Page=load('components/supplier-release-catalog.tsx',async url=>{
-  if(url.includes('/release-catalog/'))return {...catalog,items:Array.from({length:9},(_,i)=>row('s'+i))};
-  active++;reads++;max=Math.max(max,active);await new Promise(resolve=>setTimeout(resolve,2));active--;
-  return appPage(url.split('/id/')[1].split('/')[0]);
+  calls.push(url);
+  if(calls.length===1)return {...catalog,limit:3,offset:8};
+  return {limit:3,offset:8,items:[appPage('s3'),{...appPage('s2',10),total:12,next_offset:null,items:[{id:'last',version:'最后一页',status:'DRAFT'},{id:'last2',version:'2',status:'DRAFT'}]},appPage('s1')]};
  }).default;
- await Page({search:{}});assert.equal(reads,9);assert.equal(max,4);
+ const html=renderToStaticMarkup(await Page({search}));
+ assert.equal(calls.length,2);
+ const query=new URL(calls[1],'https://test').searchParams;
+ for(const key of Object.keys(search))assert.equal(query.get(key),search[key]);
+ assert.equal((html.match(/Recorded count:/g)||[]).length,3);
+ assert.ok(html.indexOf('standard-software-s2')<html.indexOf('最后一页'));
+ assert.ok(html.indexOf('最后一页')<html.indexOf('standard-software-s3'));
+ assert.equal(links(html).filter(link=>link.includes('applications_for=s2')&&link.includes('application_offset=20')).length,0);
+});
+test('invalid selected child pagination preserves other rows within two GETs',async()=>{
+ for(const invalid of ['bad','-1','100001','1e1','0x1','',' ','1__0','1.0_0','١',['10','20']]){
+  const {html,calls}=await renderCatalog({applications_for:'s2',application_offset:invalid});
+  assert.equal(calls.length,2);
+  const query=new URL(calls[1],'https://test').searchParams;
+  assert.equal(query.has('application_offset'),false);
+  assert.equal((html.match(/Recorded count:/g)||[]).length,2);
+  assert.equal((html.match(/Application release page unavailable/g)||[]).length,1);
+  assert.ok(html.indexOf('standard-software-s2')<html.indexOf('Application release page unavailable'));
+  assert.ok(html.indexOf('Application release page unavailable')<html.indexOf('standard-software-s3'));
+ }
+});
+test('integral Pydantic offset spellings retain selected pagination',async()=>{
+ for(const raw of ['+10','10.0','10.00',' 10 ','1_0','0010','10\n']){
+  const calls=[];
+  const Page=load('components/supplier-release-catalog.tsx',async url=>{
+   calls.push(url);
+   return calls.length===1?catalog:{limit:50,offset:0,items:catalog.items.map(row=>appPage(row.id,row.id==='s2'?10:0))};
+  }).default;
+  const html=renderToStaticMarkup(await Page({search:{applications_for:'s2',application_offset:raw}}));
+  assert.equal(new URL(calls[1],'https://test').searchParams.get('application_offset'),raw);
+  assert.equal((html.match(/Recorded count:/g)||[]).length,3);
+ }
 });
 test('new directory and detail labels translate using the actual localization component',async()=>{
  const path=require('node:path'),{execFileSync}=require('node:child_process');
@@ -96,7 +148,7 @@ test('new directory and detail labels translate using the actual localization co
    const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,m={exports:{}};
    new Function('require','module','exports',code)(name=>name==='next/link'?({href,children})=>React.createElement('a',{href},children):name.endsWith('/localized')?localized:name.endsWith('/api')?{apiGet:api}:require(name),m,m.exports);return m.exports;
   }
-  const directory=await actual('components/supplier-release-catalog.tsx',async url=>url.includes('/release-catalog/')?catalog:appPage(url.split('/id/')[1].split('/')[0])).default({search:{}});
+  const directory=await actual('components/supplier-release-catalog.tsx',async url=>url.includes('/standard/applications?')?{limit:50,offset:0,items:catalog.items.map(r=>appPage(r.id))}:catalog).default({search:{}});
   const review=await actual('components/release-review-records.tsx',async url=>url.includes('/governance/')?{total:1,items:[approval],next_offset:null}:{release:{id:'s1',type:'STANDARD'},total:0,items:[]}).ReleaseReviewRecords({releaseId:'s1',kind:'standard',search:{}});
   for(const locale of ['zh','en']){
    const html=renderToStaticMarkup(React.createElement(localized.LanguageProvider,{initialLocale:locale},directory,review));

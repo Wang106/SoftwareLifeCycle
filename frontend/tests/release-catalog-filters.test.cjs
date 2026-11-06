@@ -26,7 +26,13 @@ async function render(kind,search={},locale='en',response){
     if(name.endsWith('/localized'))return localized;
     if(name.endsWith('/api'))return {apiGet:async url=>{
       calls.push(url);
-      if(url.includes('/release-catalog/'))return response===undefined?{kind,total:2,next_offset:1,items:standard?[{id:'s1',version:'v1',status:'DRAFT',supplier:{code:'LIB',name:'LIB'},software:{code:'BMS',name:'BMS'}}]:[]}:response;
+      const q=new URL(url,'http://local').searchParams;
+      const limit=Number(q.get('limit')??50), offset=Number(q.get('offset')??0);
+      if(url.includes('/standard/applications?')){
+        const childOffset=Number(q.get('application_offset')??0);
+        return {limit,offset,items:[{release_id:'s1',limit:10,offset:childOffset,total:11,next_offset:childOffset+10<11?childOffset+10:null,items:Array.from({length:Math.min(10,Math.max(0,11-childOffset))},(_,i)=>({id:'a'+i,version:'v'+i,status:'DRAFT'}))}]};
+      }
+      if(url.includes('/release-catalog/'))return response===undefined?{kind,limit,offset,total:2,next_offset:1,items:standard?[{id:'s1',version:'v1',status:'DRAFT',supplier:{code:'LIB',name:'LIB'},software:{code:'BMS',name:'BMS'}}]:[]}:response;
       return {release_id:'s1',total:11,next_offset:10,items:[]};
     }};
     return require(name);
