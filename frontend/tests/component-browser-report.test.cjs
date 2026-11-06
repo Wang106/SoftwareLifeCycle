@@ -3,9 +3,9 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {validateBrowserReport,readBrowserReport,REQUIRED_TITLES,MAX_REPORT_BYTES}=require('../scripts/check-component-browser-report.cjs');
-function fixture(){return {config:{forbidOnly:true,projects:[{id:'chromium',name:'chromium',retries:0,repeatEach:1}]},errors:[],stats:{expected:14,unexpected:0,flaky:0,skipped:0,startTime:'2026-11-03T00:00:00Z',duration:1},suites:[{specs:REQUIRED_TITLES.map(title=>({title,file:'authorization-approval.spec.ts',ok:true,tests:[{projectId:'chromium',projectName:'chromium',expectedStatus:'passed',status:'expected',results:[{status:'passed',retry:0,workerIndex:0,parallelIndex:0,startTime:'2026-11-03T00:00:00Z',duration:1,errors:[],annotations:[{type:'browser-engine',description:'chromium'},{type:'synthetic-component-fixture',description:'verified'},{type:'browser-worker-index',description:'0'},{type:'evidence-layer',description:'component-only-not-authentication'}]}]}]}))}]};}
+function fixture(){return {config:{forbidOnly:true,projects:[{id:'chromium',name:'chromium',retries:0,repeatEach:1}]},errors:[],stats:{expected:16,unexpected:0,flaky:0,skipped:0,startTime:'2026-11-03T00:00:00Z',duration:1},suites:[{specs:REQUIRED_TITLES.map(title=>({title,file:'authorization-approval.spec.ts',ok:true,tests:[{projectId:'chromium',projectName:'chromium',expectedStatus:'passed',status:'expected',results:[{status:'passed',retry:0,workerIndex:0,parallelIndex:0,startTime:'2026-11-03T00:00:00Z',duration:1,errors:[],annotations:[{type:'browser-engine',description:'chromium'},{type:'synthetic-component-fixture',description:'verified'},{type:'browser-worker-index',description:'0'},{type:'evidence-layer',description:'component-only-not-authentication'}]}]}]}))}]};}
 const result=r=>r.suites[0].specs[0].tests[0].results[0];
-test('exact fourteen component-only journeys are independently accepted',()=>assert.deepEqual(validateBrowserReport(fixture()),{tests:14,passed:14,skipped:0,retried:0,project:'chromium'}));
+test('exact sixteen component-only journeys are independently accepted',()=>assert.deepEqual(validateBrowserReport(fixture()),{tests:16,passed:16,skipped:0,retried:0,project:'chromium'}));
 for(const [name,mutate] of [
  ['missing',r=>r.suites[0].specs.pop()],['duplicate',r=>r.suites[0].specs[1].title=REQUIRED_TITLES[0]],
  ['wrong file',r=>r.suites[0].specs[0].file='readonly.spec.ts'],['legacy five-case count',r=>r.stats.expected=5],['eight Next results',r=>r.suites[0].specs[0].title='public read-only project catalog'],
@@ -18,19 +18,24 @@ for(const [name,mutate] of [
  ['unexecuted',r=>r.suites[0].specs[0].tests[0].results=[]],['no duration',r=>result(r).duration=0],
  ['expected fail',r=>r.suites[0].specs[0].tests[0].expectedStatus='failed'],
 ])test('rejects '+name,()=>{const value=fixture();mutate(value);assert.throws(()=>validateBrowserReport(value));});
-test('bounded report CLI fails closed and keeps errors generic',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'slc-component-report-'));try{const file=path.join(dir,'results.json'),cli=path.resolve(__dirname,'../scripts/check-component-browser-report.cjs');for(const content of ['', '{PRIVATE', 'x'.repeat(MAX_REPORT_BYTES+1)]){fs.writeFileSync(file,content);const out=spawnSync(process.execPath,[cli,file],{encoding:'utf8'});assert.equal(out.status,1);assert.equal(out.stderr.trim(),'Component browser report is missing, invalid or incomplete.');}fs.writeFileSync(file,JSON.stringify(fixture()));assert.equal(readBrowserReport(file).passed,14);assert.equal(spawnSync(process.execPath,[cli,file]).status,0);}finally{fs.rmSync(dir,{recursive:true,force:true});}});
+test('bounded report CLI fails closed and keeps errors generic',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'slc-component-report-'));try{const file=path.join(dir,'results.json'),cli=path.resolve(__dirname,'../scripts/check-component-browser-report.cjs');for(const content of ['', '{PRIVATE', 'x'.repeat(MAX_REPORT_BYTES+1)]){fs.writeFileSync(file,content);const out=spawnSync(process.execPath,[cli,file],{encoding:'utf8'});assert.equal(out.status,1);assert.equal(out.stderr.trim(),'Component browser report is missing, invalid or incomplete.');}fs.writeFileSync(file,JSON.stringify(fixture()));assert.equal(readBrowserReport(file).passed,16);assert.equal(spawnSync(process.execPath,[cli,file]).status,0);}finally{fs.rmSync(dir,{recursive:true,force:true});}});
 test('separate config retains original candidate sandbox and eight-case suite without overriding security',()=>{const source=fs.readFileSync(path.resolve(__dirname,'../component-browser/playwright.config.cjs'),'utf8');assert.match(source,/require\('\.\.\/e2e\/playwright.config.cjs'\)/);assert.match(source,/\.\.\.original/);for(const key of ['launchOptions:','use:','retries:','forbidOnly:','projects:'])assert.ok(!source.includes(key));const original=fs.readFileSync(path.resolve(__dirname,'../e2e/playwright.config.cjs'),'utf8');assert.match(original,/chromiumSandbox: true/);assert.match(original,/retries: 0/);assert.match(original,/project-catalog.spec.ts/);});
 
 test('each original and recovery journey is individually mandatory even with a matching reduced count',()=>{
-  assert.equal(REQUIRED_TITLES.length,14);
-  for(const title of REQUIRED_TITLES){const value=fixture();value.suites[0].specs=value.suites[0].specs.filter(spec=>spec.title!==title);value.stats.expected=13;assert.throws(()=>validateBrowserReport(value),title);}
+  assert.equal(REQUIRED_TITLES.length,16);
+  for(const title of REQUIRED_TITLES){const value=fixture();value.suites[0].specs=value.suites[0].specs.filter(spec=>spec.title!==title);value.stats.expected=15;assert.throws(()=>validateBrowserReport(value),title);}
 });
 test('legacy five-journey evidence cannot stand in for manual recovery execution',()=>{
   const value=fixture();value.suites[0].specs=value.suites[0].specs.slice(0,5);
-  for(const expected of [5,8,14]){value.stats.expected=expected;assert.throws(()=>validateBrowserReport(value));}
+  for(const expected of [5,8,14,16]){value.stats.expected=expected;assert.throws(()=>validateBrowserReport(value));}
 });
 
 test('legacy eight-journey evidence cannot stand in for permission-error execution',()=>{
   const value=fixture();value.suites[0].specs=value.suites[0].specs.slice(0,8);
-  for(const expected of [8,14]){value.stats.expected=expected;assert.throws(()=>validateBrowserReport(value));}
+  for(const expected of [8,14,16]){value.stats.expected=expected;assert.throws(()=>validateBrowserReport(value));}
+});
+
+test('legacy fourteen-journey evidence cannot replace cancelled-reload and explicit-retry execution',()=>{
+  const value=fixture();value.suites[0].specs=value.suites[0].specs.slice(0,14);
+  for(const expected of [14,16]){value.stats.expected=expected;assert.throws(()=>validateBrowserReport(value));}
 });

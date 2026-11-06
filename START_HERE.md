@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-05（UTC+8）B3取消刷新与显式重试候选
+
+PR180已合并main `07278bc53ced14950b36df9d075c361bf26f82f5`；独立[main CI42027812570](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42027812570)全部成功：2102前端、2846后端＋26子测、296 PG无skip、52自动化/126守卫/0029往返及真实8＋14浏览器。Cloudflare生产build `cf998632-7516-4786-b772-60175c981569` / version `1c6bd499-0ba4-47b1-aa8c-206886f37407`成功；Actions部署42030162686、continuation42030162895为skipped，不等于线上业务健康。
+
+按已合并设计，本候选仅新增两条B3组件浏览器测试：取消unknown态刷新保留原文档与冻结命令；显式原字节重试的双击互锁与原始回执。原14组件＋8 Next保留，严格组件报告要求16标题；签名Chrome、sandbox、零重试及既有门禁不变。生产/身份/依赖/CI/公司服务器均不改。详见[B3取消刷新与重试](docs/browser-authorization-b3-cancel-retry.md)。
+
+当前本地候选，未上传；新16条实际浏览器尚待精确head CI，本地发现不是执行。业务36/44=82%、增量0，模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4与有限计划8/8不变。完整身份/公司与其他B3场景仍缺；下方旧未合并/未执行记录属于各包历史检查点。
+
+---
+
 ## 当前检查点 — 2026-11-05（UTC+8）PR179已合并与分层证据审查
 
 PR179已正常保护合并至main `a460d104880e9f0a8ba6ae99bb97d3b735537f18`。独立[main CI41998260330](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/41998260330) attempt1四job成功：2102前端、2846后端＋26子测试、296 PG无跳过、52自动化、126守卫、0029往返及真实原8条Next＋14条组件；严格报告零失败/跳过/重试、固定签名Chrome157.0.8103.39、sandbox=true。Cloudflare生产build `b4796164-c4bb-45fb-b1be-f348f4597cae` / version `0dfff69d-4093-4f2d-b9f9-d6f474a4d912`成功；Actions部署42000150093及continuation42000150130为skipped，不证明线上数据库/业务健康。

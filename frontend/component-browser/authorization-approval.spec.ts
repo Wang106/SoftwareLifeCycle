@@ -392,3 +392,88 @@ for (const [title,status,error] of [
   await page.waitForTimeout(200);
   expect(reads).toEqual([{path:api[2],method:'POST',body:JSON.stringify(command)}]);
 });
+
+
+test('cancelling an unknown approval reload retains the original document and frozen request', async ({page}) => {
+  mode='unknown'; await open(page); const command=await prepare(page); release?.();
+  await page.getByRole('button',{name:'Send confirmed authorization approval',exact:true}).click();
+  const result=page.getByRole('heading',{name:'Authorization approval result',exact:true}).locator('..');
+  const review=page.getByRole('heading',{name:'Review exact authorization approval',exact:true}).locator('..');
+  await expect(result).toContainText('Operation phase: unknown');
+  const commandText=await review.locator('pre code').first().innerText();
+  const recoveryText=await review.locator('pre code').nth(1).innerText();
+  expect(JSON.parse(commandText)).toEqual(command);
+  const expectedReads=[{path:api[0],method:'POST',body:JSON.stringify(target)},
+    {path:api[1],method:'POST',body:JSON.stringify(command)}];
+  expect(reads).toEqual(expectedReads);
+  const originalURL=page.url(), marker='retained-'+command.body.request_id;
+  await page.evaluate(value=>{document.documentElement.dataset.b3DocumentMarker=value;},marker);
+  // The user dismisses the real navigation warning, not a business cancellation.
+  const dismissed=new Promise<void>((resolve,reject)=>page.once('dialog',async dialog=>{
+    try { expect(dialog.type()).toBe('beforeunload'); await dialog.dismiss(); resolve(); }
+    catch(error) { reject(error); }
+  }));
+  // Schedule the native reload without waiting for navigation completion: a cancelled
+  // reload may leave Playwright's navigation promise pending until test teardown.
+  await page.evaluate(()=>{setTimeout(()=>window.location.reload(),0);});
+  await dismissed;
+  // The real dismissed warning plus retained document/state proves cancellation.
+  await expect(page).toHaveURL(originalURL);
+  await expect(page.locator('html')).toHaveAttribute('data-b3-document-marker',marker);
+  await expect(result).toContainText('Operation phase: unknown');
+  await expect(result.locator('code')).toHaveText('outcome_unknown');
+  await expect(review.locator('pre code').first()).toHaveText(commandText);
+  expect(JSON.parse(await review.locator('pre code').first().innerText())).toEqual(command);
+  await expect(review.locator('pre code').nth(1)).toHaveText(recoveryText);
+  await exactFields(page.getByRole('heading',{name:'Private approval context',exact:true}).locator('..'),facts,scopeLabels);
+  await expect(page.locator('textarea[name="reason"]')).toHaveValue(reason);
+  await expect(page.locator('textarea[name="reason"]')).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Retry original authorization approval',exact:true})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Query original audit without resubmitting',exact:true})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Reload context for a new approval',exact:true})).toHaveCount(0);
+  await expect(result.locator('dl')).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Open original approval audit',exact:true})).toHaveCount(0);
+  await page.waitForTimeout(200);
+  expect(reads).toEqual(expectedReads);
+});
+
+test('explicit unknown approval retry sends original bytes once despite duplicate clicks', async ({page}) => {
+  mode='unknown'; await open(page); const command=await prepare(page); release?.();
+  await page.getByRole('button',{name:'Send confirmed authorization approval',exact:true}).click();
+  const result=page.getByRole('heading',{name:'Authorization approval result',exact:true}).locator('..');
+  const review=page.getByRole('heading',{name:'Review exact authorization approval',exact:true}).locator('..');
+  await expect(result).toContainText('Operation phase: unknown');
+  const frozenText=await review.locator('pre code').first().innerText();
+  const recoveryText=await review.locator('pre code').nth(1).innerText();
+  expect(JSON.parse(frozenText)).toEqual(command);
+  const firstReads=[{path:api[0],method:'POST',body:JSON.stringify(target)},
+    {path:api[1],method:'POST',body:JSON.stringify(command)}];
+  await page.waitForTimeout(200); expect(reads).toEqual(firstReads);
+  // Reset the previously released promise so the retry is genuinely in flight.
+  held=new Promise(resolve=>{release=resolve;}); mode='allowed';
+  const retry=page.getByRole('button',{name:'Retry original authorization approval',exact:true});
+  await expect(retry).toBeEnabled();
+  await retry.evaluate((node:HTMLButtonElement)=>{node.click();node.click();});
+  await expect.poll(()=>reads.filter(r=>r.path===api[1]).length).toBe(2);
+  await expect(result).toContainText('Operation phase: sending');
+  for(const name of ['Send confirmed authorization approval','Retry original authorization approval','Query original audit without resubmitting','Reload context for a new approval']) {
+    await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  }
+  await expect(review.locator('pre code').first()).toHaveText(frozenText);
+  await expect(review.locator('pre code').nth(1)).toHaveText(recoveryText);
+  await expect(result.locator('dl')).toHaveCount(0);
+  const expectedReads=[...firstReads,{path:api[1],method:'POST',body:JSON.stringify(command)}];
+  await page.waitForTimeout(200); expect(reads).toEqual(expectedReads);
+  release?.();
+  await expect(result).toContainText('Operation phase: confirmed');
+  await exactFields(result,receipt(command),receiptLabels);
+  await expect(result.getByText(historicalEnglish,{exact:true})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Open original approval audit',exact:true})).toHaveAttribute('href','/activity/'+receipt(command).audit_event_no);
+  expect(JSON.parse(await review.locator('pre code').first().innerText())).toEqual(command);
+  await expect(review.locator('pre code').first()).toHaveText(frozenText);
+  await expect(review.locator('pre code').nth(1)).toHaveText(recoveryText);
+  for(const name of ['Send confirmed authorization approval','Retry original authorization approval','Query original audit without resubmitting']) {
+    await expect(page.getByRole('button',{name,exact:true})).toHaveCount(0);
+  }
+  await page.waitForTimeout(200); expect(reads).toEqual(expectedReads);
+});
