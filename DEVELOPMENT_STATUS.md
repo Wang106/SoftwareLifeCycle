@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-06（UTC+8）首页加载与故障呈现候选
+
+PR183已保护合并main `1fcf1c6ce253038646a6c3b8f6f00fa963714565`，tree `3a036a08c32b1a08ec89623cbcd9bd601d3bd5f3`与审核候选一致。[main CI42213599246](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42213599246) attempt1全成功：2103前端、2861后端＋64子测、296PG无skip、52自动化/126守卫/0029往返、实际8＋16严格浏览器。Cloudflare生产build `2904f80f-b5c1-4bc6-9e76-3bae2baace0e` / version `acd07c6e-c6a9-4767-8006-6725fa590991`成功；Actions部署42215303207与continuation42215303374为skipped。
+
+当前优先用户报告的首页空白/切换加载问题。只读线上核查显示框架先出现、随后实时数据不可用；Render后端因旧库DNS失败而启动失败、未监听端口，不能以Cloudflare成功当后端健康。用户不保留/不重建旧库，本包不修改任何服务配置或恢复数据库。仅改首页加载卡片/故障提示与回归测试，保持15秒预算、共享API、权限、预取和原有门禁不变，不声称恢复数据或减少实际网络耗时。详见[首页呈现边界](docs/dashboard-loading-unavailable.md)。
+
+当前本地候选未发布，新包精确head CI待核验；离线依赖下载未开始。后续仍优先离线准备及日志/备份恢复缺口，性能更改按实测证据限定。业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。
+
+---
+
 ## 当前检查点 — 2026-11-06（UTC+8）离线npm依赖清单候选
 
 PR182已保护合并main `aa7fabb6638cef2010294e042ace41939acb7ee8`；[main CI42201806100](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42201806100) attempt1全成功：2103前端、2846后端＋26子测、296PG无skip、52自动化/126守卫/0029往返、实际8＋16严格浏览器。Cloudflare生产build `1f9241ad-76af-4821-9de7-a43a3ac5d991` / version `cd50d5d6-4da8-4cf8-a7d6-0838b2a2aedf`成功；部署42203584979和continuation42203585077为skipped，不等于线上业务健康。
