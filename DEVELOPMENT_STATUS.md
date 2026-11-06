@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-06（UTC+8）离线npm依赖清单候选
+
+PR182已保护合并main `aa7fabb6638cef2010294e042ace41939acb7ee8`；[main CI42201806100](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42201806100) attempt1全成功：2103前端、2846后端＋26子测、296PG无skip、52自动化/126守卫/0029往返、实际8＋16严格浏览器。Cloudflare生产build `1f9241ad-76af-4821-9de7-a43a3ac5d991` / version `cd50d5d6-4da8-4cf8-a7d6-0838b2a2aedf`成功；部署42203584979和continuation42203585077为skipped，不等于线上业务健康。
+
+当前独立包仅新增标准库只读npm离线清单/本地tarball摘要校验工具、测试和交接。保留全部平台/可选依赖，不下载、不运行安装脚本、不构建镜像或连接公司服务器。详见[离线依赖清单](docs/offline-npm-dependency-inventory.md)。当前未发布，新包自己的CI待核对；不是离线部署完成。容器运行器和可选构建环境仍缺，Python完整依赖锁、镜像/断网验收、日志/磁盘诊断、数据库与软件文件备份恢复按后续独立范围推进。
+
+业务36/44=82%、增量0，模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0、浏览器阶段1/4、有限计划8/8不变。旧pending为历史，不恢复历史一次性授权。
+
+---
+
 ## 当前检查点 — 2026-11-06（UTC+8）PR181已合并，离线镜像演练设计
 
 PR181正常保护合并至main `e6e03b76f8e662652cf0ad321912eeac885ee9e1`，tree `55185792709268f546468f06ed1a3a59ffe15855`与审核候选一致。独立[main CI42134422605](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42134422605) attempt1四job全部成功：2103前端、2846后端＋26子测、296 PG无skip、52自动化/126守卫/0029往返；实际8条Next＋16条组件通过严格报告，固定签名Chrome157.0.8103.39、sandbox=true、零失败/跳过/重试。Cloudflare生产build `2f18577e-ce94-425b-8906-6383ed343d18` / version `e6be5ffe-2ac6-48c9-a7ba-638e839d4360`成功；Actions部署42136123760、continuation42136123717为skipped，不等于线上数据库/业务健康。
