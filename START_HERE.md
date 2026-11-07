@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-07（UTC+8）真实 npm 制品与独立缓存安装准备
+
+PR190 已正常保护合并 main `33580defdb3e04d7240c1862ba26a7eb594be49d`，tree `e76ed0fdf899f94f0d657562b6456d7761e4157c` 与独立审核版本一致。[main CI42333226573](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42333226573) 全成功：2116 前端、2997 后端＋231 子测试、296 PostgreSQL 模块案例且零跳过、实际8＋16严格浏览器和聚合门禁。Cloudflare 生产 build `fbf6eb60-8d9c-49d9-b5e2-9f67c8b78363` / version `0e39ef4a-4070-41a2-98c6-beaef11bd5ef` 成功；Render 同提交部署 `dep-dbn9g07avr4c73a8jk80` 为 update_failed，日志仍旧库DNS失败。Actions部署42334039708/continuation42334039726为skipped，不等于后端恢复。
+
+上一包30个真实Python wheel、完整哈希锁及新venv本地安装已完成，目标Ubuntu或完整镜像尚未验收。当前包落实原前端锁的399个唯一npm tarball及全平台可选依赖，准备真实字节/元数据审计、新独立缓存安装及Next/OpenNext构建。仅使用官方来源、独立Node22工具链和仓库外新制品目录；不更改原锁、生产配置、CI或网络安全设置。399个真实制品共785,874,731字节SHA512全部匹配，原锁412项/78optional/4脚本标志保留，2项fsevents实际脚本差异明确记录。独立官方Node22.23.4/npm10.9.9新缓存安装347包，esbuild/workerd脚本真实执行，原生功能、2116前端测试、完整cf:build及auth:check成功；922源文件前后摘要不变。独立复审重建清单与399缓存内容、1979构建产物摘要一致，无阻断。最终30项新增/178项离线、2203后端＋295子测试、52自动化/126守卫通过，824因缺PG环境跳过。候选尚未发布，新提交完整CI待核验。npm --offline不能阻止依赖脚本自行HTTP回退，不等于物理断网；本机glibc2.41不代表Ubuntu24.04或生产Alpine/musl通过。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。二进制/cache/build/log不提交；公司服务器、真实身份写入、完整镜像和断网/联合恢复验收仍未完成。
+
+---
+
 ## 当前检查点 — 2026-11-07（UTC+8）后端 Python 离线依赖准备
 
 PR189 已正常保护合并 main `213e969f6e97b4c7f4ec5acbca48074c26b76449`，tree `bcec3da0106445b04a4154676762b66203825d4d` 与独立审核版本一致。[main CI42327239163](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42327239163) 全成功：2116 前端、2963 后端＋181 子测试、296 PostgreSQL 模块案例且零跳过、实际 8＋16 严格浏览器和聚合门禁。Cloudflare 生产 build `ac384575-44aa-4138-a52f-8ed688613e2b` / version `f1a18a6e-bc85-4bb7-a40f-49e0b44dd533` 成功；Render 同提交部署 `dep-dbn8dmfb9u1s73ceo0i0` 为 update_failed，最新日志仍为旧库 DNS 失败。Actions 部署42328517533/continuation42328517525为 skipped，不等于服务恢复。独立进程合成恢复通过不代表生产备份或联合恢复验收。
