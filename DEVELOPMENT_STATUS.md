@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-08（UTC+8）离线镜像导出安全诊断
+
+PR192已正常保护合并main `c1da9b12c9ad4aaf9f66068a9d12df24a3b07017`。[main CI42360103124](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42360103124)成功：3060后端＋319子测试、296项PostgreSQL用例零跳过、2116前端、真实8＋16严格浏览器及聚合门禁。Cloudflare生产build `b399bcfc-9f62-462a-8f97-d41d9bf2f064` / version `0f0702a4-d528-4919-ac40-6305fbf1face`成功；Render同提交 `dep-dbnevu2vcj2c738bdto0` update_failed，Actions部署42361115532和continuation42361115285均skipped，不称后端恢复。
+
+用户手动触发的[首轮42412440512](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42412440512)与[次轮42412466405](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42412466405)均在API传统docker-save阶段失败。实际Docker28.0.4、Compose/20GiB前置门槛通过，两轮约92.1GB可用，33项回归通过；阶段顺序证明依赖获取/审计与API build命令返回成功，但不能证明save或archive校验通过。web构建、两种native smoke与Compose解析未到达。Moby28经典导出可包含LayerSources，是源码支持的兼容风险，尚不能确定为本次原因。
+
+当前小包仅增加镜像inspect/save/归档读取/原预检的固定安全诊断码与失败回归。未知错误仍隐藏原文，不向公开诊断输出路径、命令输出或凭据；原预检、镜像配方、工作流、20GiB及保护门禁不变，不转写或放宽归档，不触发新实际验收。13项新增诊断回归先失败后通过，46项集中及224项全离线测试、2116前端、类型/编译、52自动化/126守卫通过；独立复审及29项额外对抗检查通过，无阻断。本地pytest依赖不可用，完整后端/真实PG及浏览器留待精确CI，不将集中检查称全量通过。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。下一步精确候选CI/受保护合并后，在明确授权的实际运行中取得安全诊断证据，再修复确定原因；物理断网、业务/DB、公司服务器及联合恢复未验收。
+
+---
+
 ## 当前检查点 — 2026-11-07（UTC+8）专用离线镜像配方与手动验收准备
 
 PR191 已正常保护合并 main `9cd5517611390b7e427b7de64e3c743a41c75d10`，tree `9f578bf5c95fc9d900a5b166f2bea917489481aa` 与独立审核版本一致。[main CI42337813554](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42337813554) 全成功：2116前端、3027后端＋295子测试、296 PostgreSQL模块案例且零跳过、实际8＋16严格浏览器和聚合门禁。Cloudflare生产build `38f312ab-b4d7-4297-b448-bb7f7eda31c7` / version `94a63b1c-10a1-4512-a45d-ebecde973c4f`成功；Render同提交部署 `dep-dbnacq8ae00c738i8jq0` update_failed，旧库未恢复。Actions部署42338526553/continuation42338526595为skipped，不等于服务恢复。
