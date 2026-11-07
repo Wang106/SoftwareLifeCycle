@@ -9,7 +9,7 @@ recipes, a bounded orchestration script, regression contracts and one **manual**
 standard-runner workflow. The production Dockerfiles, locks, deployment workflows,
 preflight, CI/branch protection and business scope are unchanged.
 
-## What has actually been checked
+## Initial implementation evidence (before PR192)
 
 Official Docker Hub public HTTPS index, linux/amd64 manifest and config bytes were
 retrieved and their SHA256 digests checked on 2026-11-07. Anonymous public pull
@@ -37,7 +37,7 @@ workerd module export, sensitive filename rejection and default local Docker
 context before correction. **No image build/save, container smoke or real Compose
 parse has passed here. The manual workflow has not been dispatched by this package.**
 
-The 33 new regressions and all 211 existing/new offline regressions pass locally.
+The original 33 new regressions and all 211 original offline regressions passed locally.
 The packaging acquisition/audit function was also exercised against private copies
 of the already retained **real** 30 wheels and 399 tarballs, substituting local
 copy only for network acquisition. The existing pip closure passed and the real
@@ -218,3 +218,68 @@ limit or branch/test gate is changed.
 
 Business36/44=82%, delta0; modules100/100demo/100demo/100/89/60/17;
 plans100/100/20/33/40/40/0; browser-stage1/4 and finite-plan8/8 remain unchanged.
+
+
+## Safe export diagnostics follow-up
+
+Diagnostic baseline: main `c1da9b12c9ad4aaf9f66068a9d12df24a3b07017` (PR192).
+The two subsequent operator-requested manual runs
+[42412440512](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42412440512)
+and [42412466405](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42412466405)
+failed at the original `api traditional docker-save validation` stage. The first
+run reported Docker 28.0.4, 92,147,007,488 free bytes and passing host prerequisites
+and 33 contracts. Those checks do not establish archive or runtime acceptance.
+The stage bundled image-ID inspection, the save command, hashing and preflight;
+its old fixed error did not distinguish them. The actual original failure reason
+cannot be recovered from that message alone, and is not declared to be OCI.
+
+A verified compatibility risk also exists with Docker's **classic** exporter:
+[Moby v28.0.4 save.go](https://github.com/moby/moby/blob/v28.0.4/image/tarexport/save.go#L310-L315)
+writes nonempty `LayerSources` metadata, populated with
+[layer descriptors](https://github.com/moby/moby/blob/v28.0.4/image/tarexport/save.go#L600-L605).
+The unchanged preflight permits only Config/RepoTags/Layers in that record.
+A synthetic docker-save tar with the additional field is still rejected. This
+source-level incompatibility is not proof that either actual run reached that
+specific rejection, and the extra field is **not** newly accepted or removed.
+
+The follow-up changes only the orchestration script, its tests and this document.
+It emits `BLOCKED` with one fixed, allowlisted export code and service role
+(`api`, `web` or `unknown`), then exits nonzero:
+
+- `IMAGE_INSPECT_FAILED` / `SAVE_COMMAND_FAILED`: the command wrapper reported a
+  nonzero command result. No archive validation is claimed at either point.
+- `IMAGE_INSPECT_TIMEOUT` / `SAVE_COMMAND_TIMEOUT`: the subprocess timed out;
+  whether a daemon-side operation finished may be uncertain. Do not blindly retry.
+- `IMAGE_INSPECT_ERROR` / `SAVE_COMMAND_ERROR`: another invocation, ID parsing or
+  local logging error. These do not prove that the underlying command did not run.
+- `ARCHIVE_READ_FAILED`: archive open/read/hash/stat or a later preflight read failed.
+- `ARCHIVE_TAR_INVALID` / `ARCHIVE_JSON_INVALID`: the corresponding parser rejected
+  its input. No raw parser message or input value is emitted.
+- `ARCHIVE_FIELDS_REJECTED`: an exact original field-set check rejected the input;
+  it does not print field names or prove which extra/missing field caused it.
+- Other exact original preflight reasons map to fixed `ARCHIVE_*` codes for
+  provenance, checksum/size, paths/types, metadata/image count, config digest,
+  platform/revision, environment/GPG fingerprint, Volumes or layers/digests.
+  The mapping is an explicit finite dictionary, not prefix/substr matching.
+- `ARCHIVE_VALIDATION_FAILED`: unknown, malformed or lookalike exceptions, and any
+  attempted code not in the fixed allowlist. Exception string methods are not used.
+
+Only allowlisted code and role constants enter the public export diagnostic.
+Raw exception text, command output, filenames/paths, archive values, environment
+values, credentials and the raw stage/role are never interpolated into that public
+message. The existing private `commands.log` still records command arguments and
+stdout/stderr, which can contain paths or other raw values; it is not automatically
+published. No log/archive upload, workflow change, Docker setting change, retry
+or archive conversion is introduced. `archive_image()` remains byte-for-byte
+unchanged and is still the sole acceptance gate, called once against the original
+save bytes. Diagnostics expose why a check stopped, not permission to weaken it.
+
+The 13 failure-first diagnostic regressions cover distinct inspect/save/hash and
+preflight failures, timeout behavior, real synthetic tar/JSON and LayerSources
+rejection, known-reason mapping, unknown-code/role fallback and private-data sentinels,
+including retaining api/web without exposing a raw stage or role. Together with
+the existing tests, 46 focused and 224 full offline tests pass.
+These are local static/synthetic checks, not a new manual run, image build/export,
+Docker acceptance, application/DB startup or company deployment. A newly reviewed
+manual run is still needed to observe the actual fixed code; none is automatically
+triggered by this change. Business and acceptance percentages remain unchanged.
