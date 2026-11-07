@@ -43,6 +43,68 @@ LOG_ROOT = None
 STEP = 'host prerequisites'
 
 
+# Exact trusted validator messages are selectors, never public exception text.
+ARCHIVE_REASON_CODES = {
+    'duplicate JSON field': 'ARCHIVE_JSON_DUPLICATE_FIELD',
+    'unexpected or missing fields': 'ARCHIVE_FIELDS_REJECTED',
+    'image provenance mismatch': 'ARCHIVE_PROVENANCE_MISMATCH',
+    'invalid archive checksum': 'ARCHIVE_CHECKSUM_FORMAT_REJECTED',
+    'image must use immutable ID': 'ARCHIVE_IMAGE_ID_REJECTED',
+    'archive size mismatch': 'ARCHIVE_SIZE_MISMATCH',
+    'archive checksum mismatch': 'ARCHIVE_CHECKSUM_MISMATCH',
+    'unsafe or duplicate archive path': 'ARCHIVE_PATH_REJECTED',
+    'archive links or special files refused': 'ARCHIVE_ENTRY_TYPE_REJECTED',
+    'missing or oversized image metadata': 'ARCHIVE_METADATA_REJECTED',
+    'archive must contain exactly one image': 'ARCHIVE_IMAGE_COUNT_REJECTED',
+    'image config digest mismatch': 'ARCHIVE_CONFIG_DIGEST_MISMATCH',
+    'image platform mismatch': 'ARCHIVE_PLATFORM_MISMATCH',
+    'image revision label mismatch': 'ARCHIVE_REVISION_MISMATCH',
+    'invalid image environment': 'ARCHIVE_ENV_INVALID',
+    'unreviewed baked image environment': 'ARCHIVE_ENV_REJECTED',
+    'invalid public GPG fingerprint': 'ARCHIVE_GPG_FINGERPRINT_REJECTED',
+    'image-declared writable volumes refused': 'ARCHIVE_VOLUMES_REJECTED',
+    'invalid image layers': 'ARCHIVE_LAYERS_REJECTED',
+    'missing image layer': 'ARCHIVE_LAYER_MISSING',
+    'image layer digest mismatch': 'ARCHIVE_LAYER_DIGEST_MISMATCH',
+}
+EXPORT_CODES = frozenset(ARCHIVE_REASON_CODES.values()) | {
+    'IMAGE_INSPECT_FAILED', 'IMAGE_INSPECT_TIMEOUT', 'IMAGE_INSPECT_ERROR',
+    'SAVE_COMMAND_FAILED', 'SAVE_COMMAND_TIMEOUT', 'SAVE_COMMAND_ERROR',
+    'ARCHIVE_READ_FAILED', 'ARCHIVE_TAR_INVALID', 'ARCHIVE_JSON_INVALID',
+    'ARCHIVE_VALIDATION_FAILED',
+}
+
+
+def safe_export_code(code):
+    return code if type(code) is str and code in EXPORT_CODES else 'ARCHIVE_VALIDATION_FAILED'
+
+
+def safe_export_role(role):
+    return role if type(role) is str and role in ('api', 'web') else 'unknown'
+
+
+class ExportFailure(ValueError):
+    def __init__(self, code, role='unknown'):
+        self.code = safe_export_code(code)
+        self.role = safe_export_role(role)
+        super().__init__(self.code)
+
+
+def fixed_preflight_reason(error):
+    if type(error) is preflight.Invalid and len(error.args) == 1 and type(error.args[0]) is str:
+        return error.args[0]
+    return None
+
+
+def export_command_code(error, prefix):
+    if isinstance(error, subprocess.TimeoutExpired):
+        return prefix + '_TIMEOUT'
+    if fixed_preflight_reason(error) == 'command failed':
+        return prefix + '_FAILED'
+    # Includes local invocation/logging errors: command outcome may be uncertain.
+    return prefix + '_ERROR'
+
+
 def command(args, *, cwd=None, timeout=120):
     """No shell, inherited credentials, retries, or failure text in public output."""
     env = {**(RUN_ENV or {'PATH': os.environ.get('PATH', ''), 'LANG': 'C.UTF-8'}),
@@ -242,15 +304,34 @@ def image_id(role, commit):
 
 
 def export_image(role, commit, destination):
-    identity = image_id(role, commit)
+    try:
+        identity = image_id(role, commit)
+    except Exception as error:
+        raise ExportFailure(export_command_code(error, 'IMAGE_INSPECT'), role) from None
     archive = destination / (role + '.tar')
-    command(['docker', 'image', 'save', '--output', str(archive), identity], timeout=600)
-    with archive.open('rb') as stream:
-        sha256 = preflight.digest(stream)
-    item = {'archive': archive.name, 'size': archive.stat().st_size, 'sha256': sha256,
-            'image_id': identity, 'platform': 'linux/amd64', 'source_commit': commit}
+    try:
+        command(['docker', 'image', 'save', '--output', str(archive), identity], timeout=600)
+    except Exception as error:
+        raise ExportFailure(export_command_code(error, 'SAVE_COMMAND'), role) from None
+    try:
+        with archive.open('rb') as stream:
+            sha256 = preflight.digest(stream)
+        item = {'archive': archive.name, 'size': archive.stat().st_size, 'sha256': sha256,
+                'image_id': identity, 'platform': 'linux/amd64', 'source_commit': commit}
+    except Exception:
+        raise ExportFailure('ARCHIVE_READ_FAILED', role) from None
     # Never rewrite an OCI/containerd export or relax the existing preflight.
-    preflight.archive_image(archive, item, commit)
+    try:
+        preflight.archive_image(archive, item, commit)
+    except Exception as error:
+        code = ARCHIVE_REASON_CODES.get(fixed_preflight_reason(error), 'ARCHIVE_VALIDATION_FAILED')
+        if isinstance(error, preflight.tarfile.TarError):
+            code = 'ARCHIVE_TAR_INVALID'
+        elif isinstance(error, (json.JSONDecodeError, UnicodeDecodeError)):
+            code = 'ARCHIVE_JSON_INVALID'
+        elif isinstance(error, OSError):
+            code = 'ARCHIVE_READ_FAILED'
+        raise ExportFailure(code, role) from None
     return item
 
 
@@ -421,6 +502,11 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         result = check_host() if args.check_host else run()
+    except ExportFailure as error:
+        print('BLOCKED: offline image rehearsal export role=' + safe_export_role(error.role) +
+              '; code=' + safe_export_code(error.code) +
+              '; no offline or deployment acceptance claimed.', file=sys.stderr)
+        return 2
     except ProxyBlocked:
         print('BLOCKED: inherited proxy configuration requires review; no proxy bypass or artifact request performed.',
               file=sys.stderr)
