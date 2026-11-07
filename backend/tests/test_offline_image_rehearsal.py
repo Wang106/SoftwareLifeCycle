@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tarfile
 import unittest
 from unittest.mock import patch
 
@@ -391,6 +392,170 @@ class ImageRehearsalTests(unittest.TestCase):
             self.assertEqual(rehearsal.main(['--check-host']), 2)
             self.assertNotIn('SECRET_SENTINEL', err.getvalue())
             self.assertIn('BLOCKED', err.getvalue())
+
+
+class ExportDiagnosticTests(unittest.TestCase):
+    SENTINEL = 'PRIVATE_SENTINEL_password_url_path'
+    COMMIT = 'a' * 40
+
+    def archive(self, *, extra=None, config_change=None, manifest_bytes=None, layer_bytes=None):
+        layer = b'synthetic layer bytes'
+        config = {'os': 'linux', 'architecture': 'amd64',
+                  'config': {'Labels': {'org.opencontainers.image.revision': self.COMMIT},
+                             'Env': ['PATH=/usr/local/bin:/usr/bin:/bin']},
+                  'rootfs': {'type': 'layers', 'diff_ids': ['sha256:' + hashlib.sha256(layer).hexdigest()]}}
+        if config_change:
+            config['config'].update(config_change)
+        config_raw = json.dumps(config).encode()
+        identity = 'sha256:' + hashlib.sha256(config_raw).hexdigest()
+        manifest = {'Config': 'config.json', 'RepoTags': None, 'Layers': ['layer.tar']}
+        manifest.update(extra or {})
+        members = [('config.json', config_raw),
+                   ('manifest.json', manifest_bytes if manifest_bytes is not None else json.dumps([manifest]).encode()),
+                   ('layer.tar', layer if layer_bytes is None else layer_bytes)]
+        output = io.BytesIO()
+        with tarfile.open(fileobj=output, mode='w') as archive:
+            for name, raw in members:
+                info = tarfile.TarInfo(name)
+                info.size = len(raw)
+                archive.addfile(info, io.BytesIO(raw))
+        return output.getvalue(), identity
+
+    def export_cli(self, raw=None, identity=None, *, inspect_error=None, save_error=None, role='api'):
+        if raw is None:
+            raw, identity = self.archive()
+        calls = []
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            def save(cmd, **kwargs):
+                calls.append(cmd)
+                self.assertEqual(cmd[:3], ['docker', 'image', 'save'])
+                if save_error is not None:
+                    raise save_error
+                Path(cmd[cmd.index('--output') + 1]).write_bytes(raw)
+                return b''
+            with patch.object(rehearsal, 'image_id', return_value=identity, side_effect=inspect_error), \
+                 patch.object(rehearsal, 'command', side_effect=save), \
+                 patch.object(rehearsal, 'run', side_effect=lambda: rehearsal.export_image(role, self.COMMIT, target)), \
+                 patch('sys.stdout', new_callable=io.StringIO) as out, \
+                 patch('sys.stderr', new_callable=io.StringIO) as err:
+                code = rehearsal.main(['--run'])
+                return code, out.getvalue(), err.getvalue(), calls
+
+    def assert_code(self, result, expected):
+        code, out, err, _calls = result
+        self.assertEqual(code, 2)
+        self.assertEqual(out, '')
+        self.assertIn('code=' + expected + ';', err)
+        self.assertNotIn(self.SENTINEL, err)
+
+    def test_real_valid_synthetic_archive_still_passes_unchanged_gate(self):
+        code, out, err, calls = self.export_cli()
+        self.assertEqual(code, 0)
+        self.assertEqual(err, '')
+        self.assertEqual(json.loads(out)['source_commit'], self.COMMIT)
+        self.assertEqual(len(calls), 1)
+
+    def test_moby_extra_layersources_is_diagnosed_but_still_rejected(self):
+        raw, identity = self.archive(extra={'LayerSources': {self.SENTINEL: {'urls': [self.SENTINEL]}}})
+        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_FIELDS_REJECTED')
+
+    def test_actual_environment_and_layer_digest_rejections_are_distinct(self):
+        raw, identity = self.archive(config_change={'Env': ['DATABASE_URL=' + self.SENTINEL]})
+        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_ENV_REJECTED')
+        raw, identity = self.archive(layer_bytes=self.SENTINEL.encode())
+        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_LAYER_DIGEST_MISMATCH')
+
+    def test_invalid_tar_and_json_are_hidden_behind_fixed_codes(self):
+        self.assert_code(self.export_cli(self.SENTINEL.encode(), 'sha256:' + 'a' * 64), 'ARCHIVE_TAR_INVALID')
+        raw, identity = self.archive(manifest_bytes=('{' + self.SENTINEL).encode())
+        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_JSON_INVALID')
+
+    def test_inspect_failure_does_not_attempt_save_or_archive_validation(self):
+        for error, code in [(rehearsal.preflight.Invalid('command failed'), 'IMAGE_INSPECT_FAILED'),
+                            (subprocess.TimeoutExpired(['docker', self.SENTINEL], 120), 'IMAGE_INSPECT_TIMEOUT'),
+                            (RuntimeError(self.SENTINEL), 'IMAGE_INSPECT_ERROR')]:
+            with self.subTest(code=code), patch.object(rehearsal.preflight, 'archive_image') as validate:
+                result = self.export_cli(inspect_error=error)
+                self.assert_code(result, code)
+                self.assertEqual(result[3], [])
+                validate.assert_not_called()
+
+    def test_save_failure_or_timeout_does_not_reach_archive_validation(self):
+        for error, code in [(rehearsal.preflight.Invalid('command failed'), 'SAVE_COMMAND_FAILED'),
+                            (subprocess.TimeoutExpired(['docker', self.SENTINEL], 600), 'SAVE_COMMAND_TIMEOUT'),
+                            (OSError(self.SENTINEL), 'SAVE_COMMAND_ERROR')]:
+            with self.subTest(code=code), patch.object(rehearsal.preflight, 'archive_image') as validate:
+                result = self.export_cli(save_error=error)
+                self.assert_code(result, code)
+                self.assertEqual(len(result[3]), 1)
+                validate.assert_not_called()
+
+    def test_hash_read_failure_is_separate_from_preflight_rejection(self):
+        with patch.object(rehearsal.preflight, 'digest', side_effect=OSError(self.SENTINEL)), \
+             patch.object(rehearsal.preflight, 'archive_image') as validate:
+            self.assert_code(self.export_cli(), 'ARCHIVE_READ_FAILED')
+            validate.assert_not_called()
+
+    def test_each_known_preflight_reason_maps_to_a_fixed_code(self):
+        for reason, code in rehearsal.ARCHIVE_REASON_CODES.items():
+            with self.subTest(code=code), \
+                 patch.object(rehearsal.preflight, 'archive_image', side_effect=rehearsal.preflight.Invalid(reason)):
+                self.assert_code(self.export_cli(), code)
+
+    def test_unknown_or_lookalike_preflight_errors_never_disclose_text(self):
+        for error in (ValueError(self.SENTINEL), KeyError(self.SENTINEL),
+                      rehearsal.preflight.Invalid('unexpected or missing fields ' + self.SENTINEL),
+                      rehearsal.preflight.Invalid({'secret': self.SENTINEL})):
+            with self.subTest(kind=type(error).__name__), \
+                 patch.object(rehearsal.preflight, 'archive_image', side_effect=error):
+                self.assert_code(self.export_cli(), 'ARCHIVE_VALIDATION_FAILED')
+
+    def test_unknown_exception_string_method_is_not_called(self):
+        class HostileError(Exception):
+            def __str__(self):
+                raise AssertionError('exception text must not be evaluated')
+        with patch.object(rehearsal.preflight, 'archive_image', side_effect=HostileError()):
+            self.assert_code(self.export_cli(), 'ARCHIVE_VALIDATION_FAILED')
+
+    def test_export_diagnostic_keeps_allowlisted_role_without_raw_step(self):
+        for role in ('api', 'web'):
+            with self.subTest(role=role), patch.object(rehearsal, 'STEP', self.SENTINEL), \
+                 patch.object(rehearsal.preflight, 'archive_image',
+                              side_effect=rehearsal.preflight.Invalid('unexpected or missing fields')):
+                result = self.export_cli(role=role)
+                self.assert_code(result, 'ARCHIVE_FIELDS_REJECTED')
+                self.assertIn('role=' + role + ';', result[2])
+
+    def test_diagnostic_constructor_and_emitter_reject_unknown_roles(self):
+        for role in (self.SENTINEL, None, ['api'], {'role': 'api'}):
+            for mutate in (False, True):
+                failure = rehearsal.ExportFailure('SAVE_COMMAND_FAILED', role=role)
+                if mutate:
+                    failure.role = role
+                with self.subTest(kind=type(role).__name__, mutate=mutate), \
+                     patch.object(rehearsal, 'run', side_effect=failure), \
+                     patch.object(rehearsal, 'STEP', self.SENTINEL), \
+                     patch('sys.stdout', new_callable=io.StringIO) as out, \
+                     patch('sys.stderr', new_callable=io.StringIO) as err:
+                    self.assertEqual(rehearsal.main(['--run']), 2)
+                    self.assertEqual(out.getvalue(), '')
+                    self.assertIn('role=unknown;', err.getvalue())
+                    self.assertIn('code=SAVE_COMMAND_FAILED;', err.getvalue())
+                    self.assertNotIn(self.SENTINEL, err.getvalue())
+
+    def test_diagnostic_constructor_and_emitter_reject_unknown_codes(self):
+        for mutate in (False, True):
+            failure = rehearsal.ExportFailure(self.SENTINEL)
+            if mutate:
+                failure.code = self.SENTINEL
+            with patch.object(rehearsal, 'run', side_effect=failure), \
+                 patch('sys.stdout', new_callable=io.StringIO) as out, \
+                 patch('sys.stderr', new_callable=io.StringIO) as err:
+                self.assertEqual(rehearsal.main(['--run']), 2)
+                self.assertEqual(out.getvalue(), '')
+                self.assertIn('code=ARCHIVE_VALIDATION_FAILED;', err.getvalue())
+                self.assertNotIn(self.SENTINEL, err.getvalue())
 
 
 if __name__ == '__main__':
