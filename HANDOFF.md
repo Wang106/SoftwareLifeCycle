@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-07（UTC+8）后端 Python 离线依赖准备
+
+PR189 已正常保护合并 main `213e969f6e97b4c7f4ec5acbca48074c26b76449`，tree `bcec3da0106445b04a4154676762b66203825d4d` 与独立审核版本一致。[main CI42327239163](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42327239163) 全成功：2116 前端、2963 后端＋181 子测试、296 PostgreSQL 模块案例且零跳过、实际 8＋16 严格浏览器和聚合门禁。Cloudflare 生产 build `ac384575-44aa-4138-a52f-8ed688613e2b` / version `f1a18a6e-bc85-4bb7-a40f-49e0b44dd533` 成功；Render 同提交部署 `dep-dbn8dmfb9u1s73ceo0i0` 为 update_failed，最新日志仍为旧库 DNS 失败。Actions 部署42328517533/continuation42328517525为 skipped，不等于服务恢复。独立进程合成恢复通过不代表生产备份或联合恢复验收。
+
+当前包准备固定运行依赖的真实 Python wheelhouse、完整传递依赖哈希锁、本地校验工具和新 venv 本地安装证据。目标限定 Linux amd64、CPython3.12、manylinux glibc 不高于2.39；当前执行机为3.12.14/glibc2.41，不能替代 Ubuntu24.04 或最终镜像验收。不改生产 Dockerfile、原始依赖版本、权限或门禁，不调用启动迁移，不接触公司服务器/数据库。30 个真实官方 wheel 共23,939,029字节已取得，完整版本/SHA256锁与来源清单已生成；独立新 venv 使用本地 --no-index/--require-hashes 安装、pip check 和19项模块/原生扩展导入通过。二进制制品仅仓库外保留不提交。独立复核真实清单重建和来源哈希一致；畸形报告 URL 固定安全错误处理已先失败回归再修复并通过独立复审。最终本地34项新增/148项离线、2173后端＋231子测试、2116前端、类型/编译、52自动化/126守卫通过；824因缺PG环境跳过。候选尚未发布，新提交真实PG/严格浏览器待完整CI。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。完整镜像/真实断网运行、日志轮转及批准环境联合恢复仍未完成。
+
+---
+
 ## 当前检查点 — 2026-11-07（UTC+8）保留合成软件包独立进程恢复候选
 
 PR188已正常保护合并main `2680fdb5421e5cc69922aa83e7170598d66ce6ec`，tree `0c07c9614fe1c7a4ac96632a3edfb28895659d5f`与审核候选一致。[main CI42256199991](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42256199991)全成功：2116前端、2935后端＋127子测、296PG模块用例无skip、52自动化/126守卫/0029往返、实际8＋16严格浏览器。PR188原CI attempt1浏览器排队取消、未执行，正常单次重跑后attempt2成功；不推断取消原因、不降低门禁。Cloudflare生产build `24559940-daeb-4c98-b733-4d4eb04cc6e5` / version `698538e4-9b3e-44ab-bb5f-88ea71954cf6`成功；Render同提交部署 `dep-dbn0av8n74is73bklufg` update_failed，日志仍旧库DNS失败及无监听端口。Actions部署42258309623/continuation42258309641为skipped，不等于实际部署成功。
