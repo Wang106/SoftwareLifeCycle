@@ -1,0 +1,67 @@
+name: Manual offline image rehearsal
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-image-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearsal:
+    name: Connected image preparation, not offline acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check existing host prerequisites before checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Linux
+          test "$(uname -m)" = x86_64
+          test -z "${DOCKER_HOST:-}"
+          test -z "${DOCKER_CONTEXT:-}"
+          docker --context default version
+          docker --context default info --format '{{json .}}' > "$RUNNER_TEMP/slc-docker-info.json"
+          docker --context default compose version --short > "$RUNNER_TEMP/slc-compose-version.txt"
+          python3 - <<'PY'
+          import json, os, pathlib, re, shutil, sys, tempfile
+          assert sys.version_info[:2] == (3, 12), 'Existing Python 3.12 required; do not install'
+          import pip
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          info = json.loads((root / 'slc-docker-info.json').read_text())
+          version = (root / 'slc-compose-version.txt').read_text().strip()
+          match = re.fullmatch(r'v?(\d+)\.(\d+)\.(\d+)(?:[-+][a-zA-Z0-9.-]+)?', version)
+          assert match and tuple(map(int, match.groups())) >= (2, 30, 0), 'Compose 2.30+ required'
+          assert info['OSType'] == 'linux' and info['Architecture'] in ('amd64', 'x86_64')
+          for location in (tempfile.gettempdir(), info['DockerRootDir']):
+              free = shutil.disk_usage(location).free
+              print('Existing filesystem free bytes:', free)
+              assert free >= 20 * 1024**3, '20 GiB free required; do not reconfigure runner'
+          PY
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify rehearsal contracts without Docker execution
+        run: python3 -m unittest discover -s backend/tests -p test_offline_image_rehearsal.py -v
+      - name: Build, save, validate and smoke without application startup
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/offline_image_rehearsal.py --run > "$RUNNER_TEMP/slc-image-result.json"
+          python3 - <<'PY'
+          import json, os, pathlib
+          result = json.loads((pathlib.Path(os.environ['RUNNER_TEMP']) / 'slc-image-result.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## Connected image rehearsal\n\n')
+              summary.write(result['status'] + '\n\nSource: ' + result['source_commit'] + '\n\n')
+              for role, image in result['images'].items():
+                  summary.write(role + ': ' + image['image_id'] + ', archive SHA256 ' + image['sha256'] + '\n\n')
+              summary.write(result['limitations'] + '\n')
+          PY
+      - name: Record blocked or incomplete result
+        if: ${{ failure() || cancelled() }}
+        run: echo 'Image rehearsal blocked or incomplete. No offline, application, database or deployment acceptance.' >> "$GITHUB_STEP_SUMMARY"
