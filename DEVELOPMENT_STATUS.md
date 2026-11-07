@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-07（UTC+8）保留合成软件包独立进程恢复候选
+
+PR188已正常保护合并main `2680fdb5421e5cc69922aa83e7170598d66ce6ec`，tree `0c07c9614fe1c7a4ac96632a3edfb28895659d5f`与审核候选一致。[main CI42256199991](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42256199991)全成功：2116前端、2935后端＋127子测、296PG模块用例无skip、52自动化/126守卫/0029往返、实际8＋16严格浏览器。PR188原CI attempt1浏览器排队取消、未执行，正常单次重跑后attempt2成功；不推断取消原因、不降低门禁。Cloudflare生产build `24559940-daeb-4c98-b733-4d4eb04cc6e5` / version `698538e4-9b3e-44ab-bb5f-88ea71954cf6`成功；Render同提交部署 `dep-dbn0av8n74is73bklufg` update_failed，日志仍旧库DNS失败及无监听端口。Actions部署42258309623/continuation42258309641为skipped，不等于实际部署成功。
+
+当前包补足原进程退出后的合成文件恢复：仅接受严格合成run ID和操作者另存的预期清单摘要，从固定/tmp下当前用户自己的保留bundle只读核验，再恢复到另一个全新私有目标。不接收任意源/目标路径，不依赖原source，不修改或删除原包，不读取公司文件/真实配置/凭据或连接DB/服务器。详见[独立进程恢复边界](docs/offline-retained-software-restore.md)。不是生产备份、来源签名或DB/软件一致恢复点。最终本地28项新增/114项离线、2139后端＋181子测、2116前端、类型/编译、52自动化/126守卫通过；824因缺PG跳过。实际双进程恢复及独立复审通过。磁盘仅存CANDIDATE，stdout及退出0才是最终成功；关闭错误不盲重试。尚未发布，实际PG/严格浏览器待完整CI。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。完整镜像/断网运行、实际日志轮转及批准环境的联合恢复验收仍未完成。
+
+---
+
 ## 当前检查点 — 2026-11-07（UTC+8）合成软件文件备份与隔离恢复候选
 
 PR187已保护合并main `91b44f8bca19626742f55fc331a5e1d7a29b06cc`，tree `f960c7265c47ebfe619aeae756f2a4ef296427ce`与审核候选一致。[main CI42247542542](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42247542542)全成功：2116前端、2908后端＋114子测、296PG模块用例无skip、52自动化/126守卫/0029往返，实际8＋16严格浏览器。Cloudflare生产build `326b6b0d-c0f7-4497-830c-c7fc3cf52bac` / version `126c688a-d03b-416c-8078-d03b1d75737f`成功；Render同提交部署 `dep-dbmvgs0n74is73bj9geg` update_failed，无监听端口，旧库未恢复。Actions部署42249229855和continuation42249229718为skipped，不等于实际部署成功。日志配置只生成，未执行Docker或真实轮转验收。
