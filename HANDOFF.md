@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-07（UTC+8）专用离线镜像配方与手动验收准备
+
+PR191 已正常保护合并 main `9cd5517611390b7e427b7de64e3c743a41c75d10`，tree `9f578bf5c95fc9d900a5b166f2bea917489481aa` 与独立审核版本一致。[main CI42337813554](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42337813554) 全成功：2116前端、3027后端＋295子测试、296 PostgreSQL模块案例且零跳过、实际8＋16严格浏览器和聚合门禁。Cloudflare生产build `38f312ab-b4d7-4297-b448-bb7f7eda31c7` / version `94a63b1c-10a1-4512-a45d-ebecde973c4f`成功；Render同提交部署 `dep-dbnacq8ae00c738i8jq0` update_failed，旧库未恢复。Actions部署42338526553/continuation42338526595为skipped，不等于服务恢复。
+
+真实Python30wheel及npm399tarball、新隔离环境安装和Next/OpenNext构建已有证据；仍不是完整镜像或物理断网验收。当前包仅实现专用API/web配方、官方基础镜像摘要、受限验收驱动、回归和独立手动Actions工作流。保留生产Dockerfile、原锁和既有CI门禁；仅标准ubuntu24.04、有限超时/并发，不用持久cache、大制品上传、registry或新付费资源。公开标准runner计算免费规则不证明账户无其他费用。
+
+驱动须先核验Docker/Compose>=2.30、amd64和磁盘，真实build/docker-save通过原archive_image规则后，只做非root只读原生模块smoke和Compose配置解析，不启动业务/数据库、迁移或seed，不伪造operator已批准。不改变宿主网络或运行网络隔离。官方Python/Node两个基础镜像的amd64 manifest/config链已核实。两镜像默认拒绝启动，继承代理覆盖明确阻断，smoke异常仅清理本次记录CID且失败不报成功，独立复审无阻断。最终本地33新增/211离线、2236后端＋319子测试、2116前端、类型/编译、52自动化/126守卫通过；824因缺PG环境跳过。真实30wheel/399tarball输入审计链通过，但本地无Docker，host检查如实阻断。候选尚未发布，新提交完整CI和手动镜像验收未执行，不预称镜像可运行。20GiB门槛可能阻断标准runner，传统导出/Compose实际格式仍待核验。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。目标Ubuntu/Alpine、物理断网、公司服务器及完整联合恢复验收仍未完成。
+
+---
+
 ## 当前检查点 — 2026-11-07（UTC+8）真实 npm 制品与独立缓存安装准备
 
 PR190 已正常保护合并 main `33580defdb3e04d7240c1862ba26a7eb594be49d`，tree `e76ed0fdf899f94f0d657562b6456d7761e4157c` 与独立审核版本一致。[main CI42333226573](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42333226573) 全成功：2116 前端、2997 后端＋231 子测试、296 PostgreSQL 模块案例且零跳过、实际8＋16严格浏览器和聚合门禁。Cloudflare 生产 build `fbf6eb60-8d9c-49d9-b5e2-9f67c8b78363` / version `0e39ef4a-4070-41a2-98c6-beaef11bd5ef` 成功；Render 同提交部署 `dep-dbn9g07avr4c73a8jk80` 为 update_failed，日志仍旧库DNS失败。Actions部署42334039708/continuation42334039726为skipped，不等于后端恢复。
