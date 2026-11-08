@@ -8,6 +8,11 @@ on:
         type: boolean
         required: false
         default: false
+      run_api_startup:
+        description: Start this run's API image in an isolated container, without a database (separate runtime approval required)
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -26,6 +31,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 -c 'import os, time; open(os.environ["GITHUB_ENV"], "a").write("REHEARSAL_STARTED_NS=" + str(time.monotonic_ns()) + "\n")'
           test "$(uname -s)" = Linux
           test "$(uname -m)" = x86_64
           test -z "${DOCKER_HOST:-}"
@@ -52,15 +58,18 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify rehearsal contracts without Docker execution
-        run: python3 -m unittest discover -s backend/tests -p test_offline_image_rehearsal.py -v
-      - name: Build, save, validate and smoke without application startup
+        run: |
+          python3 -m unittest discover -s backend/tests -p test_offline_image_rehearsal.py -v
+          python3 -m unittest discover -s backend/tests -p test_offline_api_startup_rehearsal.py -v
+      - name: Build, validate and optionally smoke the isolated API process
         shell: bash
         env:
           EXPORT_IMAGE_BUNDLE: ${{ inputs.export_bundle }}
+          RUN_API_STARTUP: ${{ inputs.run_api_startup }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import hashlib, json, math, os, pathlib, subprocess, sys, tempfile, uuid
+          import hashlib, json, math, os, pathlib, re, signal, subprocess, sys, tempfile, time, uuid
           sys.path.insert(0, 'scripts')
           import offline_image_bundle as bundle
 
@@ -74,6 +83,25 @@ jobs:
               require(root.is_absolute() and root.is_dir())
               option = os.environ['EXPORT_IMAGE_BUNDLE']
               require(option in ('false', 'true'))
+              startup = os.environ['RUN_API_STARTUP']
+              require(startup in ('false', 'true'))
+              # Runner-local timing bookkeeping, not authenticated provenance.
+              # Linux monotonic_ns shares its clock across these job processes.
+              stamp = os.environ['REHEARSAL_STARTED_NS']
+              require(re.fullmatch('[1-9][0-9]{0,19}', stamp) is not None)
+              started, now = int(stamp), time.monotonic_ns()
+              require(0 <= now - started < 3300 * 10**9)
+              deadline = started + 3300 * 10**9
+              api_reserve = 240 if startup == 'true' else 0
+              verify_reserve = 600 if option == 'true' else 0
+
+              def remaining():
+                  return (deadline - time.monotonic_ns()) / 10**9
+
+              def allowance(cap, reserved=0):
+                  available = remaining() - 30 - reserved
+                  require(available > 0)
+                  return min(cap, available)
               commit = os.environ['GITHUB_SHA']
               require(bundle.hexadecimal(commit, 40))
 
@@ -100,7 +128,8 @@ jobs:
                                     parse_constant=finite_float, parse_float=finite_float)
 
               phase = 'checkout'
-              require(child(['git', 'rev-parse', 'HEAD'], 41, 30) == (commit + '\n').encode())
+              require(child(['git', 'rev-parse', 'HEAD'], 41,
+                            allowance(30, verify_reserve + api_reserve)) == (commit + '\n').encode())
               args = [sys.executable, 'scripts/offline_image_rehearsal.py', '--run']
               if option == 'true':
                   # The exporter exclusively creates this path. Collision is a failure,
@@ -110,7 +139,8 @@ jobs:
                   args += ['--export-bundle', str(destination)]
 
               phase = 'rehearsal'
-              result = parse_json(child(args, 4 * 1024**2, 3300))
+              result = parse_json(child(args, 4 * 1024**2,
+                                        allowance(3300, verify_reserve + api_reserve)))
               phase = 'receipt'
               fields = {'status', 'source_commit', 'host', 'bases', 'dependencies', 'images',
                         'source_sha256', 'compose', 'native_smoke', 'limitations'}
@@ -119,6 +149,9 @@ jobs:
                       and bundle.exact(result['source_commit'], commit))
               require(bundle.exact(result['compose'], {'status': 'COMPOSE_PARSED_ONLY',
                       'operator_approval': False, 'application_started': False}))
+              native = result['native_smoke']
+              require(type(native) is dict and set(native) == {'api', 'web'}
+                      and all(type(value) is str and bool(value) for value in native.values()))
               images = result['images']
               require(type(images) is dict and set(images) == {'api', 'web'})
               for role in ('api', 'web'):
@@ -144,11 +177,40 @@ jobs:
                   phase = 'verification'
                   verified = parse_json(child([sys.executable, 'scripts/offline_image_bundle.py',
                       'verify', str(destination), '--expected-commit', receipt['source_commit'],
-                      '--expected-manifest-sha256', receipt['manifest_sha256']], 64 * 1024, 600))
+                      '--expected-manifest-sha256', receipt['manifest_sha256']], 64 * 1024,
+                      allowance(600, api_reserve)))
                   require(bundle.exact(verified, {'status': 'IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE',
                           'source_commit': commit, 'manifest_sha256': digest}))
 
+              if startup == 'true':
+                  phase = 'api_startup'
+                  # Do not give a child subprocess a hard-kill timeout that bypasses
+                  # the API script's 180-second work / 35-second owned-CID cleanup.
+                  # Budget the full window before creating any new container.
+                  require(remaining() >= 240 + 30)
+                  import offline_api_startup_rehearsal as api
+                  previous = signal.getsignal(signal.SIGTERM)
+                  def interrupted(_signum, _frame):
+                      raise KeyboardInterrupt()
+                  try:
+                      signal.signal(signal.SIGTERM, interrupted)
+                      require(remaining() >= 240 + 30)
+                      outcome = api.run_rehearsal(images['api']['image_id'], commit)
+                  finally:
+                      signal.signal(signal.SIGTERM, previous)
+                  require(type(outcome) is tuple and len(outcome) == 2)
+                  api_receipt, api_code = outcome
+                  require(type(api_code) is int and api_code == 0)
+                  require(bundle.exact(api_receipt, {
+                      'status': 'API_PROCESS_SMOKE_PASSED_DATABASE_NOT_READY',
+                      'phase': 'FINAL_PROCESS', 'cases_passed': 10, 'cases_total': 10,
+                      'container_removed': True, 'limitations': api.LIMITATIONS,
+                      'image_id': images['api']['image_id'], 'source_commit': commit,
+                      'database_ready': False,
+                      'provenance': 'caller_supplied_trusted_build_consistency_only'}))
+
               phase = 'summary'
+              require(remaining() >= 30)
               text = '## Connected image rehearsal\n\n' + bundle.REHEARSAL_STATUS + '\n\nSource: ' + commit + '\n\n'
               for role in ('api', 'web'):
                   text += role + ': ' + images[role]['image_id'] + ', archive SHA256 ' + images[role]['sha256'] + '\n\n'
@@ -158,8 +220,18 @@ jobs:
                            'No artifact upload or retained downloadable bundle.\n\n')
               else:
                   text += 'Optional image bundle export and verification not requested.\n\n'
-              text += ('No physical network isolation, no application/DB startup, no operator/deployment approval '
-                       'or company acceptance. Integrity checks are not signatures or security/license clearance.\n')
+              if startup == 'true':
+                  text += ('API_PROCESS_SMOKE_PASSED_DATABASE_NOT_READY\n\n'
+                           'API process probes: 10/10; container_removed=true; database_ready=false. '
+                           'Only this run\'s temporary, isolated API container was started.\n\n'
+                           'No physical network isolation, no database startup, migration, seed or real '
+                           'authentication, no browser or company deployment acceptance.\n')
+              else:
+                  text += ('API process startup not requested.\n\n'
+                           'No physical network isolation, no application/DB startup, no operator/deployment approval '
+                           'or company acceptance.\n')
+              text += ('Integrity checks are not signatures, provenance authentication or '
+                       'security/license clearance. No runtime approval is inferred from these results.\n')
               with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
                   summary.write(text)
           except (Exception, KeyboardInterrupt):
