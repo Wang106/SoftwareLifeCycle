@@ -1,0 +1,31 @@
+name: Manual synthetic PostgreSQL rehearsal
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-database-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearsal:
+    name: Disposable synthetic PG16, not offline acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify mock-only rehearsal contracts
+        run: python3 -m unittest discover -s backend/tests -p test_offline_database_rehearsal.py -v
+      - name: Run separately approved disposable synthetic database checks
+        # Dispatch requires approval covering fixed image download, network=none,
+        # local trust, synthetic role/fixture changes and own-container removal.
+        # The script checks existing Python/Docker/Linux/amd64/space; no installer.
+        run: python3 scripts/offline_database_rehearsal.py --run
+      - name: Record blocked or interrupted run
+        if: ${{ failure() || cancelled() }}
+        run: echo 'Synthetic PostgreSQL rehearsal blocked or incomplete. Cleanup may require manual review. No offline or deployment acceptance.' >> "$GITHUB_STEP_SUMMARY"
