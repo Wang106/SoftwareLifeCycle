@@ -588,3 +588,122 @@ the exact embedded coordinator with mocked children, including default/opt-in pa
 boolean injection, malformed and contradictory receipts, cross-commit substitution,
 child failures, collisions and summary privacy. A later separately authorized
 manual run is still needed for real large-image export and independent verification.
+
+## Optional isolated API startup — 2026-11-09
+
+Baseline PR200 is merged as main `be30990a8c7edbedb8fa5c7f6789b20d32b37937`.
+Its [main CI 42497949946](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42497949946)
+passed: 3,308 backend tests plus 1,336 subtests, 296 PostgreSQL cases without
+skips, 2,116 frontend tests and the strict 8 Next + 16 component browser cases.
+That validates PR200's script and tests, not a real API-process rehearsal.
+Cloudflare build `a5901285-5304-450e-91b1-cf4bc41eebc1` / version
+`7b446524-f8e9-4229-a9f1-df902d4446ae` succeeded; Render
+`dep-dbo9qpgae00c739fems0` ended `update_failed`, not backend recovery.
+
+This follow-up connects the existing API script to the same manual workflow with
+`run_api_startup`, a boolean **default false**, independent of `export_bundle`.
+There is still no push, pull-request or scheduled trigger. Developing, testing or
+merging this option does not dispatch it or authorize a future runtime. Actual
+use needs separate approval for this exact run's image preparation and API
+container startup/isolation/owned-container cleanup. Earlier runner images were
+not retained and are not reused.
+
+The normal image preparer is unchanged. It still builds both images, saves and
+validates their unchanged archives, runs dependency-only native smoke and parses
+both Compose views. With export enabled, its temporary handoff and independent
+verifier must also succeed before the optional API stage. With startup disabled,
+no API module runtime function is called and no application is started. With
+both options enabled, the order is preparation, independent bundle verification,
+API process, final summary. Any requested stage's failure stops later stages;
+there is no fallback or automatic retry.
+
+### Source and receipt boundary
+
+Both booleans reach Python only as environment data and must be exactly `true`
+or `false`. No caller-supplied image/tag, commit, target URL, Docker arguments or
+runtime environment is added. The coordinator uses the already validated
+`images.api.image_id` from this successful build process and the checked
+`GITHUB_SHA`. Git HEAD, the preparation receipt and both image source commits
+must agree. Native-smoke evidence must have exactly the `api` and `web` keys and
+nonempty string values regardless of either option. These values are never
+published. A successful child exit and the fixed preparation status remain
+necessary; strings alone cannot establish that a build or smoke happened.
+
+The caller does not read an image label, archive directory or prior run summary
+to invent its own expected identity. The API script independently rechecks the
+clean checkout, exact available image ID and restricted image/container
+configuration. This is consistency within the reviewed build on a trusted local
+runner and Docker daemon, not a signature or authenticated publisher provenance.
+A compromised runner or altered trusted coordinator remains outside that claim.
+
+The workflow imports the existing API script only after all preceding gates and
+calls `run_rehearsal(image_id, source_commit)` once. Only an exact two-element
+tuple containing an integer zero exit code and the complete typed success record
+can pass: fixed `API_PROCESS_SMOKE_PASSED_DATABASE_NOT_READY` status,
+`FINAL_PROCESS`, 10/10 cases, `container_removed=true`, `database_ready=false`,
+matching image/commit and fixed provenance/limitations. Missing/extra fields,
+partial progress, a web-image substitution, cross-commit identity, unknown status,
+boolean/numeric aliases, exceptions and interrupts fail closed.
+
+Compose's `application_started=false` still describes its parse-only stage; it is
+not overwritten to represent the separately requested API runtime. The final
+summary is built only when every requested stage succeeds. An enabled success
+explicitly reports the temporary API startup, 10/10 checks, confirmed removal and
+unavailable database; a disabled summary explicitly says startup was not
+requested. Raw receipts, native output, error text, local paths or supplied
+limitations are not copied into public output.
+
+### Shared time budget and cleanup
+
+The first prerequisite step records `time.monotonic_ns()` before Docker checks
+in `GITHUB_ENV`. The coordinator accepts only a bounded positive decimal value
+that is not in the future or already 55 minutes old. Linux processes on this
+runner share that monotonic clock. This environment value is local timing
+bookkeeping, **not tamper-proof evidence or authentication**. It includes time
+spent on prerequisites, checkout and contract tests before orchestration.
+
+Every stage uses one 3,300-second soft deadline, not independent additive
+3,300 + 600 + API timeouts. Before preparation, the coordinator reserves 600
+seconds when bundle verification is requested, 240 seconds when API startup is
+requested, and 30 seconds for the final summary. Child timeouts are the smaller
+of their existing cap and the time remaining after those reservations. The
+verifier likewise retains the API and summary reservations. If time is exhausted,
+the job fails rather than changing the option or skipping a requested gate.
+
+Before invoking the API function, at least the complete 240-second runtime/cleanup
+window plus 30 seconds must remain. The API script retains its own 180-second
+work deadline and separate 35-second cleanup window. The workflow does not put
+that function in a `subprocess.run(timeout=...)` child that could be hard-killed
+before its finally block. During the call SIGTERM becomes KeyboardInterrupt,
+allowing the script's existing cleanup path; the previous handler is restored in
+a finally block, including exceptions and rejected receipts. The final budget
+is checked again after the handler has been restored and before summary output.
+
+The 60-minute job hard limit, standard runner, 20 GiB prerequisite, read-only
+repository permission and serialization remain unchanged. The soft deadline
+leaves headroom; it cannot guarantee completion or cleanup under runner loss,
+forced cancellation, repeated signals or a failed daemon. Only the API script
+may remove its own verified full CID. Uncertain cleanup blocks success and keeps
+its existing private custody record; the workflow never retries removal, looks
+up containers by name, prunes, or deletes an uncertain exported directory.
+No installer, capacity increase, host setting change, cache, registry push or
+artifact upload is added.
+
+### Development evidence and remaining acceptance
+
+Regression tests execute the actual embedded coordinator with mocked preparation,
+verification and API calls. Coverage includes all four option combinations,
+receipt/source/type rejections, native-smoke evidence independent of export,
+invalid timing markers, remaining-budget exhaustion, signal-handler restoration,
+API exceptions, uncertain cleanup and summary privacy. The first 12 new tests
+failed against the old coordinator before implementation. Independent review
+then identified the export-disabled native-smoke gap; its regression was recorded
+before the bounded correction. Exact validation totals are recorded in the
+current repository checkpoints after the final rerun.
+
+This package has not dispatched the manual workflow, acquired image layers,
+started Docker/API/PostgreSQL, or exercised a real HTTP server. Existing
+[API runtime constraints](offline-api-startup-rehearsal.md) remain in force.
+Database readiness, real identity, frontend/browser startup, migrations, backup
+restoration, physical disconnection and company deployment remain unaccepted.
+Business and plan percentages are unchanged.
