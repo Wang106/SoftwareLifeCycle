@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-08（UTC+8）Docker-save LayerSources严格兼容
+
+PR193已正常保护合并main `40af759bc786659a847c95a7abbfd8bbab94012b`。[main CI42429377676](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42429377676)成功：3073后端＋360子测试、296项PostgreSQL用例零跳过、2116前端、真实8＋16严格浏览器及聚合门禁。Cloudflare生产build `91c6d095-d3ba-40eb-82c9-ec03a0cbd497` / version `7aa58fb3-636a-4c4b-bdad-845de67d9fef`成功；Render同提交 `dep-dbns11g473hc73a0fb1g` update_failed，Actions部署42430456391/continuation42430456407均skipped，不称后端恢复。
+
+用户新运行[42431684221](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42431684221)在正确main40af759b失败，固定诊断为role=api、ARCHIVE_FIELDS_REJECTED。Docker/Compose/20GiB前置通过，可用92,147,191,808字节；46项回归通过。代码路径将拒绝定位到manifest唯一记录字段集合，实际未知字段未直接取得；Moby28经典Linux输出LayerSources是官方源码支持的兼容缺口，不能把它称为已观察到的具体字段。API build及save命令返回成功，但严格归档校验失败；web构建、native smoke及Compose未到达。
+
+本包在原三字段之外仅新增精确四字段LayerSources受验证变体：对应所有diff_id，每个descriptor只允许未压缩OCI tar的mediaType/digest/size，摘要、层路径及本地字节长度严格对应。拒绝未知字段、URL、annotation、压缩或foreign层、缺失/额外/错配映射，保留原平台/来源/Env/Volume/路径/逐层摘要门槛；不转写归档、不联网补层。新增固定结构诊断码仍不公开未知字段或异常原文。此包确实修改预检以支持一个严格变体，不称原预检字节不变；工作流、配方、锁、Compose、权限及分支门禁不变。先失败回归后57预检＋52演练＝109集中、269全离线、2116前端、类型/编译、52自动化/126守卫通过；独立复审及24项对抗案例通过，无阻断。本地pytest依赖缺失，完整后端/真实PG和浏览器待精确CI，不重跑实际验收。新层解析检查双零结束/零填充，限定单次读取1MiB、GNU/PAX元数据64KiB及嵌套64层，每层100000头/64MiB解析读取、每镜像跨层500000头/256MiB；大文件内容只跳过和分块哈希，不解包；逐项释放tar成员缓存，global-PAX继承保留，9000文件/1000全局键在256MiB受限子进程通过。这是支持上限而非精确RSS限制，超限合法镜像仍阻断，不自动放宽。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。下一步精确候选CI/受保护合并及另行授权的实际镜像运行；不能承诺下一轮全通过，物理断网、业务/DB、公司服务器和联合恢复仍未验收。
+
+---
+
 ## 当前检查点 — 2026-11-08（UTC+8）离线镜像导出安全诊断
 
 PR192已正常保护合并main `c1da9b12c9ad4aaf9f66068a9d12df24a3b07017`。[main CI42360103124](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42360103124)成功：3060后端＋319子测试、296项PostgreSQL用例零跳过、2116前端、真实8＋16严格浏览器及聚合门禁。Cloudflare生产build `b399bcfc-9f62-462a-8f97-d41d9bf2f064` / version `0f0702a4-d528-4919-ac40-6305fbf1face`成功；Render同提交 `dep-dbnevu2vcj2c738bdto0` update_failed，Actions部署42361115532和continuation42361115285均skipped，不称后端恢复。
