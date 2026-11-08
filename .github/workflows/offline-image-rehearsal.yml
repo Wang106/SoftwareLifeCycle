@@ -2,6 +2,12 @@ name: Manual offline image rehearsal
 
 on:
   workflow_dispatch:
+    inputs:
+      export_bundle:
+        description: Export and independently verify a temporary local bundle (no upload)
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -49,18 +55,117 @@ jobs:
         run: python3 -m unittest discover -s backend/tests -p test_offline_image_rehearsal.py -v
       - name: Build, save, validate and smoke without application startup
         shell: bash
+        env:
+          EXPORT_IMAGE_BUNDLE: ${{ inputs.export_bundle }}
         run: |
           set -euo pipefail
-          python3 scripts/offline_image_rehearsal.py --run > "$RUNNER_TEMP/slc-image-result.json"
           python3 - <<'PY'
-          import json, os, pathlib
-          result = json.loads((pathlib.Path(os.environ['RUNNER_TEMP']) / 'slc-image-result.json').read_text())
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
-              summary.write('## Connected image rehearsal\n\n')
-              summary.write(result['status'] + '\n\nSource: ' + result['source_commit'] + '\n\n')
-              for role, image in result['images'].items():
-                  summary.write(role + ': ' + image['image_id'] + ', archive SHA256 ' + image['sha256'] + '\n\n')
-              summary.write(result['limitations'] + '\n')
+          import hashlib, json, math, os, pathlib, subprocess, sys, tempfile, uuid
+          sys.path.insert(0, 'scripts')
+          import offline_image_bundle as bundle
+
+          phase = 'input'
+          try:
+              def require(condition):
+                  if not condition:
+                      raise ValueError()
+
+              root = pathlib.Path(os.environ['RUNNER_TEMP'])
+              require(root.is_absolute() and root.is_dir())
+              option = os.environ['EXPORT_IMAGE_BUNDLE']
+              require(option in ('false', 'true'))
+              commit = os.environ['GITHUB_SHA']
+              require(bundle.hexadecimal(commit, 40))
+
+              def child(args, limit, timeout):
+                  # Capture privately, bound parsing, and never publish child stderr.
+                  # Only this newly created capture file is removed on close.
+                  with tempfile.TemporaryFile(dir=root) as output:
+                      subprocess.run(args, stdin=subprocess.DEVNULL, stdout=output,
+                                     stderr=subprocess.DEVNULL, check=True, timeout=timeout)
+                      output.seek(0)
+                      raw = output.read(limit + 1)
+                      require(len(raw) <= limit)
+                      return raw
+
+              def finite_float(value):
+                  number = float(value)
+                  require(math.isfinite(number))
+                  return number
+
+              def parse_json(raw):
+                  # Reject exponent overflow during parsing, including ignored
+                  # nested metadata, without a second recursive tree traversal.
+                  return json.loads(raw, object_pairs_hook=bundle.preflight.object_pairs,
+                                    parse_constant=finite_float, parse_float=finite_float)
+
+              phase = 'checkout'
+              require(child(['git', 'rev-parse', 'HEAD'], 41, 30) == (commit + '\n').encode())
+              args = [sys.executable, 'scripts/offline_image_rehearsal.py', '--run']
+              if option == 'true':
+                  # The exporter exclusively creates this path. Collision is a failure,
+                  # never an overwrite, retry, reuse or deletion of an existing path.
+                  destination = root / ('slc-image-handoff-' + uuid.uuid4().hex)
+                  require(not os.path.lexists(destination))
+                  args += ['--export-bundle', str(destination)]
+
+              phase = 'rehearsal'
+              result = parse_json(child(args, 4 * 1024**2, 3300))
+              phase = 'receipt'
+              fields = {'status', 'source_commit', 'host', 'bases', 'dependencies', 'images',
+                        'source_sha256', 'compose', 'native_smoke', 'limitations'}
+              require(type(result) is dict and set(result) == fields | ({'image_bundle'} if option == 'true' else set()))
+              require(bundle.exact(result['status'], bundle.REHEARSAL_STATUS)
+                      and bundle.exact(result['source_commit'], commit))
+              require(bundle.exact(result['compose'], {'status': 'COMPOSE_PARSED_ONLY',
+                      'operator_approval': False, 'application_started': False}))
+              images = result['images']
+              require(type(images) is dict and set(images) == {'api', 'web'})
+              for role in ('api', 'web'):
+                  item = images[role]
+                  require(type(item) is dict and set(item) == {'archive', 'size', 'sha256', 'image_id', 'platform', 'source_commit'})
+                  require(bundle.exact(item['archive'], role + '.tar')
+                          and bundle.exact(item['source_commit'], commit)
+                          and bundle.exact(item['platform'], 'linux/amd64')
+                          and type(item['size']) is int and item['size'] > 0
+                          and bundle.hexadecimal(item['sha256'], 64)
+                          and type(item['image_id']) is str and item['image_id'].startswith('sha256:')
+                          and bundle.hexadecimal(item['image_id'][7:], 64))
+              if option == 'true':
+                  # Reconstruct from the trusted run result, never read expectations
+                  # from the exported directory. Also bind the receipt to these images.
+                  manifest, _ = bundle.export_inputs({'format': 'slc-offline-readonly-v1',
+                      'source_commit': commit, 'required_db_revision': bundle.preflight.REVISION,
+                      'images': images}, result)
+                  digest = hashlib.sha256(bundle.canonical(manifest)).hexdigest()
+                  receipt = result['image_bundle']
+                  require(bundle.exact(receipt, {'status': 'IMAGE_BUNDLE_EXPORTED_NOT_OFFLINE_ACCEPTANCE',
+                          'source_commit': commit, 'manifest_sha256': digest}))
+                  phase = 'verification'
+                  verified = parse_json(child([sys.executable, 'scripts/offline_image_bundle.py',
+                      'verify', str(destination), '--expected-commit', receipt['source_commit'],
+                      '--expected-manifest-sha256', receipt['manifest_sha256']], 64 * 1024, 600))
+                  require(bundle.exact(verified, {'status': 'IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE',
+                          'source_commit': commit, 'manifest_sha256': digest}))
+
+              phase = 'summary'
+              text = '## Connected image rehearsal\n\n' + bundle.REHEARSAL_STATUS + '\n\nSource: ' + commit + '\n\n'
+              for role in ('api', 'web'):
+                  text += role + ': ' + images[role]['image_id'] + ', archive SHA256 ' + images[role]['sha256'] + '\n\n'
+              if option == 'true':
+                  text += ('IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE\n\nManifest SHA256: ' + digest + '\n\n'
+                           'Export and independent verification passed on this temporary runner only. '
+                           'No artifact upload or retained downloadable bundle.\n\n')
+              else:
+                  text += 'Optional image bundle export and verification not requested.\n\n'
+              text += ('No physical network isolation, no application/DB startup, no operator/deployment approval '
+                       'or company acceptance. Integrity checks are not signatures or security/license clearance.\n')
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+                  summary.write(text)
+          except (Exception, KeyboardInterrupt):
+              print('BLOCKED: image rehearsal workflow phase=' + phase +
+                    '; no offline or deployment acceptance. No export retry or cleanup attempted.', file=sys.stderr)
+              raise SystemExit(2) from None
           PY
       - name: Record blocked or incomplete result
         if: ${{ failure() || cancelled() }}
