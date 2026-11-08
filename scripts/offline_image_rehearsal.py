@@ -116,6 +116,111 @@ def export_command_code(error, prefix):
     return prefix + '_ERROR'
 
 
+COMPOSE_CODES = frozenset({
+    'COMPOSE_COMMAND_FAILED', 'COMPOSE_COMMAND_TIMEOUT', 'COMPOSE_COMMAND_ERROR',
+    'COMPOSE_JSON_INVALID', 'COMPOSE_POLICY_REJECTED', 'COMPOSE_CAPABILITY_MISSING',
+    'COMPOSE_PREPARE_FAILED', 'COMPOSE_VALIDATION_FAILED',
+})
+COMPOSE_PHASES = frozenset({'capability', 'prepare', 'project', 'model'})
+COMPOSE_FIELDS = frozenset({
+    'document', 'name', 'services', 'platform', 'pull_policy', 'network_mode',
+    'read_only', 'restart', 'cap_drop', 'security_opt', 'user', 'working_dir',
+    'tmpfs', 'healthcheck', 'image', 'entrypoint', 'command', 'env_file',
+    'environment', 'logging',
+})
+
+
+def safe_compose_part(value, allowed, fallback='unknown'):
+    return value if type(value) is str and value in allowed else fallback
+
+
+class ComposeFailure(ValueError):
+    def __init__(self, code, *, phase='unknown', role='unknown', field='unknown'):
+        self.code = safe_compose_part(code, COMPOSE_CODES, 'COMPOSE_VALIDATION_FAILED')
+        self.phase = safe_compose_part(phase, COMPOSE_PHASES)
+        self.role = safe_export_role(role)
+        self.field = safe_compose_part(field, COMPOSE_FIELDS)
+        super().__init__(self.code)
+
+
+def compose_command(args, phase):
+    try:
+        return command(args, timeout=30)
+    except Exception as error:
+        if isinstance(error, subprocess.TimeoutExpired):
+            code = 'COMPOSE_COMMAND_TIMEOUT'
+        elif fixed_preflight_reason(error) == 'command failed':
+            code = 'COMPOSE_COMMAND_FAILED'
+        else:
+            code = 'COMPOSE_COMMAND_ERROR'
+        raise ComposeFailure(code, phase=phase) from None
+
+
+def check_compose_capabilities():
+    raw = compose_command(['docker', 'compose', 'config', '--help'], 'capability')
+    try:
+        help_text = raw.decode('utf-8')
+        supported = all(re.search(r'(?m)^\s+--' + flag + r'(?=\s|$)', help_text)
+                        for flag in ('no-env-resolution', 'no-interpolate'))
+    except Exception:
+        supported = False
+    if not supported:
+        raise ComposeFailure('COMPOSE_CAPABILITY_MISSING', phase='capability')
+
+
+def compose_json(raw, phase):
+    def reject_constant(_value):
+        raise ValueError('nonfinite JSON number')
+    try:
+        return json.loads(raw, object_pairs_hook=preflight.object_pairs, parse_constant=reject_constant)
+    except Exception:
+        raise ComposeFailure('COMPOSE_JSON_INVALID', phase=phase) from None
+
+
+def exact_compose_value(actual, expected):
+    # Python equality alone aliases True with 1 and False with 0.
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return set(actual) == set(expected) and all(exact_compose_value(actual[k], v) for k, v in expected.items())
+    if isinstance(expected, list):
+        return len(actual) == len(expected) and all(exact_compose_value(a, e) for a, e in zip(actual, expected))
+    return actual == expected
+
+
+def check_compose_view(actual, expected, phase):
+    def blocked(role='unknown', field='unknown'):
+        raise ComposeFailure('COMPOSE_POLICY_REJECTED', phase=phase, role=role, field=field)
+    try:
+        if type(actual) is not dict or set(actual) != set(expected):
+            blocked(field='document')
+        if not exact_compose_value(actual['name'], expected['name']):
+            blocked(field='name')
+        services = actual['services']
+        if type(services) is not dict or set(services) != {'api', 'web'}:
+            blocked(field='services')
+        for role in ('api', 'web'):
+            service = services[role]
+            policy = expected['services'][role]
+            if type(service) is not dict:
+                blocked(role, 'services')
+            # Proven Compose 2.38.2 project rendering discards this sole field.
+            # The model view must still match the complete original policy.
+            if phase == 'project' and role == 'api' and 'env_file' not in service:
+                policy = {key: value for key, value in policy.items() if key != 'env_file'}
+            if set(service) != set(policy):
+                changed = set(service) ^ set(policy)
+                known = sorted(changed & COMPOSE_FIELDS)
+                blocked(role, known[0] if known else 'unknown')
+            for key, value in policy.items():
+                if not exact_compose_value(service[key], value):
+                    blocked(role, key)
+    except ComposeFailure:
+        raise
+    except Exception:
+        raise ComposeFailure('COMPOSE_VALIDATION_FAILED', phase=phase) from None
+
+
 def command(args, *, cwd=None, timeout=120):
     """No shell, inherited credentials, retries, or failure text in public output."""
     env = {**(RUN_ENV or {'PATH': os.environ.get('PATH', ''), 'LANG': 'C.UTF-8'}),
@@ -151,6 +256,7 @@ def check_host():
     temp_free = shutil.disk_usage(tempfile.gettempdir()).free
     docker_free = shutil.disk_usage(docker_root).free
     validate_host(info, compose_version, temp_free, docker_free)
+    check_compose_capabilities()  # Before run directories, acquisition or image builds.
     return {'docker_client': version['Client']['Version'], 'docker_server': version['Server']['Version'],
             'compose': compose_version, 'platform': 'linux/amd64',
             'temporary_free_bytes': temp_free, 'docker_free_bytes': docker_free}
@@ -432,22 +538,22 @@ def smoke(role, identity, destination):
 
 
 def parse_compose(manifest, destination):
-    secret = destination / 'database.env'
-    secret.touch(mode=0o600, exist_ok=False)  # Empty parser input, not a database credential.
-    document = preflight.compose(manifest, secret)
-    path = destination / 'compose.json'
-    path.write_text(json.dumps(document, indent=2) + '\n')
-    parsed = json.loads(command(['docker', 'compose', '--env-file', str(secret), '-f', str(path),
-                                  'config', '--format', 'json', '--no-env-resolution']))
-    require(set(parsed['services']) == {'api', 'web'}, 'Compose service mismatch')
-    for role, service in document['services'].items():
-        actual = parsed['services'][role]
-        require(not any(k in actual for k in ('build', 'ports', 'volumes', 'secrets', 'configs')),
-                'unexpected Compose source or mount')
-        for key, value in service.items():
-            if key != 'env_file':
-                require(actual.get(key) == value, 'effective Compose policy changed')
-        require(actual.get('env_file', []) == service.get('env_file', []), 'raw env-file policy changed')
+    try:
+        secret = destination / 'database.env'
+        secret.touch(mode=0o600, exist_ok=False)  # Empty parser input, not a database credential.
+        document = preflight.compose(manifest, secret)
+        path = destination / 'compose.json'
+        path.write_text(json.dumps(document, indent=2) + '\n')
+    except Exception:
+        raise ComposeFailure('COMPOSE_PREPARE_FAILED', phase='prepare') from None
+    args = ['docker', 'compose', '--env-file', str(secret), '-f', str(path),
+            'config', '--format', 'json', '--no-env-resolution']
+    # Do not replace the normal project load: it performs consistency checks that
+    # the non-interpolated model view does not. Neither call starts a service.
+    project = compose_json(compose_command(args, 'project'), 'project')
+    check_compose_view(project, document, 'project')
+    model = compose_json(compose_command(args + ['--no-interpolate'], 'model'), 'model')
+    check_compose_view(model, document, 'model')
     return {'status': 'COMPOSE_PARSED_ONLY', 'operator_approval': False, 'application_started': False}
 
 
@@ -513,6 +619,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         result = check_host() if args.check_host else run()
+    except ComposeFailure as error:
+        print('BLOCKED: offline image rehearsal Compose phase=' + safe_compose_part(error.phase, COMPOSE_PHASES) +
+              '; role=' + safe_export_role(error.role) + '; field=' + safe_compose_part(error.field, COMPOSE_FIELDS) +
+              '; code=' + safe_compose_part(error.code, COMPOSE_CODES, 'COMPOSE_VALIDATION_FAILED') +
+              '; no offline or deployment acceptance claimed.', file=sys.stderr)
+        return 2
     except ExportFailure as error:
         print('BLOCKED: offline image rehearsal export role=' + safe_export_role(error.role) +
               '; code=' + safe_export_code(error.code) +
