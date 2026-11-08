@@ -41,7 +41,8 @@ Required operator-owned inputs, after separate approval:
 - Validator checks archive bytes, config digest, actual platform/revision label and
   every uncompressed layer hash against `rootfs.diff_ids`; rejects traversal,
   duplicate paths, links and special members without extracting them. This supports
-  this bounded docker-save format only, not OCI layouts or arbitrary registry exports.
+  the bounded docker-save formats specified below, not pure OCI layouts or arbitrary
+  registry exports.
   Checksums/labels prove consistency, **not provenance authentication or safe image
   contents**. Obtain all files/manifest from a separately trusted reviewed build.
 - Reviewed image build must not bake application settings, credentials, `.env`,
@@ -121,3 +122,49 @@ It does not implement those steps or change this validator. Existing unit fixtur
 remain non-runnable archives; current browser CI does not run offline containers.
 The target route above remains a candidate, not installed infrastructure. No milestone
 or server readiness is advanced by this documentation.
+
+
+## Validated classic-save descriptor variant — 2026-11-08
+
+The strict compatibility follow-up to main `40af759b` extends `archive_image()`;
+it does not rewrite an input archive or broadly ignore additional metadata. See the
+[rehearsal evidence and exact rules](offline-image-rehearsal.md#strict-classic-save-descriptor-compatibility--2026-11-08).
+
+A docker-save manifest record may contain exactly Config/RepoTags/Layers, as before,
+or exactly those fields plus LayerSources. The new branch requires a complete map
+of the unique config rootfs.diff_ids, ordered correspondence to every Layers entry,
+and descriptors containing **only** mediaType/digest/size. Media type must be the
+uncompressed OCI tar type; map key, diff ID, descriptor SHA256 and actual layer byte
+SHA256 must agree, and positive integer size must equal the tar member byte length.
+Config and layer paths must be canonical blobs/sha256 paths in this branch. Unknown
+fields, URLs/annotations/platform/data, compressed/foreign descriptors, ambiguous
+maps and mismatches are rejected, never ignored or fetched.
+
+New-variant layers also pass a non-decompressing `r:` tar structure read, so consistent
+hashes with compressed/non-tar bytes falsely labeled uncompressed cannot pass.
+Before allocation, parser reads are bounded to remaining layer bytes and at most
+1 MiB, GNU/PAX extension payloads to 64 KiB and nested header depth to 64. Layers
+must be 512-byte aligned and end with at least two zero blocks followed only by
+zero padding. Actual ordinary and GNU/PAX headers are limited to 100,000 per layer
+and 500,000 per image archive. Cumulative parser-read metadata is limited to 64 MiB
+per layer and 256 MiB across an image's layers, counting header/extension bytes,
+padding, boundary probes and the first terminator. A sequential `next()` loop
+releases each processed member cache entry, preventing inherited global-PAX
+metadata copies from accumulating across historical entries, while preserving
+current global-PAX state. These checks bound parser work, not exact process RSS. Hash reads and zero-tail scans stay chunked and are outside
+that metadata budget; normal large file payloads are skipped by bounded seek.
+The two API/web archives have separate image budgets, hence the fixed two-image
+bundle's maximum is twice those totals. Oversized otherwise-valid images fail closed
+rather than raising limits automatically. Parser exceptions
+are fixed, redacted failures, while process interrupts propagate. Nothing is
+extracted; valid empty layers and inner whiteouts/devices/links are not confused
+with prohibited outer archive special entries. This is structural integrity,
+not image-content review. Original three-field behavior and all archive/config/env/
+Volume/platform/revision/hash/path/operator/Compose restrictions remain. OCI helper
+files alongside a valid classic manifest confer no extra acceptance; pure OCI or
+arbitrary registry formats remain unsupported. There is no network lookup, Docker
+invocation, app/DB startup or operator approval introduced by this extension.
+
+The tests use synthetic bytes only, including two-layer classic archives and malicious
+structural variants. Successful local tests do not establish that the actual runner's
+save format, native runtime, Compose parsing or disconnected deployment will pass.

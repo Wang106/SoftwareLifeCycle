@@ -7,7 +7,8 @@ This package implements the smallest image stage from the
 [399-tarball npm collection](offline-npm-artifact-install.md). It adds dedicated
 recipes, a bounded orchestration script, regression contracts and one **manual**
 standard-runner workflow. The production Dockerfiles, locks, deployment workflows,
-preflight, CI/branch protection and business scope are unchanged.
+CI/branch protection and business scope are unchanged. The later strict classic-save
+compatibility change below extends the preflight with one validated manifest variant.
 
 ## Initial implementation evidence (before PR192)
 
@@ -150,12 +151,14 @@ or weakened preflight is used to achieve this. There is no migration/seed entryp
 
 Each built immutable image ID is exported with ordinary `docker image save`, one
 uncompressed archive per service. Its size, SHA256, image ID, platform and source
-revision go directly to the unchanged `archive_image` validator. All original
-manifest, config, environment, Volume, layer-digest and path checks remain.
-An OCI/containerd-style save that violates the original traditional docker-save
-contract **fails closed**. The script does not convert archives, replace manifest
-fields, modify Docker settings or weaken the preflight. The runner's actual export
-format remains a runtime risk until an approved run reaches this gate.
+revision go directly to the `archive_image` validator against the original save
+bytes, once. The original three-field manifest format remains supported, alongside
+the strictly validated four-field `LayerSources` variant specified below. Unknown
+fields are never ignored. All original config, environment, Volume, layer-digest,
+archive integrity and path restrictions remain. An unsupported OCI/containerd or
+registry export **fails closed**. The script does not convert archives, replace
+manifest fields, modify Docker settings or retrieve layers from a network. Actual
+runner export compatibility still requires a separately authorized real run.
 
 Only after that gate does a container run fixed dependency smoke code with
 `--pull=never`, UID/GID65532, read-only root, all capabilities dropped,
@@ -237,13 +240,13 @@ A verified compatibility risk also exists with Docker's **classic** exporter:
 [Moby v28.0.4 save.go](https://github.com/moby/moby/blob/v28.0.4/image/tarexport/save.go#L310-L315)
 writes nonempty `LayerSources` metadata, populated with
 [layer descriptors](https://github.com/moby/moby/blob/v28.0.4/image/tarexport/save.go#L600-L605).
-The unchanged preflight permits only Config/RepoTags/Layers in that record.
-A synthetic docker-save tar with the additional field is still rejected. This
-source-level incompatibility is not proof that either actual run reached that
-specific rejection, and the extra field is **not** newly accepted or removed.
+At PR193, the preflight permitted only Config/RepoTags/Layers in that record and
+rejected a synthetic tar with the additional field. That source-level risk did not
+prove which input either original run rejected. The subsequent bounded compatibility
+change below accepts only independently checked descriptors, not arbitrary extras.
 
-The follow-up changes only the orchestration script, its tests and this document.
-It emits `BLOCKED` with one fixed, allowlisted export code and service role
+The PR193 diagnostic-only follow-up changed the orchestration script, its tests
+and this document. The exporter emits `BLOCKED` with one fixed, allowlisted export code and service role
 (`api`, `web` or `unknown`), then exits nonzero:
 
 - `IMAGE_INSPECT_FAILED` / `SAVE_COMMAND_FAILED`: the command wrapper reported a
@@ -252,11 +255,13 @@ It emits `BLOCKED` with one fixed, allowlisted export code and service role
   whether a daemon-side operation finished may be uncertain. Do not blindly retry.
 - `IMAGE_INSPECT_ERROR` / `SAVE_COMMAND_ERROR`: another invocation, ID parsing or
   local logging error. These do not prove that the underlying command did not run.
-- `ARCHIVE_READ_FAILED`: archive open/read/hash/stat or a later preflight read failed.
+- `ARCHIVE_READ_FAILED`: archive open/read/hash/stat or a preflight read outside the
+  bounded inner-tar parser failed. Inner parser failures use its fixed tar code.
 - `ARCHIVE_TAR_INVALID` / `ARCHIVE_JSON_INVALID`: the corresponding parser rejected
   its input. No raw parser message or input value is emitted.
-- `ARCHIVE_FIELDS_REJECTED`: an exact original field-set check rejected the input;
-  it does not print field names or prove which extra/missing field caused it.
+- `ARCHIVE_FIELDS_REJECTED`: the original generic field-set diagnostic, retained
+  in the finite allowlist. The later change below distinguishes item/manifest and
+  descriptor structural failures without printing actual field names.
 - Other exact original preflight reasons map to fixed `ARCHIVE_*` codes for
   provenance, checksum/size, paths/types, metadata/image count, config digest,
   platform/revision, environment/GPG fingerprint, Volumes or layers/digests.
@@ -270,16 +275,113 @@ values, credentials and the raw stage/role are never interpolated into that publ
 message. The existing private `commands.log` still records command arguments and
 stdout/stderr, which can contain paths or other raw values; it is not automatically
 published. No log/archive upload, workflow change, Docker setting change, retry
-or archive conversion is introduced. `archive_image()` remains byte-for-byte
-unchanged and is still the sole acceptance gate, called once against the original
-save bytes. Diagnostics expose why a check stopped, not permission to weaken it.
+or archive conversion is introduced. PR193 left `archive_image()` byte-for-byte
+unchanged. The strict compatibility change below intentionally updates that gate,
+which remains the sole archive validator called once against the original bytes.
+Diagnostics expose why a check stopped, not permission to bypass it.
 
 The 13 failure-first diagnostic regressions cover distinct inspect/save/hash and
 preflight failures, timeout behavior, real synthetic tar/JSON and LayerSources
 rejection, known-reason mapping, unknown-code/role fallback and private-data sentinels,
-including retaining api/web without exposing a raw stage or role. Together with
-the existing tests, 46 focused and 224 full offline tests pass.
+including retaining api/web without exposing a raw stage or role. At that checkpoint,
+46 focused and 224 full offline tests passed.
 These are local static/synthetic checks, not a new manual run, image build/export,
-Docker acceptance, application/DB startup or company deployment. A newly reviewed
-manual run is still needed to observe the actual fixed code; none is automatically
-triggered by this change. Business and acceptance percentages remain unchanged.
+Docker acceptance, application/DB startup or company deployment. The later observed run is recorded below; further real runs still require review
+and authorization and are not automatically triggered. Business and acceptance
+percentages remain unchanged.
+
+
+## Strict classic-save descriptor compatibility — 2026-11-08
+
+Baseline: main `40af759bc786659a847c95a7abbfd8bbab94012b` (PR193).
+Manual run [42431684221](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42431684221)
+reported `role=api; code=ARCHIVE_FIELDS_REJECTED`, 46 passing regression contracts
+and 92,147,191,808 free bytes. In that exact code path the exporter constructs all
+six item fields, leaving the manifest record field-set check as the rejection site.
+The actual extra/missing field was not disclosed or directly inspected. This is
+**not proof that this run's archive contains LayerSources**, nor evidence of image,
+web/native-smoke, Compose, offline or deployment acceptance.
+
+The new supported variant is narrowly based on the Moby 28 Linux classic exporter:
+[manifest creation](https://github.com/moby/moby/blob/v28.0.4/image/tarexport/save.go#L310-L315),
+[local tar descriptor fallback](https://github.com/moby/moby/blob/v28.0.4/image/tarexport/save.go#L594-L607)
+and the [descriptor fields](https://github.com/moby/moby/blob/v28.0.4/vendor/github.com/docker/distribution/blobs.go#L62-L86).
+The `roLayer.Descriptor` implementation is
+[Windows-specific](https://github.com/moby/moby/blob/v28.0.4/layer/ro_layer_windows.go);
+normal Linux classic-save fallback hashes the local uncompressed TarStream and
+records its byte size. A registry compressed-blob digest is **not** an uncompressed
+`rootfs.diff_ids` value and is never accepted as equivalent.
+
+The preflight is intentionally changed, not byte-for-byte unchanged:
+
+- Each manifest record has exactly `Config`, `RepoTags`, `Layers`, optionally plus
+  exactly `LayerSources`. Missing required fields, `Parent` and every other unknown
+  field are rejected. The original three-field branch keeps its existing behavior.
+- In the four-field branch, `LayerSources` is a nonempty map with exactly the config's
+  unique, normalized lowercase `sha256:<64 hex>` diff IDs as keys. Layers and diff IDs
+  bind in their original order; missing, extra, repeated or crossed mappings fail.
+- Every descriptor has exactly `mediaType`, `digest`, `size`. Only
+  `application/vnd.oci.image.layer.v1.tar` is allowed. `urls`, `annotations`, `platform`,
+  `data` and unknown fields are rejected even when empty; gzip/zstd, foreign and other
+  media types fail. No URLs are followed and no network layer lookup is performed.
+- Map key = config diff ID = descriptor digest = the actual SHA256 of that layer's
+  bytes. Size is a positive integer, never bool/string/float, equal to the exact
+  archive member byte length. Config and layers use the canonical
+  `blobs/sha256/<matching digest>` paths in this new branch only.
+- After hashing, every new-variant layer is read as an **uncompressed** tar using
+  `tarfile` mode `r:`. Gzip/non-tar/truncated bytes with mutually consistent hashes,
+  sizes and a false uncompressed media type still fail. This only validates tar
+  structure: no extraction, decompression or filesystem writes. Parser reads are
+  bounded to the remaining layer bytes and at most 1 MiB before allocation; GNU/PAX
+  extension payloads are limited to 64 KiB and nested header processing to 64 levels.
+  Every actual ordinary/GNU/PAX header is counted: at most 100,000 per layer and
+  500,000 across all layers of one image archive. Cumulative parser-read bytes are
+  limited to 64 MiB per layer and 256 MiB per image, including headers, extension
+  payloads/padding, boundary probes and the first terminator. These logical budgets
+  bound parser work, not exact Python process RSS. An explicit sequential `next()`
+  loop releases each processed TarInfo cache entry immediately; inherited global-PAX
+  dictionaries cannot accumulate per historical file in `tarfile.members`. Global
+  PAX state itself remains available to subsequent entries. Ordinary large file
+  payloads are skipped by a bounded seek, not charged as metadata; integrity hash
+  reads and final zero-tail scans are separately chunked and not charged either.
+  Image budgets reset between API/web archives, so a fixed two-image operator bundle
+  has at most twice the per-image totals. These conservative support limits may
+  reject an unusually large valid image; they are never automatically raised. Layers are 512-byte aligned with at least two zero termination
+  blocks and only zero padding afterward. Numeric, recursive and other parser
+  exceptions become the same fixed Invalid/tar code; process interrupts propagate.
+  Empty tar layers and valid inner whiteouts, devices and links remain supported.
+  Outer archive links,
+  devices, traversal/duplicates and all original environment/Volume checks still fail.
+- Classic archives can also carry OCI helper metadata such as `index.json` and
+  `oci-layout`. As before, unused regular members are checked for safe outer names
+  and types but do not become acceptance authorities. Only the checked docker-save
+  manifest, config and local uncompressed layer bytes count. Pure OCI layouts and
+  arbitrary compressed registry exports remain unsupported. Hashes/labels/format
+  checks establish internal consistency, not trusted provenance or safe image code.
+
+New finite diagnostics distinguish `ARCHIVE_ITEM_FIELDS_REJECTED`,
+`ARCHIVE_MANIFEST_RECORD_REJECTED`, `ARCHIVE_MANIFEST_FIELDS_MISSING` and
+`ARCHIVE_MANIFEST_FIELDS_REJECTED`. Descriptor diagnostics are
+`ARCHIVE_LAYER_SOURCES_MAPPING_REJECTED`, `ARCHIVE_LAYER_SOURCES_PATH_REJECTED`,
+`ARCHIVE_LAYER_SOURCE_FIELDS_REJECTED`, `ARCHIVE_LAYER_SOURCE_MEDIA_TYPE_REJECTED`,
+`ARCHIVE_LAYER_SOURCE_DIGEST_MISMATCH`, `ARCHIVE_LAYER_SOURCE_SIZE_MISMATCH` and
+`ARCHIVE_LAYER_SOURCE_TAR_REJECTED`. These are fixed categories, not the observed
+field names or values. Existing role allowlisting, unknown-error hiding, strict
+fail-closed behavior and private-command-log boundaries are unchanged.
+
+Failure-first tests cover valid multi-layer descriptors and preserved three-field
+acceptance, exact field sets/mappings/order, forbidden descriptor fields/media types,
+digest/size/type corruption, compressed bytes falsely labeled as tar, empty/special
+inner layers, oversized and recursive GNU/PAX headers, bounded pre-allocation reads,
+end blocks/trailing data/alignment, flat and extension header limits, per-layer and
+cross-layer metadata budgets, released member caches and correct global-PAX
+inheritance, normal large file and extension metadata,
+malformed/duplicate JSON, original safety rejections and public error redaction.
+There are 57 preflight and 52 rehearsal tests (109 combined), and all 269 offline
+tests pass locally, with no local skips. A Linux child with a 256 MiB address-space
+limit also parses 9,000 empty files inheriting 1,000 global-PAX fields successfully;
+the failure-first version exhausted that budget. This is a bounded synthetic
+regression, not an RSS guarantee for every possible archive. These synthetic archives are not runnable image evidence.
+No Docker build/save, new workflow, app/DB startup or offline acceptance is run by
+this change; required exact-head CI and independent review remain separate gates.
+The next real run can still expose a different unsupported format or later blocker.

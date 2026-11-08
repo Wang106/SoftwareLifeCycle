@@ -16,6 +16,10 @@ import tarfile
 from urllib.parse import unquote, urlsplit
 
 REVISION = "0029_changeover_batch_history"
+MAX_LAYER_TAR_HEADERS = 100000
+MAX_IMAGE_TAR_HEADERS = 500000
+MAX_LAYER_TAR_METADATA = 64 * 1024 * 1024
+MAX_IMAGE_TAR_METADATA = 256 * 1024 * 1024
 GATES = (
     "BROWSER_OIDC_MODE", "BROWSER_SESSION_MODE", "ADMIN_REGISTRATION_SUBMISSION_MODE",
     "GRANT_STATUS_SUBMISSION_MODE", "PRINCIPAL_STATUS_SUBMISSION_MODE",
@@ -82,8 +86,105 @@ def digest(stream):
     return h.hexdigest()
 
 
+class LayerTarBudget:
+    def __init__(self, header_limit, metadata_limit):
+        self.headers, self.metadata = 0, 0
+        self.header_limit, self.metadata_limit = header_limit, metadata_limit
+
+    def charge(self, *, headers=0, metadata=0):
+        require(self.headers + headers <= self.header_limit and self.metadata + metadata <= self.metadata_limit,
+                "invalid LayerSources uncompressed tar")
+        self.headers += headers
+        self.metadata += metadata
+
+
+class LayerTarReader:
+    """Bound parser reads/seeks before allocation; large regular files use seek."""
+    def __init__(self, stream, size, image_budget):
+        self.stream, self.size = stream, size
+        self.layer_budget = LayerTarBudget(MAX_LAYER_TAR_HEADERS, MAX_LAYER_TAR_METADATA)
+        self.image_budget = image_budget
+        self.parsing = True
+
+    def charge(self, **amount):
+        self.layer_budget.charge(**amount)
+        self.image_budget.charge(**amount)
+
+    def tell(self):
+        return self.stream.tell()
+
+    def seek(self, offset, whence=0):
+        require(type(offset) is int and whence in (0, 1, 2), "invalid LayerSources uncompressed tar")
+        target = offset + (0 if whence == 0 else self.tell() if whence == 1 else self.size)
+        require(0 <= target <= self.size, "invalid LayerSources uncompressed tar")
+        return self.stream.seek(target)
+
+    def read(self, size):
+        require(type(size) is int and 0 <= size <= min(1024 * 1024, self.size - self.tell()),
+                "invalid LayerSources uncompressed tar")
+        if self.parsing:
+            self.charge(metadata=size)
+        value = self.stream.read(size)
+        require(len(value) == size, "invalid LayerSources uncompressed tar")
+        return value
+
+
+class LayerTarInfo(tarfile.TarInfo):
+    """Bound stdlib GNU/PAX metadata and recursive extension chains (Python 3.12)."""
+    @classmethod
+    def _fromtarfile(cls, archive, *, dircheck=True):
+        depth = getattr(archive, "layer_header_depth", 0)
+        archive.layer_header_depth = depth + 1
+        try:
+            require(depth < 64, "invalid LayerSources uncompressed tar")
+            return super()._fromtarfile(archive, dircheck=dircheck)
+        finally:
+            archive.layer_header_depth = depth
+
+    def _proc_pax(self, archive):
+        require(0 <= self.size <= 65536, "invalid LayerSources uncompressed tar")
+        return super()._proc_pax(archive)
+
+    def _proc_gnulong(self, archive):
+        require(0 <= self.size <= 65536, "invalid LayerSources uncompressed tar")
+        return super()._proc_gnulong(archive)
+
+    def _proc_member(self, archive):
+        # Includes every ordinary and GNU/PAX header before processing its payload.
+        archive.fileobj.charge(headers=1)
+        return super()._proc_member(archive)
+
+
+def layer_tar_format(stream, size, image_budget=None):
+    """Structural read only: no decompression, extraction or inner path/type policy."""
+    try:
+        require(size >= 1024 and size % 512 == 0
+                and callable(getattr(tarfile.TarInfo, "_fromtarfile", None)), "invalid LayerSources uncompressed tar")
+        if image_budget is None:
+            image_budget = LayerTarBudget(MAX_IMAGE_TAR_HEADERS, MAX_IMAGE_TAR_METADATA)
+        reader = LayerTarReader(stream, size, image_budget)
+        with tarfile.open(fileobj=reader, mode="r:", tarinfo=LayerTarInfo) as layer:
+            # No extraction/link resolution needs historical TarInfo objects. Use
+            # next(), not the index-based iterator, while releasing inherited PAX
+            # dictionaries so their per-entry copies cannot accumulate in memory.
+            while layer.next() is not None:
+                layer.members.clear()
+            end = layer.offset
+        # Stdlib alone tolerates missing terminators or garbage after a zero block.
+        require(end % 512 == 0 and size - end >= 1024, "invalid LayerSources uncompressed tar")
+        reader.parsing = False
+        reader.seek(end)
+        while reader.tell() < size:
+            require(not reader.read(min(1024 * 1024, size - reader.tell())).strip(b"\0"),
+                    "invalid LayerSources uncompressed tar")
+    except Exception:
+        # Covers numeric/recursive parser failures, never KeyboardInterrupt/SystemExit.
+        raise Invalid("invalid LayerSources uncompressed tar") from None
+
+
 def archive_image(path, item, commit):
-    keys(item, ("archive", "size", "sha256", "image_id", "platform", "source_commit"))
+    require(isinstance(item, dict) and set(item) == {"archive", "size", "sha256", "image_id", "platform", "source_commit"},
+            "unexpected or missing image item fields")
     require(item["platform"] == "linux/amd64" and item["source_commit"] == commit, "image provenance mismatch")
     require(hex_value(item["sha256"], 64), "invalid archive checksum")
     require(isinstance(item["image_id"], str) and re.fullmatch(r"sha256:[0-9a-f]{64}", item["image_id"]), "image must use immutable ID")
@@ -107,7 +208,14 @@ def archive_image(path, item, commit):
         manifest = read_json(data("manifest.json"))
         require(isinstance(manifest, list) and len(manifest) == 1, "archive must contain exactly one image")
         record = manifest[0]
-        keys(record, ("Config", "RepoTags", "Layers"))
+        require(isinstance(record, dict), "invalid docker-save manifest record")
+        required = {"Config", "RepoTags", "Layers"}
+        require(required <= set(record), "missing docker-save manifest fields")
+        require(set(record) in (required, required | {"LayerSources"}), "unreviewed docker-save manifest fields")
+        has_sources = "LayerSources" in record
+        if has_sources:
+            require(record["Config"] == "blobs/sha256/" + item["image_id"][7:], "invalid LayerSources blob path")
+            image_budget = LayerTarBudget(MAX_IMAGE_TAR_HEADERS, MAX_IMAGE_TAR_METADATA)
         config_bytes = data(record["Config"])
         require("sha256:" + hashlib.sha256(config_bytes).hexdigest() == item["image_id"], "image config digest mismatch")
         config = read_json(config_bytes)
@@ -124,12 +232,40 @@ def archive_image(path, item, commit):
         require(not config.get("config", {}).get("Volumes"), "image-declared writable volumes refused")
         layers = record["Layers"]
         roots = config.get("rootfs", {})
+        if has_sources:
+            require(isinstance(roots, dict) and roots.get("type") == "layers"
+                    and isinstance(layers, list) and layers and all(isinstance(name, str) for name in layers)
+                    and len(set(layers)) == len(layers), "invalid image layers")
+            diff_ids = roots.get("diff_ids")
+            require(isinstance(diff_ids, list) and diff_ids
+                    and all(isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value) for value in diff_ids)
+                    and len(set(diff_ids)) == len(diff_ids), "invalid LayerSources mapping")
+            sources = record["LayerSources"]
+            require(isinstance(sources, dict) and set(sources) == set(diff_ids), "invalid LayerSources mapping")
         require(roots.get("type") == "layers" and isinstance(layers, list) and layers and len(set(layers)) == len(layers)
                 and len(layers) == len(roots.get("diff_ids", [])), "invalid image layers")
         for name, expected in zip(layers, roots["diff_ids"]):
+            if has_sources:
+                require(name == "blobs/sha256/" + expected[7:], "invalid LayerSources blob path")
             require(name in members and members[name].isfile(), "missing image layer")
+            if has_sources:
+                source = sources[expected]
+                require(isinstance(source, dict) and set(source) == {"mediaType", "digest", "size"},
+                        "unreviewed LayerSources descriptor fields")
+                # Moby's Linux classic exporter describes the uncompressed local tar.
+                # Registry gzip/foreign descriptors are not interchangeable with diff_ids.
+                require(source["mediaType"] == "application/vnd.oci.image.layer.v1.tar", "unreviewed LayerSources media type")
+                require(source["digest"] == expected, "LayerSources digest mismatch")
+                require(type(source["size"]) is int and source["size"] > 0
+                        and source["size"] == members[name].size, "LayerSources size mismatch")
             with archive.extractfile(members[name]) as stream:
                 require("sha256:" + digest(stream) == expected, "image layer digest mismatch")
+            if has_sources:
+                # Header/length validation without decompression or filesystem extraction.
+                # Inner whiteouts, devices and links are legal layer contents, not outer
+                # archive entries. This does not certify the safety of image contents.
+                with archive.extractfile(members[name]) as stream:
+                    layer_tar_format(stream, members[name].size, image_budget)
 
 
 def validate(bundle):
