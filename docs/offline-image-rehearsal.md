@@ -488,7 +488,8 @@ A new optional `--export-bundle /absolute/existing-parent/new-handoff` argument 
 `--run` retains only that new run's successfully validated `api.tar`/`web.tar`, a
 strict handoff manifest and reconstructed safe evidence. Export happens after all
 smoke and both Compose stages return successfully. Default runs remain temporary
-only, `--check-host` cannot export, and the existing workflow is unchanged. The new
+only, and `--check-host` cannot export. At introduction this did not change the
+workflow; its later opt-in wiring is described below. The new
 tool is included among the exact-commit snapshot's required tool source files.
 
 The destination is exclusively new. Copies use bounded IO and exact hashes;
@@ -519,3 +520,71 @@ files, invocation, schema, IO/path assumptions, incomplete/uncertain handling an
 acceptance limits. The implementation and regressions do not execute a real
 full-sized handoff or a new Docker rehearsal; all operational acceptance remains
 separate.
+
+
+## Manual workflow option — 2026-11-08
+
+The manual `offline-image-rehearsal.yml` workflow now offers the boolean
+`export_bundle` input, **default false**. Leaving it off keeps the existing single
+rehearsal with no bundle export or separate verifier. Enabling it adds
+`--export-bundle` to that same rehearsal, then invokes the read-only bundle verifier
+in a **new Python process**, only after the rehearsal returned success. This change
+implements and mock-tests the option; it does not dispatch or run the workflow.
+
+The coordinator accepts only the exact environment values `true` and `false`.
+The GitHub expression is assigned to an environment variable, never interpolated
+into shell/Python source or appended as arbitrary arguments. Before running the
+rehearsal it requires a lowercase full `GITHUB_SHA` and an exact matching checked-out
+Git HEAD. An enabled export gets a randomly named absolute destination beneath
+`RUNNER_TEMP`. A collision, including a dangling symlink, fails; the exporter
+exclusively creates the directory, and no existing path is overwritten, reused,
+removed or retried. No bundle path is printed in the public summary.
+
+The successful run's status, source commit, image records and Compose result must
+match the fixed contracts. The coordinator validates an exact export receipt and
+reconstructs its expected manifest from that trusted run result to bind the digest
+to those same image records. It never reads the bundle to obtain trusted expected
+values. The separate verifier receives the run's commit and manifest SHA256 as
+arguments; its exit status and exact returned status/commit/hash must all agree.
+Missing, duplicate-key, nonfinite (including numeric exponent overflow), malformed,
+oversized or contradictory results,
+nonzero exits, timeouts and process interrupts fail the job. There is no verifier
+fallback, export retry or cleanup of a partial/uncertain destination.
+
+Child stdout is captured in a new private temporary file, with parsing limited to
+4 MiB for the rehearsal result and 64 KiB for the verification receipt. A local
+finite-float parsing hook rejects overflow even in unused nested metadata, without
+a second recursive traversal; finite numeric exponents remain supported. These are
+read/parser limits, not live capture-file disk quotas. Child stderr and raw
+exceptions are not published. Failures show only a fixed phase diagnostic, and
+failed/uncertain export output is not promoted to a verification receipt. The
+summary is assembled only after every requested stage succeeds; it contains fixed
+statuses/limitations plus validated commit, image IDs, archive hashes and, when
+requested, manifest SHA256. Raw host/native output, local paths, logs, supplied
+limitations and credentials cannot be copied into that summary.
+
+Export creates an additional temporary copy of the two images and revalidates them;
+the independent verifier reads them again. This costs extra disk and processing time.
+The existing 20 GiB host prerequisite, standard ubuntu-24.04 runner, read-only
+repository permissions, serialization and **60-minute job limit** are unchanged.
+The export still enforces its separate 16 GiB combined-archive support limit and
+1 GiB reserve. Neither limit guarantees enough peak capacity or completion within
+the job timeout. A default run does not acquire the export-only capacity limit.
+An oversized/slow run fails rather than increasing resources, timeouts or limits.
+
+The bundle remains on the **temporary runner only**. There is no artifact upload,
+persistent cache, registry publication, transfer or downloadable handoff. The
+summary is an integrity record, not a retained backup, signature, security/license
+clearance, offline test or deployment approval. No application/database startup,
+physical disconnection or company-server acceptance is added.
+
+The actual earlier successful run remains
+[42463491932](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42463491932)
+on `b471decc85495ff88dbe9c2f5419a0092b133cef`; it did not execute this export option.
+The baseline for this package is `95837a409f46bd2f9029a6778beb30a23ee3016a` (PR196),
+whose full [main CI 42478537666](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42478537666)
+passed. That CI is not an actual large-image export/verification run. Tests execute
+the exact embedded coordinator with mocked children, including default/opt-in paths,
+boolean injection, malformed and contradictory receipts, cross-commit substitution,
+child failures, collisions and summary privacy. A later separately authorized
+manual run is still needed for real large-image export and independent verification.
