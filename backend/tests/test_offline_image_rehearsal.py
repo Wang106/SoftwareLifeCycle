@@ -861,5 +861,99 @@ class ComposeDualViewTests(unittest.TestCase):
             self.assertEqual(command.call_args.args[0], ['docker', 'compose', 'config', '--help'])
 
 
+
+
+class ImageBundleIntegrationTests(unittest.TestCase):
+    def test_export_is_opt_in_and_incompatible_with_host_only(self):
+        with patch.object(rehearsal, 'run', return_value={}) as run, patch('builtins.print'):
+            self.assertEqual(rehearsal.main(['--run']), 0)
+        run.assert_called_once_with()
+        with patch.object(rehearsal, 'run', return_value={}) as run, patch('builtins.print'):
+            self.assertEqual(rehearsal.main(['--run', '--export-bundle', '/new-handoff']), 0)
+        run.assert_called_once_with(bundle_destination='/new-handoff')
+        with patch.object(rehearsal, 'check_host') as host, self.assertRaises(SystemExit), patch('sys.stderr', io.StringIO()):
+            rehearsal.main(['--check-host', '--export-bundle', '/new-handoff'])
+        host.assert_not_called()
+
+    def test_export_occurs_only_after_successful_smoke_and_dual_compose(self):
+        events = []
+        with tempfile.TemporaryDirectory() as raw:
+            directory = Path(raw)
+            commit = 'a' * 40
+            bases = {'images': {role: {'reference': role, 'config_digest': 'sha256:' + role}
+                                for role in ('api', 'web')}}
+            def command(args, **_kwargs):
+                if args[:3] == ['docker', 'image', 'inspect']:
+                    return json.dumps([{'Id': 'sha256:' + args[-1], 'Os': 'linux', 'Architecture': 'amd64'}]).encode()
+                return b''
+            def export(*args):
+                events.append('bundle')
+                self.assertEqual(args[0], directory)
+                self.assertEqual(args[2]['status'], rehearsal.bundle.REHEARSAL_STATUS)
+                return {'status': 'IMAGE_BUNDLE_EXPORTED_NOT_OFFLINE_ACCEPTANCE'}
+            patches = [patch.object(rehearsal, 'LOG_ROOT', None), patch.object(rehearsal, 'RUN_ENV', None),
+                patch.object(rehearsal, 'STEP', 'host prerequisites'),
+                patch.object(rehearsal, 'check_host', return_value={}),
+                patch.object(rehearsal.tempfile, 'mkdtemp', return_value=raw),
+                patch.object(rehearsal, 'snapshot', return_value=(commit, {})),
+                patch.object(rehearsal, 'load_bases', return_value=bases),
+                patch.object(rehearsal, 'prepare_contexts', return_value={'api': directory, 'web': directory}),
+                patch.object(rehearsal, 'acquire', return_value={}), patch.object(rehearsal, 'command', side_effect=command),
+                patch.object(rehearsal, 'export_image', side_effect=lambda role, *_: {'image_id': role}),
+                patch.object(rehearsal, 'smoke', side_effect=lambda role, *_: events.append(role + '-smoke') or b'safe'),
+                patch.object(rehearsal.bundle, 'check_destination'),
+                patch.object(rehearsal.bundle, 'export_bundle', side_effect=export),
+                patch.object(rehearsal, 'parse_compose', side_effect=lambda *_: events.append('compose') or {})]
+            import contextlib
+            with contextlib.ExitStack() as stack:
+                for item in patches: stack.enter_context(item)
+                result = rehearsal.run(ROOT, bundle_destination='/new-handoff')
+            self.assertEqual(events, ['api-smoke', 'web-smoke', 'compose', 'bundle'])
+            self.assertEqual(result['image_bundle']['status'], 'IMAGE_BUNDLE_EXPORTED_NOT_OFFLINE_ACCEPTANCE')
+
+    def test_bundle_failure_is_safe_and_never_prints_rehearsal_success(self):
+        out, err = io.StringIO(), io.StringIO()
+        import contextlib
+        with patch.object(rehearsal, 'run', side_effect=rehearsal.bundle.BundleError()), \
+             contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            self.assertEqual(rehearsal.main(['--run', '--export-bundle', '/PRIVATE_PATH']), 2)
+        self.assertEqual(out.getvalue(), '')
+        self.assertNotIn('PRIVATE', err.getvalue())
+        self.assertIn('BLOCKED', err.getvalue())
+
+
+    def test_uncertain_bundle_cli_emits_trusted_receipt_without_raw_values(self):
+        import contextlib
+        receipt = {'source_commit': 'a' * 40, 'manifest_sha256': 'b' * 64}
+        out, err = io.StringIO(), io.StringIO()
+        error = rehearsal.bundle.BundleError('BUNDLE_COMPLETION_UNCERTAIN', receipt=receipt)
+        with patch.object(rehearsal, 'run', side_effect=error), contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            self.assertEqual(rehearsal.main(['--run', '--export-bundle', '/PRIVATE_PATH']), 2)
+        self.assertEqual(out.getvalue(), '')
+        self.assertIn('manifest_sha256=' + 'b' * 64, err.getvalue())
+        self.assertNotIn('PRIVATE', err.getvalue())
+
+    def test_final_bundle_interrupt_reports_safe_receipt_and_remains_interrupt(self):
+        import contextlib
+        receipt = {'source_commit': 'a' * 40, 'manifest_sha256': 'b' * 64}
+        out, err = io.StringIO(), io.StringIO()
+        with patch.object(rehearsal, 'run', side_effect=rehearsal.bundle.CompletionInterrupted(receipt)), \
+             contextlib.redirect_stdout(out), contextlib.redirect_stderr(err), self.assertRaises(KeyboardInterrupt):
+            rehearsal.main(['--run', '--export-bundle', '/PRIVATE_PATH'])
+        self.assertEqual(out.getvalue(), '')
+        self.assertIn('BUNDLE_COMPLETION_UNCERTAIN', err.getvalue())
+        self.assertIn('manifest_sha256=' + 'b' * 64, err.getvalue())
+        self.assertNotIn('PRIVATE', err.getvalue())
+
+    def test_bundle_receipt_emitter_resanitizes_mutated_exception(self):
+        import contextlib
+        error = rehearsal.bundle.BundleError('BUNDLE_COMPLETION_UNCERTAIN')
+        error.receipt = {'source_commit': 'a' * 40, 'manifest_sha256': 'PRIVATE'}
+        out = io.StringIO()
+        with contextlib.redirect_stderr(out): rehearsal.bundle_failure(error)
+        self.assertNotIn('PRIVATE', out.getvalue())
+        self.assertNotIn('manifest_sha256=', out.getvalue())
+
+
 if __name__ == '__main__':
     unittest.main()
