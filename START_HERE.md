@@ -1,3 +1,17 @@
+## 当前检查点 — 2026-11-08（UTC+8）Compose双视图严格兼容
+
+PR194已正常保护合并main `1ec3a576fca54701ac7561649903989363aed770`。[main CI42445999879](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42445999879)成功：3118后端＋479子测试、296项PostgreSQL用例零跳过、2116前端、真实8＋16严格浏览器及聚合门禁。Cloudflare生产build `97c04a2b-fe8f-4270-b2cf-e98ad128ba6c` / version `caabdcbe-978a-4b7d-ae42-7a2514b171be`成功；Render同提交 `dep-dbnve9vb9u1s73d4ae00` update_failed，Actions部署42446702054/continuation42446702052均skipped，不称后端恢复。
+
+新手动运行[42446770307](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42446770307)在最终Compose parse only失败；按严格顺序，API/web实际build/save/归档校验及nonroot只读native smoke均已返回成功，原字段阻塞已越过。前置92,147,060,736字节空间和52项回归通过，但完整验收仍失败，未启动应用/DB，非物理断网验收；没有完整成功报告，不能补造镜像ID或归档摘要。
+
+获准下载官方Compose2.38.2独立二进制75,108,694字节，SHA256 `486b3ffc0f806ca2efbc430cef89955386011662f0c76bad17c103d059cfa9cf`及官方校验文件吻合。隔离HOME/空Docker配置、默认与目标Unix socket不存在，仅version/help/config真实运行；未安装或启动容器。未取得系统调用级网络观测，不声称零connect系统调用证明。实际正常project JSON省略API env_file，而不插值model完整保留原文档；8真实配置反例和4输出篡改被双视图组合拒绝。网络冲突正常project退出1、model退出0，证明不能替换原一致性门禁。
+
+当前包保留正常project成功及完整安全字段检查，再要求model与生成文档精确一致；project仅允许完整原文档或已实测仅缺API env_file的形式，其他增删改、字符串变体、任一命令失败仍拒绝。新增固定安全诊断及下载构建前flag能力检查，不改预检、Compose生成器、工作流、配方、锁、权限或分支门禁。18项新增回归先失败后通过，70集中/287全离线零跳过、2116前端、类型/编译、52自动化/126守卫通过；官方2.38.2真实config-only新函数基线成功，作者8负例与独立9负例均拒绝，98项额外结构/异常/中断检查通过，最终独立复审无阻断。本地pytest依赖缺失，完整后端/真实PG/浏览器待精确CI，不重跑整套验收。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17，计划100/100/20/33/40/40/0，浏览器阶段1/4、有限计划8/8不变。下一步精确候选CI/受保护合并及获准实际镜像验收；公司部署、真实DB、物理断网和联合恢复仍未完成。
+
+---
+
 ## 当前检查点 — 2026-11-08（UTC+8）Docker-save LayerSources严格兼容
 
 PR193已正常保护合并main `40af759bc786659a847c95a7abbfd8bbab94012b`。[main CI42429377676](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42429377676)成功：3073后端＋360子测试、296项PostgreSQL用例零跳过、2116前端、真实8＋16严格浏览器及聚合门禁。Cloudflare生产build `91c6d095-d3ba-40eb-82c9-ec03a0cbd497` / version `7aa58fb3-636a-4c4b-bdad-845de67d9fef`成功；Render同提交 `dep-dbns11g473hc73a0fb1g` update_failed，Actions部署42430456391/continuation42430456407均skipped，不称后端恢复。

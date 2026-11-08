@@ -632,5 +632,234 @@ class ExportDiagnosticTests(unittest.TestCase):
                 self.assertNotIn(self.SENTINEL, err.getvalue())
 
 
+class ComposeDualViewTests(unittest.TestCase):
+    SENTINEL = 'PRIVATE_SENTINEL_path_password_raw_step'
+
+    def invoke(self, *, project_omits=False, change_project=None, change_model=None,
+               raw_project=None, raw_model=None, project_error=None, model_error=None):
+        calls = []
+        manifest = {'images': {role: {'image_id': 'sha256:' + char * 64}
+                               for role, char in (('api', 'a'), ('web', 'b'))}}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            document = rehearsal.preflight.compose(manifest, root / 'database.env')
+            def command(args, **kwargs):
+                calls.append(args)
+                self.assertEqual(args[:2], ['docker', 'compose'])
+                self.assertIn('--no-env-resolution', args)
+                for forbidden in ('up', 'build', 'pull', '--no-consistency', '--no-normalize', '--resolve-image-digests'):
+                    self.assertNotIn(forbidden, args)
+                is_model = '--no-interpolate' in args
+                error = model_error if is_model else project_error
+                if error is not None:
+                    raise error
+                raw = raw_model if is_model else raw_project
+                if raw is not None:
+                    return raw
+                value = copy.deepcopy(document)
+                if project_omits and not is_model:
+                    value['services']['api'].pop('env_file')
+                change = change_model if is_model else change_project
+                if change:
+                    change(value)
+                return json.dumps(value).encode()
+            with patch.object(rehearsal, 'command', side_effect=command), \
+                 patch.object(rehearsal.preflight, 'validate', side_effect=AssertionError('no operator approval')), \
+                 patch.object(rehearsal, 'run', side_effect=lambda: rehearsal.parse_compose(manifest, root)), \
+                 patch.object(rehearsal, 'STEP', self.SENTINEL), \
+                 patch('sys.stdout', new_callable=io.StringIO) as out, \
+                 patch('sys.stderr', new_callable=io.StringIO) as err:
+                status = rehearsal.main(['--run'])
+            self.assertEqual((root / 'database.env').read_bytes(), b'')
+            self.assertEqual((root / 'database.env').stat().st_mode & 0o777, 0o600)
+            self.assertFalse((root / 'operator.json').exists())
+            self.assertEqual(json.loads((root / 'compose.json').read_bytes()), document)
+            return status, out.getvalue(), err.getvalue(), calls
+
+    def blocked(self, result, *, phase, code='COMPOSE_POLICY_REJECTED', role=None, field=None):
+        status, out, err, _calls = result
+        self.assertEqual(status, 2)
+        self.assertEqual(out, '')
+        self.assertIn('phase=' + phase + ';', err)
+        self.assertIn('code=' + code + ';', err)
+        if role:
+            self.assertIn('role=' + role + ';', err)
+        if field:
+            self.assertIn('field=' + field + ';', err)
+        self.assertNotIn(self.SENTINEL, err)
+
+    def test_complete_project_and_model_views_both_required(self):
+        status, out, err, calls = self.invoke()
+        self.assertEqual(status, 0)
+        self.assertEqual(err, '')
+        self.assertEqual(json.loads(out), {'status': 'COMPOSE_PARSED_ONLY',
+                                        'operator_approval': False, 'application_started': False})
+        self.assertEqual(len(calls), 2)
+        self.assertNotIn('--no-interpolate', calls[0])
+        self.assertIn('--no-interpolate', calls[1])
+
+    def test_actual_2382_project_omission_passes_only_with_exact_complete_model(self):
+        status, _out, err, calls = self.invoke(project_omits=True)
+        self.assertEqual(status, 0)
+        self.assertEqual(err, '')
+        self.assertEqual(len(calls), 2)
+
+    def test_model_cannot_omit_raw_required_path_or_env_file(self):
+        mutations = [lambda d: d['services']['api'].pop('env_file')]
+        mutations += [lambda d, key=key: d['services']['api']['env_file'][0].pop(key)
+                      for key in ('path', 'required', 'format')]
+        mutations += [lambda d, key=key, value=value: d['services']['api']['env_file'][0].update({key: value})
+                      for key, value in (('required', False), ('required', 1), ('format', ''), ('path', self.SENTINEL))]
+        for change in mutations:
+            with self.subTest(change=mutations.index(change)):
+                self.blocked(self.invoke(project_omits=True, change_model=change), phase='model', role='api', field='env_file')
+
+    def test_unobserved_project_env_file_shapes_are_not_accepted(self):
+        for value in (None, [], [self.SENTINEL], {}, [{'path': self.SENTINEL, 'required': False, 'format': 'raw'}]):
+            with self.subTest(value=value):
+                change = lambda d: d['services']['api'].update(env_file=value)
+                self.blocked(self.invoke(change_project=change), phase='project', role='api', field='env_file')
+
+    def test_web_env_file_addition_is_not_the_supported_api_omission(self):
+        for view in ('project', 'model'):
+            with self.subTest(view=view):
+                self.blocked(self.invoke(**{'change_' + view: lambda d: d['services']['web'].update(env_file=[])}),
+                             phase=view, role='web', field='env_file')
+
+    def test_every_existing_service_field_is_required_and_exact_in_both_views(self):
+        fixture = rehearsal.preflight.compose({'images': {r: {'image_id': 'sha256:' + 'a' * 64} for r in ('api', 'web')}}, Path('/synthetic'))
+        for view in ('project', 'model'):
+            for role, service in fixture['services'].items():
+                for field in service:
+                    if view == 'project' and role == 'api' and field == 'env_file':
+                        continue  # This sole project omission still needs the full model.
+                    for mode in ('missing', 'changed'):
+                        with self.subTest(view=view, role=role, field=field, mode=mode):
+                            def change(d):
+                                if mode == 'missing':
+                                    d['services'][role].pop(field)
+                                else:
+                                    d['services'][role][field] = self.SENTINEL
+                            self.blocked(self.invoke(**{'change_' + view: change}), phase=view, role=role, field=field)
+
+    def test_unknown_fields_services_and_root_keys_fail_without_echoing_names(self):
+        mutations = ((lambda d: d.update({self.SENTINEL: True}), 'unknown', 'document'),
+                     (lambda d: d['services'].update({self.SENTINEL: {}}), 'unknown', 'services'),
+                     (lambda d: d['services']['api'].update({self.SENTINEL: True}), 'api', 'unknown'),
+                     (lambda d: d['services']['api'].update(privileged=True), 'api', 'unknown'))
+        for view in ('project', 'model'):
+            for change, role, field in mutations:
+                with self.subTest(view=view, field=field):
+                    self.blocked(self.invoke(**{'change_' + view: change}), phase=view, role=role, field=field)
+
+    def test_boolean_number_aliases_are_not_equal_policy(self):
+        for view in ('project', 'model'):
+            for field, value in (('read_only', 1), ('healthcheck', {'disable': 1})):
+                with self.subTest(view=view, field=field):
+                    self.blocked(self.invoke(**{'change_' + view: lambda d: d['services']['api'].update({field: value})}),
+                                 phase=view, role='api', field=field)
+
+    def test_top_level_name_and_malformed_containers_are_rejected(self):
+        for view in ('project', 'model'):
+            for raw, field in ((b'null', 'document'), (b'[]', 'document'),
+                               (b'{"name":"PRIVATE_SENTINEL_path_password_raw_step","services":{}}', 'name')):
+                with self.subTest(view=view, raw=raw):
+                    self.blocked(self.invoke(**{'raw_' + view: raw}), phase=view, field=field)
+
+    def test_json_duplicate_keys_nonfinite_and_invalid_bytes_are_safe(self):
+        for view in ('project', 'model'):
+            for raw in (b'PRIVATE_SENTINEL_path_password_raw_step', b'\xff',
+                        b'{"services":{},"services":{}}', b'{"value":NaN}', b'{"value":Infinity}'):
+                with self.subTest(view=view, raw=raw):
+                    self.blocked(self.invoke(**{'raw_' + view: raw}), phase=view, code='COMPOSE_JSON_INVALID')
+
+    def test_project_command_failure_never_uses_model_as_fallback(self):
+        for error, code in ((rehearsal.preflight.Invalid('command failed'), 'COMPOSE_COMMAND_FAILED'),
+                            (subprocess.TimeoutExpired([self.SENTINEL], 30), 'COMPOSE_COMMAND_TIMEOUT'),
+                            (OSError(self.SENTINEL), 'COMPOSE_COMMAND_ERROR')):
+            with self.subTest(code=code):
+                result = self.invoke(project_error=error)
+                self.blocked(result, phase='project', code=code)
+                self.assertEqual(len(result[3]), 1)
+
+    def test_model_command_failure_cannot_leave_project_only_success(self):
+        for error, code in ((rehearsal.preflight.Invalid('command failed'), 'COMPOSE_COMMAND_FAILED'),
+                            (subprocess.TimeoutExpired([self.SENTINEL], 30), 'COMPOSE_COMMAND_TIMEOUT'),
+                            (RuntimeError(self.SENTINEL), 'COMPOSE_COMMAND_ERROR')):
+            with self.subTest(code=code):
+                result = self.invoke(project_omits=True, model_error=error)
+                self.blocked(result, phase='model', code=code)
+                self.assertEqual(len(result[3]), 2)
+
+    def test_unknown_exception_string_methods_are_never_called(self):
+        class HostileError(Exception):
+            def __str__(self):
+                raise AssertionError('must not format exception')
+        self.blocked(self.invoke(project_error=HostileError()), phase='project', code='COMPOSE_COMMAND_ERROR')
+
+    def test_prepare_failure_is_fixed_and_private(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+             patch.object(rehearsal.preflight, 'compose', side_effect=OSError(self.SENTINEL)), \
+             patch.object(rehearsal, 'run', side_effect=lambda: rehearsal.parse_compose({}, Path(tmp))), \
+             patch.object(rehearsal, 'command') as command, \
+             patch('sys.stdout', new_callable=io.StringIO) as out, \
+             patch('sys.stderr', new_callable=io.StringIO) as err:
+            self.assertEqual(rehearsal.main(['--run']), 2)
+            self.blocked((2, out.getvalue(), err.getvalue(), []), phase='prepare', code='COMPOSE_PREPARE_FAILED')
+            command.assert_not_called()
+
+    def test_diagnostic_constructor_and_emitter_allowlist_every_dimension(self):
+        for value in (self.SENTINEL, None, [], {'api': True}):
+            for mutate in (False, True):
+                with self.subTest(value=type(value).__name__, mutate=mutate):
+                    failure = rehearsal.ComposeFailure(value, phase=value, role=value, field=value)
+                    if mutate:
+                        failure.code = failure.phase = failure.role = failure.field = value
+                    with patch.object(rehearsal, 'run', side_effect=failure), \
+                         patch.object(rehearsal, 'STEP', self.SENTINEL), \
+                         patch('sys.stdout', new_callable=io.StringIO) as out, \
+                         patch('sys.stderr', new_callable=io.StringIO) as err:
+                        self.assertEqual(rehearsal.main(['--run']), 2)
+                        self.blocked((2, out.getvalue(), err.getvalue(), []), phase='unknown',
+                                     code='COMPOSE_VALIDATION_FAILED', role='unknown', field='unknown')
+
+    def test_compose_boundary_preserves_process_interrupts(self):
+        for error in (KeyboardInterrupt(), SystemExit(17)):
+            with self.subTest(error=type(error).__name__), self.assertRaises(type(error)):
+                self.invoke(project_error=error)
+
+    def test_missing_flags_stop_run_before_any_directories_or_downloads(self):
+        version = {'Client': {'Version': '28.0.4'}, 'Server': {'Version': '28.0.4'}}
+        info = {'OSType': 'linux', 'Architecture': 'amd64', 'DockerRootDir': '/tmp'}
+        def command(args, **kwargs):
+            if args[:2] == ['docker', 'version']: return json.dumps(version).encode()
+            if args[:2] == ['docker', 'info']: return json.dumps(info).encode()
+            if args == ['docker', 'compose', 'version', '--short']: return b'2.38.2\n'
+            if args == ['docker', 'compose', 'config', '--help']: return b'      --no-env-resolution   available\n'
+            raise AssertionError('unexpected command')
+        with patch.dict(rehearsal.os.environ, {}, clear=True), \
+             patch.object(rehearsal.platform, 'machine', return_value='x86_64'), \
+             patch.object(rehearsal.sys, 'platform', 'linux'), \
+             patch.object(rehearsal.sys, 'version_info', (3, 12, 14)), \
+             patch.object(rehearsal.shutil, 'disk_usage', return_value=type('Usage', (), {'free': 50 * 1024**3})()), \
+             patch.object(rehearsal, 'command', side_effect=command), \
+             patch.object(rehearsal.tempfile, 'mkdtemp', side_effect=AssertionError('must stop before directories')) as mkdir, \
+             patch.object(rehearsal, 'acquire') as acquire, \
+             patch('sys.stdout', new_callable=io.StringIO) as out, \
+             patch('sys.stderr', new_callable=io.StringIO) as err:
+            self.assertEqual(rehearsal.main(['--run']), 2)
+            self.blocked((2, out.getvalue(), err.getvalue(), []), phase='capability', code='COMPOSE_CAPABILITY_MISSING')
+            mkdir.assert_not_called()
+            acquire.assert_not_called()
+
+    def test_capability_probe_requires_actual_help_option_lines(self):
+        for raw in (b'      --no-interpolate option\n', b'notes about --no-interpolate and --no-env-resolution', b'\xff'):
+            with self.subTest(raw=raw), patch.object(rehearsal, 'command', return_value=raw), self.assertRaises(ValueError):
+                rehearsal.check_compose_capabilities()
+        with patch.object(rehearsal, 'command', return_value=b'      --no-env-resolution option\n      --no-interpolate option\n') as command:
+            rehearsal.check_compose_capabilities()
+            self.assertEqual(command.call_args.args[0], ['docker', 'compose', 'config', '--help'])
+
+
 if __name__ == '__main__':
     unittest.main()
