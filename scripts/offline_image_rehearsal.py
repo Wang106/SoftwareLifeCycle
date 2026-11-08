@@ -20,6 +20,7 @@ import tempfile
 import time
 import urllib.request
 
+import offline_image_bundle as bundle
 import offline_npm_artifacts as npm
 import offline_python_wheelhouse as wheels
 import offline_readonly_preflight as preflight
@@ -33,7 +34,7 @@ SOURCE_FILES = {'frontend/package.json', 'frontend/package-lock.json', 'frontend
                 'frontend/next-env.d.ts', 'frontend/tsconfig.json', 'frontend/offline-npm-artifacts.json',
                 'backend/requirements.txt', 'backend/requirements-linux-cp312.lock',
                 'backend/offline-python-wheelhouse.json'}
-TOOLS = {'scripts/offline_image_rehearsal.py', 'scripts/offline_python_wheelhouse.py',
+TOOLS = {'scripts/offline_image_rehearsal.py', 'scripts/offline_image_bundle.py', 'scripts/offline_python_wheelhouse.py',
          'scripts/offline_npm_inventory.py', 'scripts/offline_npm_artifacts.py',
          'scripts/offline_readonly_preflight.py', 'deploy/offline/api.Dockerfile',
          'deploy/offline/web.Dockerfile', 'deploy/offline/base-images.json'}
@@ -557,10 +558,12 @@ def parse_compose(manifest, destination):
     return {'status': 'COMPOSE_PARSED_ONLY', 'operator_approval': False, 'application_started': False}
 
 
-def run(root=ROOT):
+def run(root=ROOT, *, bundle_destination=None):
     global RUN_ENV, LOG_ROOT, STEP
     STEP = 'host prerequisites'
     host = check_host()  # Must precede directories, downloads, pulls and builds.
+    if bundle_destination is not None:
+        bundle.check_destination(bundle_destination)
     run_dir = Path(tempfile.mkdtemp(prefix='slc-image-rehearsal-'))
     LOG_ROOT = run_dir
     home = run_dir / 'home'
@@ -603,6 +606,9 @@ def run(root=ROOT):
                                'operator approval, security/license clearance, transfer or company acceptance.'}
     (run_dir / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     (run_dir / 'evidence.json').write_text(json.dumps(evidence, indent=2) + '\n')
+    if bundle_destination is not None:
+        STEP = 'optional local image handoff export'
+        evidence['image_bundle'] = bundle.export_bundle(run_dir, manifest, evidence, bundle_destination)
     return evidence
 
 
@@ -611,14 +617,37 @@ class SafeParser(argparse.ArgumentParser):
         self.exit(2, 'offline image rehearsal: invalid arguments\n')
 
 
+def bundle_failure(error):
+    code = error.code if type(error.code) is str and error.code in bundle.CODES else 'BUNDLE_POLICY_REJECTED'
+    print('BLOCKED: local image handoff export code=' + code +
+          '; preserve output and inspect with read-only verification; do not retry uncertain completion; '
+          'no offline or deployment acceptance claimed.', file=sys.stderr)
+    receipt = bundle.safe_receipt(getattr(error, 'receipt', None))
+    if code == 'BUNDLE_COMPLETION_UNCERTAIN' and receipt is not None:
+        # These values were constructed and checked by this run before committing,
+        # not read back from the potentially incomplete handoff directory.
+        print('Trusted local run verification expectations: source_commit=' + receipt['source_commit'] +
+              '; manifest_sha256=' + receipt['manifest_sha256'], file=sys.stderr)
+
+
 def main(argv=None):
     parser = SafeParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--check-host', action='store_true')
     mode.add_argument('--run', action='store_true')
+    parser.add_argument('--export-bundle', help='new absolute local directory; only with --run')
     args = parser.parse_args(argv)
+    if args.export_bundle is not None and not args.run:
+        parser.error('export requires run')
     try:
-        result = check_host() if args.check_host else run()
+        result = (check_host() if args.check_host else
+                  run() if args.export_bundle is None else run(bundle_destination=args.export_bundle))
+    except bundle.CompletionInterrupted as error:
+        bundle_failure(error)
+        raise  # Still an interruption; safe fixed exception text only.
+    except bundle.BundleError as error:
+        bundle_failure(error)
+        return 2
     except ComposeFailure as error:
         print('BLOCKED: offline image rehearsal Compose phase=' + safe_compose_part(error.phase, COMPOSE_PHASES) +
               '; role=' + safe_export_role(error.role) + '; field=' + safe_compose_part(error.field, COMPOSE_FIELDS) +
