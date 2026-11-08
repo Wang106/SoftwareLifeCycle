@@ -12,6 +12,15 @@
 不能称 SQL 语法已验证、实际权限已验证、数据库只读安全、应用就绪或离线验收完成。
 `READ_ONLY_MODE`、`PGOPTIONS`、操作员自报和本工具返回码都不能单独证明这些结论。
 
+## 后续手动合成验证的开发准备
+
+独立的[合成 PostgreSQL 演练说明](offline-database-rehearsal.md)新增手动工作流与
+默认不执行的协调器；本次只有 mock 编排测试和官方固定镜像元数据核对，没有执行 SQL。
+既有 CI 的 PostgreSQL 案例不等于执行了本采集器。将来真正运行需要另行明确批准固定镜像
+下载、一次性容器限制、local trust、合成角色/授权和清理；本说明不提供执行授权。
+该演练保留 PUBLIC 默认权限并预期 baseline CHECKLIST_MISMATCH，不为取得 MATCHED
+放宽本清单；即使未来合成验证通过，也不代表真实只读登录隔离或公司数据库验收。
+
 ## 三种结果
 
 - `CHECKLIST_MATCHED`，退出 0：输入结构有效，所报各项符合这一固定清单。
