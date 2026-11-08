@@ -12,10 +12,11 @@ company deployment. The earlier [PG rehearsal document](offline-database-rehears
 records that package's development-time boundary; its “not run” statements do not
 override this later, separately authorized run evidence.
 
-This package adds only an opt-in coordinator, mock regressions and documentation.
+PR200 added only the opt-in coordinator, mock regressions and documentation.
 No Docker command, container, HTTP server, database, migration or seed was run
-while developing it. No workflow, Dockerfile, production source, database
-collector, dependency, CI gate or branch protection is changed.
+while developing it. That package did not change a workflow, Dockerfile, production
+source, database collector, dependency, CI gate or branch protection. The later
+manual-workflow integration is described below; it still has no real API runtime evidence.
 
 The current image smoke imports dependencies and compiles Python files, without
 importing `app.main`. The new, future smoke starts the real uvicorn application
@@ -149,3 +150,49 @@ real PostgreSQL and browser acceptance require the exact candidate CI.
 
 Business 36/44=82%, delta 0; modules 100/100demo/100demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser-stage 1/4 and finite-plan 8/8 unchanged.
+
+
+## Manual-workflow integration — 2026-11-09
+
+PR200 is now merged at main `be30990a8c7edbedb8fa5c7f6789b20d32b37937`.
+[Main CI 42497949946](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42497949946)
+passed 3,308 backend tests plus 1,336 subtests, 296 PostgreSQL cases without skips,
+2,116 frontend tests and strict 8 + 16 browser cases. These checks do not start
+this API rehearsal. Cloudflare's same-commit build/version succeeded; Render
+`dep-dbo9qpgae00c739fems0` failed. No backend recovery is claimed.
+
+The existing manual image workflow now offers `run_api_startup`, default false.
+This is integration code and mock testing only. The API script, isolation flags,
+10 HTTP cases, failure cleanup and production code are unchanged. A separately
+approved run first performs the existing full image preparation, then any
+requested independent bundle verification, then invokes this script's
+`run_rehearsal` function exactly once. Export and API startup are independent
+options. No existing or historical image is presumed available.
+
+The workflow supplies the exact API image ID from that same successful trusted
+build receipt and the matching `GITHUB_SHA`; it does not infer expected identity
+from a label. Both image receipts and clean checkout must match that commit.
+Native smoke requires exactly API/web nonempty-string records regardless of the
+export option. The complete API result must then match the fixed 10/10 success
+contract, including `container_removed=true`, `database_ready=false` and the same
+image/commit. The fixed provenance value still means build consistency only,
+not authenticated authorship or independent security clearance.
+
+The new wrapper uses a shared 55-minute soft deadline inside the unchanged
+60-minute job limit. A runner-local monotonic timestamp covers prerequisites,
+checkout and tests too. The environment timestamp is bookkeeping, not a
+security boundary. A full 240-second API/cleanup window plus 30 seconds for the
+summary must remain before startup. No hard-kill subprocess timeout is added
+around this script. SIGTERM is temporarily converted to KeyboardInterrupt;
+the prior handler is restored in finally before receipt/budget validation.
+The script retains its own 180-second work and 35-second cleanup deadlines.
+Forced runner termination can still leave cleanup uncertain; no workflow
+fallback removes containers or retries an uncertain operation.
+
+See the [workflow option and budget contract](offline-image-rehearsal.md#optional-isolated-api-startup--2026-11-09)
+for the four-option matrix, strict receipts, failure reporting and tests.
+The summary distinguishes API process success from its intentionally unavailable
+database and from the earlier parse-only Compose stage. Development/CI is not
+runtime approval. No manual workflow, actual API server, database, migration,
+identity flow, backup/restore, physical isolation or company deployment was run
+by this integration package; all acceptance percentages remain unchanged.
