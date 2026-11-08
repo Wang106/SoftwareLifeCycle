@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-08（UTC+8）手动流程可选临时镜像包复核
+
+PR196已保护合并main `95837a409f46bd2f9029a6778beb30a23ee3016a`。[main CI42478537666](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42478537666)成功：3188后端＋720子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare生产build `2482a990-7a99-42ad-9a80-a86d815ee3d8` / version `fb2144c4-5eac-4a0f-827d-1373a7e494df`成功；Render同提交 `dep-dbo6akoae00c739bjotg` update_failed，Actions部署42479694709/continuation42479694401均skipped，不称后端恢复。
+
+此前真实联网镜像演练42463491932在b471decc成功，但没有执行后续新增的大镜像导出。当前包只为原手动流程增加默认关闭的临时导出/独立进程复核选项：从可信同次运行结果取得commit/manifest SHA并与checkout匹配，不从包自读摘要冒充可信。保留标准runner、20GiB前置、60分钟和并发/权限门槛；不开启自动执行、不上传镜像或日志、不增持久缓存、不连接公司服务器。临时磁盘与处理时间会增加，超限拒绝而不降低校验。
+
+新增20项回归通过；指数溢出拒绝回归先失败后修复通过，96集中、359全离线零跳过、52自动化、126守卫、2116前端及类型/编译/YAML检查通过；内嵌协调器另拒绝指数溢出的非有限JSON，保留有限指数值。独立最终复审无阻断，另325项对抗/兼容探针通过，精确CI待完成；本包未触发手动流程，真实大镜像导出、应用/数据库启动、物理断网、交付和公司部署尚未验收。业务36/44=82%、增量0；既有模块、计划及浏览器阶段统计不变。
+
+---
+
 ## 当前检查点 — 2026-11-08（UTC+8）本地镜像交付包导出与复核
 
 PR195已保护合并main `b471decc85495ff88dbe9c2f5419a0092b133cef`。[main CI42462378788](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42462378788)成功：3136后端＋671子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare生产build `e1728a9b-e6cd-412d-82a5-766802d5ee2b` / version `2b444a1f-33d7-4ef2-8e5c-d7f815983998`成功；Render同提交 `dep-dbo30n8473hc73a5q0tg` update_failed，Actions部署42463412496/continuation42463412486均skipped，不称后端恢复。

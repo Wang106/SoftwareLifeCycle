@@ -49,8 +49,9 @@ The new directory contains exactly:
 The command's successful result adds `image_bundle` with exact source commit and
 `manifest_sha256`. Preserve that digest and commit through an independently trusted
 channel. A digest copied from the bundle itself does not establish its provenance.
-There is no workflow change, artifact upload, transfer, download, Docker load,
-container startup, host installation or configuration change in this export step.
+The export step itself does not upload, transfer, download, load Docker images,
+start containers, install software or change host configuration. Its later manual
+workflow integration is described below.
 
 ## Independent read-only verification
 
@@ -170,3 +171,34 @@ a real full-sized image export, local Docker, a new complete image rehearsal,
 application/DB startup or a disconnected/company acceptance test. Required candidate
 CI, independent review and later separately authorized runtime evidence remain
 separate gates. Business and deployment acceptance percentages do not change.
+
+
+## Optional temporary-runner workflow integration
+
+The manual image rehearsal now has a boolean `export_bundle` input, default `false`.
+When enabled, a single newly successful rehearsal exports to a unique new directory
+under `RUNNER_TEMP`, then a separate Python process runs this read-only verifier.
+The expected commit and manifest digest come from the same successful run result,
+with commit equality to both checked-out HEAD and `GITHUB_SHA`. The coordinator also
+reconstructs the expected manifest from that run's image records and safe evidence;
+it never reads the received directory to manufacture trusted expectations.
+The verifier must return success and the exact same commit/digest with the verified
+status. Missing or malformed receipts, contradictory metadata and any child failure
+stop the job before a success summary. There is no automatic recovery or retry of
+an incomplete/uncertain export and no deletion or reuse of an existing destination.
+
+The boolean travels only through an environment value and is checked against exact
+`true`/`false`, not substituted into shell source. The public summary includes only
+fixed statements and validated commit/image/hash strings, never local paths, raw
+logs/native output, host details, credentials or arbitrary exception text. It says
+explicitly that the verified bundle exists only on the temporary runner and is not
+a retained downloadable artifact. False means no export and no separate verifier.
+
+This adds copying and repeated validation IO without raising the existing 20 GiB
+host gate, 60-minute job limit or the bundle's 16 GiB/1 GiB support bounds. Free space
+and processing time can still be insufficient. The workflow does not upload or
+cache the bundle, publish images, connect to a company server, start the app/DB or
+prove offline operation. Its implementation tests use mocked child processes; no
+new real large-image export or workflow dispatch has been executed for this package.
+See [the rehearsal workflow contract](offline-image-rehearsal.md#manual-workflow-option--2026-11-08)
+for parsing limits, trust checks, failure handling and the separate runtime evidence.

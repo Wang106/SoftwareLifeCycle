@@ -955,5 +955,295 @@ class ImageBundleIntegrationTests(unittest.TestCase):
         self.assertNotIn('manifest_sha256=', out.getvalue())
 
 
+class ImageBundleWorkflowTests(unittest.TestCase):
+    """Execute the workflow's actual coordinator; no Docker or network subprocesses."""
+    COMMIT = 'a' * 40
+    DIGEST = 'b' * 64
+    TOKEN = '1' * 32
+
+    def workflow_python(self):
+        import re
+        import textwrap
+        text = (ROOT / '.github/workflows/offline-image-rehearsal.yml').read_text()
+        blocks = re.findall(r"          python3 - <<'PY'\n(.*?)^          PY$", text, re.M | re.S)
+        self.assertEqual(len(blocks), 2)
+        return textwrap.dedent(blocks[1])
+
+    def result(self, exported=False):
+        value = {'status': 'IMAGE_REHEARSAL_PASSED_NOT_OFFLINE_ACCEPTANCE',
+                 'source_commit': self.COMMIT,
+                 'images': {role: {'archive': role + '.tar', 'size': 1024,
+                            'sha256': ('c' if role == 'api' else 'd') * 64,
+                            'image_id': 'sha256:' + ('e' if role == 'api' else 'f') * 64,
+                            'platform': 'linux/amd64', 'source_commit': self.COMMIT}
+                            for role in ('api', 'web')},
+                 'compose': {'status': 'COMPOSE_PARSED_ONLY', 'operator_approval': False,
+                             'application_started': False},
+                 'native_smoke': {'api': 'PRIVATE_NATIVE', 'web': 'PRIVATE_NATIVE'},
+                 'host': {'private': 'PRIVATE_HOST'}, 'limitations': 'PRIVATE_LIMITATION',
+                 'dependencies': {}, 'bases': {}, 'source_sha256': {}}
+        if exported:
+            # Bind the export receipt to independently reconstructed run metadata,
+            # never a digest read from the destination directory.
+            manifest = {'format': 'slc-offline-readonly-v1', 'source_commit': self.COMMIT,
+                        'required_db_revision': rehearsal.preflight.REVISION, 'images': value['images']}
+            handoff, _ = rehearsal.bundle.export_inputs(manifest, value)
+            digest = hashlib.sha256(rehearsal.bundle.canonical(handoff)).hexdigest()
+            value['image_bundle'] = {'status': 'IMAGE_BUNDLE_EXPORTED_NOT_OFFLINE_ACCEPTANCE',
+                                     'source_commit': self.COMMIT, 'manifest_sha256': digest}
+        return value
+
+    def exercise(self, enabled='false', result=None, verified=None, *, run_raw=None,
+                 verify_raw=None, github_sha=None, head=None, fail=None, collision=None,
+                 missing_env=None):
+        import contextlib
+        import os
+        import uuid
+        code = self.workflow_python()
+        if result is None:
+            result = self.result(enabled == 'true')
+        if verified is None:
+            receipt = result.get('image_bundle', {}) if type(result) is dict else {}
+            receipt = receipt if type(receipt) is dict else {}
+            verified = {'status': 'IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE',
+                        'source_commit': self.COMMIT, 'manifest_sha256': receipt.get('manifest_sha256', self.DIGEST)}
+        calls, captured = [], {}
+        out, err = io.StringIO(), io.StringIO()
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            summary = root / 'summary'
+            target = root / ('slc-image-handoff-' + self.TOKEN)
+            if collision == 'directory': target.mkdir()
+            elif collision == 'file': target.write_bytes(b'PRIVATE_EXISTING')
+            elif collision == 'symlink': target.symlink_to(root / 'absent')
+            env = {'RUNNER_TEMP': raw, 'GITHUB_STEP_SUMMARY': str(summary),
+                   'GITHUB_SHA': self.COMMIT if github_sha is None else github_sha,
+                   'EXPORT_IMAGE_BUNDLE': enabled}
+            if missing_env: env.pop(missing_env)
+            def child(args, **kwargs):
+                calls.append(list(args))
+                self.assertNotIn('shell', kwargs)
+                self.assertTrue(kwargs['check'])
+                self.assertEqual(kwargs['stderr'], subprocess.DEVNULL)
+                self.assertEqual(kwargs['stdin'], subprocess.DEVNULL)
+                self.assertGreater(kwargs['timeout'], 0)
+                if args == ['git', 'rev-parse', 'HEAD']:
+                    stage = 'checkout'
+                    data = ((self.COMMIT if head is None else head) + '\n').encode()
+                elif args[:3] == [sys.executable, 'scripts/offline_image_rehearsal.py', '--run']:
+                    stage = 'rehearsal'
+                    if enabled == 'true':
+                        self.assertEqual(args[3:], ['--export-bundle', str(target)])
+                        self.assertFalse(target.exists())
+                        target.mkdir()
+                        # Misleading bundle data must not supply trusted expectations.
+                        (target / 'manifest.json').write_text('PRIVATE_BUNDLE_CONTENT')
+                    else:
+                        self.assertEqual(len(args), 3)
+                    data = json.dumps(result).encode() if run_raw is None else run_raw
+                elif args[:3] == [sys.executable, 'scripts/offline_image_bundle.py', 'verify']:
+                    stage = 'verification'
+                    captured['verify_args'] = args
+                    data = json.dumps(verified).encode() if verify_raw is None else verify_raw
+                else:
+                    self.fail('Unexpected child command')
+                if fail is not None and fail[0] == stage:
+                    raise fail[1]
+                kwargs['stdout'].write(data)
+                return subprocess.CompletedProcess(args, 0)
+            with patch.dict(os.environ, env, clear=True), patch('subprocess.run', side_effect=child), \
+                 patch('uuid.uuid4', return_value=uuid.UUID(self.TOKEN)), \
+                 contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                try:
+                    exec(compile(code, '<workflow-coordinator>', 'exec'), {'__name__': '__main__'})
+                    status = 0
+                except SystemExit as error:
+                    status = error.code
+            captured.update(status=status, calls=calls, stdout=out.getvalue(), stderr=err.getvalue(),
+                            summary=summary.read_text() if summary.exists() else '',
+                            target_exists=target.exists(), target_is_link=target.is_symlink())
+            if collision == 'file':
+                self.assertEqual(target.read_bytes(), b'PRIVATE_EXISTING')
+            if enabled == 'true' and collision is None and any(len(c) > 2 and c[2] == '--run' for c in calls):
+                self.assertTrue(target.exists(), 'Never clean up an incomplete/uncertain export')
+        return captured
+
+    def blocked(self, value, *, calls=None):
+        self.assertNotEqual(value['status'], 0)
+        self.assertEqual(value['summary'], '')
+        self.assertEqual(value['stdout'], '')
+        self.assertNotIn('PRIVATE', value['stderr'])
+        self.assertNotIn('Traceback', value['stderr'])
+        if calls is not None:
+            self.assertEqual(len(value['calls']), calls)
+
+    def test_manual_boolean_defaults_false_and_never_enters_shell_source(self):
+        text = (ROOT / '.github/workflows/offline-image-rehearsal.yml').read_text()
+        self.assertIn('export_bundle:', text)
+        self.assertIn('type: boolean', text)
+        self.assertIn('default: false', text)
+        self.assertIn('EXPORT_IMAGE_BUNDLE: ${{ inputs.export_bundle }}', text)
+        self.assertNotIn('${{', self.workflow_python())
+        self.assertIn('timeout-minutes: 60', text)
+        self.assertIn('20 * 1024**3', text)
+
+    def test_default_false_runs_once_without_export_or_verifier(self):
+        actual = self.exercise()
+        self.assertEqual(actual['status'], 0)
+        self.assertEqual(len(actual['calls']), 2)
+        self.assertFalse(actual['target_exists'])
+        self.assertIn('not requested', actual['summary'])
+        self.assertNotIn('Manifest SHA256:', actual['summary'])
+
+    def test_true_exports_new_temporary_path_then_verifies_in_another_process(self):
+        actual = self.exercise('true')
+        self.assertEqual(actual['status'], 0)
+        self.assertEqual(len(actual['calls']), 3)
+        args = actual['verify_args']
+        self.assertEqual(args[3], actual['calls'][1][-1])
+        self.assertEqual(args[4:], ['--expected-commit', self.COMMIT, '--expected-manifest-sha256',
+                                   self.result(True)['image_bundle']['manifest_sha256']])
+        self.assertIn('Manifest SHA256:', actual['summary'])
+        self.assertIn('temporary runner only', actual['summary'])
+        self.assertIn('No artifact upload', actual['summary'])
+
+    def test_boolean_injection_and_unrecognized_values_fail_before_child(self):
+        for enabled in ('', 'True', 'FALSE', '1', '0', 'null', 'true\n', '$(touch PRIVATE)',
+                        'true; echo PRIVATE', '${{ secrets.PRIVATE }}', 'false --export-bundle /PRIVATE'):
+            with self.subTest(enabled=enabled): self.blocked(self.exercise(enabled), calls=0)
+        self.blocked(self.exercise(missing_env='EXPORT_IMAGE_BUNDLE'), calls=0)
+
+    def test_invalid_or_cross_checkout_commit_stops_before_rehearsal(self):
+        for sha in ('', 'A' * 40, 'a' * 39, 'a' * 40 + '\n', 'PRIVATE'):
+            with self.subTest(sha=sha): self.blocked(self.exercise(github_sha=sha), calls=0)
+        self.blocked(self.exercise(head='b' * 40), calls=1)
+        self.blocked(self.exercise(head='a' * 40 + '\nPRIVATE'), calls=1)
+
+    def test_existing_export_paths_are_never_reused_deleted_or_retried(self):
+        for collision in ('directory', 'file', 'symlink'):
+            with self.subTest(collision=collision):
+                actual = self.exercise('true', collision=collision)
+                self.blocked(actual)
+                self.assertLessEqual(len(actual['calls']), 1)
+                self.assertTrue(actual['target_exists'] or actual['target_is_link'])
+
+    def test_run_result_commit_status_and_compose_are_not_blindly_trusted(self):
+        cases = [('source_commit', 'b' * 40), ('source_commit', True),
+                 ('status', 'PRIVATE'), ('compose', {}),
+                 ('compose', {'status': 'COMPOSE_PARSED_ONLY', 'operator_approval': 0,
+                              'application_started': False})]
+        for key, value in cases:
+            with self.subTest(key=key, value=value):
+                result = self.result(True)
+                result[key] = value
+                self.blocked(self.exercise('true', result), calls=2)
+
+    def test_export_receipt_missing_wrong_shape_and_unknown_fields_fail(self):
+        for receipt in (None, [], {}, False, 'PRIVATE',
+                        {'status': 'IMAGE_BUNDLE_EXPORTED_NOT_OFFLINE_ACCEPTANCE'},
+                        {**self.result(True)['image_bundle'], 'PRIVATE': 'extra'}):
+            with self.subTest(receipt=receipt):
+                result = self.result(True)
+                result['image_bundle'] = receipt
+                self.blocked(self.exercise('true', result), calls=2)
+        result = self.result(True)
+        del result['image_bundle']
+        self.blocked(self.exercise('true', result), calls=2)
+
+    def test_export_receipt_commit_status_and_digest_must_match_run(self):
+        for key, value in [('source_commit', 'b' * 40), ('status', 'PRIVATE'),
+                           ('manifest_sha256', 'f' * 64), ('manifest_sha256', 'B' * 64),
+                           ('manifest_sha256', True), ('manifest_sha256', 'b' * 64 + '\n')]:
+            with self.subTest(key=key, value=value):
+                result = self.result(True)
+                result['image_bundle'][key] = value
+                self.blocked(self.exercise('true', result), calls=2)
+
+    def test_default_false_rejects_unrequested_export_receipt(self):
+        self.blocked(self.exercise('false', self.result(True)), calls=2)
+
+    def test_malformed_duplicate_nonfinite_and_oversized_run_json_fail(self):
+        for raw in (b'', b'PRIVATE', b'null', b'[]', b'{}', b'\xff', b'{"x":1,"x":2}',
+                    b'{"x":NaN}', b'{"x":Infinity}', b'{}\n{}', b' ' * (4 * 1024**2 + 1)):
+            with self.subTest(raw=raw[:30]): self.blocked(self.exercise('true', run_raw=raw), calls=2)
+
+    def test_numeric_exponent_overflow_in_unused_nested_metadata_fails(self):
+        for enabled in ('false', 'true'):
+            result = self.result(enabled == 'true')
+            for token in ('1e309', '-1e309', '1e99999', '-1e99999',
+                          '{"nested": [1, {"PRIVATE": 1e309}]}',
+                          '{"nested": [1, {"PRIVATE": -1e309}]}'):
+                with self.subTest(enabled=enabled, token=token):
+                    raw = json.dumps(result).replace('"PRIVATE_HOST"', token).encode()
+                    self.blocked(self.exercise(enabled, result, run_raw=raw), calls=2)
+
+    def test_finite_exponents_in_unused_metadata_remain_accepted(self):
+        for enabled in ('false', 'true'):
+            result = self.result(enabled == 'true')
+            for token in ('1e308', '-1e308', '1e-99999', '0e99999'):
+                with self.subTest(enabled=enabled, token=token):
+                    raw = json.dumps(result).replace('"PRIVATE_HOST"', token).encode()
+                    actual = self.exercise(enabled, result, run_raw=raw)
+                    self.assertEqual(actual['status'], 0)
+                    self.assertNotIn('PRIVATE', actual['summary'])
+
+    def test_invalid_image_fields_cannot_enter_public_summary(self):
+        for key, value in [('image_id', 'PRIVATE'), ('sha256', 'PRIVATE'), ('source_commit', 'b' * 40),
+                           ('archive', '/PRIVATE'), ('size', True), ('size', 0), ('platform', 'PRIVATE')]:
+            with self.subTest(key=key, value=value):
+                result = self.result()
+                result['images']['api'][key] = value
+                self.blocked(self.exercise(result=result), calls=2)
+        result = self.result()
+        result['images']['PRIVATE_ROLE'] = result['images'].pop('api')
+        self.blocked(self.exercise(result=result), calls=2)
+
+    def test_default_false_does_not_gain_export_capacity_restrictions(self):
+        result = self.result()
+        result['images']['api']['size'] = 17 * 1024**3
+        self.assertEqual(self.exercise(result=result)['status'], 0)
+
+    def test_verifier_receipt_must_match_export_status_commit_digest_and_shape(self):
+        valid = {'status': 'IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE',
+                 'source_commit': self.COMMIT,
+                 'manifest_sha256': self.result(True)['image_bundle']['manifest_sha256']}
+        cases = [[], {}, {**valid, 'PRIVATE': 'extra'}]
+        cases += [{**valid, key: value} for key, value in [('status', 'PRIVATE'),
+                  ('source_commit', 'b' * 40), ('manifest_sha256', 'd' * 64), ('manifest_sha256', True)]]
+        for receipt in cases:
+            with self.subTest(receipt=receipt): self.blocked(self.exercise('true', verified=receipt), calls=3)
+
+    def test_verifier_invalid_duplicate_nonfinite_or_oversized_json_fails(self):
+        for raw in (b'', b'PRIVATE', b'null', b'\xff', b'{"x":1,"x":2}', b'{"x":NaN}',
+                    b'{}\n{}', b' ' * (64 * 1024 + 1)):
+            with self.subTest(raw=raw[:30]): self.blocked(self.exercise('true', verify_raw=raw), calls=3)
+
+    def test_child_nonzero_timeout_os_error_and_interrupt_never_retry_or_report_success(self):
+        for stage, count in [('checkout', 1), ('rehearsal', 2), ('verification', 3)]:
+            for error in (subprocess.CalledProcessError(2, 'PRIVATE', output=b'PRIVATE', stderr=b'PRIVATE'),
+                          subprocess.TimeoutExpired('PRIVATE', 1, output=b'PRIVATE'),
+                          OSError('PRIVATE'), KeyboardInterrupt('PRIVATE')):
+                with self.subTest(stage=stage, error=type(error).__name__):
+                    self.blocked(self.exercise('true', fail=(stage, error)), calls=count)
+
+    def test_unknown_exception_string_is_never_evaluated(self):
+        class PrivateError(Exception):
+            def __str__(self):
+                raise AssertionError('PRIVATE string conversion')
+        self.blocked(self.exercise('true', fail=('verification', PrivateError())), calls=3)
+
+    def test_public_summary_is_fixed_and_excludes_raw_evidence_or_local_paths(self):
+        for enabled in ('false', 'true'):
+            actual = self.exercise(enabled)
+            self.assertEqual(actual['status'], 0)
+            self.assertEqual(actual['stdout'] + actual['stderr'], '')
+            self.assertIn(self.COMMIT, actual['summary'])
+            self.assertIn('No physical network isolation', actual['summary'])
+            self.assertIn('no application/DB startup', actual['summary'])
+            self.assertNotIn('PRIVATE', actual['summary'])
+            self.assertNotIn('/tmp/', actual['summary'])
+            self.assertNotIn('slc-image-handoff-', actual['summary'])
+
+
 if __name__ == '__main__':
     unittest.main()
