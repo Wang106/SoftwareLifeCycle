@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-08（UTC+8）离线数据库证据检查
+
+PR197已保护合并main `0bfc369dfd635c2668048cf6f13765d9023d0bec`。[main CI42482441545](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42482441545)成功：3208后端＋822子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare生产build `93c3e241-5aa1-4ad6-a63e-4887387188f7` / version `d6579a9f-463a-458d-8e24-138dfb7cf851`成功；Render同提交 `dep-dbo726ks728c739s1hp0` update_failed，Actions部署42483379162/continuation42483379181均skipped，不称后端恢复。
+
+用户运行[42484624839](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42484624839)在相同main成功，日志明确EXPORT_IMAGE_BUNDLE=true；96契约测试通过，可用空间92,147,200,000字节。真实镜像构建、严格归档校验、依赖检查、Compose校验、临时导出与独立进程复核均通过，没有上传镜像或保留可下载交付包；未启动应用/数据库、未进行物理断网、恢复或公司部署。
+
+当前包只新增供后续获准操作员使用的只读SQL、离线JSON证据检查器、合成回归及说明。现有operator自报与PGOPTIONS不能证明真实数据库权限。检查器不连接数据库或改变权限；证据可伪造、过期或受并发变更影响，结果只表示检查项是否匹配，不表示数据库安全或离线验收。SQL未在本包执行，不将静态检查当真实PostgreSQL验证。
+
+26集中、385全离线零跳过、2116前端、类型/编译、52自动化、126守卫和进度检查通过。系统schema直接写ACL与迁移表附属索引的静态拒绝回归先失败后修复；覆盖所有适用表/列/序列权限，迁移读取前拒绝非标准索引。默认PUBLIC权限可能触发保守不匹配，不自动豁免或改权限。独立最终复审无阻断，同套测试复跑及636额外对抗探针通过；精确候选CI待完成，真实SQL仍未执行。业务36/44=82%、增量0；既有模块、计划与浏览器阶段统计不变。后续必须在获准隔离环境验证SQL与实际权限，再考虑应用启动和备份恢复；不连接公司系统或恢复旧库。
+
+---
+
 ## 当前检查点 — 2026-11-08（UTC+8）手动流程可选临时镜像包复核
 
 PR196已保护合并main `95837a409f46bd2f9029a6778beb30a23ee3016a`。[main CI42478537666](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42478537666)成功：3188后端＋720子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare生产build `2482a990-7a99-42ad-9a80-a86d815ee3d8` / version `fb2144c4-5eac-4a0f-827d-1373a7e494df`成功；Render同提交 `dep-dbo6akoae00c739bjotg` update_failed，Actions部署42479694709/continuation42479694401均skipped，不称后端恢复。
