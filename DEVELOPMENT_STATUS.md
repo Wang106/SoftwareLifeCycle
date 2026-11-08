@@ -1,3 +1,17 @@
+## 当前检查点 — 2026-11-08（UTC+8）无数据库API进程启动烟测准备
+
+PR199已保护合并main `5229d535f682839b1aaf7b36853b90fccda0bdd1`。[main CI42492428511](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42492428511)成功：3280后端＋1193子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare同提交build `cd14caa7-be7e-4e0d-9168-9b650e56b550` / version `c62ad812-eeb0-4149-af27-f96dcbc866eb`成功；Render `dep-dbo8s9navr4c73b5kmb0` update_failed，不称后端恢复。上述是基线，不是本包候选验证。
+
+另行获准的[真实合成PG运行42494711087](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42494711087)成功：21/21案例，保留PUBLIC默认权限，21项均为预期CHECKLIST_MISMATCH，container_removed=true。已真实验证采集器及危险权限反例，不代表匹配的只读数据库、应用启动、备份恢复、物理断网或公司部署；旧PG说明中的未运行记录为当时开发状态。
+
+当前小包只新增独立无数据库API启动协调器、mock回归及说明，不修改工作流、Dockerfile、生产源码、迁移、依赖或collector。未来另行获准后，只用受信调用方独立提供且与干净checkout一致的本地精确image ID/commit；不pull/build/load。固定network=none、无端口/卷/日志、非root只读根目录和有限资源，真实uvicorn只监听127.0.0.1；独立exec核对PID1/安全属性/监听与10项严格HTTP响应，要求ready明确503而非假装数据库就绪。AUTH_MODE disabled拒绝不是实际身份认证链验证。镜像标签只证明一致性，不证明来源真实性。
+
+先写回归得到新能力缺失失败，再实现并通过28集中、459全离线零跳过、2116前端、52自动化、126守卫。TypeScript、Worker配置、Python编译及进度检查通过；Worker首次配置检查通过但默认日志目录不可用，改用临时日志路径复核通过，无工具安装。独立初审无阻断，另994合成对抗通过，终稿复审待完成。本地无pytest/Docker，完整后端、真实PG及浏览器留待本包精确CI；本包未运行Docker、API或数据库，没有新实际启动通过证据。执行需另批容器启动/隔离/本次CID清理，缺镜像的获取另列范围；创建/清理不确定保留私有拥有权记录，不重试删除或扩大清理。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。后续数据库包必须独立提供可信迁移工具并真实执行0029链路，不能手填版本表或修改清单追求MATCHED。详见[API启动烟测说明](docs/offline-api-startup-rehearsal.md)。
+
+---
+
 ## 当前检查点 — 2026-11-08（UTC+8）手动合成PostgreSQL验证流程准备
 
 PR198已保护合并main `754e72fc86743743bf5b5b741112913a8a4e3baf`。[main CI42488251824](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42488251824)成功：3234后端＋1161子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare生产build `fb209732-1bbf-4ce7-bebf-68b4b2101422` / version `8c8dd376-0a21-4767-8a29-fbc1cef097d4`成功；Render同提交 `dep-dbo84agae00c739dgr10` update_failed，Actions部署42489428164/continuation42489428178均skipped，不称后端恢复。
