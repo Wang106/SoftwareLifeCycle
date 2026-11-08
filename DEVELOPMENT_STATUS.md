@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-08（UTC+8）手动合成PostgreSQL验证流程准备
+
+PR198已保护合并main `754e72fc86743743bf5b5b741112913a8a4e3baf`。[main CI42488251824](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42488251824)成功：3234后端＋1161子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare生产build `fb209732-1bbf-4ce7-bebf-68b4b2101422` / version `8c8dd376-0a21-4767-8a29-fbc1cef097d4`成功；Render同提交 `dep-dbo84agae00c739dgr10` update_failed，Actions部署42489428164/continuation42489428178均skipped，不称后端恢复。
+
+现有数据库采集SQL仅静态/合成回归，既有CI中的PostgreSQL测试未执行该新SQL。当前包开发独立手动合成PG16验证流程，未来获准后只在本次一次性容器和合成数据库验证采集结果及危险权限反例，不映射主机端口、不接受外部连接目标，不访问公司或既有数据库。默认PUBLIC权限可保守不匹配，不为获得匹配静默豁免或改规则。
+
+当前仅开发与mock失败回归，不拉取/启动镜像、不连接数据库、不执行角色或授权变更。真正运行容器及合成授权/清理须另行明确批准。保留标准runner、有限时间/容量、只读仓库权限，无大制品上传或持久缓存；公开标准runner计算规则不等于账户全部费用保证。46集中、431全离线零跳过、2116前端、类型/编译、52自动化及126守卫通过。独立复审无阻断，另6032项合成对抗探针和21个真实独立检查器进程通过，Docker/SQL操作全部mock。官方PG16.15-bookworm的amd64 manifest/config摘要仅通过只读元数据核对，未下载镜像层。精确候选CI待完成，真实PG流程未运行。
+
+业务36/44=82%、增量0；既有模块、计划及浏览器阶段统计不变。未来合成验证不能替代真实应用启动、备份恢复、物理断网、生产安全审计或公司部署验收。
+
+---
+
 ## 当前检查点 — 2026-11-08（UTC+8）离线数据库证据检查
 
 PR197已保护合并main `0bfc369dfd635c2668048cf6f13765d9023d0bec`。[main CI42482441545](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42482441545)成功：3208后端＋822子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare生产build `93c3e241-5aa1-4ad6-a63e-4887387188f7` / version `d6579a9f-463a-458d-8e24-138dfb7cf851`成功；Render同提交 `dep-dbo726ks728c739s1hp0` update_failed，Actions部署42483379162/continuation42483379181均skipped，不称后端恢复。
