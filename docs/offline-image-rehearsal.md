@@ -472,3 +472,50 @@ candidate CI, independent review and any later separately authorized complete ru
 remain distinct requirements. A future Compose version may produce another shape;
 it must fail closed until specifically investigated, rather than silently broadening
 the two supported variants. Business and deployment acceptance percentages do not change.
+
+
+## Optional local handoff retention — 2026-11-08
+
+Main `b471decc85495ff88dbe9c2f5419a0092b133cef` completed
+[manual run 42463491932](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42463491932):
+70 contracts, both builds/saves and strict archive gates, both read-only nonroot
+native dependency smokes, and normal project plus complete model Compose checks.
+This is complete connected rehearsal evidence, not application/DB startup, physical
+network isolation, retained backup or company deployment. No image artifact was
+uploaded; those ephemeral runner images are not available to a new local export.
+
+A new optional `--export-bundle /absolute/existing-parent/new-handoff` argument to
+`--run` retains only that new run's successfully validated `api.tar`/`web.tar`, a
+strict handoff manifest and reconstructed safe evidence. Export happens after all
+smoke and both Compose stages return successfully. Default runs remain temporary
+only, `--check-host` cannot export, and the existing workflow is unchanged. The new
+tool is included among the exact-commit snapshot's required tool source files.
+
+The destination is exclusively new. Copies use bounded IO and exact hashes;
+directory/file descriptors and identity checks prevent pathname substitution from
+redirecting reads/writes. Revalidation uses the unchanged strict archive gate with
+a pinned-FD adapter, not rewritten archives or a relaxed preflight. An additional
+bounded outer-tar scan limits header/extension processing and the inherited PAX
+state the unchanged validator will cache; actual file size is checked before it.
+Outer sparse-envelope expansion is rejected, without changing inner-layer policy.
+A fixed 16 GiB
+two-archive support limit and 1 GiB free-space reserve are conservative checks, not
+real peak-size guarantees. The final empty `COMPLETE` marker is created only after
+payload checks and closes; earlier failures leave partial output without it. Final
+commit/close/response interruptions can instead be uncertain and are explicitly not
+reported as success or automatically retried. Their fixed safe diagnostic includes
+only the commit/hash expectations already constructed by the trusted exporting
+process, enabling read-only recovery without trusting a hash from the uncertain
+bundle. Completion-window interrupts still stop execution without raw exception
+text. No partial directory is deleted.
+
+The separate read-only verifier requires externally trusted expected commit and
+manifest SHA256, checks all files and the original archive contracts, and never
+runs Docker, extracts, connects or writes. Checksums prove integrity against those
+expectations, not signatures or image safety. No command log, raw native output,
+credentials, database configuration, source paths or operator approval enters the
+handoff evidence. See [the image bundle contract](offline-image-bundle.md) for exact
+files, invocation, schema, IO/path assumptions, incomplete/uncertain handling and
+acceptance limits. The implementation and regressions do not execute a real
+full-sized handoff or a new Docker rehearsal; all operational acceptance remains
+separate.
