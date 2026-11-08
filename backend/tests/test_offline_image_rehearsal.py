@@ -1,6 +1,7 @@
 """Static/mocked packaging contracts; these tests never run Docker or download."""
 import copy
 import hashlib
+import gzip
 import io
 import json
 from pathlib import Path
@@ -398,8 +399,18 @@ class ExportDiagnosticTests(unittest.TestCase):
     SENTINEL = 'PRIVATE_SENTINEL_password_url_path'
     COMMIT = 'a' * 40
 
-    def archive(self, *, extra=None, config_change=None, manifest_bytes=None, layer_bytes=None):
+    def archive(self, *, extra=None, config_change=None, manifest_bytes=None, layer_bytes=None,
+                sources=False, source_change=None, layer_transform=None):
         layer = b'synthetic layer bytes'
+        if sources:
+            payload = io.BytesIO()
+            with tarfile.open(fileobj=payload, mode='w') as archive:
+                info = tarfile.TarInfo('synthetic')
+                info.size = len(layer)
+                archive.addfile(info, io.BytesIO(layer))
+            layer = payload.getvalue()
+        if layer_transform:
+            layer = layer_transform(layer)
         config = {'os': 'linux', 'architecture': 'amd64',
                   'config': {'Labels': {'org.opencontainers.image.revision': self.COMMIT},
                              'Env': ['PATH=/usr/local/bin:/usr/bin:/bin']},
@@ -408,11 +419,21 @@ class ExportDiagnosticTests(unittest.TestCase):
             config['config'].update(config_change)
         config_raw = json.dumps(config).encode()
         identity = 'sha256:' + hashlib.sha256(config_raw).hexdigest()
-        manifest = {'Config': 'config.json', 'RepoTags': None, 'Layers': ['layer.tar']}
+        config_name, layer_name = 'config.json', 'layer.tar'
+        if sources:
+            config_name = 'blobs/sha256/' + identity[7:]
+            layer_name = 'blobs/sha256/' + hashlib.sha256(layer).hexdigest()
+        manifest = {'Config': config_name, 'RepoTags': None, 'Layers': [layer_name]}
+        if sources:
+            diff_id = config['rootfs']['diff_ids'][0]
+            manifest['LayerSources'] = {diff_id: {'mediaType': 'application/vnd.oci.image.layer.v1.tar',
+                                                'digest': diff_id, 'size': len(layer)}}
+            if source_change:
+                source_change(manifest['LayerSources'], diff_id)
         manifest.update(extra or {})
-        members = [('config.json', config_raw),
+        members = [(config_name, config_raw),
                    ('manifest.json', manifest_bytes if manifest_bytes is not None else json.dumps([manifest]).encode()),
-                   ('layer.tar', layer if layer_bytes is None else layer_bytes)]
+                   (layer_name, layer if layer_bytes is None else layer_bytes)]
         output = io.BytesIO()
         with tarfile.open(fileobj=output, mode='w') as archive:
             for name, raw in members:
@@ -456,9 +477,62 @@ class ExportDiagnosticTests(unittest.TestCase):
         self.assertEqual(json.loads(out)['source_commit'], self.COMMIT)
         self.assertEqual(len(calls), 1)
 
-    def test_moby_extra_layersources_is_diagnosed_but_still_rejected(self):
-        raw, identity = self.archive(extra={'LayerSources': {self.SENTINEL: {'urls': [self.SENTINEL]}}})
-        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_FIELDS_REJECTED')
+    def test_unreviewed_layersources_mapping_is_still_rejected_without_disclosure(self):
+        raw, identity = self.archive(sources=True, extra={'LayerSources': {self.SENTINEL: {'urls': [self.SENTINEL]}}})
+        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_LAYER_SOURCES_MAPPING_REJECTED')
+
+    def test_verified_classic_sources_passes_real_gate_once_without_rewriting(self):
+        raw, identity = self.archive(sources=True)
+        original = rehearsal.preflight.archive_image
+        def verify(path, item, commit):
+            self.assertEqual(path.read_bytes(), raw)
+            return original(path, item, commit)
+        with patch.object(rehearsal.preflight, 'archive_image', side_effect=verify) as gate:
+            result = self.export_cli(raw, identity)
+            self.assertEqual(result[0], 0)
+            self.assertEqual(result[2], '')
+            self.assertEqual(len(result[3]), 1)
+            gate.assert_called_once()
+
+    def test_manifest_structure_diagnostics_do_not_assume_layersources(self):
+        cases = (([None], 'ARCHIVE_MANIFEST_RECORD_REJECTED'),
+                 ([{'Config': self.SENTINEL}], 'ARCHIVE_MANIFEST_FIELDS_MISSING'),
+                 ([{'Config': self.SENTINEL, 'RepoTags': [], 'Layers': [], self.SENTINEL: 1}],
+                  'ARCHIVE_MANIFEST_FIELDS_REJECTED'))
+        for manifest, code in cases:
+            with self.subTest(code=code):
+                raw, identity = self.archive(manifest_bytes=json.dumps(manifest).encode())
+                self.assert_code(self.export_cli(raw, identity), code)
+
+    def test_source_descriptor_diagnostics_are_fixed_and_redacted(self):
+        cases = (({'urls': [self.SENTINEL]}, 'ARCHIVE_LAYER_SOURCE_FIELDS_REJECTED'),
+                 ({'annotations': {self.SENTINEL: self.SENTINEL}}, 'ARCHIVE_LAYER_SOURCE_FIELDS_REJECTED'),
+                 ({'mediaType': self.SENTINEL}, 'ARCHIVE_LAYER_SOURCE_MEDIA_TYPE_REJECTED'),
+                 ({'digest': self.SENTINEL}, 'ARCHIVE_LAYER_SOURCE_DIGEST_MISMATCH'),
+                 ({'size': self.SENTINEL}, 'ARCHIVE_LAYER_SOURCE_SIZE_MISMATCH'))
+        for change, code in cases:
+            with self.subTest(code=code):
+                raw, identity = self.archive(sources=True, source_change=lambda src, key: src[key].update(change))
+                self.assert_code(self.export_cli(raw, identity, role='web'), code)
+
+    def test_actual_compressed_layer_cannot_pass_with_consistent_uncompressed_claim(self):
+        raw, identity = self.archive(sources=True, layer_transform=gzip.compress)
+        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_LAYER_SOURCE_TAR_REJECTED')
+
+    def test_inner_numeric_parser_overflow_has_fixed_tar_code(self):
+        def oversized(_raw):
+            info = tarfile.TarInfo(self.SENTINEL)
+            info.type = tarfile.XHDTYPE
+            info.size = 2**80
+            return info.tobuf(format=tarfile.GNU_FORMAT) + b'\0' * 1024
+        raw, identity = self.archive(sources=True, layer_transform=oversized)
+        self.assert_code(self.export_cli(raw, identity), 'ARCHIVE_LAYER_SOURCE_TAR_REJECTED')
+
+    def test_sources_blob_path_diagnostic_hides_path_and_preserves_role(self):
+        raw, identity = self.archive(sources=True, extra={'Config': self.SENTINEL})
+        result = self.export_cli(raw, identity, role='web')
+        self.assert_code(result, 'ARCHIVE_LAYER_SOURCES_PATH_REJECTED')
+        self.assertIn('role=web;', result[2])
 
     def test_actual_environment_and_layer_digest_rejections_are_distinct(self):
         raw, identity = self.archive(config_change={'Env': ['DATABASE_URL=' + self.SENTINEL]})
