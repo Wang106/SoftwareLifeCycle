@@ -1,3 +1,17 @@
+## 当前检查点 — 2026-11-09（UTC+8）手动镜像流程可选API启动接入
+
+PR200已保护合并main `be30990a8c7edbedb8fa5c7f6789b20d32b37937`。[main CI42497949946](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42497949946)成功：3308后端＋1336子测试、296项PostgreSQL案例零跳过、2116前端、8＋16严格浏览器，签名Chrome157、sandbox=true、零重试及汇总门禁。Cloudflare同提交build `a5901285-5304-450e-91b1-cf4bc41eebc1` / version `7b446524-f8e9-4229-a9f1-df902d4446ae`成功；Render `dep-dbo9qpgae00c739fems0` update_failed，不称后端恢复。这些是基线，不是当前未发布候选的CI或真实API启动证据。
+
+本包仅接入原手动工作流的默认false选项run_api_startup，修改工作流、既有镜像回归、两份说明与四份检查点。原镜像构建器、API脚本、Dockerfile、生产源码、数据库、依赖与全部门禁不变。同次build/save/归档/依赖烟测/Compose通过后，若请求导出则先独立复核，再将受信构建回执的API精确image ID与一致的GITHUB_SHA交给API函数；不从镜像标签或历史runner推导期望值。完整强类型10/10回执、container_removed=true、database_ready=false及同commit/ID才可成功，来源一致性不冒充来源认证。
+
+新增共享55分钟软截止覆盖前置、checkout、测试及协调阶段，保留60分钟硬限、20GiB、标准runner和只读权限。按选项预留600秒复核、240秒API/清理、30秒摘要；预算不足拒绝新启动。环境中的单调时间标记只是本机计时记录，不可称不可伪造凭证。API仍有180秒工作＋35秒拥有权清理；临时SIGTERM处理器在异常、预算不足和成功路径finally恢复，不用会跳过清理的硬杀子进程包装。取消/宿主丢失仍可能清理不确定，不重试启动/删除，不查名清理或prune，不清理不确定导出目录。
+
+先新增12项回归在旧协调器得到66个子场景失败，再实现；独立审查发现导出关闭时native_smoke结构未验证，另写四组合回归得到18个子场景失败，说明具体修复并等待后增加共享精确api/web键和非空字符串门禁。最终112镜像集中、28既有API、475全离线零跳过、2116前端、52自动化、126守卫通过；TypeScript、Worker配置、Python编译、YAML/shell及进度检查通过。既有依赖仅本地复用，无安装。本包独立完整终审待安排，未提交/上传，无新候选CI；完整后端、真实PG及浏览器留待精确候选CI。
+
+开发过程未运行Docker、真实API/HTTP服务器、数据库、迁移或手动工作流；实际镜像准备与API容器启动/隔离/本次CID清理仍需另行明确批准。无制品上传、持久缓存、费用或主机设置变更。业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。详见[可选API工作流说明](docs/offline-image-rehearsal.md#optional-isolated-api-startup--2026-11-09)及[API启动边界](docs/offline-api-startup-rehearsal.md)。
+
+---
+
 ## 当前检查点 — 2026-11-08（UTC+8）无数据库API进程启动烟测准备
 
 PR199已保护合并main `5229d535f682839b1aaf7b36853b90fccda0bdd1`。[main CI42492428511](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42492428511)成功：3280后端＋1193子测试、296项PostgreSQL案例零跳过、2116前端、真实8＋16严格浏览器及汇总门禁。Cloudflare同提交build `cd14caa7-be7e-4e0d-9168-9b650e56b550` / version `c62ad812-eeb0-4149-af27-f96dcbc866eb`成功；Render `dep-dbo8s9navr4c73b5kmb0` update_failed，不称后端恢复。上述是基线，不是本包候选验证。
