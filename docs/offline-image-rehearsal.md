@@ -63,7 +63,11 @@ The **first step before checkout** checks existing Docker client/server, Linux
 amd64, Compose >=2.30.0, existing Python 3.12/pip and >=20 GiB free on both temporary
 and Docker storage filesystems. No version/capacity failure triggers an install,
 upgrade, disk cleanup, security-setting change or alternate runner. The script
-rechecks prerequisites before any preparation and forces the default local Docker
+rechecks prerequisites before any preparation and also requires actual `config --help`
+option lines for `--no-env-resolution` and `--no-interpolate`. A missing capability
+stops before run-directory creation, downloads or builds; the version minimum alone
+does not prove flag support. No automatic install or upgrade is attempted. It forces
+the default local Docker
 context, rejecting inherited target overrides. A local daemon/filesystem must be
 available. The disk threshold is a conservative entry gate, not a hard bound on
 image growth or proof that every future dependency set will fit. GitHub documents
@@ -189,9 +193,13 @@ is not a guarantee against every host failure or workflow cancellation.
 
 The real generated manifest is passed to the existing `compose()` helper with a
 new **empty** temporary `database.env`, solely so Compose can parse its raw-env-file
-shape. `docker compose config --format json --no-env-resolution` must retain every
-original service setting, image ID, localhost-only runtime command, disabled gate,
-read-only policy and bounded logging option. No extra mounts/builds are allowed.
+shape. Normal `docker compose config --format json --no-env-resolution` retains
+its project consistency checks. A second call adds `--no-interpolate` to inspect
+the complete model. Both must succeed and match the original settings as specified
+below, including image IDs, localhost-only commands, disabled gates, read-only policy
+and bounded logging. Only the precisely observed omission of API `env_file` in the
+normal project output is permitted, and only with the full model proving the exact
+path, `required: true` and `format: raw`. No extra fields, mounts or builds are allowed.
 The script does **not** call `validate(bundle)`, invent `operator.json`, supply a
 fake password, approve a database role or run `compose up`. This proves parsing
 only, not a valid operator bundle or service readiness. Any unanticipated Compose
@@ -377,11 +385,90 @@ end blocks/trailing data/alignment, flat and extension header limits, per-layer 
 cross-layer metadata budgets, released member caches and correct global-PAX
 inheritance, normal large file and extension metadata,
 malformed/duplicate JSON, original safety rejections and public error redaction.
-There are 57 preflight and 52 rehearsal tests (109 combined), and all 269 offline
-tests pass locally, with no local skips. A Linux child with a 256 MiB address-space
+At the descriptor checkpoint, 57 preflight and 52 rehearsal tests (109 combined),
+and all 269 offline tests passed locally with no skips. A Linux child with a 256 MiB address-space
 limit also parses 9,000 empty files inheriting 1,000 global-PAX fields successfully;
 the failure-first version exhausted that budget. This is a bounded synthetic
 regression, not an RSS guarantee for every possible archive. These synthetic archives are not runnable image evidence.
 No Docker build/save, new workflow, app/DB startup or offline acceptance is run by
 this change; required exact-head CI and independent review remain separate gates.
 The next real run can still expose a different unsupported format or later blocker.
+
+
+## Strict Compose project/model verification — 2026-11-08
+
+Baseline: main `1ec3a576fca54701ac7561649903989363aed770` (PR194).
+The operator's [run 42446770307](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42446770307)
+reached `Compose parse only` and then failed. Its source-stage order establishes that
+both API/web builds, traditional saves, strict archive checks, dependency-only native
+smokes and their precise container cleanup returned successfully before that stage.
+It does **not** establish full rehearsal success, retained image evidence, application/
+DB startup, disconnected operation or deployment. The old fixed stage message alone
+did not identify the Compose rejection.
+
+The run's exact [runner-image software list](https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md)
+reports Docker Compose 2.38.2. With explicit approval, the official standalone
+[2.38.2 Linux x86_64 asset](https://github.com/docker/compose/releases/tag/v2.38.2)
+was downloaded to a new temporary directory. Its 75,108,694-byte size and SHA256
+`486b3ffc0f806ca2efbc430cef89955386011662f0c76bad17c103d059cfa9cf` matched both release
+metadata and the official checksum file. It was not installed into the system.
+Only version/help/config commands were executed with an empty isolated HOME/Docker
+configuration and a process-local Docker target pointing at a nonexistent Unix
+socket; the default daemon socket was also absent. No image pull/build, daemon,
+container, registry, app or database operation was used in this local reproduction.
+An optional syscall trace was denied by the environment and was not bypassed, so
+there is no claim of an observed zero-connect syscall count.
+
+The exact binary reproduced the original function's `raw env-file policy changed`
+rejection: its normal project JSON **omits API env_file entirely**, while every other
+field and the top-level document match. It does not produce the path-string variant
+considered during source inspection. Adding `--no-interpolate` produces a model
+identical to the complete generated document. This direct evidence supersedes the
+earlier serialization hypothesis. A normal project call rejects a synthetic
+`network_mode`/`networks` conflict that the non-interpolated model call accepts,
+confirming why the model cannot replace the project's consistency checks.
+
+The bounded fix changes only the rehearsal script, its tests and this document:
+
+- Keep the normal project command and require success. Never add `--no-consistency`,
+  `--no-normalize`, digest resolution, a fallback startup or an automatic retry.
+- Also require the non-interpolated model command to succeed. Its entire document
+  must exactly match `compose()` output. The normal project must match either that
+  full document or precisely the same document with only API `env_file` omitted.
+  Path strings, null/empty env-file values, omission in the model, changed raw/required/
+  path fields, additional services and all other extra/missing/changed fields fail.
+- Comparison is recursive and type-sensitive, so JSON `1` cannot stand for `true`.
+  Duplicate JSON keys, malformed input and nonfinite numeric tokens are rejected.
+  The original generator, archive preflight, recipes, workflow, locks, localhost
+  behavior, read-only restrictions, identity/business gates and permissions are unchanged.
+- Probe the two required flag capabilities before any run-directory creation,
+  dependency acquisition or image build. Unsupported or malformed help fails closed;
+  neither an older version nor an unavailable flag triggers an upgrade or download.
+- Every Compose subprocess is limited to 30 seconds. Failures use only fixed
+  `COMPOSE_COMMAND_FAILED`, `COMPOSE_COMMAND_TIMEOUT`, `COMPOSE_COMMAND_ERROR`,
+  `COMPOSE_JSON_INVALID`, `COMPOSE_POLICY_REJECTED`, `COMPOSE_CAPABILITY_MISSING`,
+  `COMPOSE_PREPARE_FAILED` or `COMPOSE_VALIDATION_FAILED` codes. Phase is one of
+  capability/prepare/project/model/unknown, role is api/web/unknown, and field is
+  a fixed known policy key or unknown. Constructor and emitter both sanitize these
+  dimensions. Raw exception text, stage, paths, keys, values and command output are
+  not copied into public diagnostics. Existing private command-log boundaries remain.
+  Process interrupts propagate, rather than being converted into acceptance.
+
+The 18 failure-first regression methods cover both required calls, the sole supported
+omission, every service policy field in both views, unknown fields, exact JSON types,
+duplicate/nonfinite JSON, command failures/timeouts, safe preparation/diagnostics,
+process interrupts and capability failure before directories/downloads. All 70
+rehearsal tests and 287 offline tests pass locally with no skips; compile/diff checks
+also pass. These static/synthetic regressions include additional subcases; they are
+not new runnable-image evidence.
+The already approved official binary also rechecked the implemented function:
+normal generated configuration passes; eight real config-only negative cases fail,
+including missing raw, optional env file, changed path, missing env file, disabled
+read-only mode, extra privilege, unknown extension and conflicting network settings.
+The normal consistency rejection still prevents model-only success.
+
+This package does not trigger a new full image rehearsal or upload its files. Exact
+candidate CI, independent review and any later separately authorized complete run
+remain distinct requirements. A future Compose version may produce another shape;
+it must fail closed until specifically investigated, rather than silently broadening
+the two supported variants. Business and deployment acceptance percentages do not change.
