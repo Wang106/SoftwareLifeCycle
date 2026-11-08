@@ -15,6 +15,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 import offline_image_rehearsal as rehearsal
+import offline_api_startup_rehearsal as api_startup
 
 
 class ImageRehearsalTests(unittest.TestCase):
@@ -995,7 +996,9 @@ class ImageBundleWorkflowTests(unittest.TestCase):
 
     def exercise(self, enabled='false', result=None, verified=None, *, run_raw=None,
                  verify_raw=None, github_sha=None, head=None, fail=None, collision=None,
-                 missing_env=None):
+                 missing_env=None, startup='false', api_return=None, api_error=None,
+                 started_ns=None, elapsed=None, now_ns=1000 * 10**9, handler_error=None,
+                 summary_error=False):
         import contextlib
         import os
         import uuid
@@ -1008,6 +1011,27 @@ class ImageBundleWorkflowTests(unittest.TestCase):
             verified = {'status': 'IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE',
                         'source_commit': self.COMMIT, 'manifest_sha256': receipt.get('manifest_sha256', self.DIGEST)}
         calls, captured = [], {}
+        api_calls, handlers, timeouts = [], [], []
+        clock = [now_ns]
+        previous_handler = object()
+        elapsed = {} if elapsed is None else elapsed
+        def set_handler(number, handler):
+            handlers.append((number, handler))
+            if len(handlers) == 1:
+                clock[0] += int(elapsed.get('handler_install', 0) * 10**9)
+            if handler_error is not None and len(handlers) == 1:
+                raise handler_error
+            return previous_handler
+        def run_api(image_id, source_commit):
+            api_calls.append((image_id, source_commit))
+            self.assertEqual(len(handlers), 1)
+            self.assertEqual(len(calls), 3 if enabled == 'true' else 2)
+            clock[0] += int(elapsed.get('api', 0) * 10**9)
+            if api_error == 'signal':
+                handlers[0][1](handlers[0][0], None)
+            if api_error is not None:
+                raise api_error
+            return (self.api_receipt(), 0) if api_return is None else api_return
         out, err = io.StringIO(), io.StringIO()
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
@@ -1018,8 +1042,14 @@ class ImageBundleWorkflowTests(unittest.TestCase):
             elif collision == 'symlink': target.symlink_to(root / 'absent')
             env = {'RUNNER_TEMP': raw, 'GITHUB_STEP_SUMMARY': str(summary),
                    'GITHUB_SHA': self.COMMIT if github_sha is None else github_sha,
-                   'EXPORT_IMAGE_BUNDLE': enabled}
+                   'EXPORT_IMAGE_BUNDLE': enabled, 'RUN_API_STARTUP': startup,
+                   'REHEARSAL_STARTED_NS': str(clock[0]) if started_ns is None else started_ns}
             if missing_env: env.pop(missing_env)
+            ordinary_open = open
+            def public_open(path, *args, **kwargs):
+                if summary_error and path == str(summary):
+                    raise OSError('PRIVATE_SUMMARY')
+                return ordinary_open(path, *args, **kwargs)
             def child(args, **kwargs):
                 calls.append(list(args))
                 self.assertNotIn('shell', kwargs)
@@ -1047,12 +1077,19 @@ class ImageBundleWorkflowTests(unittest.TestCase):
                     data = json.dumps(verified).encode() if verify_raw is None else verify_raw
                 else:
                     self.fail('Unexpected child command')
+                timeouts.append((stage, kwargs['timeout']))
+                clock[0] += int(elapsed.get(stage, 0) * 10**9)
                 if fail is not None and fail[0] == stage:
                     raise fail[1]
                 kwargs['stdout'].write(data)
                 return subprocess.CompletedProcess(args, 0)
             with patch.dict(os.environ, env, clear=True), patch('subprocess.run', side_effect=child), \
                  patch('uuid.uuid4', return_value=uuid.UUID(self.TOKEN)), \
+                 patch('time.monotonic_ns', side_effect=lambda: clock[0]), \
+                 patch('signal.getsignal', return_value=previous_handler), \
+                 patch('signal.signal', side_effect=set_handler), \
+                 patch.object(api_startup, 'run_rehearsal', side_effect=run_api), \
+                 patch('builtins.open', side_effect=public_open), \
                  contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
                 try:
                     exec(compile(code, '<workflow-coordinator>', 'exec'), {'__name__': '__main__'})
@@ -1061,12 +1098,22 @@ class ImageBundleWorkflowTests(unittest.TestCase):
                     status = error.code
             captured.update(status=status, calls=calls, stdout=out.getvalue(), stderr=err.getvalue(),
                             summary=summary.read_text() if summary.exists() else '',
-                            target_exists=target.exists(), target_is_link=target.is_symlink())
+                            target_exists=target.exists(), target_is_link=target.is_symlink(),
+                            api_calls=api_calls, handlers=handlers, previous_handler=previous_handler,
+                            timeouts=timeouts)
             if collision == 'file':
                 self.assertEqual(target.read_bytes(), b'PRIVATE_EXISTING')
             if enabled == 'true' and collision is None and any(len(c) > 2 and c[2] == '--run' for c in calls):
                 self.assertTrue(target.exists(), 'Never clean up an incomplete/uncertain export')
         return captured
+
+    def api_receipt(self):
+        return {'status': 'API_PROCESS_SMOKE_PASSED_DATABASE_NOT_READY',
+                'phase': 'FINAL_PROCESS', 'cases_passed': 10, 'cases_total': 10,
+                'container_removed': True, 'limitations': api_startup.LIMITATIONS,
+                'image_id': 'sha256:' + 'e' * 64, 'source_commit': self.COMMIT,
+                'database_ready': False,
+                'provenance': 'caller_supplied_trusted_build_consistency_only'}
 
     def blocked(self, value, *, calls=None):
         self.assertNotEqual(value['status'], 0)
@@ -1243,6 +1290,194 @@ class ImageBundleWorkflowTests(unittest.TestCase):
             self.assertNotIn('PRIVATE', actual['summary'])
             self.assertNotIn('/tmp/', actual['summary'])
             self.assertNotIn('slc-image-handoff-', actual['summary'])
+
+
+    def test_api_manual_option_is_closed_and_defaults_false(self):
+        text = (ROOT / '.github/workflows/offline-image-rehearsal.yml').read_text()
+        self.assertRegex(text, r'run_api_startup:\n(?:        .*\n)*?        default: false')
+        self.assertIn('RUN_API_STARTUP: ${{ inputs.run_api_startup }}', text)
+        self.assertIn('REHEARSAL_STARTED_NS=', text)
+        self.assertLess(text.index('REHEARSAL_STARTED_NS='), text.index('docker --context default version'))
+        self.assertNotIn('${{', self.workflow_python())
+        for forbidden in ('upload-artifact', 'actions/cache', 'docker login', 'docker push', 'schedule:'):
+            self.assertNotIn(forbidden, text)
+
+    def test_all_four_options_invoke_only_requested_stages(self):
+        for exported in ('false', 'true'):
+            for startup in ('false', 'true'):
+                with self.subTest(exported=exported, startup=startup):
+                    value = self.exercise(exported, startup=startup)
+                    self.assertEqual(value['status'], 0)
+                    self.assertEqual(len(value['calls']), 2 + (exported == 'true'))
+                    self.assertEqual(value['api_calls'], [('sha256:' + 'e' * 64, self.COMMIT)]
+                                     if startup == 'true' else [])
+                    self.assertEqual(len(value['handlers']), 2 if startup == 'true' else 0)
+                    if startup == 'true':
+                        self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+                        self.assertIn('API_PROCESS_SMOKE_PASSED_DATABASE_NOT_READY', value['summary'])
+                        self.assertIn('10/10', value['summary'])
+                        self.assertIn('container_removed=true', value['summary'])
+                        self.assertIn('database_ready=false', value['summary'])
+                        self.assertNotIn('no application/DB startup', value['summary'])
+                    else:
+                        self.assertIn('API process startup not requested', value['summary'])
+                        self.assertIn('no application/DB startup', value['summary'])
+
+    def test_api_invalid_or_missing_boolean_stops_before_every_stage(self):
+        for option in ('', 'TRUE', 'False', '1', 'true\n', 'true; echo PRIVATE',
+                       'false --image-id PRIVATE', '${{ secrets.PRIVATE }}'):
+            with self.subTest(option=option):
+                value = self.exercise(startup=option)
+                self.blocked(value, calls=0)
+                self.assertEqual(value['api_calls'], [])
+        self.blocked(self.exercise(missing_env='RUN_API_STARTUP'), calls=0)
+
+    def test_api_never_starts_after_prior_failure_or_untrusted_build_receipt(self):
+        for stage, count in [('checkout', 1), ('rehearsal', 2), ('verification', 3)]:
+            value = self.exercise('true', startup='true', fail=(stage, OSError('PRIVATE')))
+            self.blocked(value, calls=count)
+            self.assertEqual(value['api_calls'], [])
+            self.assertEqual(value['handlers'], [])
+        for key, bad in [('status', 'PRIVATE'), ('source_commit', 'b' * 40), ('compose', {})]:
+            result = self.result()
+            result[key] = bad
+            value = self.exercise(result=result, startup='true')
+            self.blocked(value, calls=2)
+            self.assertEqual(value['api_calls'], [])
+        for key, bad in [('source_commit', 'b' * 40), ('image_id', 'tag:untrusted'), ('platform', 'PRIVATE')]:
+            result = self.result()
+            result['images']['api'][key] = bad
+            value = self.exercise(result=result, startup='true')
+            self.blocked(value, calls=2)
+            self.assertEqual(value['api_calls'], [])
+        value = self.exercise('true', startup='true', verified={})
+        self.blocked(value, calls=3)
+        self.assertEqual(value['api_calls'], [])
+
+    def test_native_smoke_receipt_required_independent_of_export_option(self):
+        for exported in ('false', 'true'):
+            for startup in ('false', 'true'):
+                for native in ({}, None, [], {'api': 'passed'}, {'api': 'passed', 'web': 'passed', 'extra': 'PRIVATE'},
+                               {'api': '', 'web': 'passed'}, {'api': 'passed', 'web': ''},
+                               {'api': True, 'web': 'passed'}, {'api': 'passed', 'web': False}):
+                    with self.subTest(exported=exported, startup=startup, native=native):
+                        result = self.result(exported == 'true')
+                        result['native_smoke'] = native
+                        value = self.exercise(exported, result=result, startup=startup)
+                        self.blocked(value, calls=2)
+                        self.assertEqual(value['api_calls'], [])
+                        self.assertEqual(value['handlers'], [])
+
+    def test_api_success_receipt_is_exact_typed_and_bound_to_this_build(self):
+        valid = self.api_receipt()
+        cases = [None, [], {}, {**valid, 'PRIVATE': 'extra'}]
+        cases += [{key: value for key, value in valid.items() if key != missing} for missing in valid]
+        cases += [{**valid, key: bad} for key, bad in [
+            ('status', 'BLOCKED'), ('phase', 'PROBES'), ('cases_passed', 9), ('cases_passed', True),
+            ('cases_total', 10.0), ('container_removed', False), ('container_removed', 1),
+            ('database_ready', True), ('database_ready', 0), ('source_commit', 'b' * 40),
+            ('image_id', 'sha256:' + 'f' * 64), ('provenance', 'authenticated'),
+            ('limitations', 'PRIVATE')]]
+        for result in cases:
+            with self.subTest(result=result):
+                value = self.exercise(startup='true', api_return=(result, 0))
+                self.blocked(value, calls=2)
+                self.assertEqual(len(value['api_calls']), 1)
+                self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+        for code in (2, False, True, 0.0, None):
+            with self.subTest(code=code):
+                self.blocked(self.exercise(startup='true', api_return=(valid, code)), calls=2)
+
+    def test_api_exceptions_and_interrupt_restore_handler_without_retry(self):
+        import signal
+        class PrivateError(Exception):
+            def __str__(self):
+                raise AssertionError('PRIVATE string conversion')
+        for error in (OSError('PRIVATE'), KeyboardInterrupt('PRIVATE'), PrivateError(), 'signal'):
+            with self.subTest(error=type(error).__name__):
+                value = self.exercise('true', startup='true', api_error=error)
+                self.blocked(value, calls=3)
+                self.assertEqual(len(value['api_calls']), 1)
+                self.assertEqual([number for number, _ in value['handlers']], [signal.SIGTERM] * 2)
+                self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+
+    def test_signal_installation_error_restores_previous_handler_before_any_api(self):
+        value = self.exercise(startup='true', handler_error=OSError('PRIVATE'))
+        self.blocked(value, calls=2)
+        self.assertEqual(value['api_calls'], [])
+        self.assertEqual(len(value['handlers']), 2)
+        self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+
+    def test_budget_expiring_during_handler_installation_is_restored_without_api(self):
+        value = self.exercise(startup='true', elapsed={'handler_install': 3031})
+        self.blocked(value, calls=2)
+        self.assertEqual(value['api_calls'], [])
+        self.assertEqual(len(value['handlers']), 2)
+        self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+
+    def test_api_return_container_shape_is_closed_and_summary_failure_is_not_success(self):
+        for result in ([], {}, [self.api_receipt(), 0], (self.api_receipt(),), (self.api_receipt(), 0, None)):
+            with self.subTest(result=result):
+                value = self.exercise(startup='true', api_return=result)
+                self.blocked(value, calls=2)
+                self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+        value = self.exercise(startup='true', summary_error=True)
+        self.blocked(value, calls=2)
+        self.assertEqual(len(value['api_calls']), 1)
+        self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+
+    def test_api_cleanup_uncertain_is_not_success_or_removal_retry(self):
+        result = {'status': 'BLOCKED', 'phase': 'PROBES', 'reason': 'CLEANUP_UNCERTAIN',
+                  'cases_passed': 9, 'cases_total': 10, 'container_removed': False,
+                  'limitations': api_startup.LIMITATIONS}
+        value = self.exercise(startup='true', api_return=(result, 2))
+        self.blocked(value, calls=2)
+        self.assertEqual(len(value['api_calls']), 1)
+        self.assertFalse(any('docker' in arg or arg == 'rm' for args in value['calls'] for arg in args))
+
+    def test_timestamp_missing_malformed_future_and_expired_are_rejected(self):
+        for stamp in ('', '0', '-1', '1.0', '1e12', 'NaN', '1000000000000\n',
+                      '1000000000001', '9' * 21, 'PRIVATE'):
+            with self.subTest(stamp=stamp):
+                self.blocked(self.exercise(started_ns=stamp), calls=0)
+        self.blocked(self.exercise(missing_env='REHEARSAL_STARTED_NS'), calls=0)
+        self.blocked(self.exercise(started_ns='1', now_ns=3300 * 10**9 + 1), calls=0)
+        self.blocked(self.exercise(started_ns='1', elapsed={'checkout': 2301}), calls=1)
+
+    def test_shared_budget_reserves_verification_api_cleanup_and_summary(self):
+        for exported in ('false', 'true'):
+            for startup in ('false', 'true'):
+                value = self.exercise(exported, startup=startup, elapsed={'checkout': 10, 'rehearsal': 500})
+                self.assertEqual(value['status'], 0)
+                budgets = dict(value['timeouts'])
+                reserved = 30 + (600 if exported == 'true' else 0) + (240 if startup == 'true' else 0)
+                self.assertEqual(budgets['rehearsal'], 3300 - 10 - reserved)
+                if exported == 'true': self.assertEqual(budgets['verification'], 600)
+
+    def test_remaining_budget_cannot_start_api_or_install_handler(self):
+        for elapsed in ({'rehearsal': 3031}, {'rehearsal': 2700, 'verification': 331}):
+            exported = 'true' if 'verification' in elapsed else 'false'
+            value = self.exercise(exported, startup='true', elapsed=elapsed)
+            self.blocked(value)
+            self.assertEqual(value['api_calls'], [])
+            self.assertEqual(value['handlers'], [])
+        value = self.exercise('true', startup='true', elapsed={'rehearsal': 3100})
+        self.blocked(value, calls=2)
+        self.assertEqual(value['api_calls'], [])
+
+    def test_late_api_completion_cannot_publish_success_and_restores_handler(self):
+        value = self.exercise(startup='true', elapsed={'rehearsal': 3000, 'api': 271})
+        self.blocked(value, calls=2)
+        self.assertEqual(len(value['api_calls']), 1)
+        self.assertIs(value['handlers'][-1][1], value['previous_handler'])
+
+    def test_api_summary_never_copies_raw_private_metadata(self):
+        value = self.exercise('true', startup='true')
+        self.assertEqual(value['status'], 0)
+        self.assertNotIn('PRIVATE', value['summary'] + value['stdout'] + value['stderr'])
+        self.assertNotIn('/tmp/', value['summary'])
+        self.assertIn('No physical network isolation', value['summary'])
+        self.assertIn('no database startup', value['summary'])
 
 
 if __name__ == '__main__':
