@@ -9,15 +9,15 @@
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "package": "offline-api-workflow-option",
-    "branch": "feat/offline-api-workflow-option",
-    "state": "local_validation_passed_native_receipt_review_finding_fixed_full_independent_review_pending",
-    "evidence": "docs/offline-image-rehearsal.md",
-    "selected_scope": "default_false_manual_API_option_same_build_receipt_shared_budget_mock_tests_eight_files_only",
+    "package": "offline-migration-inputs",
+    "branch": "feat/offline-migration-inputs",
+    "state": "review_findings_fixed_local_checks_passed_frontend_blocked_independent_rereview_pending",
+    "evidence": "docs/offline-migration-tool.md",
+    "selected_scope": "four_new_migration_input_files_and_four_checkpoints_no_build_download_database_or_workflow_change",
     "current_pr_ci": "not_committed_or_uploaded_no_candidate_CI",
-    "current_main_ci": "baseline_be30990a_CI42497949946_success_not_candidate",
-    "current_deployment": "Cloudflare_be30990a_success_Render_update_failed",
-    "next_package": "independent_final_review_then_exact_candidate_CI_before_any_separately_authorized_runtime",
+    "current_main_ci": "baseline_fde3270d_CI42502128909_success_not_candidate",
+    "current_deployment": "Cloudflare_fde3270d_success_Render_update_failed",
+    "next_package": "resolve_frontend_validation_blocker_and_independent_review_then_exact_candidate_CI_before_separate_runtime_approval",
     "previous_checkpoint": {
       "owner": "current_ChatGPT_Work_cloud_task",
       "business_acceptance_increment": 0,
@@ -1203,7 +1203,9 @@
       "focused_mock_tests_passed": 28,
       "all_offline_tests_passed": 459,
       "actual_API_startup": "not_executed"
-    }
+    },
+    "manual_api_evidence": "42536231169_success_RUN_API_STARTUP_and_EXPORT_IMAGE_BUNDLE_true_not_database_or_offline_acceptance",
+    "local_checks": "33_focused_508_offline_52_automation_126_guards_TypeScript_Worker_compile_passed_frontend_incomplete"
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [

@@ -1,3 +1,17 @@
+## 当前检查点 — 2026-11-09（UTC+8）独立迁移镜像输入准备
+
+PR201已保护合并main `fde3270d1248514c827b2fd377696348e2d56a84`；本包正常fetch核对后从该提交新建`feat/offline-migration-inputs`。[main CI42502128909](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42502128909)成功：3324后端＋1435子测试、296项PostgreSQL零跳过（791.76秒）、2116前端、8＋16严格浏览器及汇总门禁。Cloudflare同提交build `a34cb9ba-c873-45c3-9362-b531ee2915f2` / version `e6ad0ca3-dbe6-44f2-bc45-4ac437760302`成功；Render `dep-dboahqi9lscs73cq3ii0` update_failed，不称后端恢复。这些是基线，不是本包候选CI。
+
+另行获准的[手动42536231169](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42536231169)于2026-11-08 23:39:40至23:42:31 UTC成功，RUN_API_STARTUP=true、EXPORT_IMAGE_BUNDLE=true，112＋28合同及92,147,126,272字节主机前置通过。协调器成功严格要求真实API10/10、本次拥有权容器清理、database_ready=false及独立临时镜像包复核；具体image ID/归档SHA仅在步骤摘要，本次未读取，不补造值，不把源码打印当回执。生产数据库、物理断网、公司部署仍未验收，本包不重复触发该运行。
+
+本包仅四新文件（独立migration.Dockerfile、context准备/复核脚本、合成回归、说明）及四份常规检查点。默认/bin/false入口；精确commit源码/本地30项wheel验证、29单链AST、SHA/完整文件目录集合与no-follow边界，准备输出只表示输入一致性，不证明来源真实或迁移成功。缺输入拒绝不下载，不修改API/workflow/生产源码/迁移/依赖或门禁。实际Docker构建、DB/SQL、角色/权限、联网、上传、费用另批。原online Alembic命令连接即写版本表，current不可冒充只读；offline SQL存在版本列32/64字符静态风险，未复现或修复。
+
+先16项缺能力失败，再实现；独立审查发现并复现目录替换、关闭不确定fd重试和AST元数据重绑三类问题，新增回归先得到8个失败，说明具体修复并等待后已修正；第二轮AST异常/模式绑定及星号导入回归先6失败后修复；最终集中33、全离线508零跳过、52自动化、126守卫、TypeScript、Worker配置和Python编译通过。前端完整测试启动后仅前15项有通过记录，工具因检测到依赖获取网络而拒绝，未取得完成结果，未重试；不得沿用基线2116作为本候选通过证据。独立复审与前端阻断处理待完成，未提交/上传，无候选CI；完整后端/真实PG/浏览器待精确候选CI。合成wheel/闭包mock不等于实际依赖准备。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步完成独立审查及本地阻断核对，正常精确候选CI，之后才考虑另行获准的独立迁移镜像真实构建/空库迁移包。详见[迁移工具边界](docs/offline-migration-tool.md)。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）手动镜像流程可选API启动接入
 
 PR200已保护合并main `be30990a8c7edbedb8fa5c7f6789b20d32b37937`。[main CI42497949946](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42497949946)成功：3308后端＋1336子测试、296项PostgreSQL案例零跳过、2116前端、8＋16严格浏览器，签名Chrome157、sandbox=true、零重试及汇总门禁。Cloudflare同提交build `a5901285-5304-450e-91b1-cf4bc41eebc1` / version `7b446524-f8e9-4229-a9f1-df902d4446ae`成功；Render `dep-dbo9qpgae00c739fems0` update_failed，不称后端恢复。这些是基线，不是当前未发布候选的CI或真实API启动证据。
