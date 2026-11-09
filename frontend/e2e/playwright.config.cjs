@@ -12,7 +12,7 @@ const chromeExecutable = path.join(require('node:fs').realpathSync(process.env.R
 // must fail this job; there is deliberately no unsandboxed fallback.
 module.exports = defineConfig({
   testDir: '.',
-  testMatch: ['readonly.spec.ts', 'page-loading.spec.ts', 'project-catalog.spec.ts'],
+  testMatch: ['readonly.spec.ts', 'page-loading.spec.ts', 'project-catalog.spec.ts', 'change-issue-catalog.spec.ts'],
   fullyParallel: false,
   workers: 1,
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
