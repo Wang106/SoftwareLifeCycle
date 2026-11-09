@@ -5306,3 +5306,15 @@ PR202已保护合并main `65e2b90e016f1d8c571cf7269cdf1017046db49e`；正常fetc
 业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步同一PR正常发布，再核验完整严格16条Next＋16条组件及后端/PG门禁；main与线上尚未变化，旧库、配置、凭据、费用及保护不动。以下记录为前轮证据，不能代替本次完整验收。详见[标准目录加载说明](docs/standard-release-loading.md)。
 
 ---
+
+## 当前检查点 — 2026-11-09（UTC+8）离线SQL版本列兼容候选
+
+基于PR208已合并main `3f34222734634f6a86ee4d83bebc91c7e4877221`，开放PR为0，独立`fix/offline-sql-version-width`保留其他工作区。基线[CI42624219335](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42624219335)完整成功；Actions deployment42626540037与continuation42626540008均skipped，不当作部署成功。本候选没有新provider验证。
+
+现有offline SQL版本列默认32，而0008版本ID为35字符，online原有64维护不受影响。新增公开Alembic1.14 hook仅as_sql宽度64，保留schema/PK；不更改29历史迁移、依赖、workflow或保护门禁。注册进程内持续，但online hook仍返回原Table，不声称registry无变化。本地无Alembic/SQLAlchemy/psycopg，先标准库AST/stub回归3失败1对照通过，再实现；不冒充真实SQL生成失败或通过。两项真实无DB生成/hook测试及两项CI自有PG新schema执行/32宽反例仅准备，未运行；不接触公司或旧库、不改权限、不增加资源费用。具体通知后新fixture超时合同先失败，再收至5秒与原采集器一致。
+
+集中9项、结构证据24项、全离线639项零跳过、52自动化和126守卫通过，Python编译、进度账本及diff通过。全离线曾暴露来源摘要不符；具体通知后新增v2回归先3失败，再以facts_baseline_commit和repository_file_sha256分离历史事实基线与当前四源码字节，严格校验元数据及整体SHA，保留逐文件绑定和固定120事实canonical SHA。独立终审通过无新阻断：另33项通过，核对120事实与基线逐值相同、online函数AST原样及29迁移未改。尚未提交/上传，无候选CI。SQL执行只允许本包获批后的现有CI固定loopback自有测试库；不以外层rollback冒充撤销，最后核对本次namespace/OID/owner才清理。详细范围与未验收事项见[离线SQL说明](docs/offline-sql-version-width.md)。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步正常PR和精确CI；生成SQL仅新空schema路线，不证明已部署32宽库续迁、镜像、最小权限、物理断网或公司部署。
+
+---
