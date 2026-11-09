@@ -43,6 +43,8 @@ def test_real_generated_sql_has_wide_primary_key_and_all_revisions():
     statement = generate_sql()
     assert 'version_num VARCHAR(64) NOT NULL' in statement
     assert 'version_num VARCHAR(32)' not in statement
+    assert 'deployment_actual_baselines%ROWTYPE' in statement
+    assert '%%ROWTYPE' not in statement
     assert 'CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)' in statement
     assert statement.count('-- Running upgrade ') == 29
     assert "'0008_authorization_distribution_link'" in statement
