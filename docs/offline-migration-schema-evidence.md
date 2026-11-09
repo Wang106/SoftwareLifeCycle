@@ -128,3 +128,19 @@ JSON拒绝重复键、BOM、非UTF8、浮点/指数/NaN/Infinity、负数或超�
 这些均为本地合成/静态验证，没有真实数据库、目录采集或运行验收。
 历史前端测试启动被平台拒绝，本包未重试或换入口；完整前端、后端、真实PG和严格浏览器
 仍待精确候选CI。本包未提交或推送时不得称PR/CI已通过；后续以最新检查点为准。
+
+## v2来源字段分离（离线SQL版本列包）
+
+env.py公开hook的合法变化使原来源字节摘要回归失败。为避免把新字节冒充旧提交的文件，
+固定内部manifest升级为slc-offline-migration-schema-manifest-v2：
+`facts_baseline_commit`仅标识120事实建立时的历史基线44e307a71a22f93f8c2ae611cf10678b0420499f；
+`repository_file_sha256`分别绑定当前随仓库检入的原四个来源文件字节，不宣称来自上述历史commit。
+不以自由备注重新解释source_commit。旧模糊source_commit/sources字段移除。
+
+校验器除完整manifest字节SHA之外，严格检查顶层字段全集、固定格式/清单/基线、固定四路径及
+64位小写十六进制摘要；未知、缺失或错误字段拒绝。回归保留四源码当前字节绑定，并加入
+120事实canonical JSON SHA恒定检查：bc754be5abbb1386f6c6872303c1e9e238a9f5a11315bff91ab7412daf0f4cdc。
+canonical形式为JSON sort_keys=True、separators=(',', ':')、ensure_ascii=True后UTF-8。
+事实内容、用户证据v1输入、检查输出格式和UNKNOWN/不可信自报边界均不变。
+SHA只绑定内容，不是发布者签名/认证；运行校验器不会额外读取这四源码或连接数据库。
+新回归覆盖即使测试重绑整体manifest SHA，错误来源元数据仍拒绝。真实SQL/PG验收独立于该JSON清单。
