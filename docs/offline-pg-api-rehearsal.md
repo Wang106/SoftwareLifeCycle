@@ -52,7 +52,8 @@ HTTP只允许固定健康、两个有限目录、身份读取及一个业务POST
 SIGALRM整段截止，拒绝非主线程或已有ITIMER_REAL计时器，结束/异常恢复原处理器。
 计时器取消失败仍仅尝试一次恢复原处理器；取消/恢复失败均保留固定失败，不重试或声称信号状态已恢复。
 信号不能保证不可中断内核I/O、恶意扩展或runner丢失时的硬实时终止。退出发送一次terminate，
-最多5秒后必要时一次kill并等待最多5秒，任何强杀、非零退出或不确定退出均使回归失败。
+最多5秒后必要时一次kill并等待最多5秒。任何强杀、非预期退出或不确定退出均失败；
+固定uvicorn0.34.0正常关闭会重发SIGTERM，故只有本次terminate后精确-SIGTERM且下面完整回执成立才接受。
 只有正常确认API退出后才进行成功路径的后续目录/计数比较；启动期KeyboardInterrupt/SystemExit
 也尝试一次拥有权清理并保留原中断语义，清理不确定加固定标记，不重启或重试清理。
 复用的pytest fixture在失败后仍会尝试核对身份并清理本次schema，即便API退出未确认；
@@ -82,3 +83,33 @@ SIGALRM整段截止，拒绝非主线程或已有ITIMER_REAL计时器，结束/�
 新增2项先错误再修；最终23集中、617全离线零跳过、52自动化、126守卫及编译通过。
 最终独立复审通过无新阻断：另行将四个signal函数全部mock后23项通过。原本地套件API/HTTP/PG及子进程启动均mock，但部分用例确实短暂设置/取消当前测试进程timer；没有真实API、DB连接、网络监听或uvicorn子进程运行。
 真实PG/HTTP尚未在本包执行。
+
+## PR206首次CI失败与关闭证据修正
+
+[CI42577445085](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42577445085)中
+2个新API案例失败、3474项通过。两栈均进入stop的固定异常；原代码只接受退出0且未记录退出码，
+__exit__的清理异常还可能遮蔽with块的断言，因此不能把该运行称为HTTP通过或已经观察到-15。
+
+锁定uvicorn0.34.0的[官方Server源码](https://github.com/Kludex/uvicorn/blob/0.34.0/uvicorn/server.py#L312-L331)
+说明正常shutdown之后会恢复处理器并重新发出SIGTERM。这解释了退出0假设不成立的机制；
+本机安装0.52.1不是本项目精确版本证据，未用其运行API或替代CI。
+
+具体通知等待后，新增4项回归先1失败/3错误再修。只修改本包助手、mock及记录，不改生产/依赖/门禁。
+子进程固定检查uvicorn版本0.34.0，显式lifespan=on，ObservedServer沿用原信号处理和shutdown。
+只有super._wait_tasks_to_complete正常返回才记录drained；超时或取消不记录。
+shutdown只能进入一次，返回后要求started/should_exit、无force_exit、恰好一次SIGTERM、
+startup/shutdown事件完成、无lifespan error/startup_failed/shutdown_failed/should_exit、
+无剩余任务/连接以及所有server停止监听，才通过本次继承的独占pipe写固定单字节S。
+write必须返回1，写端关闭失败也不成功；不会仅因super.shutdown返回就签发回执。
+
+父进程只传本次socket和pipe写端，Popen后立即关闭自己的写端。读端nonblocking；只有本次
+terminate之后wait完成、精确-SIGTERM、最多2字节读出恰好S且后续一次读为EOF才接受。
+退出0、其他码、早退、超时/强杀、缺失/额外回执、写端仍持有、读/关闭不确定均失败，不重试。
+回执仅证明该受信CI子进程走完上述检查，不是来源签名或抵御同UID进程的证明。
+
+with块原异常/中断遇到清理失败时保留原异常，并附固定PG_API_SHUTDOWN_UNCONFIRMED，
+避免再次只看到stop错误而误判HTTP已通过。成功块遇清理错误仍失败。
+本轮本地API/DB/HTTP/子进程均mock；部分用例真实使用匿名pipe和短暂signal timer，
+没有启动API、连接数据库或网络监听。新精确CI仍需验证两案例整体成功，旧CI不能改判通过。
+
+独立终审无阻断：完整核对官方0.34.0 server/lifespan源码及对应blob，确认关闭顺序、超时不置drained、error_occured字段及finally外重发信号；33项全信号mock及独立异常检查通过。终审未运行真实API/DB，修正后的两项真实PG/API案例仍须新精确CI验证。
