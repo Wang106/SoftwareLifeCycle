@@ -1,3 +1,27 @@
+## 当前检查点 — 2026-11-09（UTC+8）PR209离线SQL百分号转义修正
+
+PR209 head `37d6cbb`的[CI42644528445](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42644528445)实际3501通过、1失败：生成SQL正例子进程exit1。PG日志15:32:51明确报deployment_actual_baselines%%ROWTYPE语法错误；32宽反例实际报value too long(32)，未将旧失败重判为通过。
+
+官方Alembic1.14模板本身采用offline dialect_opts={paramstyle:named}；SQLAlchemy2.0.36默认pyformat会将源码中的%编译为%%。具体通知等待后，固化无DB参数合同先1失败9对照通过，再只在offline configure加入named，保留online函数、29迁移和ConfigParser URL百分号转义，不对SQL产物做替换。真实生成回归新增单%ROWTYPE存在、%%ROWTYPE禁止；同步env来源SHA与固定manifest整体SHA，120事实和严格来源校验不变。
+
+当前环境read-only，编辑及需要临时文件的无DB/mock测试均走正规require_escalated并获执行许可，没有通过换路径绕过；本机仍缺Alembic/SQLAlchemy/psycopg，真实SQL生成和PG本地未跑。修正后10集中、640全离线、52自动化、126守卫及内存编译/进度/diff通过。独立复审无新阻断：另15项只读检查通过，确认online AST/29迁移/120事实不变、来源摘要绑定正确。尚未上传；新精确CI仍待运行，不重跑旧候选或削弱门禁。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。不触碰公司/旧库、不改权限、不增费用。下一步独立复审、原PR发布修正并核验新head完整CI。
+
+---
+
+## 当前检查点 — 2026-11-09（UTC+8）离线SQL版本列兼容候选
+
+基于PR208已合并main `3f34222734634f6a86ee4d83bebc91c7e4877221`，开放PR为0，独立`fix/offline-sql-version-width`保留其他工作区。基线[CI42624219335](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42624219335)完整成功；Actions deployment42626540037与continuation42626540008均skipped，不当作部署成功。本候选没有新provider验证。
+
+现有offline SQL版本列默认32，而0008版本ID为35字符，online原有64维护不受影响。新增公开Alembic1.14 hook仅as_sql宽度64，保留schema/PK；不更改29历史迁移、依赖、workflow或保护门禁。注册进程内持续，但online hook仍返回原Table，不声称registry无变化。本地无Alembic/SQLAlchemy/psycopg，先标准库AST/stub回归3失败1对照通过，再实现；不冒充真实SQL生成失败或通过。两项真实无DB生成/hook测试及两项CI自有PG新schema执行/32宽反例仅准备，未运行；不接触公司或旧库、不改权限、不增加资源费用。具体通知后新fixture超时合同先失败，再收至5秒与原采集器一致。
+
+集中9项、结构证据24项、全离线639项零跳过、52自动化和126守卫通过，Python编译、进度账本及diff通过。全离线曾暴露来源摘要不符；具体通知后新增v2回归先3失败，再以facts_baseline_commit和repository_file_sha256分离历史事实基线与当前四源码字节，严格校验元数据及整体SHA，保留逐文件绑定和固定120事实canonical SHA。独立终审通过无新阻断：另33项通过，核对120事实与基线逐值相同、online函数AST原样及29迁移未改。尚未提交/上传，无候选CI。SQL执行只允许本包获批后的现有CI固定loopback自有测试库；不以外层rollback冒充撤销，最后核对本次namespace/OID/owner才清理。详细范围与未验收事项见[离线SQL说明](docs/offline-sql-version-width.md)。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步正常PR和精确CI；生成SQL仅新空schema路线，不证明已部署32宽库续迁、镜像、最小权限、物理断网或公司部署。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）PR208真实重读修正
 
 [PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208)第二轮head `d469e03047f45e39402fdd2b2b34cd75c6c4c915`、tree `ece7be372e21292da8cbf3acb86cd6666b9cf3ff`在[CI42619068391](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42619068391)中前端2273项及生产构建成功，浏览器仍14过2失败、组件16未运行。折叠状态断言已过，但batch重读只新增行锚点：实际trace每条仍只有1次document，API父读和batch各1次，页面仍不可用，等到60秒测试超时。这是实现缺陷，不是等待谓词问题，不延长超时或重跑旧候选。首轮后端最终为cancelled、CI acceptance失败，不称完整通过。

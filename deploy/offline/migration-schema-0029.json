@@ -1,9 +1,9 @@
 {
-  "format": "slc-offline-migration-schema-manifest-v1",
+  "format": "slc-offline-migration-schema-manifest-v2",
   "checklist": "0029-core-history-subset-v1",
-  "source_commit": "44e307a71a22f93f8c2ae611cf10678b0420499f",
-  "sources": {
-    "backend/alembic/env.py": "ffe28195aef1f3abd3b0c6163db60b29418ef2a403db7d85dc8d1c2809736437",
+  "facts_baseline_commit": "44e307a71a22f93f8c2ae611cf10678b0420499f",
+  "repository_file_sha256": {
+    "backend/alembic/env.py": "5ad971604c0ef58e1e6f0d110c28d6b41ae77cad05490f0c8113488f05137ba2",
     "backend/alembic/versions/0001_core_and_snapshot.py": "005cbdfffa164dd85d6a0eb020345e248cf3acb063f0f398cb628e9e39ee5682",
     "backend/alembic/versions/0024_release_customer_scope.py": "a3ee69bf46e02c50552f9eb2b6bfba2f955bb838a3b10ed49b0477702de6f1a5",
     "backend/alembic/versions/0029_changeover_batch_history.py": "0d58bb3df42ef0f795f259530ff5a9212990633aafd1a63e33daa43481d873ae"
