@@ -126,11 +126,12 @@ async function ApplicationData({ applications, rowId, queryString, search }: {
     const page = (await applications).get(rowId);
     const query = new URLSearchParams(queryString);
     const anchor = `#standard-software-${encodeURIComponent(rowId)}`;
+    // Pagination keeps the row anchor; retry omits it to avoid hash-only navigation.
     return <Localized><div data-standard-application-state={page ? 'ready' : 'unavailable'}>
       {page ? <><p><Localized>{"Recorded count: "}</Localized>{page.total}</p><ul className="application-version-list">{page.items.map(application => <li key={application.id}><Link prefetch={false} href={`/releases/application/${encodeURIComponent(application.id)}`}><Localized>{"ASR "}</Localized>{application.version}</Link><span className="status"><Localized>{application.status}</Localized></span></li>)}</ul>
         {!page.items.length && <p className="muted"><Localized>{"No application releases on this page."}</Localized></p>}
         <p><Link prefetch={false} href={linkFor(query, search, { applications_for: rowId, application_offset: '0' }, anchor)}><Localized>{"First page"}</Localized></Link> {page.next_offset !== null && <Link prefetch={false} href={linkFor(query, search, { applications_for: rowId, application_offset: String(page.next_offset) }, anchor)}><Localized>{"Next page →"}</Localized></Link>}</p></>
-        : <><p className="muted"><Localized>{"Application release page unavailable. The API is unavailable or pagination is invalid."}</Localized></p><p><a href={linkFor(query, search, {}, anchor)}><Localized>{'Read application releases again'}</Localized></a></p></>}
+        : <><p className="muted"><Localized>{"Application release page unavailable. The API is unavailable or pagination is invalid."}</Localized></p><p><a href={linkFor(query, search)}><Localized>{'Read application releases again'}</Localized></a></p></>}
     </div></Localized>;
 }
 async function CatalogData({ queryString, search, dataKey }: { queryString: string; search: ReleaseSearch; dataKey: string }) {

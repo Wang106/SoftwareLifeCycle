@@ -136,6 +136,7 @@ async function journey(page: Page, context: BrowserContext, kind: Kind, phase: P
   await isolate(context, page, transport.origin, kind);
   await context.addCookies([{ name: 'slc_language', value: 'en', url: transport.origin }]);
   const p = paths, targetUrl = transport.origin + p.page;
+  const initialAnchor = kind === 'batch' ? '#standard-software-' + releaseId : '';
   const title = 'Standard Releases';
   const targetReads = () => current.fixture.requests.filter(read => read.kind === 'target');
   const content = page.getByRole('main').locator('.content');
@@ -153,7 +154,9 @@ async function journey(page: Page, context: BrowserContext, kind: Kind, phase: P
     await expect(content).toContainText('Total releases: 12');
     await expect(content.getByRole('link', {name:'First page',exact:true}).last()).toHaveAttribute('href',p.firstPage);
   };
-  await page.goto(targetUrl, {waitUntil:'commit'});
+  // A retry must fetch a new document even when the current page already has
+  // the selected row's fragment. A hash-only jump is not a successful retry.
+  await page.goto(targetUrl + initialAnchor, {waitUntil:'commit'});
   await expect(content.getByRole('heading',{name:title,exact:true,level:1})).toBeVisible();
   await expect(filters).toHaveAttribute('method','get');
   for(const key of ['q','status','software_id','limit']) await expect(filters.locator(`input[name="${key}"]`)).toHaveValue(new URLSearchParams(query).get(key)!);
@@ -187,13 +190,13 @@ async function journey(page: Page, context: BrowserContext, kind: Kind, phase: P
   expect(targetReads()[0].closedAt!-targetReads()[0].receivedAt).toBeLessThan(25_000);
   documentTimings.push(await documentTiming(page,'initial-timeout-document'));
   const retry=(kind==='parent'?content:card).getByRole('link',{name:kind==='parent'?'Read standard releases again':'Read application releases again',exact:true});
-  const anchor=kind==='parent'?'':'#standard-software-'+releaseId;
-  await expect(retry).toHaveAttribute('href',p.page+anchor);
+  await expect(page).toHaveURL(targetUrl + initialAnchor);
+  await expect(retry).toHaveAttribute('href',p.page);
   await page.evaluate(()=>{(window as Window & {catalogDocumentMarker?:boolean}).catalogDocumentMarker=true;});
   current.fixture.recover();
   const [document]=await Promise.all([page.waitForResponse(r=>r.url()===targetUrl&&r.request().isNavigationRequest()),retry.click()]);
   expect(document.status()).toBe(200);await page.waitForLoadState('domcontentloaded');
-  await expect(page).toHaveURL(targetUrl+anchor);
+  await expect(page).toHaveURL(targetUrl);
   expect(await page.evaluate(()=>(window as Window & {catalogDocumentMarker?:boolean}).catalogDocumentMarker)).toBeUndefined();
   await assertParent();await expect(card).toContainText('Recorded count: 12');await expect(card).toContainText('application-11');await expect(card).toContainText('application-12');
   expect(targetReads()).toHaveLength(2);await expect(loading).toHaveCount(0);

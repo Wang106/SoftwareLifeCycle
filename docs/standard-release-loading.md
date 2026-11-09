@@ -1,5 +1,43 @@
 # Standard release catalog loading
 
+## PR208 second CI and real child retry correction (2026-11-09)
+
+[CI42619068391](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42619068391)
+verified head `d469e03047f45e39402fdd2b2b34cd75c6c4c915`, preview merge `cdc0faba7a2d78fb5822e85be8f4540b8be77fc1`,
+and tree `ece7be372e21292da8cbf3acb86cd6666b9cf3ff`. Its 2273 frontend tests and
+production build passed. Browser results remained 14 passed / 2 failed, and
+component journeys did not run. The disclosure assertions now passed, including
+pending-to-unavailable behavior, but both batch journeys timed out waiting for
+a new document after retry. Trace and request evidence showed only the initial
+one document, one parent read and one batch read; clicking merely appended the
+row fragment and left the error visible. This was a real retry bug, not a reason
+to weaken the response predicate or increase the timeout. The first CI backend
+was ultimately cancelled and its CI acceptance failed.
+
+The minimal correction removes the fragment only from child retry links. All
+seven normalized query fields and the selected expanded row remain, as do row
+anchors on ordinary child pagination. Retry does not promise the old scroll
+position. A GET form with the same target fragment is not a reliable alternative:
+[HTML navigation](https://html.spec.whatwg.org/multipage/browsing-the-web.html#navigate)
+and [Chromium FrameLoader](https://chromium.googlesource.com/chromium/src/+/0d4c0e490b48d360f5ab6fbcdb673c3cd5a5f31e/third_party/blink/renderer/core/loader/frame_loader.cc)
+also permit same-document navigation for that form. No script, redirect route,
+extra query field or automatic retry is added.
+
+The strengthened two stall assertions and a new retry/pagination contract first
+failed three cases while thirteen core controls passed. After the one-line
+production change, 465 selected frontend checks and 173 focused checks passed,
+with TypeScript and diff checks. Independent review passed another 179 checks,
+TypeScript and diff, and reproduced exactly three failures / thirteen passing
+controls by restoring the old href only in memory. No blocker was found.
+The browser batch journeys now begin with the
+row fragment already present and still require a real new document response,
+cleared document marker and an additional API read. A new exact full CI and
+browser run remain required. Previous loopback FCP values are not reused as new
+candidate acceptance or production performance.
+
+[Second-run browser evidence](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42619068391/artifacts/13677025087).
+
+
 ## PR208 first CI and disclosure assertion correction (2026-11-09)
 
 [PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208) published the exact
@@ -81,7 +119,8 @@ PR185's existing maximum two HTTP reads and five SQL queries remain unchanged.
 - A failed or invalid batch keeps the real parent visible and marks only the
   application area unavailable. Empty child pages remain distinct from failure.
 - Native retry preserves normalized q, status, software_id, limit, offset,
-  applications_for and application_offset; child retry includes its row anchor.
+  applications_for and application_offset. Child retry omits its fragment to
+  trigger document navigation; ordinary child pagination retains row anchors.
   Unknown query fields are not copied. Existing parent/child pagination,
   selection, grouping, integer-spelling and batch-validation behavior is kept.
 - All framework links in this directory explicitly set prefetch=false. Clicking

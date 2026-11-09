@@ -1,3 +1,13 @@
+## 当前检查点 — 2026-11-09（UTC+8）PR208真实重读修正
+
+[PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208)第二轮head `d469e03047f45e39402fdd2b2b34cd75c6c4c915`、tree `ece7be372e21292da8cbf3acb86cd6666b9cf3ff`在[CI42619068391](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42619068391)中前端2273项及生产构建成功，浏览器仍14过2失败、组件16未运行。折叠状态断言已过，但batch重读只新增行锚点：实际trace每条仍只有1次document，API父读和batch各1次，页面仍不可用，等到60秒测试超时。这是实现缺陷，不是等待谓词问题，不延长超时或重跑旧候选。首轮后端最终为cancelled、CI acceptance失败，不称完整通过。
+
+本轮仅去除子区域重读链接的fragment，七键query及选中展开项不变，普通父子分页锚点保留；重读后不承诺原滚动位置。规范及Chromium说明同URL带fragment的GET表单也可能只同文档导航，因此不以表单替换、不加JS/新参数/入口。新增及强化回归先3失败13对照通过，再改实现；浏览器batch从已有锚点URL进入，须重新取得document响应、清除旧document marker并新增API读取。465项定向前端、173项集中、TypeScript和diff通过；独立终审另179项通过，并在内存恢复旧href重现3失败13对照，无阻断。最新精确完整CI仍未执行，不沿用第二轮2273项为新候选成绩。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步同一PR正常发布，再核验完整严格16条Next＋16条组件及后端/PG门禁；main与线上尚未变化，旧库、配置、凭据、费用及保护不动。以下记录为前轮证据，不能代替本次完整验收。详见[标准目录加载说明](docs/standard-release-loading.md)。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）PR208折叠区域加载断言修正
 
 [PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208)已正常发布17文件，head `fe002f580a050ba8cc0af95c7eaa6e964a2260bd`、tree `c7e64870baf8c9fe2e472d2723481692eeb5560e`与本地候选一致；[首轮CI42617261863](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42617261863)的预览合并`d21768c2`树相同。前端2265项零失败/跳过及完整Next/OpenNext构建成功；严格浏览器14通过2失败，组件16未运行，不能合并。实际Chrome签名、sandbox与零重试已通过。失败是新batch头/正文旅程将可见status误当DOM总量：完整trace各有2个pending节点，但selected卡展开、另一卡原生折叠，只可见1；不是子区域丢失。后续无selection导航有同类断言，但首轮尚未执行到，不冒充实测。

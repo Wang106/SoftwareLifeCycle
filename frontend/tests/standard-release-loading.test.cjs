@@ -85,10 +85,28 @@ for(const phase of ['headers','body'])test('standard batch '+phase+' stall leave
     assert.doesNotMatch(html,/ASR_CHILD_PROOF|No application releases on this page/);
     assert.doesNotMatch(html,/Recorded count:(?:\s|<!-- -->)*\d/,'unknown pending counts must not become invented numbers');
     const retries=nativeRetry(html,'Read application releases again');assert.equal(retries.length,2);
-    for(const retry of retries){for(const key of ['q','status','software_id','limit','offset','applications_for','application_offset'])assert.equal(retry.searchParams.get(key),search[key]);assert.match(retry.hash,/^#standard-software-std-(one|two)$/);}
+    for(const retry of retries){for(const key of ['q','status','software_id','limit','offset','applications_for','application_offset'])assert.equal(retry.searchParams.get(key),search[key]);assert.equal(retry.hash,'','retry must not become a same-document fragment navigation');}
     assert.equal(h.requests[1][1].signal.aborted,true);assert.equal(h.timers.size,0);
     held.resolve(phase==='headers'?response(batch):batch);await flush();assert.equal(h.requests.length,2,'late batch must not retry');
   } finally {held.resolve(phase==='headers'?response(null):null);await page.output.allReady;}
+});
+
+test('child retry omits fragments while preserving seven fields and ordinary pagination anchors',async()=>{
+  const failed=harness(async url=>response(url.includes('/applications?')?null:parent));
+  const f=await stream(failed.Page,search);const html=await f.done;
+  const retries=nativeRetry(html,'Read application releases again');assert.equal(retries.length,2);
+  for(const retry of retries){
+    assert.equal(retry.pathname,'/releases/standard');assert.equal(retry.hash,'');
+    assert.deepEqual([...retry.searchParams.keys()],['q','status','software_id','limit','offset','applications_for','application_offset']);
+    for(const key of retry.searchParams.keys())assert.equal(retry.searchParams.get(key),search[key]);
+  }
+  const ready=harness(async url=>response(url.includes('/applications?')?batch:parent));
+  const p=await stream(ready.Page,search);const complete=await p.done;
+  const pagination=[...complete.matchAll(/<a href="([^"]+)" data-framework-link="true" data-prefetch="false">First page<\/a>/g)]
+    .map(m=>new URL(m[1].replaceAll('&amp;','&'),'https://site.invalid'));
+  assert.equal(pagination.length,3);
+  assert.deepEqual(pagination.filter(url=>url.hash).map(url=>url.hash),['#standard-software-std-one','#standard-software-std-two']);
+  assert.equal(failed.requests.length,2);assert.equal(ready.requests.length,2);
 });
 
 for(const elapsed of [0,5000,14999,15000,16000])test('standard batch uses remaining read allowance after parent '+elapsed+'ms',{timeout:5000},async()=>{
