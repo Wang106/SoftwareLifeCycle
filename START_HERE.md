@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-09（UTC+8）PR206关闭回执修正，候选CI待验证
+
+[PR206](https://github.com/Wang106/SoftwareLifeCycle/pull/206)首次[CI42577445085](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42577445085)后端3474通过、2项新增真实PG/API案例失败，均在关闭检查报错。旧代码没有记录退出码，且退出异常可能遮蔽HTTP断言；因此不能认定原HTTP通过或已观察到-15。固定uvicorn0.34.0官方源码在正常关闭后重新发出SIGTERM，原“仅退出0成功”不适用。
+
+具体通知并等待后，4项新回归先1失败3错误，再仅修复本包助手：固定版本与lifespan on，正常排空、关闭事件及无错误状态全部成立后，子进程经独占匿名pipe写单字节回执；父进程只接受本次terminate后的精确-SIGTERM、完整回执和EOF。裸信号码、早退、强杀、缺失/额外字节、读写/关闭不确定均失败，不降低门禁；with块原异常保留并加固定清理未确认标记。独立终审无阻断：完整核对官方0.34.0 server/lifespan源码及对应blob，确认关闭顺序、超时不置drained、error_occured字段及finally外重发信号；33项全信号mock及独立异常检查通过。新精确CI尚未执行，不能把本地mock通过视为真实PG/API验收。
+
+本地33集中、627全离线、52自动化、126CI守卫通过；API/HTTP/DB/子进程均mock，匿名pipe及部分signal timer为本地真实系统调用，无API监听、DB连接、DDL或容器运行。未修改生产代码、迁移、依赖、workflow、权限或既有门禁。详细契约与可信源码见[说明](docs/offline-pg-api-rehearsal.md)。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步正常发布修正并核对新精确CI，仍不触发手动镜像演练或接触公司数据库；Render本次未核验。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）真实PG支持的只读API启动回归准备
 
 模式：Codex / ChatGPT Work。正常fetch核对PR205合并main `08dae2b6ca91a3d3b53843ac99725e3ce7a178b5`，新建`feat/offline-pg-api-rehearsal`，旧工作区不动。[main CI42573548616](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42573548616)完整成功：3451后端＋2577子测试、304项PG零跳过、801.62秒；Cloudflare同提交build `782ba41b-c50c-4bf2-9d63-2e3094c0eb09` / version `51deffef-2460-470c-a759-c63de61c18a2`成功，Actions deployment42575032634和continuation42575032696均skipped，Render未核验。以上为基线，不能冒充本候选CI。
