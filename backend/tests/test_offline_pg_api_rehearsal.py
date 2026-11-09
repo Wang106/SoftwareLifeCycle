@@ -19,6 +19,13 @@ class APIRehearsalTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('api_rehearsal', SCRIPT)
         self.m = importlib.util.module_from_spec(spec); spec.loader.exec_module(self.m)
 
+    def receipt_popen(self, process):
+        # Local anonymous pipe bytes stand in for the mocked child, no process runs.
+        def spawn(*args, **kwargs):
+            os.write(kwargs['pass_fds'][1], b'S')
+            return process
+        return spawn
+
     def test_ci_environment_guard_rejects_before_side_effects(self):
         for env in ({}, dict(CI, CI='false'), dict(CI, PGHOSTADDR='remote'), dict(CI, PGOPTIONS='')):
             with self.subTest(env=env), mock.patch.dict(os.environ, env, clear=True):
@@ -78,8 +85,10 @@ class APIRehearsalTests(unittest.TestCase):
 
     def test_owned_process_graceful_shutdown(self):
         api=self.m.APIProcess(URL,NS); process=mock.Mock(); process.poll.return_value=None
-        process.wait.return_value=0; api.process=process
-        api.stop()
+        process.wait.return_value=-15; api.process=process
+        api.receipt_read=80
+        with mock.patch.object(self.m.os,'read',side_effect=[b'S',b'']), mock.patch.object(self.m.os,'close'):
+            api.stop()
         process.terminate.assert_called_once(); process.kill.assert_not_called()
         self.assertIsNone(api.process)
 
@@ -90,7 +99,8 @@ class APIRehearsalTests(unittest.TestCase):
         process.terminate.assert_called_once(); process.kill.assert_called_once()
 
     def test_bootstrap_is_fixed_single_worker_and_not_entrypoint(self):
-        self.assertIn('uvicorn.run',self.m.BOOTSTRAP)
+        self.assertIn('uvicorn.Config',self.m.BOOTSTRAP)
+        self.assertIn('ObservedServer(config).run()',self.m.BOOTSTRAP)
         self.assertIn('fd=',self.m.BOOTSTRAP)
         self.assertIn('workers=1',self.m.BOOTSTRAP)
         self.assertNotIn('alembic',self.m.BOOTSTRAP)
@@ -105,14 +115,16 @@ class APIRehearsalTests(unittest.TestCase):
     def test_start_passes_owned_bound_fd_and_empty_cwd(self):
         listener=mock.MagicMock(); listener.__enter__.return_value=listener
         listener.getsockname.return_value=('127.0.0.1',12345); listener.fileno.return_value=77
-        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=0
-        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',return_value=process) as popen, mock.patch.object(self.m.APIProcess,'request',return_value=(200,b'{"status":"ok"}')):
+        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=-15
+        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',side_effect=self.receipt_popen(process)) as popen, mock.patch.object(self.m.APIProcess,'request',return_value=(200,b'{"status":"ok"}')):
             with self.m.APIProcess(URL,NS): pass
         listener.bind.assert_called_once_with(('127.0.0.1',0))
         call=popen.call_args
-        self.assertEqual(call.kwargs['pass_fds'],(77,))
+        self.assertEqual(call.kwargs['pass_fds'][0],77)
+        self.assertEqual(len(call.kwargs['pass_fds']),2)
         self.assertTrue(call.kwargs['close_fds'])
-        self.assertEqual(call.args[0][-1],'77')
+        self.assertEqual(call.args[0][-2],'77')
+        self.assertEqual(call.args[0][-1],str(call.kwargs['pass_fds'][1]))
         self.assertNotEqual(call.kwargs['cwd'],str(self.m.BACKEND))
         self.assertEqual(call.kwargs['env']['READ_ONLY_MODE'],'true')
         self.assertEqual(call.kwargs['stdout'],self.m.subprocess.DEVNULL)
@@ -120,8 +132,8 @@ class APIRehearsalTests(unittest.TestCase):
     def test_startup_bad_response_stops_only_owned_process(self):
         listener=mock.MagicMock(); listener.__enter__.return_value=listener
         listener.getsockname.return_value=('127.0.0.1',12345); listener.fileno.return_value=77
-        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=0
-        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',return_value=process), mock.patch.object(self.m.APIProcess,'request',return_value=(302,b'redirect')):
+        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=-15
+        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',side_effect=self.receipt_popen(process)), mock.patch.object(self.m.APIProcess,'request',return_value=(302,b'redirect')):
             with self.assertRaises(self.m.RehearsalError):
                 with self.m.APIProcess(URL,NS): pass
         process.terminate.assert_called_once(); process.kill.assert_not_called()
@@ -168,8 +180,8 @@ class APIRehearsalTests(unittest.TestCase):
     def test_startup_interrupt_cleans_owned_process_and_preserves_interrupt(self):
         listener=mock.MagicMock(); listener.__enter__.return_value=listener
         listener.getsockname.return_value=('127.0.0.1',12345); listener.fileno.return_value=77
-        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=0
-        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',return_value=process), mock.patch.object(self.m.APIProcess,'request',side_effect=KeyboardInterrupt):
+        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=-15
+        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',side_effect=self.receipt_popen(process)), mock.patch.object(self.m.APIProcess,'request',side_effect=KeyboardInterrupt):
             with self.assertRaises(KeyboardInterrupt):
                 with self.m.APIProcess(URL,NS): pass
         process.terminate.assert_called_once(); process.kill.assert_not_called()
@@ -177,8 +189,8 @@ class APIRehearsalTests(unittest.TestCase):
     def test_startup_system_exit_cleans_owned_process_and_preserves_exit(self):
         listener=mock.MagicMock(); listener.__enter__.return_value=listener
         listener.getsockname.return_value=('127.0.0.1',12345); listener.fileno.return_value=77
-        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=0
-        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',return_value=process), mock.patch.object(self.m.APIProcess,'request',side_effect=SystemExit(2)):
+        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=-15
+        with mock.patch.dict(os.environ,CI,clear=True), mock.patch.object(self.m.socket,'socket',return_value=listener), mock.patch.object(self.m.subprocess,'Popen',side_effect=self.receipt_popen(process)), mock.patch.object(self.m.APIProcess,'request',side_effect=SystemExit(2)):
             with self.assertRaises(SystemExit) as error:
                 with self.m.APIProcess(URL,NS): pass
             self.assertEqual(error.exception.code,2)
@@ -200,6 +212,114 @@ class APIRehearsalTests(unittest.TestCase):
             self.assertEqual(handler.call_count,2)
             self.assertEqual(timer.call_args.args,(self.m.signal.ITIMER_REAL,0))
             self.assertNotIn('SECRET',str(error.exception))
+
+    def test_sigterm_requires_exact_receipt_and_is_accepted(self):
+        api=self.m.APIProcess(URL,NS); api.receipt_read=80
+        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=-15; api.process=process
+        with mock.patch.object(self.m.os,'read',side_effect=[b'S',b'']), mock.patch.object(self.m.os,'close'):
+            api.stop()
+        process.terminate.assert_called_once()
+
+    def test_zero_exit_is_not_graceful_sigterm_evidence(self):
+        api=self.m.APIProcess(URL,NS); api.receipt_read=80
+        process=mock.Mock(); process.poll.return_value=None; process.wait.return_value=0; api.process=process
+        with mock.patch.object(self.m.os,'read',side_effect=[b'S',b'']), mock.patch.object(self.m.os,'close'):
+            with self.assertRaises(self.m.RehearsalError): api.stop()
+
+    def test_with_original_assertion_survives_shutdown_failure(self):
+        api=self.m.APIProcess(URL,NS)
+        original=AssertionError('HTTP scenario assertion')
+        with mock.patch.object(api,'stop',side_effect=self.m.RehearsalError()):
+            self.assertFalse(api.__exit__(AssertionError,original,None))
+        self.assertIn('PG_API_SHUTDOWN_UNCONFIRMED',original.__notes__)
+
+    def test_shutdown_state_requires_drain_lifespan_and_exact_signal(self):
+        server=mock.Mock(started=True,should_exit=True,force_exit=False,_drained=True,
+                         _captured_signals=[15],servers=[mock.Mock()])
+        server.servers[0].is_serving.return_value=False
+        server.server_state.connections=set(); server.server_state.tasks=set()
+        server.lifespan.startup_failed=False; server.lifespan.shutdown_failed=False
+        server.lifespan.error_occured=False; server.lifespan.should_exit=False
+        server.lifespan.startup_event.is_set.return_value=True
+        server.lifespan.shutdown_event.is_set.return_value=True
+        self.assertTrue(self.m.shutdown_complete(server))
+        for target,field,bad in ((server,'_drained',False),(server,'force_exit',True),
+                                 (server,'_captured_signals',[15,15]),(server.lifespan,'shutdown_failed',True),
+                                 (server.lifespan,'error_occured',True)):
+            with self.subTest(field=field):
+                old=getattr(target,field);setattr(target,field,bad)
+                self.assertFalse(self.m.shutdown_complete(server));setattr(target,field,old)
+
+    def test_receipt_missing_extra_or_wrong_exit_always_rejects(self):
+        for code,first,last in ((-15,b'',b''),(-15,b'SX',b''),(-15,b'S',b'X'),
+                                (-9,b'S',b''),(1,b'S',b''),(0,b'S',b'')):
+            with self.subTest(code=code,first=first,last=last):
+                api=self.m.APIProcess(URL,NS);api.receipt_read=80
+                process=mock.Mock();process.poll.return_value=None;process.wait.return_value=code;api.process=process
+                with mock.patch.object(self.m.os,'read',side_effect=[first,last]), mock.patch.object(self.m.os,'close') as close:
+                    with self.assertRaises(self.m.RehearsalError):api.stop()
+                    close.assert_called_once_with(80)
+
+    def test_receipt_read_or_close_uncertainty_rejects_without_retry(self):
+        for read_error in (True,False):
+            api=self.m.APIProcess(URL,NS);api.receipt_read=80
+            process=mock.Mock();process.poll.return_value=None;process.wait.return_value=-15;api.process=process
+            with mock.patch.object(self.m.os,'read',side_effect=BlockingIOError() if read_error else [b'S',b'']) as read, mock.patch.object(self.m.os,'close',side_effect=None if read_error else OSError('SECRET')) as close:
+                with self.assertRaises(self.m.RehearsalError):api.stop()
+                close.assert_called_once_with(80)
+                self.assertIsNone(api.receipt_read)
+
+    def test_early_exit_rejects_even_with_receipt(self):
+        api=self.m.APIProcess(URL,NS);api.receipt_read=80
+        process=mock.Mock();process.poll.return_value=-15;api.process=process
+        with mock.patch.object(self.m.os,'read') as read, mock.patch.object(self.m.os,'close'):
+            with self.assertRaises(self.m.RehearsalError):api.stop()
+            process.terminate.assert_not_called();read.assert_not_called()
+
+    def test_interruption_and_cleanup_failure_preserve_original(self):
+        for original in (KeyboardInterrupt(),SystemExit(2)):
+            api=self.m.APIProcess(URL,NS)
+            with mock.patch.object(api,'stop',side_effect=self.m.RehearsalError()):
+                self.assertFalse(api.__exit__(type(original),original,None))
+            self.assertEqual(original.__notes__,['PG_API_SHUTDOWN_UNCONFIRMED'])
+
+    def test_child_shutdown_only_emits_marker_after_complete_state(self):
+        import ast
+        import asyncio
+        from types import SimpleNamespace
+        class Base:
+            async def _wait_tasks_to_complete(self): pass
+            async def shutdown(self,sockets=None): await self._wait_tasks_to_complete()
+        tree=ast.parse(self.m.BOOTSTRAP)
+        child=next(node for node in tree.body if isinstance(node,ast.ClassDef))
+        out=mock.Mock();out.write.return_value=1
+        complete=mock.Mock(return_value=True)
+        scope={'uvicorn':SimpleNamespace(Server=Base),'shutdown_complete':complete,'receipt_fd':81,'os':out}
+        exec(compile(ast.Module(body=[child],type_ignores=[]),'<fixed-bootstrap>','exec'),scope)
+        server=scope['ObservedServer']()
+        asyncio.run(server.shutdown())
+        self.assertIs(server._drained,True)
+        out.write.assert_called_once_with(81,b'S');out.close.assert_called_once_with(81)
+        with self.assertRaises(RuntimeError):asyncio.run(server.shutdown())
+        self.assertEqual(out.write.call_count,1)
+        out.reset_mock();complete.return_value=False
+        with self.assertRaises(RuntimeError):asyncio.run(scope['ObservedServer']().shutdown())
+        out.write.assert_not_called()
+
+    def test_child_failed_drain_never_emits_receipt(self):
+        import ast
+        import asyncio
+        from types import SimpleNamespace
+        class Base:
+            async def _wait_tasks_to_complete(self): raise TimeoutError('mock drain')
+            async def shutdown(self,sockets=None): await self._wait_tasks_to_complete()
+        child=next(node for node in ast.parse(self.m.BOOTSTRAP).body if isinstance(node,ast.ClassDef))
+        out=mock.Mock()
+        scope={'uvicorn':SimpleNamespace(Server=Base),'shutdown_complete':mock.Mock(return_value=True),'receipt_fd':81,'os':out}
+        exec(compile(ast.Module(body=[child],type_ignores=[]),'<fixed-bootstrap>','exec'),scope)
+        server=scope['ObservedServer']()
+        with self.assertRaises(TimeoutError):asyncio.run(server.shutdown())
+        self.assertIs(server._drained,False);out.write.assert_not_called()
 
     def test_import_has_no_execution_entrypoint(self):
         source=SCRIPT.read_text()
