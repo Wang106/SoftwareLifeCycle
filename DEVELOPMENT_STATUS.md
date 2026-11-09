@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-09（UTC+8）PR209离线SQL百分号转义修正
+
+PR209 head `37d6cbb`的[CI42644528445](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42644528445)实际3501通过、1失败：生成SQL正例子进程exit1。PG日志15:32:51明确报deployment_actual_baselines%%ROWTYPE语法错误；32宽反例实际报value too long(32)，未将旧失败重判为通过。
+
+官方Alembic1.14模板本身采用offline dialect_opts={paramstyle:named}；SQLAlchemy2.0.36默认pyformat会将源码中的%编译为%%。具体通知等待后，固化无DB参数合同先1失败9对照通过，再只在offline configure加入named，保留online函数、29迁移和ConfigParser URL百分号转义，不对SQL产物做替换。真实生成回归新增单%ROWTYPE存在、%%ROWTYPE禁止；同步env来源SHA与固定manifest整体SHA，120事实和严格来源校验不变。
+
+当前环境read-only，编辑及需要临时文件的无DB/mock测试均走正规require_escalated并获执行许可，没有通过换路径绕过；本机仍缺Alembic/SQLAlchemy/psycopg，真实SQL生成和PG本地未跑。修正后10集中、640全离线、52自动化、126守卫及内存编译/进度/diff通过。独立复审无新阻断：另15项只读检查通过，确认online AST/29迁移/120事实不变、来源摘要绑定正确。尚未上传；新精确CI仍待运行，不重跑旧候选或削弱门禁。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。不触碰公司/旧库、不改权限、不增费用。下一步独立复审、原PR发布修正并核验新head完整CI。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）离线SQL版本列兼容候选
 
 基于PR208已合并main `3f34222734634f6a86ee4d83bebc91c7e4877221`，开放PR为0，独立`fix/offline-sql-version-width`保留其他工作区。基线[CI42624219335](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42624219335)完整成功；Actions deployment42626540037与continuation42626540008均skipped，不当作部署成功。本候选没有新provider验证。
