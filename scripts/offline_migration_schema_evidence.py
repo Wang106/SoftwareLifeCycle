@@ -15,7 +15,7 @@ MAX_STRING = 512
 EVIDENCE_FORMAT = 'slc-offline-migration-schema-evidence-v1'
 CHECKLIST = '0029-core-history-subset-v1'
 MANIFEST_PATH = Path(__file__).resolve().parents[1] / 'deploy/offline/migration-schema-0029.json'
-MANIFEST_SHA256 = '937e47d83a6d462e36c458564a84c0c80b8f832882b1ab003f4dc58c56eac8de'
+MANIFEST_SHA256 = '849afb5dcb0ba2a0ce2cb8c5a23a5b100ba254104d0ea86c9baff05834414184'
 LIMITATIONS = (
     'Offline comparison of untrusted, self-reported evidence for a fixed subset only. '
     'A fabricated or stale document can match. No database connection, collector, '
@@ -158,9 +158,22 @@ def expected_facts():
     if hashlib.sha256(payload).hexdigest() != MANIFEST_SHA256:
         raise Rejected()
     manifest = decode(payload)
-    if (type(manifest) is not dict or manifest.get('format') != 'slc-offline-migration-schema-manifest-v1'
-            or manifest.get('checklist') != CHECKLIST or type(manifest.get('facts')) is not dict):
+    keys = {'format', 'checklist', 'facts_baseline_commit', 'repository_file_sha256', 'facts'}
+    paths = {'backend/alembic/env.py', 'backend/alembic/versions/0001_core_and_snapshot.py',
+             'backend/alembic/versions/0024_release_customer_scope.py',
+             'backend/alembic/versions/0029_changeover_batch_history.py'}
+    if (type(manifest) is not dict or set(manifest) != keys
+            or manifest['format'] != 'slc-offline-migration-schema-manifest-v2'
+            or manifest['checklist'] != CHECKLIST
+            or manifest['facts_baseline_commit'] != '44e307a71a22f93f8c2ae611cf10678b0420499f'
+            or type(manifest['facts']) is not dict
+            or type(manifest['repository_file_sha256']) is not dict
+            or set(manifest['repository_file_sha256']) != paths):
         raise Rejected()
+    for digest in manifest['repository_file_sha256'].values():
+        if (type(digest) is not str or len(digest) != 64
+                or any(char not in '0123456789abcdef' for char in digest)):
+            raise Rejected()
     return manifest['facts']
 
 
