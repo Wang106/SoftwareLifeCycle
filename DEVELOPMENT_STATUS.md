@@ -1,3 +1,15 @@
+## 当前检查点 — 2026-11-09（UTC+8）真实PG支持的只读API启动回归准备
+
+模式：Codex / ChatGPT Work。正常fetch核对PR205合并main `08dae2b6ca91a3d3b53843ac99725e3ce7a178b5`，新建`feat/offline-pg-api-rehearsal`，旧工作区不动。[main CI42573548616](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42573548616)完整成功：3451后端＋2577子测试、304项PG零跳过、801.62秒；Cloudflare同提交build `782ba41b-c50c-4bf2-9d63-2e3094c0eb09` / version `51deffef-2460-470c-a759-c63de61c18a2`成功，Actions deployment42575032634和continuation42575032696均skipped，Render未核验。以上为基线，不能冒充本候选CI。
+
+本包新增固定CI-only源码API进程/HTTP助手、纯mock与2项真实PG回归准备、说明，不修改生产源码/迁移/依赖/workflow/门禁。复用现有CI精确loopback自有数据库和随机schema，原0001→0029迁移；API只用本次schema及默认只读新连接。父进程绑定127.0.0.1随机socket并传FD，固定uvicorn单进程、-I和空cwd/环境白名单，无生产entrypoint或启动迁移。正确schema验证ready200、空目录、业务403/身份401及退出后有限目录/4表计数不变；第二自有空schema验证ready503、目录500、无新表。CI角色仍有较高权限，不冒充SELECT-only身份、镜像或公司部署验收。
+
+首批12项缺能力回归全部先失败后实现。自查HTTP总截止缺口，具体通知等待后新增3项先错误再补SIGALRM整段截止；独立初审发现启动期中断绕过清理，具体通知等待后新增2项先失败再补BaseException清理并保留中断语义，文档准确披露退出不确定时fixture仍可能清理自有schema。复审再发现timer取消失败跳过handler恢复，具体通知等待后新增2项先错误再以嵌套finally保证单次恢复尝试，任何失败固定拒绝且不重试。最终23集中、617全离线零跳过、52自动化、126守卫及Python编译通过，最终独立复审通过无新阻断：另行将四个signal函数全部mock后23项通过。原本地套件API/HTTP/PG及子进程启动均mock，但部分用例确实短暂设置/取消当前测试进程timer；没有真实API、DB连接、网络监听或uvicorn子进程运行。只运行mock/静态检查，未本地连接PG、执行DDL、启动API/监听器、下载依赖或触发手动演练。2项真实PG/HTTP案例只准备；上传和完整CI需该包具体批准，历史被拒前端命令未重试。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步取得本包上传/真实CI明确批准后正常PR/CI；离线迁移镜像、最小权限角色、真实网络隔离、恢复与公司安装仍是单独边界。详见[PG支持的只读API回归](docs/offline-pg-api-rehearsal.md)。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）PG16有限目录采集与映射准备
 
 模式：Codex / ChatGPT Work。正常fetch核对PR204合并main `1e2f0f6ecb34ac7b35da52c0e84938e5d1d3a46c`，新建`feat/offline-pg-catalog-evidence`，原工作区保持不动。父任务核验[main CI42569169065](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42569169065)全部成功；Cloudflare同提交build `47ed764b-a1bd-470d-8661-a5bc2682f407` / version `678f32d0-e0ea-41d8-aa00-c1d1d1e58c04`成功，Actions deployment42570452211和continuation42570452204均skipped，Render本次未核验。这些是基线，不是本候选CI。
