@@ -5184,3 +5184,20 @@ PR201已保护合并main `fde3270d1248514c827b2fd377696348e2d56a84`；本包正�
 业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步完成独立审查及本地阻断核对，正常精确候选CI，之后才考虑另行获准的独立迁移镜像真实构建/空库迁移包。详见[迁移工具边界](docs/offline-migration-tool.md)。
 
 ---
+
+
+## 2026-11-09 Offline migration image rehearsal
+
+## 当前检查点 — 2026-11-09（UTC+8）独立迁移镜像演练准备
+
+PR202已保护合并main `65e2b90e016f1d8c571cf7269cdf1017046db49e`；正常fetch核对后建立`feat/offline-migration-image-rehearsal`。[main CI42541454395](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42541454395)成功：3357后端＋1516子测试、296项PostgreSQL零跳过（836秒）、2116前端、8＋16严格浏览器，签名Chrome157、sandbox=true及汇总门禁。Cloudflare同提交build `480f3fed-e0e1-4a74-80bf-ffbbfb0ee5f1` / version `00907107-816f-4fb5-a872-f30367768f51`成功；Render `dep-dbohctp42hec73deiqcg` update_failed，不称后端恢复。这些是父任务核验的基线，不是当前候选CI。
+
+既有手动42536231169（export=true/API=true）和42536267359（export=false/API=true）均在精确fde3270d1248514c827b2fd377696348e2d56a84成功，不等于迁移镜像或DB迁移成功。本包仅新增独立workflow/协调器/回归/说明及四份维护检查点，不改变旧api/web严格双角色协议、Dockerfile、生产源码、迁移、依赖或安全门禁。
+
+未来获准手动流程使用同次真实prepare成功回执与独立verify、精确BUILD_SOURCES和受控tar输入，固定官方30 wheel及Python基础镜像；精确iid和独立schema通过后，顺序验证默认退出1及固定依赖/源码探针。探针不import app/env.py、不执行Alembic/SQL、不连接DB；各自network=none、nonroot、只读根和资源限制，凭本次CID/随机拥有权清理。共享55分钟软/60分钟硬及两处20GiB前置；不上传制品、不使用付费runner、不保证同UID攻击防护或精确base层流量。Docker超时可能仍有daemon工作，失败/中断/清理不确定均不重试或扩大删除。
+
+先14项能力缺失全部失败，再实现；初版31集中、539全离线零跳过、52自动化、126守卫及静态检查通过。独立审查发现源码及tar同步阶段缺少整段共享时限，新增2项回归先失败；具体通知并等待后，新驱动加受信有界子进程及构建前后hash逐块deadline，修后39集中、547全离线零跳过、52自动化、126守卫和Python/JSON/YAML/bash语法、进度/diff检查通过，独立复审待完成。实际合成本地Git、context tar和有界Python子进程有验证，所有下载/Docker/探针调用均mock。首次一项测试因合成fixture未清除宿主代理触发原保护，已仅修正mock环境。未提交/上传、无本候选CI。上一包本地前端npm test被平台拒绝，本包不重试或换入口绕过，完整前端/后端/真实PG/严格浏览器待精确CI。未下载实际输入、构建镜像、启动容器或执行数据库。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步完成本包独立审查与精确候选CI；实际官方输入获取、构建、两个隔离容器及本次清理以后另行明确批准。数据库/SQL/角色权限、物理断网、恢复和公司部署仍是后续独立边界。详见[独立迁移镜像演练](docs/offline-migration-image-rehearsal.md)。
+
+---
