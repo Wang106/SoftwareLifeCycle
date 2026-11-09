@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { Localized } from './localized';
 import { apiGet } from '../lib/api';
+import { PageLoading } from './page-loading';
 
 type Kind = 'changes' | 'issues';
 type Row = { id: string; title: string; scope: string; status: string; request_no?: string;
@@ -9,7 +11,7 @@ type Catalog = { kind: Kind; total: number; limit: number; offset: number;
   next_offset: number | null; items: Row[]; in_verification?: number; ready_for_release?: number };
 export type CatalogSearch = Record<string, string | string[] | undefined>;
 
-export default async function ChangeIssueCatalog({kind, search}: {kind: Kind; search: CatalogSearch}) {
+export default function ChangeIssueCatalog({kind, search}: {kind: Kind; search: CatalogSearch}) {
   const changes = kind === 'changes';
   const keys = ['q', 'status', 'scope', 'limit', 'offset', ...(changes ?
     ['source', 'change_type', 'software_id', 'customer_id', 'project_id'] : ['severity'])];
@@ -18,11 +20,7 @@ export default async function ChangeIssueCatalog({kind, search}: {kind: Kind; se
     const value = search[key];
     if (value !== undefined) query.set(key, typeof value === 'string' ? value : 'invalid');
   }
-  const response = await apiGet<Catalog>(`/api/v1/change-catalog/${changes ? 'requests' : 'issues'}?${query}`);
-  const data = response?.kind === kind ? response : null;
   const path = `/${kind}`;
-  const first = new URLSearchParams(query); first.delete('offset');
-  const next = new URLSearchParams(query); if (data?.next_offset != null) next.set('offset', String(data.next_offset));
   return <Localized>
     <div className="top"><div><div className="eyebrow"><Localized>{changes ? 'CHANGE CONTROL' : 'QUALITY & IMPACT'}</Localized></div>
       <h1><Localized>{changes ? 'Software Change Requests' : 'Issues'}</Localized></h1><p className="muted"><Localized>{changes ?
@@ -40,10 +38,30 @@ export default async function ChangeIssueCatalog({kind, search}: {kind: Kind; se
         <input type="hidden" key={key} name={key} value={query.get(key)!}/>)}
       <button type="submit"><Localized>{'Filter'}</Localized></button> <Link href={path}><Localized>{'Reset'}</Localized></Link>
     </form></section>
-    <div className="summary"><div><b>{data?.total ?? '—'}</b><span><Localized>{changes ? 'Matching SCR' : 'Matching issues'}</Localized></span></div>
+    <Suspense key={`${kind}:${query}`} fallback={<><CatalogSummary changes={changes} data={null}/><PageLoading/></>}>
+      <CatalogData kind={kind} query={query.toString()}/>
+    </Suspense>
+  </Localized>;
+}
+
+function CatalogSummary({changes, data}: {changes: boolean; data: Catalog | null}) {
+  return <Localized><div className="summary"><div><b>{data?.total ?? '—'}</b><span><Localized>{changes ? 'Matching SCR' : 'Matching issues'}</Localized></span></div>
       {changes && <><div><b>{data?.in_verification ?? '—'}</b><span><Localized>{'In Verification'}</Localized></span></div>
         <div><b>{data?.ready_for_release ?? '—'}</b><span><Localized>{'Ready for Release'}</Localized></span></div></>}
-    </div>
+    </div></Localized>;
+}
+
+async function CatalogData({kind, query}: {kind: Kind; query: string}) {
+  const changes = kind === 'changes';
+  // Keep the page shell independent of this read, including a stalled body.
+  // Only these two catalogs opt in; no global timeout or retry policy changes.
+  const response = await apiGet<Catalog>(`/api/v1/change-catalog/${changes ? 'requests' : 'issues'}?${query}`, {timeoutMs: 15000});
+  const data = response?.kind === kind ? response : null;
+  const path = `/${kind}`;
+  const first = new URLSearchParams(query); first.delete('offset');
+  const next = new URLSearchParams(query); if (data?.next_offset != null) next.set('offset', String(data.next_offset));
+  return <Localized>
+    <CatalogSummary changes={changes} data={data}/>
     {data ? <section className="panel tablewrap"><p className="muted"><Localized>{'Counts cover all filtered records.'}</Localized> <Localized>{'Records on this page'}</Localized>: {data.items.length}</p>
       <table><thead><tr><th><Localized>{changes ? 'SCR' : 'Issue'}</Localized></th><th><Localized>{'Title'}</Localized></th>
         {changes && <th><Localized>{'Source'}</Localized></th>}<th><Localized>{'Scope'}</Localized></th>
@@ -54,6 +72,8 @@ export default async function ChangeIssueCatalog({kind, search}: {kind: Kind; se
         </tr>)}</tbody></table>
       {!data.items.length && <p className="muted"><Localized>{'No matching records on this page.'}</Localized></p>}
       <p><Link href={`${path}?${first}`}><Localized>{'First page'}</Localized></Link> {data.next_offset !== null && <Link href={`${path}?${next}`}><Localized>{'Next page →'}</Localized></Link>}</p>
-    </section> : <section className="panel"><h2><Localized>{changes ? 'Change catalog unavailable' : 'Issue catalog unavailable'}</Localized></h2><p className="muted"><Localized>{'The API is unavailable or a filter is invalid.'}</Localized></p></section>}
+    </section> : <section className="panel"><h2><Localized>{changes ? 'Change catalog unavailable' : 'Issue catalog unavailable'}</Localized></h2><p className="muted"><Localized>{'The API is unavailable or a filter is invalid.'}</Localized></p>
+      <p><a href={query ? `${path}?${query}` : path}><Localized>{changes ? 'Read changes again' : 'Read issues again'}</Localized></a></p>
+    </section>}
   </Localized>;
 }

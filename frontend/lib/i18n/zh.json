@@ -7,6 +7,8 @@
   "Dashboard data unavailable. Try reading again later.": "仪表盘数据暂不可用，请稍后重新读取。",
   "Live dashboard unavailable": "实时仪表盘暂不可用",
   "Read projects again": "重新读取项目",
+  "Read changes again": "重新读取变更",
+  "Read issues again": "重新读取问题",
   "Governance observation unavailable": "治理状态暂无法确认",
   "The exact target or a valid governance response could not be confirmed. No active authority is inferred.": "未能确认精确对象或有效治理响应，不能据此认定许可有效。",
   "Release-chain governance": "发布链治理",

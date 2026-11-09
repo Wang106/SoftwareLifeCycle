@@ -10,8 +10,12 @@ const REQUIRED_TITLES = Object.freeze([
   'navigation after the first background admission revokes the remaining queue',
   'project catalog header stall becomes unavailable; native retry preserves the exact query',
   'project catalog body stall becomes unavailable; native retry preserves the exact query',
+  'change catalog header stall preserves shell; native retry and newer navigation stay isolated',
+  'change catalog body stall preserves shell; native retry and newer navigation stay isolated',
+  'issue catalog header stall preserves shell; native retry and newer navigation stay isolated',
+  'issue catalog body stall preserves shell; native retry and newer navigation stay isolated',
 ]);
-const REQUIRED_FILES = Object.freeze(Object.fromEntries(REQUIRED_TITLES.map((title, index) => [title, index < 2 ? 'readonly.spec.ts' : index < 6 ? 'page-loading.spec.ts' : 'project-catalog.spec.ts'])));
+const REQUIRED_FILES = Object.freeze(Object.fromEntries(REQUIRED_TITLES.map((title, index) => [title, index < 2 ? 'readonly.spec.ts' : index < 6 ? 'page-loading.spec.ts' : index < 8 ? 'project-catalog.spec.ts' : 'change-issue-catalog.spec.ts'])));
 const MAX_REPORT_BYTES = 5 * 1024 * 1024;
 const FAILURE = 'Browser acceptance report is missing, invalid or incomplete.';
 function requireValue(condition) { if (!condition) throw new Error(FAILURE); }
@@ -21,7 +25,7 @@ function validateBrowserReport(report) {
   requireValue(object(report) && object(report.config) && object(report.stats));
   requireValue(Array.isArray(report.errors) && report.errors.length === 0);
   const { stats, config } = report;
-  requireValue(stats.expected === 8 && stats.unexpected === 0 && stats.flaky === 0 && stats.skipped === 0);
+  requireValue(stats.expected === 12 && stats.unexpected === 0 && stats.flaky === 0 && stats.skipped === 0);
   requireValue(timestamp(stats.startTime) && Number.isFinite(stats.duration) && stats.duration > 0);
   requireValue(config.forbidOnly === true && Array.isArray(config.projects) && config.projects.length === 1);
   requireValue(config.shard == null && (!Array.isArray(config.argv) || !config.argv.includes('--list')));
@@ -55,7 +59,7 @@ function validateBrowserReport(report) {
   }
   suites(report.suites, 0);
   requireValue(found.size === REQUIRED_TITLES.length);
-  return { tests: 8, passed: 8, skipped: 0, retried: 0, project: 'chromium' };
+  return { tests: 12, passed: 12, skipped: 0, retried: 0, project: 'chromium' };
 }
 function readBrowserReport(filename) {
   const fd = fs.openSync(filename, 'r');
@@ -76,7 +80,7 @@ if (require.main === module) {
   try {
     requireValue(process.argv.length <= 3);
     readBrowserReport(process.argv[2] || path.resolve(__dirname, '../browser-results/results.json'));
-    console.log('Browser acceptance: 8 required Chromium journeys passed; zero skips, failures or retries.');
+    console.log('Browser acceptance: 12 required Chromium journeys passed; zero skips, failures or retries.');
   } catch {
     console.error(FAILURE);
     process.exitCode = 1;

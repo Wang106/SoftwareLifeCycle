@@ -128,3 +128,36 @@ test('project opt-in preserves redirect denial and strips redirect headers even 
   }
  }
 });
+
+const changeQuery='q=A+%26+B&status=IN_VERIFICATION&scope=STANDARD&limit=10&offset=20&source=INTERNAL&change_type=ENHANCEMENT&software_id=software-one&customer_id=customer-one&project_id=project-one';
+const issueQuery='q=A+%26+B&status=OPEN&scope=STANDARD&limit=10&offset=20&severity=HIGH';
+for(const [kind,query] of [['changes',changeQuery],['issues',issueQuery]]){
+ const options=Object.freeze({changeIssueCatalogQuery:query}),page='/'+kind+'?'+query,first=page.replace('&offset=20','');
+ test(kind+' query opt-in adds only the fixed page/first-page serializations',()=>{
+  for(const path of [page,first,first+'&offset=20',page+'&_rsc=fixture_1-X',first+'&_rsc=fixture',first+'&offset=20&_rsc=fixture']){
+   assert.equal(allowedPath(path),false);assert.equal(allowedPath(path,options),true);
+  }
+  for(const path of [page+'&extra=1',page+'&q=A+%26+B',page+'&_rsc=',page+'&_rsc=one&_rsc=two',page.replace('A+%26+B','A%20%26%20B'),page.replace('offset=20','offset=21'),page.replace('limit=10','limit=50'),page+'#fragment','/'+(kind==='changes'?'issues':'changes')+'?'+query,projectPage,'/auth/session','/api/v1/change-catalog/requests?'+query,'//outside.invalid'+page,'https://outside.invalid'+page]){
+   assert.equal(allowedPath(path,options),false,path);
+  }
+  assert.equal(allowedPath('/projects',options),true);
+ });
+ test(kind+' opt-in streams without buffering and rejects unauthorized paths before upstream',{timeout:10000},async()=>{
+  let finish;const hits=[];const upstream=http.createServer((req,res)=>{hits.push(req.url);res.writeHead(200);res.write('SHELL');finish=()=>res.end('DATA');});
+  const origin=await listen(upstream);let proxy;
+  try{
+   proxy=await startStreamingProxy(origin,options);
+   const response=await fetch(proxy.origin+page,{signal:AbortSignal.timeout(3000)}),reader=response.body.getReader();
+   assert.equal(new TextDecoder().decode((await reader.read()).value),'SHELL');finish();
+   assert.equal(new TextDecoder().decode((await reader.read()).value),'DATA');assert.equal((await reader.read()).done,true);
+   for(const [url,init] of [[page+'&unexpected=1',{}],[projectPage,{}],[page,{method:'POST'}]])assert.equal((await fetch(proxy.origin+url,{...init,signal:AbortSignal.timeout(3000)})).status,400);
+   assert.deepEqual(hits,[page]);assert.deepEqual(proxy.violations,Array(3).fill('rejected_request'));
+  }finally{try{if(proxy)await proxy.close();}finally{await closeServer(upstream);}}
+ });
+}
+test('change/issue opt-in rejects arbitrary policy expansions before listening',async()=>{
+ for(const options of [{changeIssueCatalogQuery:''},{changeIssueCatalogQuery:changeQuery+'&extra=1'},{changeIssueCatalogQuery:issueQuery,extra:true},{changeIssueCatalogQuery:changeQuery,projectCatalogQuery:PROJECT_CATALOG_QUERY}]){
+  assert.throws(()=>allowedPath('/changes?'+changeQuery,options),/fixed_change_issue_catalog_query_required/);
+  await assert.rejects(startStreamingProxy('http://127.0.0.1:1',options),/fixed_change_issue_catalog_query_required/);
+ }
+});
