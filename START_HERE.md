@@ -1,3 +1,17 @@
+## 当前检查点 — 2026-11-09（UTC+8）标准发布目录父子分层加载候选
+
+基线为已合并[PR207](https://github.com/Wang106/SoftwareLifeCycle/pull/207)的main `7549f846cf9c65da589004eea802c8340f2a6abb`，开放PR为0，正常fetch后新建独立分支`fix/standard-release-shell`，未重复开发。[main CI42596292860](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42596292860)完整成功：后端3486＋2592子测试、306项PG零跳过，前端2192，真实Next12＋组件16；Cloudflare生产build `eb319c93-e130-4448-82d1-8466b4504964`/version `688b730a-df49-47dc-8c4a-87388ead4245`成功。continuation42596902428为skipped，独立Actions deploy本次未观察到运行；Render最新仍PR206 update_failed，不能称后端恢复。以下旧候选未发表段落保留为历史，实际合并及验收以本记录为准。
+
+四种无网络实际源码流探针确认标准目录仍被父列表/子batch响应头或正文阻塞，标题与已知父内容一起等待；PR185两HTTP/最多五SQL批量优化保留。本包只拆标准目录：标题筛选先出，父数据就绪即显示真实统计、供应商分组/SSR摘要与父分页；关联区域局部Suspense只等同一个batch Promise及一次严格校验。未知/失败为“—”或明确不可用，不造0；七键原生重读及父子分页原语义保留。本页框架Link显式关闭预取，不改全站策略或扩大fixture白名单。
+
+父请求显式15000ms响应头/正文额度，子只拿扣除父经过时间后的余额，耗尽不请求；现有apiGet在Next connection之后才开timer，因此不承诺包含框架连接、SSR调度/传输的端到端15秒，不改共享API。首页真实provider组合探针及16项既有回归未发现业务API挡壳，首页冷打开只继续阶段测量，不猜测归因或修改。
+
+核心初始14项13失败1对照通过，后预取回归单项先失败；fixture/report6项先失败。分页fixture另查出跳页/重复ID证据缺口，6项新合同用例先4失败2对照通过；修为total12/limit10、首页10项next10及末页2项、父子ID独立且batch/late关系一致，旧offset20路径拒绝，四条旅程同步核对。最终456项定向前端、TypeScript、52项自动化、126项CI守卫及diff/进度检查通过。旧layout/filter断言完整保留，仅适配async子组件最终态渲染；新核心另用真实React流。核心独立终审33项与并发探针、浏览器证据最终复审131项及分页/边界探针通过无阻断；本次结论取代漏查分页合同的初审。保留原12条Next并新增4条，严格目标16条Next＋16条组件，签名/sandbox/零重试跳过/汇总不降低。完整前端、构建、实际新浏览器和本候选CI未跑，历史受限本地npm/网络操作未重试。候选尚未提交/上传。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步正常受控发布并核验精确候选CI，再分别核验main/provider及线上分层状态；不触碰旧库、配置、凭据或费用。详见[标准目录加载说明](docs/standard-release-loading.md)。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）变更与问题目录首屏拆分，已对齐PR206 main
 
 已只读核验PR206合并main `4a94e58f3d46f5b3b0f4ae360a4e2a3717bc75ed`，开放PR为0；正常fetch及fast-forward完成，无路径冲突，原13个页面候选文件哈希保持一致，未重复开发。首次对齐检查时[main CI42583155855](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42583155855)及Cloudflare生产build `06687855-9631-4195-a2aa-30cb595a1f9f`仍在运行；发布前再次复核：后端/PostgreSQL、前端CI、严格浏览器与CI acceptance全部成功，Cloudflare构建成功；Actions deploy/wake均为skipped。这些是基线状态，不能冒充当前候选通过。以下较旧PR206“待发布/未验证”段落保留为历史，合并状态以本记录为准；Render本次未核验。

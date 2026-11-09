@@ -9,7 +9,7 @@ const { validateBrowserReport, readBrowserReport, REQUIRED_TITLES, REQUIRED_FILE
 const cli = path.resolve(__dirname, '../scripts/check-browser-report.cjs');
 function fixture() {
   return { config: { forbidOnly: true, projects: [{ id: 'chromium', name: 'chromium', retries: 0, repeatEach: 1 }] },
-    errors: [], stats: { expected: 12, unexpected: 0, flaky: 0, skipped: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 1000 },
+    errors: [], stats: { expected: 16, unexpected: 0, flaky: 0, skipped: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 1000 },
     suites: [{ title: 'readonly.spec.ts', specs: REQUIRED_TITLES.map(title => ({ title, file: REQUIRED_FILES[title], ok: true,
       tests: [{ projectId: 'chromium', projectName: 'chromium', expectedStatus: 'passed', status: 'expected', results: [{
         status: 'passed', retry: 0, workerIndex: 0, parallelIndex: 0, startTime: '2026-10-28T00:00:00.000Z', duration: 100, errors: [], annotations: [{ type: 'browser-engine', description: 'chromium' },
@@ -18,10 +18,10 @@ function fixture() {
     })) }] };
 }
 function first(report) { return report.suites[0].specs[0].tests[0]; }
-test('synthetic complete JSON validates all twelve exact journeys, including nested suites', () => {
+test('synthetic complete JSON validates all sixteen exact journeys, including nested suites', () => {
   const value = fixture(); const specs = value.suites[0].specs; value.suites[0].specs = [];
   value.suites[0].suites = [{ specs }];
-  assert.deepEqual(validateBrowserReport(value), { tests: 12, passed: 12, skipped: 0, retried: 0, project: 'chromium' });
+  assert.deepEqual(validateBrowserReport(value), { tests: 16, passed: 16, skipped: 0, retried: 0, project: 'chromium' });
 });
 for (const [name, change] of [
   ['empty suites', r => { r.suites = []; }], ['missing journey', r => r.suites[0].specs.pop()],
@@ -77,7 +77,7 @@ test('bounded CLI requires real report file, redacts all malformed content and a
       assert.ok(!result.stderr.includes('PRIVATE_SECRET') && !result.stderr.includes(directory));
     }
     fs.writeFileSync(filename, JSON.stringify(fixture()));
-    assert.equal(readBrowserReport(filename).passed, 12);
+    assert.equal(readBrowserReport(filename).passed, 16);
     assert.equal(spawnSync(process.execPath, [cli, filename], { encoding: 'utf8' }).status, 0);
     assert.equal(spawnSync(process.execPath, [cli, filename+'-missing'], { encoding: 'utf8' }).status, 1);
     assert.throws(() => readBrowserReport(directory));
@@ -121,13 +121,13 @@ test('old eight-journey evidence cannot pass change and issue timeout acceptance
   }
 });
 test('four change and issue timeout journeys have fixed titles and source', () => {
-  assert.deepEqual(REQUIRED_TITLES.slice(8), [
+  assert.deepEqual(REQUIRED_TITLES.slice(8, 12), [
     'change catalog header stall preserves shell; native retry and newer navigation stay isolated',
     'change catalog body stall preserves shell; native retry and newer navigation stay isolated',
     'issue catalog header stall preserves shell; native retry and newer navigation stay isolated',
     'issue catalog body stall preserves shell; native retry and newer navigation stay isolated',
   ]);
-  for (const title of REQUIRED_TITLES.slice(8)) assert.equal(REQUIRED_FILES[title], 'change-issue-catalog.spec.ts');
+  for (const title of REQUIRED_TITLES.slice(8, 12)) assert.equal(REQUIRED_FILES[title], 'change-issue-catalog.spec.ts');
 });
 for (const index of [8, 9, 10, 11]) {
   test('requires change/issue timeout journey ' + index + ' and its exact source', () => {
@@ -146,3 +146,6 @@ for (const index of [8, 9, 10, 11]) {
     assert.throws(() => validateBrowserReport(value));
   });
 }
+
+test('old twelve journeys cannot pass the standard release gate',()=>{for(const count of [12,16]){const value=fixture();value.stats.expected=count;value.suites[0].specs=value.suites[0].specs.slice(0,12);assert.throws(()=>validateBrowserReport(value));}});
+for(const index of [12,13,14,15])for(const mode of ['missing','source','skip','retry','flaky'])test('standard journey '+index+' rejects '+mode,()=>{const v=fixture(),s=v.suites[0].specs[index];if(mode==='missing')v.suites[0].specs.splice(index,1);if(mode==='source')s.file='change-issue-catalog.spec.ts';if(mode==='skip')s.tests[0].status='skipped';if(mode==='retry')s.tests[0].results[0].retry=1;if(mode==='flaky')s.tests[0].status='flaky';assert.throws(()=>validateBrowserReport(v));});

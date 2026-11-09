@@ -6,7 +6,7 @@ const os=require('node:os');
 const {execFileSync}=require('node:child_process');
 const ts=require('typescript');
 const React=require('react');
-const {renderToStaticMarkup}=require('react-dom/server');
+const {renderToReadableStream}=require('react-dom/server');
 let tmp, localized;
 before(()=>{
   tmp=fs.mkdtempSync(path.join(os.tmpdir(),'slc-catalog-filters-'));
@@ -19,10 +19,12 @@ async function render(kind,search={},locale='en',response){
   const calls=[];
   const standard=kind==='standard';
   const filename=standard?'components/supplier-release-catalog.tsx':'components/release-catalog.tsx';
-  const code=ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
+  function load(file){
+  const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
   const m={exports:{}};
   new Function('require','module','exports',code)(name=>{
     if(name==='next/link')return ({href,children})=>React.createElement('a',{href},children);
+    if(name.endsWith('/page-loading'))return load('components/page-loading.tsx');
     if(name.endsWith('/localized'))return localized;
     if(name.endsWith('/api'))return {apiGet:async url=>{
       calls.push(url);
@@ -36,9 +38,11 @@ async function render(kind,search={},locale='en',response){
       return {release_id:'s1',total:11,next_offset:10,items:[]};
     }};
     return require(name);
-  },m,m.exports);
-  const page=await m.exports.default(standard?{search}:{kind,search});
-  const html=renderToStaticMarkup(React.createElement(localized.LanguageProvider,{initialLocale:locale},page));
+  },m,m.exports);return m.exports;
+  }
+  const page=await load(filename).default(standard?{search}:{kind,search});
+  const stream=await renderToReadableStream(React.createElement(localized.LanguageProvider,{initialLocale:locale},page));
+  await stream.allReady;const html=await new Response(stream).text();
   const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replaceAll('&amp;','&'));
   return {html,links,calls};
 }

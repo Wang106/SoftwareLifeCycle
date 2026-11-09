@@ -2460,5 +2460,8 @@
   "PRINCIPAL": "身份",
   "Loading page data": "正在加载页面数据",
   "The page is ready to navigate. Data will appear when the server responds.": "页面已可导航，服务器响应后将补齐数据。",
+  "Reading application releases": "正在读取关联应用版本",
+  "Read application releases again": "重新读取关联应用版本",
+  "Read standard releases again": "重新读取标准版本",
   "Read dashboard again": "重新读取仪表板"
 }
