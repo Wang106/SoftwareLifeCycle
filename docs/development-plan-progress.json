@@ -11,13 +11,13 @@
     "previous_finite_plan_total_packages": 8,
     "package": "standard-release-catalog-loading",
     "branch": "fix/standard-release-shell",
-    "state": "local_layered_loading_and_independent_reviews_passed_unpublished",
+    "state": "PR208_initial_browser_failed_disclosure_test_fix_local_and_independent_review_passed",
     "evidence": "docs/standard-release-loading.md",
     "selected_scope": "standard_directory_shell_parent_and_shared_batch_suspense_remaining_read_allowance_native_retry_no_prefetch",
-    "current_pr_ci": "not_committed_or_published_no_candidate_CI",
+    "current_pr_ci": "PR208_CI42617261863_frontend_2265_and_build_passed_browser_14_pass_2_fail_components_not_run_corrected_head_CI_pending",
     "current_main_ci": "baseline_7549f846_CI42596292860_complete_success_not_candidate",
     "current_deployment": "baseline_Cloudflare_eb319c93_version_688b730a_success_Render_PR206_update_failed_not_candidate_health",
-    "next_package": "normal_authorized_publication_exact_candidate_CI_then_main_provider_and_readonly_UI",
+    "next_package": "same_PR_disclosure_fix_publication_exact_CI_then_protected_merge_and_main_provider_checks",
     "previous_checkpoint": {
       "owner": "current_ChatGPT_Work_cloud_task",
       "business_acceptance_increment": 0,
@@ -1167,7 +1167,7 @@
       "prefetch_regression_failed_before_fix": 1,
       "fixture_report_regressions_failed_before_support": 6,
       "core_tests_passed": 15,
-      "targeted_frontend_tests_passed": 456,
+      "targeted_frontend_tests_passed": 464,
       "failed_skipped_cancelled": 0,
       "automation_tests_passed": 52,
       "CI_contract_tests_passed": 126,
@@ -1178,13 +1178,17 @@
       "browser_evidence_independent_review": "final_rereview_passed_131_mock_report_tests_and_pagination_boundary_probes_supersedes_initial_missed_pagination_gap",
       "Next_browser_journeys_required": 16,
       "component_browser_journeys_required": 16,
-      "actual_candidate_browser": "not_run",
-      "full_frontend_and_build": "not_run_local_full_suite_restriction_not_retried",
-      "candidate_CI": "not_run",
+      "actual_candidate_browser": "initial_head_14_pass_2_assertion_fail_components_not_run_corrected_head_pending",
+      "full_frontend_and_build": "initial_head_2265_pass_and_production_build_passed_corrected_head_pending",
+      "candidate_CI": "PR208_CI42617261863_browser_failed_corrected_head_pending",
       "production_performance": "not_measured_for_candidate",
       "pagination_contract_regressions_failed_before_fix": 4,
       "pagination_contract_existing_controls_passed": 2,
-      "pagination_fixture": "total_12_limit_10_first_page_10_next_10_last_page_2_unique_parent_child_IDs_exact_batch_and_late_relationships_old_offset_20_rejected"
+      "pagination_fixture": "total_12_limit_10_first_page_10_next_10_last_page_2_unique_parent_child_IDs_exact_batch_and_late_relationships_old_offset_20_rejected",
+      "disclosure_regressions_failed_before_fix": 8,
+      "disclosure_existing_fixture_controls_passed": 37,
+      "disclosure_fixture_report_tests_passed": 139,
+      "disclosure_independent_review": "passed_actual_trace_and_8_helper_contract_cases_139_tests_TypeScript_diff_no_blocker"
     },
     "previous_synthetic_database_run": "42494711087_21_of_21_expected_mismatches_container_removed_true_not_application_acceptance",
     "previous_api_startup_package": {
@@ -1195,7 +1199,7 @@
       "actual_API_startup": "not_executed"
     },
     "manual_api_evidence": "42536231169_success_RUN_API_STARTUP_and_EXPORT_IMAGE_BUNDLE_true_not_database_or_offline_acceptance",
-    "local_checks": "456_targeted_frontend_TypeScript_52_automation_126_CI_contracts_diff_progress_passed",
+    "local_checks": "464_targeted_frontend_139_fixture_report_TypeScript_diff_progress_passed",
     "previous_package_record": {
       "package": "change-issue-catalog-loading",
       "branch": "fix/change-issue-shell",
@@ -1240,6 +1244,20 @@
         "container_removed": true,
         "application_startup": "not_executed"
       }
+    },
+    "initial_PR208_evidence": {
+      "PR": 208,
+      "head": "fe002f580a050ba8cc0af95c7eaa6e964a2260bd",
+      "tree": "c7e64870baf8c9fe2e472d2723481692eeb5560e",
+      "preview_merge": "d21768c2bad6429a2a66b213d02c23a5d8595c5f",
+      "CI_run": 42617261863,
+      "frontend_tests_passed": 2265,
+      "frontend_build": "passed",
+      "Next_browser_passed": 14,
+      "Next_browser_failed": 2,
+      "component_browser": "not_run_due_to_preceding_failure",
+      "browser_failure": "visible_status_count_expected_2_actual_1_while_DOM_has_2_native_details_one_closed",
+      "corrected_CI": "not_run"
     }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",

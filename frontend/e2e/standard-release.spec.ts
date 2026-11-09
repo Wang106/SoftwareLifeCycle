@@ -1,4 +1,4 @@
-import { test, expect, type BrowserContext, type Page } from '@playwright/test';
+import { test, expect, type BrowserContext, type Page, type Locator } from '@playwright/test';
 const { startApp } = require('./fixture-server.cjs');
 const { startStreamingProxy, allowedPath } = require('./streaming-proxy.cjs');
 const { startStandardReleaseFixture, paths, query, childQuery, browserPaths, releaseId, lateMarker, observeStandardRsc, summarizeCatalogCompletion } = require('./standard-release-fixture.cjs');
@@ -112,6 +112,23 @@ test.afterEach(async ({ browser }, info) => {
   } finally { rscObserver?.stop(); try { if (proxy) await proxy.close(); } finally { if (app) await app.stop(); } }
 });
 
+async function assertPendingApplications(content: Locator, selectedId: string | null) {
+  const cards = content.locator('.standard-software-card');
+  await expect(cards).toHaveCount(2);
+  for (let index = 0; index < 2; index++) {
+    const row = cards.nth(index);
+    const selected = selectedId !== null && await row.getAttribute('id') === 'standard-software-' + selectedId;
+    await expect(row.locator('[data-standard-application-state="pending"]')).toHaveCount(1);
+    await expect(row.getByRole('status', { includeHidden: true })).toHaveCount(1);
+    await expect(row).toHaveJSProperty('open', selected);
+    if (selected) await expect(row.getByRole('status')).toBeVisible();
+    else await expect(row.getByRole('status')).toHaveCount(0);
+  }
+  // Closed native details still own pending DOM, but expose no accessible status.
+  await expect(content.getByRole('status', { includeHidden: true })).toHaveCount(2);
+  await expect(content.getByRole('status')).toHaveCount(selectedId === null ? 0 : 1);
+}
+
 async function journey(page: Page, context: BrowserContext, kind: Kind, phase: Phase) {
   observations = { kind, phase };
   const current: Harness = await startApp(() => startStandardReleaseFixture(kind, phase)); app = current;
@@ -123,7 +140,7 @@ async function journey(page: Page, context: BrowserContext, kind: Kind, phase: P
   const targetReads = () => current.fixture.requests.filter(read => read.kind === 'target');
   const content = page.getByRole('main').locator('.content');
   const filters = content.locator('form.filters');
-  const loading = content.getByRole('status');
+  const loading = content.getByRole('status', { includeHidden: true });
   const parentState = content.locator('[data-standard-catalog-state]');
   const card = content.locator('#standard-software-'+releaseId);
   const assertParent = async (offset = 10) => {
@@ -151,7 +168,7 @@ async function journey(page: Page, context: BrowserContext, kind: Kind, phase: P
   }else{
     await expect(parentState).toHaveAttribute('data-standard-catalog-state','ready');
     await expect(card.locator('[data-standard-application-state]')).toHaveAttribute('data-standard-application-state','pending');
-    await assertParent();await expect(loading).toHaveCount(2);await expect(card.getByRole('status')).toBeVisible();
+    await assertParent();await assertPendingApplications(content, releaseId);
     await expect(card).not.toContainText('Recorded count: 0');expect(current.fixture.requests).toHaveLength(2);
   }
   observations.loading=performance.now();
@@ -199,7 +216,9 @@ async function journey(page: Page, context: BrowserContext, kind: Kind, phase: P
   const next=content.getByRole('link',{name:'Next page →',exact:true}).last();
   await expect(next).toHaveAttribute('href',p.nextPage);await next.click();
   await expect(page).toHaveURL(transport.origin+p.nextPage);
-  await expect.poll(()=>current.fixture.pendingCount).toBeGreaterThan(0);await expect(loading).toHaveCount(kind==='parent'?1:2);
+  await expect.poll(()=>current.fixture.pendingCount).toBeGreaterThan(0);
+  if(kind==='parent'){await expect(loading).toHaveCount(1);await expect(loading).toBeVisible();}
+  else await assertPendingApplications(content, null);
   await expect(filters).toBeVisible();observations.queryPending=performance.now();
   if(kind==='parent')await expect(content.locator('.supplier-release-card')).toHaveCount(0);else await assertParent();
   const beforeNavigation = flights.requests;

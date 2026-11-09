@@ -1,5 +1,45 @@
 # Standard release catalog loading
 
+## PR208 first CI and disclosure assertion correction (2026-11-09)
+
+[PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208) published the exact
+17-file tree `c7e64870baf8c9fe2e472d2723481692eeb5560e`, head `fe002f580a050ba8cc0af95c7eaa6e964a2260bd`.
+[CI42617261863](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42617261863)
+checked preview merge `d21768c2bad6429a2a66b213d02c23a5d8595c5f` with the same tree.
+All 2265 frontend tests and the production Next/OpenNext build passed. Strict
+Next browser results were 14 passed and 2 failed, with no retries, skips or flaky
+results. Component journeys did not run because the preceding step failed.
+Official Chrome signature verification and chromiumSandbox=true passed.
+
+Both batch header/body journeys failed at the initial status-count assertion.
+The actual traces each contained two pending/status/aria-busy nodes: the selected
+native details was open and the other was closed. getByRole without includeHidden
+correctly exposed only one status. The same old assumption also occurred later
+after navigation without a selection; that branch was not reached in this run.
+The production component's disclosure behavior is retained.
+
+Eight new cases executing the actual browser assertion helper first failed while
+37 existing fixture cases passed. The correction checks each row's pending DOM
+and hidden-inclusive status count, exact native open property, and separately
+requires one visible status for the selected row or zero with no selection.
+Both DOM states are still mandatory. Final loading-clear checks now include
+hidden status nodes too. Native retry, pagination and both stale-result journeys
+remain mandatory with unchanged completed-RSC marker evidence. The regression
+model is not a real browser and cannot prove native visibility by itself.
+The corrected selected suite passed 464 tests, the focused fixture/report suite
+passed 139, and TypeScript/diff passed. Independent read-only review checked the
+actual traces and eight helper cases, reran 139 tests and TypeScript, and found
+no blocker. A fresh exact candidate CI is required.
+
+The two completed parent journeys had synthetic initial FCP 264/308 ms and four
+late-data-completed results across Reset and /projects. Batch journeys stopped
+before timeout/recovery evidence; LCP was not collected. These are loopback
+results, not production performance or backend recovery.
+[Browser evidence](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42617261863/artifacts/13672209956).
+
+The remaining sections retain the original prepublication evidence and its
+limits; this section supersedes their unpublished/unexecuted status.
+
 ## Verified baseline and remaining problem
 
 This package starts from merged PR207 main

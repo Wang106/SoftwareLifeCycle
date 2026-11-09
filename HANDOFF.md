@@ -5282,3 +5282,15 @@ PR202已保护合并main `65e2b90e016f1d8c571cf7269cdf1017046db49e`；正常fetc
 业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步正常受控发布并核验精确候选CI，再分别核验main/provider及线上分层状态；不触碰旧库、配置、凭据或费用。详见[标准目录加载说明](docs/standard-release-loading.md)。
 
 ---
+
+---
+
+## 当前检查点 — 2026-11-09（UTC+8）PR208折叠区域加载断言修正
+
+[PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208)已正常发布17文件，head `fe002f580a050ba8cc0af95c7eaa6e964a2260bd`、tree `c7e64870baf8c9fe2e472d2723481692eeb5560e`与本地候选一致；[首轮CI42617261863](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42617261863)的预览合并`d21768c2`树相同。前端2265项零失败/跳过及完整Next/OpenNext构建成功；严格浏览器14通过2失败，组件16未运行，不能合并。实际Chrome签名、sandbox与零重试已通过。失败是新batch头/正文旅程将可见status误当DOM总量：完整trace各有2个pending节点，但selected卡展开、另一卡原生折叠，只可见1；不是子区域丢失。后续无selection导航有同类断言，但首轮尚未执行到，不冒充实测。
+
+新增8项实际断言helper合同回归先8失败、37既有对照通过，再仅修本包测试，逐卡核对pending DOM/status各1、details.open精确对应selection、可见数为1或0，总DOM仍2；完成时连hidden状态也须清零。保留两层等待、原生重读、父子分页、Reset/projects及真实RSC迟到正文证据，不改生产组件，不降低16条Next＋16条组件、签名/sandbox/汇总门禁。修正后464项定向前端、139项fixture/report、TypeScript和diff通过；独立复审核对实际trace与8项helper反例，另139项及TypeScript通过无阻断；本次修正完整CI仍待执行，旧2265成绩不能算作新候选通过。首轮父头/正文两条合成FCP264/308ms、四次迟到正文完成仅证明隔离loopback，不代表线上速度或后端恢复。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步同一PR正常发布修正，核验新精确完整CI；不触碰旧库、配置、凭据、费用或保护。以下先前“未发布”记录为历史准备状态，以本条PR与CI证据为准。详见[标准目录加载说明](docs/standard-release-loading.md)。
+
+---

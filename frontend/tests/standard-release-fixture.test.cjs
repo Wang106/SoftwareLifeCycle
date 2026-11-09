@@ -222,3 +222,47 @@ test('pagination contract late marker preserves last-page IDs and valid counts',
   }finally{await f.close();}
  }
 });
+
+// Exercise the actual browser assertion without opening a browser. This model
+// encodes native details visibility, not a replacement for real-browser CI.
+function pendingAssertion() {
+ const ts=require('typescript');
+ const source=fs.readFileSync(require.resolve('../e2e/standard-release.spec.ts'),'utf8');
+ const ast=ts.createSourceFile('standard-release.spec.ts',source,ts.ScriptTarget.Latest,true);
+ const fn=ast.statements.find(node=>ts.isFunctionDeclaration(node)&&node.name?.text==='assertPendingApplications');
+ assert.ok(fn,'Browser journey must distinguish pending DOM from visible status');
+ const code=ts.transpile(fn.getText(ast)+'\nmodule.exports=assertPendingApplications;', {target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS});
+ const sandbox={module:{exports:{}},expect:locator=>({
+  async toHaveCount(count){assert.equal(locator.count,count);},
+  async toHaveJSProperty(name,value){assert.equal(locator.row[name],value);},
+  async toBeVisible(){assert.equal(locator.count,1);assert.equal(locator.visible,true);},
+ })};
+ vm.runInNewContext(code,sandbox);return sandbox.module.exports;
+}
+function disclosureContent(selectedId,change=()=>{}) {
+ const rows=[standard.releaseId,standard.secondId].map(id=>({id:'standard-software-'+id,open:id===selectedId,pending:1,status:1}));change(rows);
+ const status=(items,options)=>({count:items.reduce((n,row)=>n+(options?.includeHidden||row.open?row.status:0),0),visible:items.some(row=>row.open&&row.status===1)});
+ return {locator(selector){
+  assert.equal(selector,'.standard-software-card');return {count:rows.length,nth(index){const row=rows[index];return {row,
+   async getAttribute(name){assert.equal(name,'id');return row.id;},
+   locator(selector){assert.equal(selector,'[data-standard-application-state="pending"]');return {count:row.pending};},
+   getByRole(role,options){assert.equal(role,'status');return status([row],options);},
+  };}};
+ },getByRole(role,options){assert.equal(role,'status');return status(rows,options);}};
+}
+test('pending browser assertion counts two DOM states but only selected disclosure is visible',async()=>{
+ await pendingAssertion()(disclosureContent(standard.releaseId),standard.releaseId);
+});
+test('pending browser assertion keeps both unselected disclosures closed during new navigation',async()=>{
+ await pendingAssertion()(disclosureContent(null),null);
+});
+for(const [name,change]of [
+ ['missing hidden pending state',rows=>{rows[1].pending=0;}],
+ ['duplicate hidden pending state',rows=>{rows[1].pending=2;}],
+ ['missing hidden status',rows=>{rows[1].status=0;}],
+ ['unexpected open disclosure',rows=>{rows[1].open=true;}],
+ ['selected disclosure closed',rows=>{rows[0].open=false;}],
+ ['extra parent row',rows=>{rows.push({...rows[1]});}],
+])test('pending browser assertion rejects '+name,async()=>{
+ const check=pendingAssertion();await assert.rejects(check(disclosureContent(standard.releaseId,change),standard.releaseId),{name:'AssertionError'});
+});
