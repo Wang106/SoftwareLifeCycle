@@ -1,3 +1,37 @@
+## 当前检查点 — 2026-11-09（UTC+8）PR208真实重读修正
+
+[PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208)第二轮head `d469e03047f45e39402fdd2b2b34cd75c6c4c915`、tree `ece7be372e21292da8cbf3acb86cd6666b9cf3ff`在[CI42619068391](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42619068391)中前端2273项及生产构建成功，浏览器仍14过2失败、组件16未运行。折叠状态断言已过，但batch重读只新增行锚点：实际trace每条仍只有1次document，API父读和batch各1次，页面仍不可用，等到60秒测试超时。这是实现缺陷，不是等待谓词问题，不延长超时或重跑旧候选。首轮后端最终为cancelled、CI acceptance失败，不称完整通过。
+
+本轮仅去除子区域重读链接的fragment，七键query及选中展开项不变，普通父子分页锚点保留；重读后不承诺原滚动位置。规范及Chromium说明同URL带fragment的GET表单也可能只同文档导航，因此不以表单替换、不加JS/新参数/入口。新增及强化回归先3失败13对照通过，再改实现；浏览器batch从已有锚点URL进入，须重新取得document响应、清除旧document marker并新增API读取。465项定向前端、173项集中、TypeScript和diff通过；独立终审另179项通过，并在内存恢复旧href重现3失败13对照，无阻断。最新精确完整CI仍未执行，不沿用第二轮2273项为新候选成绩。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步同一PR正常发布，再核验完整严格16条Next＋16条组件及后端/PG门禁；main与线上尚未变化，旧库、配置、凭据、费用及保护不动。以下记录为前轮证据，不能代替本次完整验收。详见[标准目录加载说明](docs/standard-release-loading.md)。
+
+---
+
+## 当前检查点 — 2026-11-09（UTC+8）PR208折叠区域加载断言修正
+
+[PR208](https://github.com/Wang106/SoftwareLifeCycle/pull/208)已正常发布17文件，head `fe002f580a050ba8cc0af95c7eaa6e964a2260bd`、tree `c7e64870baf8c9fe2e472d2723481692eeb5560e`与本地候选一致；[首轮CI42617261863](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42617261863)的预览合并`d21768c2`树相同。前端2265项零失败/跳过及完整Next/OpenNext构建成功；严格浏览器14通过2失败，组件16未运行，不能合并。实际Chrome签名、sandbox与零重试已通过。失败是新batch头/正文旅程将可见status误当DOM总量：完整trace各有2个pending节点，但selected卡展开、另一卡原生折叠，只可见1；不是子区域丢失。后续无selection导航有同类断言，但首轮尚未执行到，不冒充实测。
+
+新增8项实际断言helper合同回归先8失败、37既有对照通过，再仅修本包测试，逐卡核对pending DOM/status各1、details.open精确对应selection、可见数为1或0，总DOM仍2；完成时连hidden状态也须清零。保留两层等待、原生重读、父子分页、Reset/projects及真实RSC迟到正文证据，不改生产组件，不降低16条Next＋16条组件、签名/sandbox/汇总门禁。修正后464项定向前端、139项fixture/report、TypeScript和diff通过；独立复审核对实际trace与8项helper反例，另139项及TypeScript通过无阻断；本次修正完整CI仍待执行，旧2265成绩不能算作新候选通过。首轮父头/正文两条合成FCP264/308ms、四次迟到正文完成仅证明隔离loopback，不代表线上速度或后端恢复。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步同一PR正常发布修正，核验新精确完整CI；不触碰旧库、配置、凭据、费用或保护。以下先前“未发布”记录为历史准备状态，以本条PR与CI证据为准。详见[标准目录加载说明](docs/standard-release-loading.md)。
+
+---
+
+## 当前检查点 — 2026-11-09（UTC+8）标准发布目录父子分层加载候选
+
+基线为已合并[PR207](https://github.com/Wang106/SoftwareLifeCycle/pull/207)的main `7549f846cf9c65da589004eea802c8340f2a6abb`，开放PR为0，正常fetch后新建独立分支`fix/standard-release-shell`，未重复开发。[main CI42596292860](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42596292860)完整成功：后端3486＋2592子测试、306项PG零跳过，前端2192，真实Next12＋组件16；Cloudflare生产build `eb319c93-e130-4448-82d1-8466b4504964`/version `688b730a-df49-47dc-8c4a-87388ead4245`成功。continuation42596902428为skipped，独立Actions deploy本次未观察到运行；Render最新仍PR206 update_failed，不能称后端恢复。以下旧候选未发表段落保留为历史，实际合并及验收以本记录为准。
+
+四种无网络实际源码流探针确认标准目录仍被父列表/子batch响应头或正文阻塞，标题与已知父内容一起等待；PR185两HTTP/最多五SQL批量优化保留。本包只拆标准目录：标题筛选先出，父数据就绪即显示真实统计、供应商分组/SSR摘要与父分页；关联区域局部Suspense只等同一个batch Promise及一次严格校验。未知/失败为“—”或明确不可用，不造0；七键原生重读及父子分页原语义保留。本页框架Link显式关闭预取，不改全站策略或扩大fixture白名单。
+
+父请求显式15000ms响应头/正文额度，子只拿扣除父经过时间后的余额，耗尽不请求；现有apiGet在Next connection之后才开timer，因此不承诺包含框架连接、SSR调度/传输的端到端15秒，不改共享API。首页真实provider组合探针及16项既有回归未发现业务API挡壳，首页冷打开只继续阶段测量，不猜测归因或修改。
+
+核心初始14项13失败1对照通过，后预取回归单项先失败；fixture/report6项先失败。分页fixture另查出跳页/重复ID证据缺口，6项新合同用例先4失败2对照通过；修为total12/limit10、首页10项next10及末页2项、父子ID独立且batch/late关系一致，旧offset20路径拒绝，四条旅程同步核对。最终456项定向前端、TypeScript、52项自动化、126项CI守卫及diff/进度检查通过。旧layout/filter断言完整保留，仅适配async子组件最终态渲染；新核心另用真实React流。核心独立终审33项与并发探针、浏览器证据最终复审131项及分页/边界探针通过无阻断；本次结论取代漏查分页合同的初审。保留原12条Next并新增4条，严格目标16条Next＋16条组件，签名/sandbox/零重试跳过/汇总不降低。完整前端、构建、实际新浏览器和本候选CI未跑，历史受限本地npm/网络操作未重试。候选尚未提交/上传。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步正常受控发布并核验精确候选CI，再分别核验main/provider及线上分层状态；不触碰旧库、配置、凭据或费用。详见[标准目录加载说明](docs/standard-release-loading.md)。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）变更与问题目录首屏拆分，已对齐PR206 main
 
 已只读核验PR206合并main `4a94e58f3d46f5b3b0f4ae360a4e2a3717bc75ed`，开放PR为0；正常fetch及fast-forward完成，无路径冲突，原13个页面候选文件哈希保持一致，未重复开发。首次对齐检查时[main CI42583155855](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42583155855)及Cloudflare生产build `06687855-9631-4195-a2aa-30cb595a1f9f`仍在运行；发布前再次复核：后端/PostgreSQL、前端CI、严格浏览器与CI acceptance全部成功，Cloudflare构建成功；Actions deploy/wake均为skipped。这些是基线状态，不能冒充当前候选通过。以下较旧PR206“待发布/未验证”段落保留为历史，合并状态以本记录为准；Render本次未核验。

@@ -4,12 +4,24 @@ const fs=require('node:fs');
 const ts=require('typescript');
 const React=require('react');
 const {renderToStaticMarkup}=require('react-dom/server');
+// Existing assertions inspect settled markup, not the stream's historical
+// fallback chunks. Resolve only real async server components; keep synchronous
+// localization providers inside React so their hooks retain normal semantics.
+async function settleServerChildren(node){
+ if(Array.isArray(node))return Promise.all(node.map(settleServerChildren));
+ if(!React.isValidElement(node))return node;
+ if(typeof node.type==='function'&&node.type.constructor.name==='AsyncFunction')return settleServerChildren(await node.type(node.props));
+ if(!Object.hasOwn(node.props,'children'))return node;
+ return React.cloneElement(node,undefined,await settleServerChildren(node.props.children));
+}
+async function renderComplete(element){return renderToStaticMarkup(await settleServerChildren(element));}
 function load(file, api){
  const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
  const m={exports:{}};
  new Function('require','module','exports',code)(name=>{
   if(name==='next/link')return ({href,children})=>React.createElement('a',{href},children);
   if(name.endsWith('/api'))return {apiGet:api};
+  if(name.endsWith('/page-loading'))return load('components/page-loading.tsx',api);
   if(name.endsWith('/localized'))return {Localized:({children})=>React.createElement(React.Fragment,null,children)};
   return require(name);
  },m,m.exports);return m.exports;
@@ -24,7 +36,7 @@ async function renderCatalog(search={},parent=catalog,child=appPage){
   if(!url.includes('/standard/applications?'))return parent && {...parent,limit:Number(q.get('limit')??50),offset:Number(q.get('offset')??0)};
   return {limit:Number(q.get('limit')??50),offset:Number(q.get('offset')??0),items:parent.items.map(row=>child(row.id,q.get('applications_for')===row.id?Number(q.get('application_offset')??0):0))};
  }).default;
- return {calls,html:renderToStaticMarkup(await Page({search}))};
+ return {calls,html:await renderComplete(Page({search}))};
 }
 test('supplier identity grouping, default disclosure and exact release links preserve API version order',async()=>{
  const {html,calls}=await renderCatalog();
@@ -92,7 +104,7 @@ test('batch failure, incomplete parents and malformed pagination fail closed wit
   ...[ {offset:10}, {limit:11}, {total:-1}, {next_offset:20}, {items:[{id:'x',version:'x'}]} ].map(change=>({...batch,items:[{...batch.items[0],...change},...batch.items.slice(1)]}))];
  for(const response of corrupt){
   const calls=[]; const Page=load('components/supplier-release-catalog.tsx',async url=>{calls.push(url);return calls.length===1?catalog:response;}).default;
-  const html=renderToStaticMarkup(await Page({search:{}}));
+  const html=await renderComplete(Page({search:{}}));
   assert.equal(calls.length,2);assert.ok(html.includes('Total releases:'));assert.ok(!html.includes('Recorded count:'));assert.equal((html.match(/Application release page unavailable/g)||[]).length,3);
  }
 });
@@ -104,7 +116,7 @@ test('batch associates shuffled rows by ID and validates the selected final chil
   if(calls.length===1)return {...catalog,limit:3,offset:8};
   return {limit:3,offset:8,items:[appPage('s3'),{...appPage('s2',10),total:12,next_offset:null,items:[{id:'last',version:'最后一页',status:'DRAFT'},{id:'last2',version:'2',status:'DRAFT'}]},appPage('s1')]};
  }).default;
- const html=renderToStaticMarkup(await Page({search}));
+ const html=await renderComplete(Page({search}));
  assert.equal(calls.length,2);
  const query=new URL(calls[1],'https://test').searchParams;
  for(const key of Object.keys(search))assert.equal(query.get(key),search[key]);
@@ -132,7 +144,7 @@ test('integral Pydantic offset spellings retain selected pagination',async()=>{
    calls.push(url);
    return calls.length===1?catalog:{limit:50,offset:0,items:catalog.items.map(row=>appPage(row.id,row.id==='s2'?10:0))};
   }).default;
-  const html=renderToStaticMarkup(await Page({search:{applications_for:'s2',application_offset:raw}}));
+  const html=await renderComplete(Page({search:{applications_for:'s2',application_offset:raw}}));
   assert.equal(new URL(calls[1],'https://test').searchParams.get('application_offset'),raw);
   assert.equal((html.match(/Recorded count:/g)||[]).length,3);
  }
@@ -146,12 +158,12 @@ test('new directory and detail labels translate using the actual localization co
   const localized=require(path.join(tmp,'components/localized.js'));
   function actual(file,api){
    const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,m={exports:{}};
-   new Function('require','module','exports',code)(name=>name==='next/link'?({href,children})=>React.createElement('a',{href},children):name.endsWith('/localized')?localized:name.endsWith('/api')?{apiGet:api}:require(name),m,m.exports);return m.exports;
+   new Function('require','module','exports',code)(name=>name==='next/link'?({href,children})=>React.createElement('a',{href},children):name.endsWith('/page-loading')?actual('components/page-loading.tsx',api):name.endsWith('/localized')?localized:name.endsWith('/api')?{apiGet:api}:require(name),m,m.exports);return m.exports;
   }
   const directory=await actual('components/supplier-release-catalog.tsx',async url=>url.includes('/standard/applications?')?{limit:50,offset:0,items:catalog.items.map(r=>appPage(r.id))}:catalog).default({search:{}});
   const review=await actual('components/release-review-records.tsx',async url=>url.includes('/governance/')?{total:1,items:[approval],next_offset:null}:{release:{id:'s1',type:'STANDARD'},total:0,items:[]}).ReleaseReviewRecords({releaseId:'s1',kind:'standard',search:{}});
   for(const locale of ['zh','en']){
-   const html=renderToStaticMarkup(React.createElement(localized.LanguageProvider,{initialLocale:locale},directory,review));
+   const html=await renderComplete(React.createElement(localized.LanguageProvider,{initialLocale:locale},directory,review));
    for(const label of locale==='zh'?['展开','收起','软件文件','审批记录','提交人']:['Expand','Collapse','Software files','Approval records','Submitted by'])assert.ok(html.includes(label),label);
    for(const raw of ['BMS','Same name','/releases/standard/s1','/approvals/APR-1','Reviewer'])assert.ok(html.includes(raw),raw);
   }

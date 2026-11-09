@@ -9,6 +9,11 @@ const CHANGE_CATALOG_QUERY='q=A+%26+B&status=IN_VERIFICATION&scope=STANDARD&limi
 const ISSUE_CATALOG_QUERY='q=A+%26+B&status=OPEN&scope=STANDARD&limit=10&offset=20&severity=HIGH';
 function catalogPolicy(options){
  if(options===undefined)return [];
+ if(options!==null&&typeof options==='object'&&Object.hasOwn(options,'standardReleaseQuery')){
+  const {query,childQuery,browserPaths}=require('./standard-release-fixture.cjs');
+  if(Array.isArray(options)||Reflect.ownKeys(options).length!==1||options.standardReleaseQuery!==query+childQuery)throw Error('fixed_standard_release_query_required');
+  return browserPaths;
+ }
  if(options!==null&&typeof options==='object'&&Object.hasOwn(options,'changeIssueCatalogQuery')){
   if(Array.isArray(options)||Reflect.ownKeys(options).length!==1||![CHANGE_CATALOG_QUERY,ISSUE_CATALOG_QUERY].includes(options.changeIssueCatalogQuery))throw Error('fixed_change_issue_catalog_query_required');
   const query=options.changeIssueCatalogQuery,path=query===CHANGE_CATALOG_QUERY?'/changes?':'/issues?';
@@ -23,7 +28,7 @@ function pathAllowed(raw,catalogPaths){
  if(legacyAllowedPath(raw))return true;
  if(typeof raw!=='string')return false;
  // Exact synthetic serializations only. At most one opaque Next RSC token.
- return catalogPaths.some(path=>raw===path||(raw.startsWith(path+'&_rsc=')&&/^[A-Za-z0-9_-]+$/.test(raw.slice((path+'&_rsc=').length))));
+ return catalogPaths.some(path=>raw===path||(raw.startsWith(path+(path.includes('?')?'&':'?')+'_rsc=')&&/^[A-Za-z0-9_-]+$/.test(raw.slice((path+(path.includes('?')?'&':'?')+'_rsc=').length))));
 }
 function allowedPath(raw,options){return pathAllowed(raw,catalogPolicy(options));}
 async function startStreamingProxy(upstream,options){
