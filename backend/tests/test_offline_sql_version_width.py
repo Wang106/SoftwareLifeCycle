@@ -49,6 +49,20 @@ class WidthContractTests(unittest.TestCase):
         self.assertTrue(any(n.module == 'alembic.ddl.postgresql' and any(a.name == 'PostgresqlImpl' for a in n.names) for n in imports))
         self.assertFalse(any(isinstance(n, ast.Attribute) and n.attr in {'_version', '_impls'} for n in ast.walk(tree)))
 
+    def test_offline_configure_pins_named_paramstyle(self):
+        from contextlib import nullcontext
+        node = next(n for n in ast.parse(ENV.read_text()).body
+                    if isinstance(n, ast.FunctionDef) and n.name == 'run_migrations_offline')
+        seen = {}
+        context = SimpleNamespace(configure=lambda **kw: seen.update(kw),
+                                  begin_transaction=nullcontext, run_migrations=lambda: None)
+        scope = {'context':context, 'config':SimpleNamespace(get_main_option=lambda key:'synthetic://no-connection'),
+                 'target_metadata':None}
+        exec(compile(ast.Module(body=[node], type_ignores=[]), str(ENV), 'exec'), scope)
+        scope['run_migrations_offline']()
+        self.assertEqual(seen.get('dialect_opts'), {'paramstyle':'named'})
+        self.assertIs(seen['literal_binds'], True)
+
     def test_all_revision_ids_fit_fixed_width_and_long_revision_exists(self):
         revisions = []
         for path in (ROOT / 'backend/alembic/versions').glob('*.py'):
