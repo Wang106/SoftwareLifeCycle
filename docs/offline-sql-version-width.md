@@ -68,3 +68,15 @@ finally再次核对本次精确namespace/OID/current owner后，只DROP本次sch
 超时修正的新增合同先失败，再只把新fixture连接statement_timeout设为5秒，符合既有观察器上限。
 
 最终本地9集中、24结构证据、639全离线零跳过、52自动化、126守卫及Python编译/进度账本/diff通过。独立终审通过无新阻断（另33项及事实/online/历史迁移对照），真实2生成/hook与2PG仍未运行。未提交或上传。
+
+## PR209真实执行后的百分号修正
+
+首轮CI42644528445在生成SQL正例报deployment_actual_baselines%%ROWTYPE语法错误，
+32宽反例成功捕获实际截断错误，整体3501通过1失败。固定依赖SQLAlchemy的pyformat方言
+把源码%编译成%%；offline文件作为完整SQL直接交给无参数simple query时不应保留DBAPI转义。
+只在offline configure设dialect_opts={"paramstyle":"named"}，与Alembic1.14官方模板一致：
+https://github.com/sqlalchemy/alembic/blob/rel_1_14_0/alembic/templates/generic/env.py#L46
+不改历史迁移、不后处理生成文本、不改online或URL的ConfigParser转义。
+标准库参数合同先1失败9通过，修后10通过；实际生成测试追加准确单%ROWTYPE与禁%%ROWTYPE。
+同步env SHA/manifest SHA但不改120事实。只读环境下通过正规编辑/临时测试许可执行，
+没有本地安装依赖、真实生成SQL或连接PG；修后实际PG正例仍须新精确CI。本地640全离线、52自动化、126守卫及内存编译/进度/diff通过；独立复审另15项只读检查通过，无新阻断，online AST/29迁移/120事实及来源绑定均复核。
