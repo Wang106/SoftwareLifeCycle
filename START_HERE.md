@@ -1,3 +1,17 @@
+## 当前检查点 — 2026-11-09（UTC+8）PG16有限目录采集与映射准备
+
+模式：Codex / ChatGPT Work。正常fetch核对PR204合并main `1e2f0f6ecb34ac7b35da52c0e84938e5d1d3a46c`，新建`feat/offline-pg-catalog-evidence`，原工作区保持不动。父任务核验[main CI42569169065](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42569169065)全部成功；Cloudflare同提交build `47ed764b-a1bd-470d-8661-a5bc2682f407` / version `678f32d0-e0ea-41d8-aa00-c1d1d1e58c04`成功，Actions deployment42570452211和continuation42570452204均skipped，Render本次未核验。这些是基线，不是本候选CI。
+
+本包新增仅标准库pg_catalog采集函数、mock回归、8项严格CI目标限定的真实PG回归准备及说明，不改workflow/迁移/生产源码/依赖/权限/门禁。调用方持有已有READ ONLY/REPEATABLE READ事务，入口与出口核对INTRANS，固定超时/pg_catalog search_path，namespace先解析精确OID后限定六组SELECT；真实名称/原始表达式和函数prosrc摘要不改写为public或源码字符串。固定行数/文本/输出预算，异常不返回部分观察。结果恒CATALOG_COLLECTED_NOT_ACCEPTANCE及database_verified=false，不生成120事实MATCHED、不证明事务结束、完整schema或权限安全。
+
+先16项缺能力回归全部失败，再实现。独立初审发现autocommit默认GUC可伪装事务和PGHOSTADDR可覆盖fixture目标两项问题；具体通知并等待后，新增4方法先8失败再收紧INTRANS和所有连接前PG*环境拒绝，修后26集中、594全离线零跳过、52自动化和126守卫通过；Python编译、进度账本及diff检查通过。真实fixture仅在正常GitHub CI身份及精确127.0.0.1:5432/software_lifecycle_ci/slc_ci无覆盖目标运行：新随机自有schema实际0001→0029、原始目录反例与函数映射、精确OID/所有者清理；不建角色、不GRANT/REVOKE、不seed/stamp/create_all。环境守卫不是防恶意伪造或隧道的证明。
+
+本地只运行mock/静态检查，未连接DB、执行SQL/DDL、启动容器或下载依赖；8项真实PG案例尚未运行，函数prosrc/反解析表达式映射仍待正常候选CI实证，不能沿用基线实测。完整后端/PG/前端/严格浏览器待精确CI；历史前端命令拒绝未重试或换入口。独立复审通过无新阻断：另26集中通过，12种非INTRANS/错类型状态均在SQL前拒绝，所有真实fixture连接前PG*拒绝已核对；仍无真实PG执行证据。未提交/上传，无候选CI。
+
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；浏览器阶段1/4、有限计划8/8不变。下一步独立复审、正常PR/CI验证新合成schema目录观察，再单独设计迁移镜像空库执行/角色和真实来源回执；公司部署、完整schema、安全审计、恢复及物理断网未验收。详见[PG16目录观察说明](docs/offline-pg-catalog-evidence.md)。
+
+---
+
 ## 当前检查点 — 2026-11-09（UTC+8）固定0029有限结构证据检查
 
 模式：Codex / ChatGPT Work。正常fetch核对PR203后的main `44e307a71a22f93f8c2ae611cf10678b0420499f`，新建独立`feat/offline-migration-schema-evidence`；保留旧迁移镜像工作区的无关暂存。本包不沿用其他提交CI/部署作为候选通过证据。
