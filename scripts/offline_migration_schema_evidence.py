@@ -15,7 +15,7 @@ MAX_STRING = 512
 EVIDENCE_FORMAT = 'slc-offline-migration-schema-evidence-v1'
 CHECKLIST = '0029-core-history-subset-v1'
 MANIFEST_PATH = Path(__file__).resolve().parents[1] / 'deploy/offline/migration-schema-0029.json'
-MANIFEST_SHA256 = '849afb5dcb0ba2a0ce2cb8c5a23a5b100ba254104d0ea86c9baff05834414184'
+MANIFEST_SHA256 = '0eabda2f0f69fc3cb49d2fde23d9134f62a4acd4071a74a159083e53de67ec54'
 LIMITATIONS = (
     'Offline comparison of untrusted, self-reported evidence for a fixed subset only. '
     'A fabricated or stale document can match. No database connection, collector, '
