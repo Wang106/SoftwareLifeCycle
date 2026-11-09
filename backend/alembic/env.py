@@ -1,8 +1,25 @@
 from alembic import context
-from sqlalchemy import engine_from_config, pool, text
+from alembic.ddl.postgresql import PostgresqlImpl
+from sqlalchemy import String, engine_from_config, pool, text
 from app.core.config import settings
 from app.core.db import Base
 from app.models import core, snapshot, snapshot_policy, change, testing, governance, policy, approval, distribution, production, audit, impact, acceptance, resource, security
+
+class OfflineVersionPostgresqlImpl(PostgresqlImpl):
+    """Keep PostgreSQL behavior, widening only SQL-output bookkeeping tables.
+
+    Alembic 1.14's public hook preserves its schema/PK options. Registration
+    lasts for this process; online contexts still get the original table type.
+    Always inherit the fixed upstream class, not a previously registered class.
+    """
+    __dialect__ = "postgresql"
+
+    def version_table_impl(self, **kw):
+        table = super().version_table_impl(**kw)
+        if self.as_sql:
+            table.c.version_num.type = String(64)
+        return table
+
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
