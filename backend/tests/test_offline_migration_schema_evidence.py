@@ -163,9 +163,47 @@ class SchemaEvidenceTests(unittest.TestCase):
 
     def test_manifest_provenance_bytes_are_bound(self):
         self.assertEqual(hashlib.sha256(MANIFEST.read_bytes()).hexdigest(), self.m.MANIFEST_SHA256)
-        for path, digest in self.manifest['sources'].items():
+        for path, digest in self.manifest['repository_file_sha256'].items():
             self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest)
-        self.assertEqual(self.manifest['source_commit'], '44e307a71a22f93f8c2ae611cf10678b0420499f')
+        self.assertEqual(self.manifest['facts_baseline_commit'], '44e307a71a22f93f8c2ae611cf10678b0420499f')
+
+    def v2_manifest(self):
+        value = copy.deepcopy(self.manifest)
+        value['format'] = 'slc-offline-migration-schema-manifest-v2'
+        value['facts_baseline_commit'] = value.pop('source_commit', value.get('facts_baseline_commit'))
+        value['repository_file_sha256'] = value.pop('sources', value.get('repository_file_sha256'))
+        return value
+
+    def manifest_check(self, value):
+        payload = json.dumps(value).encode()
+        with mock.patch.object(self.m, 'read_file', return_value=payload), mock.patch.object(self.m, 'MANIFEST_SHA256', hashlib.sha256(payload).hexdigest()):
+            return self.check()
+
+    def test_v2_metadata_separates_baseline_from_repository_hashes(self):
+        value = self.v2_manifest()
+        self.assertEqual(self.manifest_check(value)['status'], 'STRUCTURE_CHECKLIST_MATCHED')
+
+    def test_metadata_rejects_wrong_missing_extra_even_with_rebound_manifest_digest(self):
+        original = self.v2_manifest()
+        candidates = []
+        for key in original:
+            value = copy.deepcopy(original); del value[key]; candidates.append(value)
+        for key, replacement in [('format','slc-offline-migration-schema-manifest-v1'),
+                                 ('checklist','other'), ('facts_baseline_commit','0'*40),
+                                 ('repository_file_sha256',{}), ('repository_file_sha256',[]),
+                                 ('facts',[])]:
+            value = copy.deepcopy(original); value[key] = replacement; candidates.append(value)
+        value = copy.deepcopy(original); value['source_commit'] = original['facts_baseline_commit']; candidates.append(value)
+        value = copy.deepcopy(original); value['repository_file_sha256']['extra.py'] = 'a'*64; candidates.append(value)
+        for bad in ('A'*64, 'a'*63, 'g'*64, None, True, 1):
+            value = copy.deepcopy(original); value['repository_file_sha256']['backend/alembic/env.py'] = bad; candidates.append(value)
+        for index, value in enumerate(candidates):
+            with self.subTest(index=index): self.assertEqual(self.manifest_check(value)['status'], 'UNKNOWN')
+
+    def test_original_120_facts_remain_exactly_unchanged(self):
+        self.assertEqual(len(self.manifest['facts']), 120)
+        raw = json.dumps(self.manifest['facts'], sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), 'bc754be5abbb1386f6c6872303c1e9e238a9f5a11315bff91ab7412daf0f4cdc')
 
     def test_scope_includes_tables_columns_constraints_indexes_functions_triggers(self):
         facts = self.manifest['facts']
