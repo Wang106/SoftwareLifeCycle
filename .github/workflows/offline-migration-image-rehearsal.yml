@@ -1,0 +1,38 @@
+name: Manual migration image preparation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-migration-image-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearsal:
+    name: Migration image only, no database or SQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Start shared 55-minute budget before checkout
+        run: |
+          python3 -c 'import os, time; open(os.environ["GITHUB_ENV"], "a").write("MIGRATION_REHEARSAL_STARTED_NS=" + str(time.monotonic_ns()) + "\n")'
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify synthetic contracts without acquisition or Docker
+        run: |
+          python3 -B -m unittest discover -s backend/tests -p test_offline_migration_context.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_migration_image_rehearsal.py -v
+      - name: Run separately approved connected image preparation
+        # Approval must cover the pinned public inputs, local build, two isolated
+        # containers and removal of only this run's owned containers. No SQL/DB.
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B scripts/offline_migration_image_rehearsal.py --run --expected-commit "$GITHUB_SHA"
+      - name: Record blocked or interrupted result
+        if: ${{ failure() || cancelled() }}
+        run: echo 'Migration image preparation blocked or incomplete. Daemon work or cleanup may be uncertain. No database, SQL, offline or company acceptance.' >> "$GITHUB_STEP_SUMMARY"
