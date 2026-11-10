@@ -1,3 +1,17 @@
+## 当前检查点 — 2026-11-10（UTC+8）迁移后 API 镜像只读探针准备（未接线）
+
+正常 fetch 基线 main `36ca2292f8a23b7d6320d0342269a4dfd635ef61`（PR210）。父协调任务已核实同提交联合演练 [42758822529](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42758822529) 和 [42758838506](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42758838506) 均 attempt 1 成功：0029 单头、varchar64、选定 7 表/3 函数/6 触发器、四业务表计数均 0，各次 2 准备＋2 联合容器清理。API、SELECT-only 角色、完整 schema 均未验证。旧“联合未运行”记录保留为历史，不代表当前状态，也不能把联合迁移成功升级成 API 成功。
+
+main [CI42755793330](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42755793330) 完整成功：3538 后端、2687 子测试、308 PG 零跳过、严格浏览器 16＋16。Cloudflare 生产 build `758102b6-95a7-4ef2-960c-4eb13e619f91` / version `750e6bb3-4054-441f-ac08-6fd1f581a6f6` 成功；Render 未核验。以上为基线，不是本包候选 CI 或 API 镜像运行。
+
+本包只新增未接线内部 helper、纯 mock 合同及[说明](docs/offline-migrated-api-probe.md)。未来可信同轮协调器负责来源/授权/新建拥有权，并传其活 PG 对象、精确镜像/commit、网络 inode、适配器与原预算；helper 回读 custody/CID、重验固定安全属性及两端 PID/netns，不声称字段或 Python 对象能独立认证来源。固定 ready200、两有限空目录、业务403/身份401与前后有限结构/四表计数；只清理新 API，PG 仍由协调器负责。默认只读不是 SELECT-only 角色。旧 ready503 helper、迁移协调器、workflow、依赖、迁移和门禁不变。
+
+首 13 项缺能力合同全部先失败，再实现。新增 CID 漂移反例先失败，具体通知等待后固定首次完整 CID；新增测试的真实空目录字段、PGDATA、inspect 数组及操作超时 fixture 均在具体通知等待后纠正，未放宽生产校验。独立初审发现首次清理/后置观察中断会转普通错误；新增 4 项回归先 2 错误、2 优先级对照通过，具体通知等待后只保留首次控制异常并重抛，普通错误归一化与既有工作异常优先不变。27 项集中、702 全离线、52 自动化、126 守卫、内存编译、进度账本及 diff 检查通过。程序级测试在内存执行真实 HTTP/进程探针，所有 Docker/HTTP/PG 调用均 mock；无实际下载、容器、监听、数据库、迁移或上传。独立终审通过，无剩余阻断：另 27 项新合同、28 项旧 ready503、35 项联合合同，以及 10 项控制异常/双阶段优先级反例通过；核对 API 只移除一次、不触 PG，14 项不安全 inspect 和预算/默认无执行反例通过。当前候选尚未提交/发布、没有新候选 CI。
+
+业务 36/44=82%、增量 0；模块 100/100演示/100演示/100/89/60/17；计划 100/100/20/33/40/40/0；浏览器阶段 1/4、有限计划 8/8 不变。下一步提交本候选，上传需单独授权；未来协调器接线与实际运行另行审查/批准，不从本包 mock 推导可直接完整运行。
+
+---
+
 ## 当前检查点 — 2026-11-10（UTC+8）迁移镜像与自有空库联合演练准备
 
 基线PR209已合并main `4624e01fbf832d741cad5fc474354511436f4597`，开放PR为0，独立`feat/offline-migration-database-rehearsal`保留其他工作区。main CI42651157761完整成功：3503后端、2611子测试、308项PG零跳过；Cloudflare生产build `6e0eae23-4db8-4011-951c-2ccccfed7a58` / version `79eae26b-4553-44b3-a60a-5408ca670b73`成功，Render未核验。用户手动单次镜像准备[42660395986](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42660395986)在相同commit成功，attempt1，30依赖/29迁移/146源码、默认入口exit1、两容器清理，无DB/迁移执行及下载制品；不能把这当本候选联合运行成功。以下旧PR209未发布记录是历史，以此已验证基线为准。
