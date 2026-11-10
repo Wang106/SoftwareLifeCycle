@@ -2,7 +2,8 @@
 """Explicit image-to-owned-empty-PG rehearsal; import/help never run anything.
 
 Actual --run needs separate approval for acquisition, isolated trust and DDL.
-No external target option, API, role grants, retry, export or company acceptance.
+CLI remains migration-only. Internal include_api needs separately approved runtime;
+no external target option, role grants, retry, export or company acceptance.
 """
 import argparse
 import json
@@ -27,6 +28,10 @@ PG_ID = 'sha256:cadebe7c08430c896edac883fa92f8de2c36e330805e770fbee8a7eae13f144f
 LABEL = 'org.software-lifecycle.migration-database-rehearsal'
 RUNTIME_SOURCES = frozenset({'scripts/offline_migration_database_rehearsal.py',
     '.github/workflows/offline-migration-database-rehearsal.yml'})
+API_RUNTIME_SOURCES = builder.BUILD_SOURCES | RUNTIME_SOURCES | frozenset({
+    'scripts/offline_api_image_preparation.py', 'scripts/offline_migrated_api_probe.py',
+    'scripts/offline_api_startup_rehearsal.py', 'scripts/offline_database_rehearsal.py',
+    'scripts/offline_database_readiness.py'})
 PG_TMPFS = {
     '/var/lib/postgresql/data':'rw,noexec,nosuid,nodev,size=536870912,uid=999,gid=999,mode=0700',
     '/var/run/postgresql':'rw,noexec,nosuid,nodev,size=16777216,uid=999,gid=999,mode=0770',
@@ -68,17 +73,28 @@ LIMITATIONS = ('Trusted checkout/local daemon synthetic new database only; not f
                'Temporary superuser trust is not production authentication. No retained image artifact; '
                'CLI termination cannot prove daemon work stopped; interruption can leave owned resources.')
 
+API_LIMITATIONS = ('Trusted reviewed checkout/local daemon, same-run synthetic new database only; '
+    'receipts and hashes are consistency, not provenance authentication or authorization. '
+    'Limited readiness/read-path/refusal checks and selected structures/counts, not full schema, '
+    'SELECT-only roles, real identity, browser, physical isolation, backup/restore or company acceptance. '
+    'Temporary superuser trust is not production authentication. Removal is not graceful shutdown. '
+    'CLI termination and host loss can leave resources; no retry, prune or retained image export.')
+
 
 def shared_budget():
     require('MIGRATION_REHEARSAL_STARTED_NS' in os.environ, 'SHARED_BUDGET_REQUIRED')
     return builder.Budget.from_environment()
 
 
-def source_binding(commit):
+def source_binding(commit, *, include_api=False):
     require(type(commit) is str and builder.migration.HEX40.fullmatch(commit), 'SOURCE_REJECTED')
     require(Path(__file__).absolute() == ROOT / 'scripts/offline_migration_database_rehearsal.py')
     with builder.migration.directory(ROOT) as fd:
-        for path in sorted(RUNTIME_SOURCES):
+        for path in sorted(API_RUNTIME_SOURCES if include_api else RUNTIME_SOURCES):
+            if include_api and path.startswith('scripts/'):
+                module=sys.modules.get(Path(path).stem)
+                require(module is not None and Path(module.__file__).absolute()==ROOT/path,
+                        'RUNTIME_LOCATION_REJECTED')
             raw = builder.migration.git_read(fd, ['show', commit + ':' + path], builder.migration.MAX_SOURCE_FILE)
             require(raw == builder.migration.safe_read(ROOT / path, builder.migration.MAX_SOURCE_FILE), 'JOINT_SOURCE_MISMATCH')
     # The original builder independently binds its code, recipe and full source tree.
@@ -223,8 +239,45 @@ def receipt(commit,image,context_digest,build_digest):
             'readonly_role_verified':False,'complete_schema_verified':False,'limitations':LIMITATIONS}
 
 
-def run(commit):
-    budget=shared_budget(); source_binding(commit)
+def _api_preparation_receipt(value, commit, migration_image, preparation):
+    require(type(value) is dict, 'API_BUILD_RECEIPT_REJECTED')
+    image=value.get('image_id')
+    require(type(image) is str and re.fullmatch('sha256:[0-9a-f]{64}',image)
+            and image not in (migration_image,PG_ID), 'API_BUILD_RECEIPT_REJECTED')
+    for key in ('context_manifest_sha256','build_context_sha256'):
+        require(type(value.get(key)) is str and builder.migration.HEX64.fullmatch(value[key]),
+                'API_BUILD_RECEIPT_REJECTED')
+    require(exact(value,preparation.receipt(commit,image,value['context_manifest_sha256'],
+                                          value['build_context_sha256'])), 'API_BUILD_RECEIPT_REJECTED')
+    return image
+
+
+def _api_probe_receipt(value, commit, image, probe):
+    require(exact(value,{'format':'slc-migrated-api-probe-v1',
+        'status':'LIMITED_MIGRATED_API_PASSED_NOT_DEPLOYMENT','source_commit':commit,
+        'api_image_id':image,'cases_passed':5,'database_ready':True,
+        'api_container_removed':True,'postgres_removed_by_helper':False,
+        'observation_before':EXPECTED_OBSERVATION,'observation_after':EXPECTED_OBSERVATION,
+        'readonly_role_verified':False,'complete_schema_verified':False,
+        'provenance_authenticated':False,'limitations':probe.LIMITATIONS}), 'API_PROBE_RECEIPT_REJECTED')
+
+
+def run(commit, *, include_api=False):
+    """Internal opt-in only; CLI/workflow cannot enable API execution.
+
+    A trusted caller must obtain separate actual-runtime approval and install
+    SIGTERM handling (as main does) before calling. No receipt grants authority.
+    """
+    require(type(include_api) is bool, 'ARGUMENTS_REJECTED')
+    budget=shared_budget()
+    original_deadline=budget.deadline
+    if include_api:
+        # Lazy imports: probe imports this module for the live owned PG type.
+        import offline_api_image_preparation as preparation
+        import offline_migrated_api_probe as probe
+        source_binding(commit,include_api=True)
+    else:
+        source_binding(commit)
     root=Path(tempfile.mkdtemp(prefix='slc-migration-database-'))
     build_root=root/'build'; build_root.mkdir(mode=0o700)
     prepared=builder.run(commit,root=build_root)
@@ -236,12 +289,20 @@ def run(commit):
         require(type(prepared.get(key)) is str and builder.migration.HEX64.fullmatch(prepared[key]),'BUILD_RECEIPT_REJECTED')
     # Preserve original start, never grant a second 55-minute window. Insufficient
     # time fails before any PG container creation; no attempt to resume later.
-    budget.reserve(1000)
+    api_prepared=None; api_image=None
+    if include_api:
+        api_prepared=preparation.prepare(commit,root=root/'api-build',budget=budget)
+        require(budget.deadline==original_deadline,'BUDGET_CHANGED')
+        api_image=_api_preparation_receipt(api_prepared,commit,image,preparation)
+    # API preparation retains its existing 630-second reserve; this stronger
+    # downstream floor can reject after preparation, always before PG creation.
+    budget.reserve(1330 if include_api else 1000)
     runtime=root/'joint'; runtime.mkdir(mode=0o700)
     prefix,env=builder.host(runtime,budget)
     def command(args,*,timeout=30,limit=65536,reserve=100):
+        if include_api: require(budget.deadline==original_deadline,'BUDGET_CHANGED')
         return builder.command(prefix+args,env=env,timeout=budget.allowance(timeout,reserve),limit=limit)
-    code,_=command(['pull','--platform=linux/amd64',PG_IMAGE],timeout=600,reserve=400)
+    code,_=command(['pull','--platform=linux/amd64',PG_IMAGE],timeout=600,reserve=730 if include_api else 400)
     require(code==0,'PG_PULL_FAILED_OR_UNCERTAIN')
     code,raw=command(['image','inspect',PG_IMAGE]); require(code==0,'PG_IMAGE_REJECTED')
     images=builder.document(raw,array=True); require(len(images)==1 and type(images[0]) is dict,'PG_IMAGE_REJECTED')
@@ -253,13 +314,13 @@ def run(commit):
     pg_env=environment(cfg.get('Env'))
     code,raw=command(['image','inspect',image]); require(code==0,'IMAGE_REJECTED')
     migration_env=builder.verify_image(builder.document(raw,array=True),image,commit)
-    budget.reserve(400)
-    joint_deadline=min(time.monotonic()+300,budget.deadline-130)
+    budget.reserve(730 if include_api else 400)
+    joint_deadline=min(time.monotonic()+300,budget.deadline-(460 if include_api else 130))
     def work(args,*,timeout=30,limit=65536):
         remaining=joint_deadline-time.monotonic(); require(remaining>0,'JOINT_TIMEOUT')
-        return command(args,timeout=min(timeout,remaining),limit=limit)
+        return command(args,timeout=min(timeout,remaining),limit=limit,reserve=430 if include_api else 100)
     pg=OwnedContainer(runtime,'pg',PG_ID,commit,pg_env); migration=None
-    original=None; cleanup_failed=[]
+    original=None; cleanup_failed=[]; api_result=None
     try:
         pg.create(work)
         code,raw=work(['start',pg.cid],timeout=30,limit=1024)
@@ -288,23 +349,41 @@ def run(commit):
         pg.inspect(work,state='running')
         code,raw=work(psql(pg.cid,OBSERVE_SQL),timeout=15)
         require(code==0,'DATABASE_OBSERVATION_FAILED'); validate_observation(builder.document(raw))
+        if include_api:
+            require(budget.deadline==original_deadline,'BUDGET_CHANGED')
+            # Do not pass work: its migration-stage deadline has now served its
+            # purpose. The probe owns API removal; this finally retains PG.
+            api_result=probe.run_probe(pg=pg,netns=netns,image_id=api_image,
+                                      source_commit=commit,command=command,budget=budget)
+            require(budget.deadline==original_deadline,'BUDGET_CHANGED')
+            _api_probe_receipt(api_result,commit,api_image,probe)
     except BaseException as exc:
         original=exc
     finally:
-        cleanup_deadline=min(time.monotonic()+90,budget.deadline-30)
+        cleanup_deadline=min(time.monotonic()+90,(original_deadline if include_api else budget.deadline)-30)
         def clean(args,*,timeout=20,limit=65536):
             remaining=cleanup_deadline-time.monotonic(); require(remaining>0,'CLEANUP_UNCERTAIN')
             return builder.command(prefix+args,env=env,timeout=min(timeout,remaining),limit=limit)
         for container in (migration,pg):
             if container is not None:
                 try: container.cleanup(clean)
-                except BaseException: cleanup_failed.append(container.kind)
+                except BaseException as error:
+                    cleanup_failed.append(container.kind)
+                    if original is None and not isinstance(error,Exception): original=error
     if original is not None:
         if cleanup_failed: original.add_note('JOINT_CLEANUP_UNCONFIRMED')
         raise original
     require(not cleanup_failed and migration is not None and migration.cleaned and pg.cleaned,'CLEANUP_UNCERTAIN')
     budget.reserve(0)
-    return receipt(commit,image,prepared['context_manifest_sha256'],prepared['build_context_sha256'])
+    result=receipt(commit,image,prepared['context_manifest_sha256'],prepared['build_context_sha256'])
+    if include_api:
+        result.update(format='slc-offline-migration-api-lifecycle-v1',
+            status='LIMITED_MIGRATED_API_LIFECYCLE_PASSED_NOT_DEPLOYMENT',
+            api_image_id=api_image,api_context_manifest_sha256=api_prepared['context_manifest_sha256'],
+            api_build_context_sha256=api_prepared['build_context_sha256'],api_cases_passed=5,
+            joint_containers_removed=3,application_started=True,database_ready=True,
+            api_container_removed=True,provenance_authenticated=False,limitations=API_LIMITATIONS)
+    return result
 
 
 class Parser(argparse.ArgumentParser):

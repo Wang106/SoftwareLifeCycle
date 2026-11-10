@@ -1,5 +1,10 @@
 # 迁移镜像与自有空数据库联合演练准备
 
+Current integration update (2026-11-10): an internal, default-false same-run lifecycle
+path is prepared in the coordinator. CLI/workflow remain migration-only and no new
+actual API runtime has been performed. See [current lifecycle scope](offline-api-lifecycle-integration.md).
+The earlier future/unwired statements below describe the original package.
+
 ## 已核实的基线与本包边界
 
 基线main `4624e01fbf832d741cad5fc474354511436f4597`（PR209）完整CI42651157761成功：

@@ -5366,3 +5366,30 @@ PR211 merged main `d962d223aa228bdbf5967e8376dba65822786deb` is the source-only-
 New internal API-only builder/context helper, mock tests and [scope document](docs/offline-api-image-preparation.md), plus three checkpoints. No CLI or workflow invocation; existing builders, Dockerfile, production, dependencies, migrations and gates unchanged. Exact source/tool/recipe/wheels/base/IID binding and fixed local daemon adapter use the original 55-minute Budget, reserving 630+30 seconds. A new verified stdin tar replaces tag lookup or API+web/npm/export reuse. Receipt is consistency under trusted checkout/daemon assumptions, not provenance authentication or authorization. Application/database remain unstarted; no containers are created.
 
 Six initial missing-capability contracts failed, then 24 focused, 726 full offline and 52 automation tests passed. Compilation, progress and diff checks passed. Review regressions first reproduced host preflight losing the downstream reserve and IID reads swallowing KeyboardInterrupt; after specific notice/clearance only the new helper gained a reserve-aware host budget view and a bounded control-preserving IID reader. Both KeyboardInterrupt/SystemExit propagate through full preparation. A failing guard-order contract preceded the approved test main relocation; direct execution and discovery now cover all24. All acquisition/Docker/database work mocked; no actual dependency/base downloads, build, migration, API or upload. Independent final review passed with no blockers: 24 focused tests in both modes; additional mocked real-host allowances [3,2,1], reserve exhaustion/deadline mutation rejection, IID hardlink rejection and exact control-object preservation. Exact-candidate CI pending; uncommitted/unpublished. Future coordinator integration and actual operation require separate scope/approval, with API removal before migration/PG cleanup. Default-read-only superuser trust is not SELECT-only-role proof. Business 36/44=82%, increment0; modules100/100demo/100demo/100/89/60/17; plan100/100/20/33/40/40/0; browser1/4, finite plan8/8 unchanged.
+
+---
+
+## Current checkpoint — 2026-11-10: internal API lifecycle integration
+
+Baseline PR212 is merged as main `c5fcf45cb6c8b1d7b9a49d845b8f5cc1e2951b08`;
+[main CI42770999377](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42770999377)
+is verified successful: 3589 backend, 2749 subtests and 308 PostgreSQL cases without
+skips. Prior candidate-pending PR212 records below are historical. Provider state
+was not reverified for this package; CI success is not live service acceptance.
+
+This candidate adds an internal default-false lifecycle path, same-run API build
+before PG, migration/observation before the existing probe, strict source/receipt
+binding and API→migration→PG one-shot cleanup. CLI/workflow remain migration-only;
+no dependency/base acquisition, image build or container/API/database run occurred. No production,
+dependency, migration or gate change. [Scope and limits](docs/offline-api-lifecycle-integration.md)
+include the conservative budget admission floor and separate runtime approval.
+
+The initial 14-test capability suite failed; focused 20 now pass in discovery/direct
+execution. Notice-cleared regressions repaired outer cleanup control-exception
+preservation and anchored opted-in cleanup to the original deadline after budget
+mutation. 52 automation and 126 CI guards pass; compilation/progress/diff pass.
+746 full offline tests pass without skips. Independent final review passed, including
+20 focused tests, 35 legacy tests and extra original-deadline/exception-priority checks.
+Candidate is not yet published; exact-head CI is not run. No runtime acceptance.
+Business 36/44=82%, increment 0; modules 100/100demo/100demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
