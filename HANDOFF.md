@@ -5494,3 +5494,42 @@ published; exact-head full CI remains separate. No manual rehearsal was repeated
 
 Business 36/44=82%, increment0; modules100/100demo/100demo/100/89/60/17;
 plans100/100/20/33/40/40/0; browser1/4 and finite plan8/8 unchanged.
+
+
+---
+
+## Current checkpoint — 2026-11-10: API request guard integration
+
+PR215 is verified merged as main `952299eef8b242cd0cd3082d7bf7cc69aae8fe4a`, no open PR at start.
+[Main CI42805706655](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42805706655)
+passed 3647 backend, 2881 subtests, 308 PG cases without skips, 2274 frontend and strict
+16+16 browser journeys. Cloudflare production build `ae92a73f-db2b-4bcb-bd42-8ac2f8208f0f`,
+version `53b89a1b-9f99-41f2-8645-f69cfc7e24ea`, succeeded; Actions deployment/continuation
+skipped, Render not checked. Historical pending PR215 records are superseded by this evidence.
+The prior actual joint run42798938628 at86e3fba3 remains limited historical evidence, not a
+run of PR215 or this integration. No manual rehearsal was repeated.
+
+This candidate wires the existing collector/comparator around the five unchanged HTTP cases
+inside the already-owned API container. Exact source-bound collector bytes, fixed public and
+loopback database, read-only repeatable-read transaction, rollback/close-before-output and
+private bounded IPC precede exact nine-check comparison. Final v2 receipts contain only safe
+summaries. This brackets requests while API is alive, not startup or post-removal guard checks.
+Existing post-removal counts remain separate. No new container, Dockerfile, context builder,
+workflow, dependency, role, grant, migration, manifest-content or gate change. See
+[scope and limits](docs/offline-api-guard-integration.md).
+
+The initial 12 integration and 19 helper capability tests failed before implementation.
+Additional red regressions covered escaped program size and work-Budget mutation blocking
+API cleanup. After the specific cleanup correction notice/pause, cleanup uses the frozen
+original deadline, still within its existing 40-second phase and downstream reserve; normal
+work rejects deadline mutation and first-error priority remains. No time limit is extended.
+13 integration, 29 helper, 27 existing API probe and 20 existing lifecycle methods pass;
+826 full offline, 52 automation and 126 CI guards pass, plus in-memory compilation,
+progress-ledger and diff checks. Independent final review passed 188 focused/adjacent tests
+and 3,825 additional adversarial checks with no blocker. Documentation now precisely
+identifies mocked external operations rather than claiming every local process is mocked.
+Exact-candidate CI remains pending. No service, database or manual rehearsal was executed locally.
+
+Business36/44=82%, increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; browser1/4 and finite plan8/8 unchanged. Full schema,
+SELECT-only role, provenance authentication, real identity and company acceptance remain open.

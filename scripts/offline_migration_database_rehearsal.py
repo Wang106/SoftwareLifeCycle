@@ -31,7 +31,9 @@ RUNTIME_SOURCES = frozenset({'scripts/offline_migration_database_rehearsal.py',
 API_RUNTIME_SOURCES = builder.BUILD_SOURCES | RUNTIME_SOURCES | frozenset({
     'scripts/offline_api_image_preparation.py', 'scripts/offline_migrated_api_probe.py',
     'scripts/offline_api_startup_rehearsal.py', 'scripts/offline_database_rehearsal.py',
-    'scripts/offline_database_readiness.py'})
+    'scripts/offline_database_readiness.py', 'scripts/offline_migrated_api_guard.py',
+    'scripts/offline_pg_catalog_evidence.py', 'scripts/offline_pg_guard_contracts.py',
+    'scripts/offline_migration_schema_evidence.py', 'deploy/offline/migration-schema-0029.json'})
 PG_TMPFS = {
     '/var/lib/postgresql/data':'rw,noexec,nosuid,nodev,size=536870912,uid=999,gid=999,mode=0700',
     '/var/run/postgresql':'rw,noexec,nosuid,nodev,size=16777216,uid=999,gid=999,mode=0770',
@@ -75,6 +77,7 @@ LIMITATIONS = ('Trusted checkout/local daemon synthetic new database only; not f
 
 API_LIMITATIONS = ('Trusted reviewed checkout/local daemon, same-run synthetic new database only; '
     'receipts and hashes are consistency, not provenance authentication or authorization. '
+    'Nine guard contracts bracket five HTTP cases while API is alive, not after removal. '
     'Limited readiness/read-path/refusal checks and selected structures/counts, not full schema, '
     'SELECT-only roles, real identity, browser, physical isolation, backup/restore or company acceptance. '
     'Temporary superuser trust is not production authentication. Removal is not graceful shutdown. '
@@ -253,11 +256,14 @@ def _api_preparation_receipt(value, commit, migration_image, preparation):
 
 
 def _api_probe_receipt(value, commit, image, probe):
-    require(exact(value,{'format':'slc-migrated-api-probe-v1',
+    require(exact(value,{'format':'slc-migrated-api-probe-v2',
         'status':'LIMITED_MIGRATED_API_PASSED_NOT_DEPLOYMENT','source_commit':commit,
         'api_image_id':image,'cases_passed':5,'database_ready':True,
         'api_container_removed':True,'postgres_removed_by_helper':False,
         'observation_before':EXPECTED_OBSERVATION,'observation_after':EXPECTED_OBSERVATION,
+        'guard_coverage':'api-alive-five-http-cases-three-functions-six-triggers',
+        'guard_checks_before':probe.guard.expected_checks(),'guard_checks_after':probe.guard.expected_checks(),
+        'guard_transactions_closed':2,
         'readonly_role_verified':False,'complete_schema_verified':False,
         'provenance_authenticated':False,'limitations':probe.LIMITATIONS}), 'API_PROBE_RECEIPT_REJECTED')
 
@@ -276,6 +282,7 @@ def run(commit, *, include_api=False):
         import offline_api_image_preparation as preparation
         import offline_migrated_api_probe as probe
         source_binding(commit,include_api=True)
+        guard_program=probe.guard.prepare(commit,budget)
     else:
         source_binding(commit)
     root=Path(tempfile.mkdtemp(prefix='slc-migration-database-'))
@@ -302,6 +309,12 @@ def run(commit, *, include_api=False):
     def command(args,*,timeout=30,limit=65536,reserve=100):
         if include_api: require(budget.deadline==original_deadline,'BUDGET_CHANGED')
         return builder.command(prefix+args,env=env,timeout=budget.allowance(timeout,reserve),limit=limit)
+    def cleanup_command(args,*,timeout=20,limit=65536):
+        # Cleanup never reads the mutable work Budget. The helper still owns
+        # exact CID verification and a shorter phase deadline/reserve.
+        remaining=original_deadline-time.monotonic()-30
+        require(remaining>0,'CLEANUP_UNCERTAIN')
+        return builder.command(prefix+args,env=env,timeout=min(timeout,remaining),limit=limit)
     code,_=command(['pull','--platform=linux/amd64',PG_IMAGE],timeout=600,reserve=730 if include_api else 400)
     require(code==0,'PG_PULL_FAILED_OR_UNCERTAIN')
     code,raw=command(['image','inspect',PG_IMAGE]); require(code==0,'PG_IMAGE_REJECTED')
@@ -354,7 +367,8 @@ def run(commit, *, include_api=False):
             # Do not pass work: its migration-stage deadline has now served its
             # purpose. The probe owns API removal; this finally retains PG.
             api_result=probe.run_probe(pg=pg,netns=netns,image_id=api_image,
-                                      source_commit=commit,command=command,budget=budget)
+                                      source_commit=commit,command=command,budget=budget,guard_program=guard_program,
+                                      cleanup_command=cleanup_command)
             require(budget.deadline==original_deadline,'BUDGET_CHANGED')
             _api_probe_receipt(api_result,commit,api_image,probe)
     except BaseException as exc:
@@ -377,11 +391,13 @@ def run(commit, *, include_api=False):
     budget.reserve(0)
     result=receipt(commit,image,prepared['context_manifest_sha256'],prepared['build_context_sha256'])
     if include_api:
-        result.update(format='slc-offline-migration-api-lifecycle-v1',
+        result.update(format='slc-offline-migration-api-lifecycle-v2',
             status='LIMITED_MIGRATED_API_LIFECYCLE_PASSED_NOT_DEPLOYMENT',
             api_image_id=api_image,api_context_manifest_sha256=api_prepared['context_manifest_sha256'],
             api_build_context_sha256=api_prepared['build_context_sha256'],api_cases_passed=5,
             joint_containers_removed=3,application_started=True,database_ready=True,
+            guard_coverage=api_result['guard_coverage'],guard_checks_before=api_result['guard_checks_before'],
+            guard_checks_after=api_result['guard_checks_after'],guard_transactions_closed=2,
             api_container_removed=True,provenance_authenticated=False,limitations=API_LIMITATIONS)
     return result
 

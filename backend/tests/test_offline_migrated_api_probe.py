@@ -138,7 +138,7 @@ class ProbeTests(unittest.TestCase):
         self.budget.deadline=joint.time.monotonic()+100
         with self.assertRaises(m.Blocked):
             m.run_probe(pg=self.pg,netns=NETNS,image_id=IMAGE,source_commit=COMMIT,
-                command=lambda *a,**k:self.fail('no execution'),budget=self.budget)
+                command=lambda *a,**k:self.fail('no execution'),budget=self.budget,guard_program='MOCK_BOUND_GUARD_PROGRAM',cleanup_command=lambda *a,**k:self.fail('no cleanup'))
 
     def test_external_targets_and_extra_sql_not_accepted(self):
         for extra in ({'database_url':'PRIVATE'},{'sql':'SELECT 1'},{'container_id':PG_CID}):
@@ -165,7 +165,8 @@ class ProbeTests(unittest.TestCase):
             def __call__(self,args,**kwargs):
                 self.calls.append(args)
                 test.assertGreater(kwargs['timeout'],0)
-                test.assertLessEqual(kwargs['timeout'],{'create':30,'rm':20}.get(args[0],15))
+                ceiling=45 if 'MOCK_BOUND_GUARD_PROGRAM' in args else {'create':30,'rm':20}.get(args[0],15)
+                test.assertLessEqual(kwargs['timeout'],ceiling)
                 if args[:2]==['image','inspect']:
                     value=[{'Id':IMAGE,'Os':'linux','Architecture':'amd64','Variant':'',
                         'Config':{'Labels':{'org.opencontainers.image.revision':COMMIT},
@@ -195,6 +196,9 @@ class ProbeTests(unittest.TestCase):
                     if fail=='post_change' and self.observations==2: value['audit_rows']=1
                     return 0,json.dumps(value).encode()
                 if args[0]=='exec' and API_CID in args:
+                    if 'MOCK_BOUND_GUARD_PROGRAM' in args:
+                        from test_offline_api_lifecycle_integration import guard_envelope
+                        return 0,json.dumps(guard_envelope()).encode()
                     if args[-2]==m.PROCESS_PROGRAM: return 0,json.dumps(m.PROCESS_RECEIPT).encode()
                     test.assertEqual(args[-2],m.PROBE_PROGRAM)
                     if fail in ('probe','probe_cleanup','probe_cleanup_interrupt','probe_post_interrupt'): return 2,b''
@@ -214,7 +218,7 @@ class ProbeTests(unittest.TestCase):
             result=original(*args,**kwargs); daemon.api=result; return result
         with patch.object(m,'_APIContainer',side_effect=factory), patch.object(joint.os,'chmod'):
             return m.run_probe(pg=self.pg,netns=NETNS,image_id=IMAGE,source_commit=COMMIT,
-                command=daemon,budget=self.budget)
+                command=daemon,budget=self.budget,guard_program='MOCK_BOUND_GUARD_PROGRAM',cleanup_command=daemon)
 
     def test_full_mock_sequence_removes_only_api_before_post_observation(self):
         daemon=self.daemon()
