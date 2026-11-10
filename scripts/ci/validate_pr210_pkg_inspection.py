@@ -14,21 +14,25 @@ APPROVAL = 'static-only-no-install-no-launch'
 
 def validate(event, env, tooling_checkout, source_checkout):
     if not isinstance(event, dict) or not isinstance(event.get('inputs'), dict):
-        raise ValueError('Malformed dispatch metadata')
+        raise ValueError('Scope checks failed: metadata_shape')
     inputs = event['inputs']
     tooling = inputs.get('tooling_head')
-    if not all((
-        env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch',
-        env.get('GITHUB_REPOSITORY') == REPOSITORY,
-        env.get('GITHUB_RUN_ATTEMPT') == '1',
-        env.get('GITHUB_REF') == REF,
-        env.get('GITHUB_WORKFLOW_REF') == WORKFLOW_REF,
-        isinstance(tooling, str) and re.fullmatch('[0-9a-f]{40}', tooling) is not None,
-        tooling == env.get('GITHUB_SHA') == tooling_checkout,
-        inputs.get('source_head') == SOURCE_HEAD == source_checkout,
-        inputs.get('approval') == APPROVAL,
-    )):
-        raise ValueError('Outside the fixed PR210 source and diagnostic workflow scope')
+    # Names are fixed code literals. Never include caller values or event payloads.
+    checks = (
+        ('event_name', env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch'),
+        ('repository', env.get('GITHUB_REPOSITORY') == REPOSITORY),
+        ('run_attempt', env.get('GITHUB_RUN_ATTEMPT') == '1'),
+        ('ref', env.get('GITHUB_REF') == REF),
+        ('workflow_ref', env.get('GITHUB_WORKFLOW_REF') == WORKFLOW_REF),
+        ('tooling_head_format', isinstance(tooling, str) and
+         re.fullmatch('[0-9a-f]{40}', tooling) is not None),
+        ('tooling_head_match', tooling == env.get('GITHUB_SHA') == tooling_checkout),
+        ('source_head_match', inputs.get('source_head') == SOURCE_HEAD == source_checkout),
+        ('approval', inputs.get('approval') == APPROVAL),
+    )
+    failed = [name for name, passed in checks if not passed]
+    if failed:
+        raise ValueError('Scope checks failed: ' + ','.join(failed))
     return {'source_pr': 210, 'source_head': SOURCE_HEAD, 'tooling_head': tooling,
             'acceptance': False, 'authorization_verified_by_script': False}
 
