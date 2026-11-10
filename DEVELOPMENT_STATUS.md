@@ -1,3 +1,36 @@
+## Current checkpoint — 2026-11-10: default-off migrated API entrypoint
+
+PR213 merged main `024849675a93e663cbf22ea17074bc906896bb14` is the verified baseline.
+[Main CI42779028387](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42779028387)
+passed: 3609 backend, 2832 subtests, 308 PostgreSQL cases without skips, 2274 frontend
+and strict 16+16 browser journeys. Cloudflare production build
+`2b587544-8b39-4baa-b935-ee9c0e1cd510` / version
+`99e6e693-69a1-4c3d-8ed6-a6b2a6d7b6fd` succeeded. Actions deployment and continuation
+were skipped, Render not checked. Older PR213 pending statements are historical.
+
+This additive candidate prepares a thin canonical-import CLI and a separate manual
+workflow whose boolean input defaults false and whose entire job is guarded.
+Existing migration-only CLI/workflow, coordinator/helpers, production, dependencies,
+migrations and CI gates are unchanged. New source checks use the original budget,
+fd-anchored bounded local Git and fixed downstream reserve; the original marker is
+never refreshed. SIGTERM state is restored before successful output. No actual
+dependency/base acquisition, image build, container/API/DB rehearsal or manual
+workflow dispatch occurred. [Scope and limitations](docs/offline-migrated-api-rehearsal.md)
+retain separate execution approval, the 630/1330-second admission limitation and
+uncertain cleanup boundaries; default read-only superuser trust is not a SELECT-only role.
+
+Initial 16 tests failed for the missing capability; all 16 now pass in discovery
+and direct execution. 762 full offline, 52 automation and 126 CI guard tests pass.
+Compilation, YAML structure, shell syntax, progress and diff checks pass. Independent
+final review passed, including 16 new, 20 lifecycle and 35 legacy contracts plus
+control-exception restoration and linked/FIFO/oversize-source rejection probes.
+The real Python entrypoint contract uses mocked Git/coordinator work, not an actual
+service. Candidate remains unpublished, so its exact-head CI is not yet verified.
+Business 36/44 = 82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+---
+
 ## Current checkpoint — 2026-11-10: internal API lifecycle integration
 
 Baseline PR212 is merged as main `c5fcf45cb6c8b1d7b9a49d845b8f5cc1e2951b08`;
