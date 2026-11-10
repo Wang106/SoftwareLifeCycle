@@ -57,6 +57,7 @@ class CatalogTests(unittest.TestCase):
         c = self.connection()
         result = self.m.collect(c, self.namespace)
         self.assertEqual(result['status'], 'CATALOG_COLLECTED_NOT_ACCEPTANCE')
+        self.assertEqual(result['format'], 'slc-pg16-catalog-observation-v2')
         self.assertEqual(result['namespace'], self.namespace)
         self.assertFalse(result['database_verified'])
         self.assertFalse(result['complete_schema_verified'])

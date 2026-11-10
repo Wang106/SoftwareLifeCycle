@@ -19,6 +19,8 @@ from sqlalchemy.engine import make_url
 
 ROOT = Path(__file__).resolve().parents[2]
 BACKEND = ROOT / 'backend'
+sys.path.insert(0, str(ROOT / 'scripts'))
+import offline_pg_guard_contracts as guards
 spec = importlib.util.spec_from_file_location('pg_catalog_evidence', ROOT / 'scripts/offline_pg_catalog_evidence.py')
 catalog = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(catalog)
@@ -131,6 +133,11 @@ def test_actual_chain_catalog_and_exact_function_body_mapping(owned_catalog_sche
     partial = next(r for r in rows(report, 'indexes') if r['name'] == 'ux_changeover_corr_single_successor')
     assert partial['unique'] and partial['predicate'] == '(predecessor_id IS NOT NULL)'
     assert all(r['type_bits'] == 27 and r['enabled'] == 'O' for r in rows(report, 'triggers'))
+    assert all(r['argument_count'] == r['argument_bytes'] == 0 and r['has_when'] is False
+               for r in rows(report, 'triggers'))
+    checked = guards.check_observation(report, namespace)
+    assert checked['status'] == 'GUARD_CONTRACT_MATCHED'
+    assert len(checked['checks']) == 9 and checked['complete_schema_verified'] is False
     check = next(r for r in rows(report, 'constraints') if r['name'] == 'ck_changeover_corr_revision_positive')
     assert check['definition'] == 'CHECK ((revision >= 1))'
 
@@ -140,6 +147,20 @@ def test_disabled_trigger_observed_not_invented_enabled(owned_catalog_schema):
     admin.execute(sql.SQL('ALTER TABLE {}.batch_baselines DISABLE TRIGGER batch_baselines_append_only').format(sql.Identifier(namespace)))
     report = observe(kwargs, namespace)
     assert next(r for r in rows(report, 'triggers') if r['name'] == 'batch_baselines_append_only')['enabled'] == 'D'
+    assert guards.check_observation(report, namespace)['status'] == 'GUARD_CONTRACT_MISMATCH'
+    # Same fixture and original guard name: structured evidence, no deparse edits.
+    for suffix, expected_when, expected_count in [
+            ("WHEN (OLD.id IS NOT NULL) EXECUTE FUNCTION {}.reject_changeover_batch_history_mutation()", True, 0),
+            ("EXECUTE FUNCTION {}.reject_changeover_batch_history_mutation('synthetic')", False, 1)]:
+        admin.execute(sql.SQL('DROP TRIGGER batch_baselines_append_only ON {}.batch_baselines').format(sql.Identifier(namespace)))
+        statement = ('CREATE TRIGGER batch_baselines_append_only BEFORE DELETE OR UPDATE ON {}.batch_baselines '
+                     'FOR EACH ROW ' + suffix)
+        admin.execute(sql.SQL(statement).format(sql.Identifier(namespace), sql.Identifier(namespace)))
+        report = observe(kwargs, namespace)
+        row = next(r for r in rows(report, 'triggers') if r['name'] == 'batch_baselines_append_only')
+        assert row['has_when'] is expected_when and row['argument_count'] == expected_count
+        assert (row['argument_bytes'] > 0) is (expected_count > 0)
+        assert guards.check_observation(report, namespace)['status'] == 'GUARD_CONTRACT_MISMATCH'
 
 
 def test_function_body_mutation_is_observed(owned_catalog_schema):
@@ -149,6 +170,8 @@ def test_function_body_mutation_is_observed(owned_catalog_schema):
     after = observe(kwargs, namespace)
     name = 'reject_changeover_batch_history_mutation'
     assert next(r for r in rows(before, 'functions') if r['name'] == name)['body_sha256'] != next(r for r in rows(after, 'functions') if r['name'] == name)['body_sha256']
+    assert guards.check_observation(before, namespace)['status'] == 'GUARD_CONTRACT_MATCHED'
+    assert guards.check_observation(after, namespace)['status'] == 'GUARD_CONTRACT_MISMATCH'
 
 
 def test_changed_column_and_missing_table_are_observed(owned_catalog_schema):

@@ -1,5 +1,21 @@
 # Default-off migrated API execution entrypoint
 
+## Actual execution update — 2026-11-10
+
+PR214 is merged as main `86e3fba3d3f8c5b5334ecb1cfd683b952272195b`.
+[Main CI42794359157](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42794359157)
+and Cloudflare production build `dc3a54b5-3f7b-4f68-abdd-c0fff808f3ba` succeeded.
+Separately approved [joint run42798938628](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42798938628)
+passed once (attempt1) at that commit: API started/ready, five checks passed,
+original migration0029 and selected empty observations, 2 preparation + 3 joint
+containers confirmed removed. No artifacts were uploaded. This is limited synthetic
+runtime evidence, not full schema, least privilege, provenance or deployment.
+
+The [new finite guard comparison](offline-pg-guard-contracts.md) is not wired into
+this lifecycle; that earlier successful run cannot validate it. Development-time
+unpublished/unexecuted statements below are historical checkpoints, not current
+claims that the separately approved runtime never happened.
+
 ## Scope and current evidence
 
 PR213 is merged as main `024849675a93e663cbf22ea17074bc906896bb14`.
@@ -36,8 +52,8 @@ Before any actual invocation, obtain specific approval for same-run dependency/
 base acquisition, migration/API image builds, owned isolated containers, temporary
 postgres superuser trust and namespace sharing, original DDL in a new empty tmpfs
 PG, API startup/five read-only/refusal probes, and exact-owned-CID cleanup. Selecting
-an input or supplying `--run` is not an authorization credential. No actual manual
-workflow or lifecycle operation has been executed for this package.
+an input or supplying `--run` is not an authorization credential. Development used mocked work only. The later separately approved actual
+run is recorded above.
 
 Use only the already-reviewed synthetic lifecycle. There is no old/company
 DB, role grant, real identity, production write, image export, artifact upload,
