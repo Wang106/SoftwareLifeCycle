@@ -51,6 +51,43 @@ class ScopeTests(unittest.TestCase):
         for event in [None, [], {'inputs': []}, {'inputs': None}]:
             with self.assertRaises(ValueError): scope.validate(event, self.env, self.tool, scope.SOURCE_HEAD)
 
+    def test_safe_stable_failed_check_names(self):
+        cases = [
+            ('GITHUB_EVENT_NAME', 'event_name'),
+            ('GITHUB_REPOSITORY', 'repository'),
+            ('GITHUB_RUN_ATTEMPT', 'run_attempt'),
+            ('GITHUB_REF', 'ref'),
+            ('GITHUB_WORKFLOW_REF', 'workflow_ref'),
+            ('GITHUB_SHA', 'tooling_head_match'),
+        ]
+        for key, name in cases:
+            with self.subTest(key=key):
+                env = dict(self.env, **{key: 'PRIVATE_PAYLOAD\n::error::injected'})
+                with self.assertRaises(ValueError) as error:
+                    scope.validate(self.event, env, self.tool, scope.SOURCE_HEAD)
+                self.assertEqual(str(error.exception), 'Scope checks failed: ' + name)
+        for key, names in [('tooling_head', 'tooling_head_format,tooling_head_match'),
+                           ('source_head', 'source_head_match'),
+                           ('approval', 'approval')]:
+            with self.subTest(key=key):
+                event = {'inputs': dict(self.event['inputs'], **{key: 'PRIVATE_PAYLOAD'})}
+                with self.assertRaises(ValueError) as error:
+                    scope.validate(event, self.env, self.tool, scope.SOURCE_HEAD)
+                self.assertEqual(str(error.exception), 'Scope checks failed: ' + names)
+
+    def test_all_failures_in_stable_order_without_payload(self):
+        with self.assertRaises(ValueError) as error:
+            scope.validate({'inputs': {}}, {}, 'PRIVATE_TOOL', 'PRIVATE_SOURCE')
+        self.assertEqual(str(error.exception), 'Scope checks failed: '
+                         'event_name,repository,run_attempt,ref,workflow_ref,'
+                         'tooling_head_format,tooling_head_match,source_head_match,approval')
+
+    def test_metadata_shape_has_safe_name(self):
+        for event in [None, [], {'inputs': ['PRIVATE_PAYLOAD']}, {'inputs': None}]:
+            with self.assertRaises(ValueError) as error:
+                scope.validate(event, self.env, self.tool, scope.SOURCE_HEAD)
+            self.assertEqual(str(error.exception), 'Scope checks failed: metadata_shape')
+
     def test_registered_entry_is_dispatch_only_and_source_pinned(self):
         text = (ROOT / '.github/workflows/browser-diagnostics.yml').read_text()
         self.assertNotIn('if: ${{ false }}', text)
