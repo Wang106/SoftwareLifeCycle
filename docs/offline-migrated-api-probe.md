@@ -1,5 +1,10 @@
 # 迁移后 API 镜像只读探针：未接线内部助手
 
+Current integration update (2026-11-10): an internal, default-false same-run lifecycle
+path is prepared in the coordinator. CLI/workflow remain migration-only and no new
+actual API runtime has been performed. See [current lifecycle scope](offline-api-lifecycle-integration.md).
+The earlier future/unwired statements below describe the original package.
+
 ## 已执行的基线，不是本包运行证据
 
 正常 fetch 的基线为 PR210 合并后的 main

@@ -1,5 +1,10 @@
 # API-only image preparation: unwired internal helper
 
+Current integration update (2026-11-10): an internal, default-false same-run lifecycle
+path is prepared in the coordinator. CLI/workflow remain migration-only and no new
+actual API runtime has been performed. See [current lifecycle scope](offline-api-lifecycle-integration.md).
+The earlier future/unwired statements below describe the original package.
+
 ## Baseline and scope
 
 The independent development checkout starts at PR211 merged main

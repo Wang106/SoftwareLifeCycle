@@ -1,3 +1,30 @@
+## Current checkpoint — 2026-11-10: internal API lifecycle integration
+
+Baseline PR212 is merged as main `c5fcf45cb6c8b1d7b9a49d845b8f5cc1e2951b08`;
+[main CI42770999377](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42770999377)
+is verified successful: 3589 backend, 2749 subtests and 308 PostgreSQL cases without
+skips. Prior candidate-pending PR212 records below are historical. Provider state
+was not reverified for this package; CI success is not live service acceptance.
+
+This candidate adds an internal default-false lifecycle path, same-run API build
+before PG, migration/observation before the existing probe, strict source/receipt
+binding and API→migration→PG one-shot cleanup. CLI/workflow remain migration-only;
+no dependency/base acquisition, image build or container/API/database run occurred. No production,
+dependency, migration or gate change. [Scope and limits](docs/offline-api-lifecycle-integration.md)
+include the conservative budget admission floor and separate runtime approval.
+
+The initial 14-test capability suite failed; focused 20 now pass in discovery/direct
+execution. Notice-cleared regressions repaired outer cleanup control-exception
+preservation and anchored opted-in cleanup to the original deadline after budget
+mutation. 52 automation and 126 CI guards pass; compilation/progress/diff pass.
+746 full offline tests pass without skips. Independent final review passed, including
+20 focused tests, 35 legacy tests and extra original-deadline/exception-priority checks.
+Candidate is not yet published; exact-head CI is not run. No runtime acceptance.
+Business 36/44=82%, increment 0; modules 100/100demo/100demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+---
+
 ## 当前检查点 — 2026-11-10（UTC+8）迁移后 API 镜像只读探针准备（未接线）
 
 正常 fetch 基线 main `36ca2292f8a23b7d6320d0342269a4dfd635ef61`（PR210）。父协调任务已核实同提交联合演练 [42758822529](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42758822529) 和 [42758838506](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42758838506) 均 attempt 1 成功：0029 单头、varchar64、选定 7 表/3 函数/6 触发器、四业务表计数均 0，各次 2 准备＋2 联合容器清理。API、SELECT-only 角色、完整 schema 均未验证。旧“联合未运行”记录保留为历史，不代表当前状态，也不能把联合迁移成功升级成 API 成功。
