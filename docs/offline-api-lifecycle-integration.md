@@ -1,5 +1,9 @@
 # Internal same-run migration/API lifecycle
 
+Current entrypoint update (2026-11-10): a separate default-off CLI/manual workflow
+is prepared in [the entrypoint package](offline-migrated-api-rehearsal.md). The older
+CLI/workflow remain migration-only. No new actual lifecycle operation was run.
+
 ## Current scope
 
 PR212 is merged as main `c5fcf45cb6c8b1d7b9a49d845b8f5cc1e2951b08`.

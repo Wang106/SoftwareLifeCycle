@@ -5393,3 +5393,66 @@ mutation. 52 automation and 126 CI guards pass; compilation/progress/diff pass.
 Candidate is not yet published; exact-head CI is not run. No runtime acceptance.
 Business 36/44=82%, increment 0; modules 100/100demo/100demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+---
+
+## Current checkpoint — 2026-11-10: default-off migrated API entrypoint
+
+PR213 merged main `024849675a93e663cbf22ea17074bc906896bb14` is the verified baseline.
+[Main CI42779028387](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42779028387)
+passed: 3609 backend, 2832 subtests, 308 PostgreSQL cases without skips, 2274 frontend
+and strict 16+16 browser journeys. Cloudflare production build
+`2b587544-8b39-4baa-b935-ee9c0e1cd510` / version
+`99e6e693-69a1-4c3d-8ed6-a6b2a6d7b6fd` succeeded. Actions deployment and continuation
+were skipped, Render not checked. Older PR213 pending statements are historical.
+
+This additive candidate prepares a thin canonical-import CLI and a separate manual
+workflow whose boolean input defaults false and whose entire job is guarded.
+Existing migration-only CLI/workflow, coordinator/helpers, production, dependencies,
+migrations and CI gates are unchanged. New source checks use the original budget,
+fd-anchored bounded local Git and fixed downstream reserve; the original marker is
+never refreshed. SIGTERM state is restored before successful output. No actual
+dependency/base acquisition, image build, container/API/DB rehearsal or manual
+workflow dispatch occurred. [Scope and limitations](docs/offline-migrated-api-rehearsal.md)
+retain separate execution approval, the 630/1330-second admission limitation and
+uncertain cleanup boundaries; default read-only superuser trust is not a SELECT-only role.
+
+Initial 16 tests failed for the missing capability; all 16 now pass in discovery
+and direct execution. 762 full offline, 52 automation and 126 CI guard tests pass.
+Compilation, YAML structure, shell syntax, progress and diff checks pass. Independent
+final review passed, including 16 new, 20 lifecycle and 35 legacy contracts plus
+control-exception restoration and linked/FIFO/oversize-source rejection probes.
+The real Python entrypoint contract uses mocked Git/coordinator work, not an actual
+service. Candidate remains unpublished, so its exact-head CI is not yet verified.
+Business 36/44 = 82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+---
+
+## Current checkpoint — 2026-11-10: PR214 test-clock correction
+
+[PR214](https://github.com/Wang106/SoftwareLifeCycle/pull/214) head
+`ede55a5c3ccedaf4a32b07d4661b90ce610f908b` failed
+[CI42783262210](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42783262210):
+3625 backend tests passed but one new marker subcase failed; the backend report and
+aggregate gate correctly rejected it. Frontend/build and strict browser jobs passed,
+but this was not complete acceptance and the PR was not merged.
+
+The expired-marker test clamped `now - 3301 seconds` to 1. On a runner with uptime
+below 55 minutes, marker 1 can be valid with enough remaining budget. The runtime's
+success was correct; the fixture incorrectly expected rejection. An unchanged-test
+reproduction under paired 100-second clocks failed exactly that case. After the
+specific correction notice and pause, only this test now freezes paired clocks at
+4000 seconds and creates the genuinely expired 699-second marker. Added valid-marker
+controls cover young and older hosts. No runtime script, workflow, time limit or
+gate was changed and the old failing candidate was not rerun.
+
+17 focused tests pass via discovery/direct execution; 763 full offline, 52 automation
+and 126 CI guard tests pass. Progress and diff checks pass. Independent repair review
+passed 17 entrypoint, 20 lifecycle and 35 legacy tests; restoring the old fixture in
+memory reproduced the young-host failure, and the repair passes both ambient clocks.
+No dependency/base acquisition, real container/API/DB or manual workflow execution.
+This repair is not yet published; its new exact-head CI must be verified separately.
+Baseline main remains PR213 `0248496`; no deployment or acceptance increase claimed.
+Business 36/44 = 82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.

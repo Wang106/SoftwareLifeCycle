@@ -1,0 +1,46 @@
+name: Manual migrated API lifecycle rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_migrated_api:
+        description: Run the same-run migration and API lifecycle (separate runtime approval required)
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-migration-database-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearsal:
+    if: ${{ inputs.run_migrated_api == true }}
+    name: Separately approved owned migration and API lifecycle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Start shared 55-minute budget before checkout
+        run: |
+          python3 -c 'import os, time; open(os.environ["GITHUB_ENV"], "a").write("MIGRATION_REHEARSAL_STARTED_NS=" + str(time.monotonic_ns()) + "\n")'
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify synthetic contracts without Docker or database
+        run: |
+          python3 -B -m unittest discover -s backend/tests -p test_offline_migrated_api_rehearsal.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_api_lifecycle_integration.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_api_image_preparation.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_migrated_api_probe.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_migration_database_rehearsal.py -v
+      - name: Run separately approved same-run migrated API lifecycle
+        # Selecting this input is not an authorization credential. Actual work
+        # needs separate approval for acquisition/build, shared isolated trust,
+        # new empty-database DDL, read-only API probes and exact owned cleanup.
+        run: python3 -B scripts/offline_migrated_api_rehearsal.py --run --expected-commit "$GITHUB_SHA"
+      - name: Record blocked or uncertain result
+        if: ${{ failure() || cancelled() }}
+        run: echo 'Migrated API lifecycle blocked or uncertain; no retry, role isolation or company acceptance.' >> "$GITHUB_STEP_SUMMARY"
