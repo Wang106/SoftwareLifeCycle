@@ -16,12 +16,15 @@ import subprocess
 import sys
 import urllib.request
 
-VERSION = '157.0.8103.39'
+# Static trust evidence (not browser acceptance):
+# https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42753708819
+# Signed plist version; no Chrome installation or execution in that inspection.
+VERSION = '157.0.8103.51'
 URL = ('https://dl.google.com/chrome/mac/stable/'
        'accept_tos%3Dhttps%253A%252F%252Fwww.google.com%252Fintl%252Fen_ph%252Fchrome%252Fterms%252F'
        '%26_and_accept_tos%3Dhttps%253A%252F%252Fpolicies.google.com%252Fterms/googlechrome.pkg')
-SHA256 = '632913b34d7806ff0900632dba70b70d9852c82fee2a76973d36ca4d838d0169'
-PACKAGE_BYTES = 272427816
+SHA256 = '34b6cfbde780a236ec5c1c1a9300e231ad81acb454fc569f409513a7a6525bef'
+PACKAGE_BYTES = 272444759
 BUNDLE_PARTS = ('expanded', 'GoogleChrome.pkg', 'Payload', 'Google Chrome.app')
 IDENTIFIER = 'com.google.Chrome'
 REQUIREMENT = ('anchor apple generic and identifier "com.google.Chrome" '
