@@ -1,5 +1,21 @@
 # Internal same-run migration/API lifecycle
 
+## Actual execution update — 2026-11-10
+
+PR214 is merged as main `86e3fba3d3f8c5b5334ecb1cfd683b952272195b`.
+[Main CI42794359157](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42794359157)
+and Cloudflare production build `dc3a54b5-3f7b-4f68-abdd-c0fff808f3ba` succeeded.
+Separately approved [joint run42798938628](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42798938628)
+passed once (attempt1) at that commit: API started/ready, five checks passed,
+original migration0029 and selected empty observations, 2 preparation + 3 joint
+containers confirmed removed. No artifacts were uploaded. This is limited synthetic
+runtime evidence, not full schema, least privilege, provenance or deployment.
+
+The [new finite guard comparison](offline-pg-guard-contracts.md) is not wired into
+this lifecycle; that earlier successful run cannot validate it. Development-time
+unpublished/unexecuted statements below are historical checkpoints, not current
+claims that the separately approved runtime never happened.
+
 Current entrypoint update (2026-11-10): a separate default-off CLI/manual workflow
 is prepared in [the entrypoint package](offline-migrated-api-rehearsal.md). The older
 CLI/workflow remain migration-only. No new actual lifecycle operation was run.
@@ -104,8 +120,8 @@ Local focused 20 contracts pass via discovery and direct execution. Full offline
 automation, CI guard, compilation, progress and diff evidence is recorded in the
 current checkpoint. Exact-candidate CI, frontend/real PostgreSQL/browser gates,
 and any real lifecycle runtime must be reported separately. No actual runtime is
-accepted by these local checks. A separately reviewed and approved execution
-entry point remains future work.
+accepted by these local checks. The later reviewed entrypoint and approved actual run are recorded above;
+the new finite guard comparison is not integrated.
 
 Business 36/44=82%, increment 0; modules 100/100demo/100demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4, finite plan 8/8 unchanged.

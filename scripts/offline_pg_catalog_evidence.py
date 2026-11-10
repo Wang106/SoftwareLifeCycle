@@ -35,7 +35,8 @@ EXAMPLES = {
     'triggers': {'namespace': 'x', 'table': 'changeover_baselines', 'name': TRIGGERS[0],
                  'function_namespace': 'x', 'function_name': FUNCTIONS[0],
                  'function_arguments': '', 'type_bits': 27, 'enabled': 'O',
-                 'internal': False, 'constraint': False, 'definition': 'CREATE TRIGGER'},
+                 'internal': False, 'constraint': False, 'argument_count': 0,
+                 'argument_bytes': 0, 'has_when': False, 'definition': 'CREATE TRIGGER'},
 }
 
 
@@ -107,6 +108,8 @@ QUERIES = {
     'function_arguments': 'pg_catalog.substr(pg_catalog.pg_get_function_identity_arguments(p.oid),1,16385)',
     'type_bits': 't.tgtype', 'enabled': 't.tgenabled', 'internal': 't.tgisinternal',
     'constraint': 't.tgconstraint <> 0',
+    'argument_count': 't.tgnargs', 'argument_bytes': 'pg_catalog.octet_length(t.tgargs)',
+    'has_when': 't.tgqual IS NOT NULL',
     'definition': 'pg_catalog.substr(pg_catalog.pg_get_triggerdef(t.oid,false),1,16385)'},
     RELATIONS + ' JOIN pg_catalog.pg_trigger t ON t.tgrelid=c.oid JOIN pg_catalog.pg_proc p ON p.oid=t.tgfoid JOIN pg_catalog.pg_namespace pn ON pn.oid=p.pronamespace',
     't.tgname IN ' + literals(TRIGGERS) + ' AND c.relname IN ' + literals(TABLES + ('software_changeovers', 'production_batches')),
@@ -221,7 +224,7 @@ def collect(connection, namespace):
             observations[group] = collected
             if len(json.dumps(observations, ensure_ascii=True).encode()) > MAX_OUTPUT:
                 raise CatalogError()
-        result = {'format': 'slc-pg16-catalog-observation-v1',
+        result = {'format': 'slc-pg16-catalog-observation-v2',
                   'status': 'CATALOG_COLLECTED_NOT_ACCEPTANCE', 'namespace': namespace,
                   'namespace_oid': context['namespace_oid'], 'server_version_num': context['server_version_num'],
                   'database_verified': False, 'complete_schema_verified': False,

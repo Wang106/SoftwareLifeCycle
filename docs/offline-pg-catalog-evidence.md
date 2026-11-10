@@ -1,5 +1,10 @@
 # PG16有限目录观察准备
 
+当前更新（2026-11-10）：观察格式升为 v2，仅新增触发器参数数量、参数字节数及
+是否含 WHEN 三个结构化字段；旧 v1 不能代替这些证据。现有事务和七条 SELECT 的
+范围不变，新增[三函数六触发器有限比较](offline-pg-guard-contracts.md)，不作完整 schema 验收。
+下文最初“未执行”的记录属于该包开发阶段；最新 main CI 与实际联合证据见新说明。
+
 ## 状态与范围
 
 基线main `1e2f0f6ecb34ac7b35da52c0e84938e5d1d3a46c`，PR204。
@@ -39,7 +44,7 @@ READ ONLY事务不是安全沙箱，系统目录和内置反解析函数亦依�
 
 ## 输出是观察，不是放行
 
-输出format为`slc-pg16-catalog-observation-v1`，状态恒为
+输出format为`slc-pg16-catalog-observation-v2`，状态恒为
 `CATALOG_COLLECTED_NOT_ACCEPTANCE`，包含实际namespace/OID、PG版本及六组观察。
 `database_verified=false`、`complete_schema_verified=false`始终保留。
 空的观察集也是采集结果，不是迁移成功；缺失对象不填默认值。
@@ -57,7 +62,9 @@ READ ONLY事务不是安全沙箱，系统目录和内置反解析函数亦依�
 - functions：固定名字的实际签名、结果、语言、security-definer，
   pg_proc.prosrc原始UTF-8 SHA256与字节数。原函数体仅暂存内存，结果不输出函数体。
 - triggers：固定名字和实际表/函数schema/签名绑定、tgtype位集、tgenabled、
-  internal/constraint标志及pg_get_triggerdef原文。
+  internal/constraint标志及pg_get_triggerdef原文；v2增加argument_count、argument_bytes、
+  has_when；新增字段仅为计数/长度/存在性。保留的pg_get_triggerdef原文仍可能包含
+  实参内容及WHEN表达式，完整观察只交给获准调用方，不公开原文。
 
 不读取业务表行或alembic_version内容，不验证全量schema、数据、权限、函数行为、
 触发器会话行为或真实部署。真实测试fixture另外读取自己新建版本表确认迁移头；

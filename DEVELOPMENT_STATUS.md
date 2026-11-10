@@ -1,3 +1,40 @@
+## Current checkpoint — 2026-11-10: selected PG guard contracts
+
+Baseline PR214 is merged as main `86e3fba3d3f8c5b5334ecb1cfd683b952272195b`, with no open PR at start.
+[Main CI42794359157](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42794359157) passed:
+3626 backend, 2857 subtests, 308 PG cases without skips, 2274 frontend and strict 16+16 browser.
+Cloudflare production build `dc3a54b5-3f7b-4f68-abdd-c0fff808f3ba`, version
+`f594eec4-a7d1-4e19-a25c-4b2f6e587a89`, succeeded; Actions deployment/continuation skipped,
+Render not verified. Historical PR214 pending/failure entries are superseded by this exact evidence.
+
+Separately approved [actual joint run42798938628](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42798938628)
+passed once at the same commit, attempt1: original 0001–0029, API started/ready, five API checks,
+selected 7 tables/3 functions/6 triggers and four empty counts; 2 preparation + 3 joint containers
+confirmed removed, no artifacts. Full schema, SELECT-only role and provenance flags remain false.
+This evidence does not include the new comparison and is not company/deployment acceptance.
+
+This candidate extends the existing collector to v2 with structured trigger argument count/bytes
+and WHEN presence, then compares only the fixed three functions and six triggers against the
+existing SHA-bound manifest. Actual namespace is preserved, not rewritten into the public
+120-fact checklist. Old v1/missing fields, malformed types, duplicates/overloads and mismatches fail
+closed. Body length is bounded metadata, not independently authenticated. No new collector,
+manifest, migration, permission, dependency, Dockerfile, workflow or lifecycle invocation change.
+See [finite guard contracts](docs/offline-pg-guard-contracts.md).
+
+Initial 18 capability methods yielded 17 failures plus one existing fail-closed control. After
+implementation, 21 focused and 26 collector tests, 784 full offline tests, 52 automation and
+126 CI guards pass; in-memory compilation, progress and diff checks pass. Independent code/test
+review passed 21+26 final cases and 1293 extra synthetic assertions with no blocker.
+Final documentation review corrected the disclosure that preserved trigger definitions can
+contain arguments/WHEN text; no runtime change. Local work is mock/synthetic only. Real PG cases stay
+within the existing CI-owned random schema fixture and have not run locally. Candidate not yet
+published; exact-head full CI remains separate. No manual rehearsal was repeated.
+
+Business 36/44=82%, increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; browser1/4 and finite plan8/8 unchanged.
+
+---
+
 ## Current checkpoint — 2026-11-10: PR214 test-clock correction
 
 [PR214](https://github.com/Wang106/SoftwareLifeCycle/pull/214) head
