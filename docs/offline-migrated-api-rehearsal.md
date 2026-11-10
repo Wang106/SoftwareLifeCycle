@@ -114,3 +114,19 @@ commands. Exact-candidate CI and any real lifecycle operation remain separate.
 
 Business 36/44 = 82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+## PR214 CI fixture correction
+
+The first candidate `ede55a5c` failed CI42783262210 only in the new expired-marker
+subcase: 3625 backend passed, one subcase failed. `max(1, now - 3301 seconds)`
+created a valid marker on a newly booted runner, so the runtime correctly accepted
+it. An unchanged-test reproduction with 100-second paired clocks failed the same
+case. The test-only repair uses paired 4000-second clocks and marker 699 seconds,
+whose age is genuinely 3301 seconds, plus valid-marker controls on young/old hosts.
+Runtime, workflow and all budget/gate behavior are unchanged. No old-candidate rerun.
+
+Final local repair evidence: 17 focused tests pass via discovery/direct invocation,
+763 offline, 52 automation, 126 CI guards and progress/diff checks pass. Independent
+review reran 17+20+35 focused/related cases, reproduced the old failure in memory and
+verified the repaired case under both ambient clocks. New exact-head CI remains
+separate and no real lifecycle operation was executed.

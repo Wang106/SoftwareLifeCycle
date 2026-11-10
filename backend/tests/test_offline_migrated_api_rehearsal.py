@@ -78,11 +78,24 @@ class EntryTests(unittest.TestCase):
         with self.assertRaises(KeyboardInterrupt): self.handlers[0][1](signal.SIGTERM,None)
 
     def test_missing_bad_future_expired_marker_blocks_before_source(self):
-        now=time.monotonic_ns()
-        for stamp in (None,'','0','abc','+1',str(now+10**10),str(max(1,now-3301*10**9))):
-            with self.subTest(stamp=stamp):
-                self.assertEqual(self.invoke(['--run','--expected-commit',COMMIT],stamp=stamp),2)
-                self.assertEqual(self.order,[]); self.assertEqual(self.output.getvalue(),'')
+        # A fresh runner can have uptime below 3301 seconds. Clamp-to-one would
+        # then create a valid young marker instead of an expired one.
+        with patch.object(time,'monotonic',return_value=4000.0), \
+             patch.object(time,'monotonic_ns',return_value=4000*10**9):
+            now=time.monotonic_ns()
+            for stamp in (None,'','0','abc','+1',str(now+10**10),str(now-3301*10**9)):
+                with self.subTest(stamp=stamp):
+                    self.assertEqual(self.invoke(['--run','--expected-commit',COMMIT],stamp=stamp),2)
+                    self.assertEqual(self.order,[]); self.assertEqual(self.output.getvalue(),'')
+                    self.assertEqual(self.handlers[-1],(signal.SIGTERM,self.previous))
+
+    def test_valid_markers_on_young_and_old_hosts(self):
+        for now,stamp in ((100.0,'1'),(100.0,'current'),(4000.0,'current')):
+            with self.subTest(now=now,stamp=stamp), \
+                 patch.object(time,'monotonic',return_value=now), \
+                 patch.object(time,'monotonic_ns',return_value=int(now*10**9)):
+                self.assertEqual(self.invoke(['--run','--expected-commit',COMMIT],stamp=stamp),0)
+                self.assertEqual(self.order,['source','run'])
                 self.assertEqual(self.handlers[-1],(signal.SIGTERM,self.previous))
 
     def test_source_and_run_errors_are_sanitized_and_restore_handler(self):
