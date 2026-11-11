@@ -5533,3 +5533,49 @@ Exact-candidate CI remains pending. No service, database or manual rehearsal was
 Business36/44=82%, increment0; modules100/100demo/100demo/100/89/60/17;
 plans100/100/20/33/40/40/0; browser1/4 and finite plan8/8 unchanged. Full schema,
 SELECT-only role, provenance authentication, real identity and company acceptance remain open.
+
+---
+
+## Current checkpoint — 2026-11-11: paired retained synthetic recovery
+
+PR217 is verified merged as main `36b2413365fa31099b76e8814cf9ae9a515b5670`.
+[Main CI42973676479](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42973676479)
+passed backend/PostgreSQL, frontend/build, strict browser and aggregate checks.
+The same-commit Cloudflare production check succeeded (build
+`9f4054ab-ff57-4b3e-962d-196da881a49c`). Actions deployment and continuation were
+skipped; Render was not checked. No open PR or active repository workflow was
+found at package start. Older PR216/217 pending statements are historical.
+
+This candidate adds one fixed-synthetic paired producer/recovery coordinator,
+reusing the existing PostgreSQL and software backup/recovery CLIs. One producing
+invocation binds both independently allocated component runs and their exact
+retained inputs. Recovery requires the independently retained pair digest and
+explicit trusted-own-synthetic acknowledgement, uses new targets, and cannot
+combine arbitrary historical component receipts. Default/help do not execute it.
+Successful component exits and receipts are required; a persisted software
+CANDIDATE is never completion evidence. A later failure retains partial outputs
+and prevents overall success, without automatic retry or compensating deletion.
+
+The pair associates two sequential fixed synthetic backups; it is not a shared
+transactional snapshot, executable software/image recovery, source authenticity,
+portable backup, retention policy, company recovery or production acceptance.
+No existing producer/recoverer, workflow, dependency, migration, permission or
+production setting is changed. The new native test belongs to the existing full
+backend/PostgreSQL CI and remains distinct from local mocked validation.
+See [paired recovery scope](docs/offline-joint-retained-restore.md).
+
+The initial seven capability tests failed before implementation. Final local
+validation passes 22 focused, 872 full offline, 52 automation and 126 CI guard
+tests, plus in-memory compilation, progress and diff checks. Reproduced defects
+were corrected after specific notices and pauses: strict JSON exception
+normalization, live child-output bounds, original-error preservation during
+failure reporting/process cleanup, independent pipe closure and final deadline
+rechecks. The 600-second budget is cooperative, not a hard wall-clock guarantee.
+Independent final review passed the 22 focused cases, six extra cleanup/interrupt
+probes and a real tiny-child SIGTERM-to-SIGKILL timeout check. No new candidate is
+published and no
+exact-candidate CI or manual database/API/log rehearsal has run. Local native
+PostgreSQL and full pytest are unavailable; the new real joint recovery test
+must pass in exact-candidate CI rather than borrowing historical evidence.
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
