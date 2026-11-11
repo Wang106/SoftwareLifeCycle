@@ -96,6 +96,11 @@ pg_dump major, exact server version and absent new target. Cross-version migrati
 is deliberately unsupported, not silently attempted. Inherited `PG*` overrides
 remain rejected; only numeric loopback hosts and isolated control databases work.
 
+Retained v1 JSON inputs are capped at 64 KiB each and the fixed synthetic archive
+at 64 MiB. Snapshot reads/copies use 64 KiB chunks with byte-count and SHA256
+verification before target creation. These are input/IO budgets, not absolute RSS
+guarantees or authentication. See [input bounds](retained-restore-input-bounds.md).
+
 Original files are read-only inputs. A fresh exclusive output directory receives a
 checksum-verified package snapshot before restore, a new run ownership proof and
 `retained-synthetic-restore.json`. Original archive, manifest, baseline and old

@@ -1,3 +1,36 @@
+## Current checkpoint — 2026-11-11: retained synthetic input bounds
+
+PR218 is merged at main `c7b55d4c49b4bc69ecf4158542c6e2779670d69a`.
+[Main CI42980710200](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42980710200)
+passed backend (3736 tests and 3008 subtests, 309 PostgreSQL cases without skips),
+frontend, strict browser and aggregate. Same-main paired recovery evidence
+and Cloudflare build `9494fd24-db2a-4969-8b6f-60fcba812d7f` were verified.
+Actions deployment/continuation skipped; Render remains unverified. These are
+baseline results, not candidate evidence. Fresh remote main still matched at
+local implementation time. No overlapping open PR was present at publication
+preparation.
+
+This independent candidate repairs unbounded retained-recovery JSON reads and
+whole-archive snapshot allocation in the existing recoverer. Limits are 64 KiB
+per JSON, 64 MiB per archive, with 64 KiB streaming copy, pre/post read metadata
+checks, byte-count and SHA256 snapshot verification before target creation.
+An optional digest limit closes archive growth during initial native-catalog
+validation; legacy helper callers retain their default behavior. The fixed v1
+synthetic format, trust requirement, native checks, target refusal,
+ownership cleanup, dependencies, workflows and production boundaries are intact.
+See [scope and limitations](docs/retained-restore-input-bounds.md).
+
+Regression-first evidence: initial 7 cases failed (2 failures, 4 missing-helper
+errors); final 10 focused, 882 offline, 52 automation and 126 CI guard tests pass.
+Four actual-module pytest input-limit/growth cases await fresh full CI alongside the
+unchanged native retained/paired integration tests. No local database/API/Docker
+or manual workflow ran. No upload/PR/full candidate CI or merge is claimed.
+Independent review/publication and exact-head CI are the next gate; do not borrow
+baseline native results. Separate manual API rehearsal awaits the owner’s run confirmation.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
 ## Current checkpoint — 2026-11-11: paired retained synthetic recovery
 
 PR217 is verified merged as main `36b2413365fa31099b76e8814cf9ae9a515b5670`.
