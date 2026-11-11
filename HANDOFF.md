@@ -5614,3 +5614,40 @@ baseline native results. Separate manual API rehearsal awaits the owner’s run 
 
 Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+---
+
+## Current checkpoint — 2026-11-11: software producer descriptor cleanup
+
+Baseline is PR219 merged main `b7802f20db26e9d62953b99cb34a12df095f2c92`,
+verified unchanged and protected before publication preparation; no open PR was
+found at package start. [Main CI42987234765](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42987234765)
+passed at 2026-11-11 08:43:20 UTC: 3750 tests / 3011 subtests, including 309
+PostgreSQL cases without skips, plus frontend, strict browser and aggregate.
+Backend artifact `13841550696` SHA256
+`3a905f3e9457364bbbc8e658908cb67aab87e2c30d5306c9c5be28fcf446a9af`
+matched; its XML has 3750 tests with no bad outcomes. Retained and joint recovery
+source/checkout evidence both match this main commit with all safeguards true.
+Cloudflare production build `6b6d8d10-5e62-4037-b09a-ac801671c168` succeeded.
+Actions deployment42989282567 and continuation42989282715 skipped; Render remains
+unverified. These are baseline evidence, not this unpublished candidate's CI or
+deployment results.
+
+This narrow repair makes the software producer attempt every registered directory
+descriptor once even after an OSError, then raise the first error. A descriptor
+whose close outcome is uncertain is never retried, including on a second cleanup.
+The CLI still fails closed with redacted output; retained evidence is not deleted.
+Only the existing close method changes. No workflow, dependency, migration,
+receipt format, permission or safety gate is changed.
+
+Regression-first: 8 new tests produced 5 failures on the baseline and all pass
+after the repair, including real tiny synthetic directory descriptors and the
+CLI main entrypoint failure path. See [cleanup scope and validation](docs/software-producer-cleanup.md).
+Local regressions and independent review passed; publication remains pending.
+The reviewer independently reran 8 new tests, 890 offline tests, progress and diff
+checks with no blocker. Full validation is recorded there. No commit,
+upload, PR, exact-candidate CI, merge, API, database, Docker or manual workflow
+is claimed. Manual migrated-API runtime remains a separate owner-run action.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.

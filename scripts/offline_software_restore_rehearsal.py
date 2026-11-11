@@ -208,8 +208,18 @@ class Rehearsal:
         return report
 
     def close(self):
+        error = None
         while self.fds:
-            os.close(self.fds.pop())
+            fd = self.fds.pop()
+            try:
+                os.close(fd)
+            except OSError as exc:
+                # A failed close has an uncertain outcome. Never retry that
+                # descriptor number, but still attempt every other owned fd.
+                if error is None:
+                    error = exc
+        if error is not None:
+            raise error
 
     def __enter__(self):
         return self
