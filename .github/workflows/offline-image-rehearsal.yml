@@ -13,6 +13,11 @@ on:
         type: boolean
         required: false
         default: false
+      run_web_startup:
+        description: Start this run's Web image in a separate isolated container, without API/database integration (separate runtime approval required)
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -61,11 +66,14 @@ jobs:
         run: |
           python3 -m unittest discover -s backend/tests -p test_offline_image_rehearsal.py -v
           python3 -m unittest discover -s backend/tests -p test_offline_api_startup_rehearsal.py -v
-      - name: Build, validate and optionally smoke the isolated API process
+          python3 -m unittest discover -s backend/tests -p test_offline_web_startup_rehearsal.py -v
+          python3 -m unittest discover -s backend/tests -p test_offline_web_workflow.py -v
+      - name: Build, validate and optionally smoke separate isolated API and Web processes
         shell: bash
         env:
           EXPORT_IMAGE_BUNDLE: ${{ inputs.export_bundle }}
           RUN_API_STARTUP: ${{ inputs.run_api_startup }}
+          RUN_WEB_STARTUP: ${{ inputs.run_web_startup }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -85,6 +93,8 @@ jobs:
               require(option in ('false', 'true'))
               startup = os.environ['RUN_API_STARTUP']
               require(startup in ('false', 'true'))
+              web_startup = os.environ['RUN_WEB_STARTUP']
+              require(web_startup in ('false', 'true'))
               # Runner-local timing bookkeeping, not authenticated provenance.
               # Linux monotonic_ns shares its clock across these job processes.
               stamp = os.environ['REHEARSAL_STARTED_NS']
@@ -93,6 +103,7 @@ jobs:
               require(0 <= now - started < 3300 * 10**9)
               deadline = started + 3300 * 10**9
               api_reserve = 240 if startup == 'true' else 0
+              web_reserve = 240 if web_startup == 'true' else 0
               verify_reserve = 600 if option == 'true' else 0
 
               def remaining():
@@ -129,7 +140,7 @@ jobs:
 
               phase = 'checkout'
               require(child(['git', 'rev-parse', 'HEAD'], 41,
-                            allowance(30, verify_reserve + api_reserve)) == (commit + '\n').encode())
+                            allowance(30, verify_reserve + api_reserve + web_reserve)) == (commit + '\n').encode())
               args = [sys.executable, 'scripts/offline_image_rehearsal.py', '--run']
               if option == 'true':
                   # The exporter exclusively creates this path. Collision is a failure,
@@ -140,7 +151,7 @@ jobs:
 
               phase = 'rehearsal'
               result = parse_json(child(args, 4 * 1024**2,
-                                        allowance(3300, verify_reserve + api_reserve)))
+                                        allowance(3300, verify_reserve + api_reserve + web_reserve)))
               phase = 'receipt'
               fields = {'status', 'source_commit', 'host', 'bases', 'dependencies', 'images',
                         'source_sha256', 'compose', 'native_smoke', 'limitations'}
@@ -178,7 +189,7 @@ jobs:
                   verified = parse_json(child([sys.executable, 'scripts/offline_image_bundle.py',
                       'verify', str(destination), '--expected-commit', receipt['source_commit'],
                       '--expected-manifest-sha256', receipt['manifest_sha256']], 64 * 1024,
-                      allowance(600, api_reserve)))
+                      allowance(600, api_reserve + web_reserve)))
                   require(bundle.exact(verified, {'status': 'IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE',
                           'source_commit': commit, 'manifest_sha256': digest}))
 
@@ -187,14 +198,14 @@ jobs:
                   # Do not give a child subprocess a hard-kill timeout that bypasses
                   # the API script's 180-second work / 35-second owned-CID cleanup.
                   # Budget the full window before creating any new container.
-                  require(remaining() >= 240 + 30)
+                  require(remaining() >= 240 + web_reserve + 30)
                   import offline_api_startup_rehearsal as api
                   previous = signal.getsignal(signal.SIGTERM)
                   def interrupted(_signum, _frame):
                       raise KeyboardInterrupt()
                   try:
                       signal.signal(signal.SIGTERM, interrupted)
-                      require(remaining() >= 240 + 30)
+                      require(remaining() >= 240 + web_reserve + 30)
                       outcome = api.run_rehearsal(images['api']['image_id'], commit)
                   finally:
                       signal.signal(signal.SIGTERM, previous)
@@ -207,6 +218,37 @@ jobs:
                       'container_removed': True, 'limitations': api.LIMITATIONS,
                       'image_id': images['api']['image_id'], 'source_commit': commit,
                       'database_ready': False,
+                      'provenance': 'caller_supplied_trusted_build_consistency_only'}))
+
+              if web_startup == 'true':
+                  phase = 'web_startup'
+                  # A separate opt-in, not implied by the API option. Use only
+                  # this successful build's ID and source, after API removal if
+                  # requested. No live API is shared with the Web container.
+                  # Keep the full 180-second work / 35-second owned cleanup
+                  # window; never hard-kill a wrapper around container custody.
+                  require(remaining() >= 240 + 30)
+                  import offline_web_startup_rehearsal as web
+                  previous = signal.getsignal(signal.SIGTERM)
+                  def web_interrupted(_signum, _frame):
+                      raise KeyboardInterrupt()
+                  try:
+                      signal.signal(signal.SIGTERM, web_interrupted)
+                      require(remaining() >= 240 + 30)
+                      outcome = web.run_rehearsal(images['web']['image_id'], commit)
+                  finally:
+                      signal.signal(signal.SIGTERM, previous)
+                  require(type(outcome) is tuple and len(outcome) == 2)
+                  web_receipt, web_code = outcome
+                  require(type(web_code) is int and web_code == 0)
+                  require(bundle.exact(web_receipt, {
+                      'status': 'WEB_STARTUP_SSR_PASSED_NOT_BROWSER_OR_OFFLINE_ACCEPTANCE',
+                      'phase': 'FINAL_PROCESS', 'cases_passed': 2, 'cases_total': 2,
+                      'evidence_kind': 'runtime_attempt', 'container_removed': True,
+                      'limitations': web.LIMITATIONS,
+                      'image_id': images['web']['image_id'], 'source_commit': commit,
+                      'database_ready': False, 'api_integration': False,
+                      'browser_hydration': False, 'offline_acceptance': False,
                       'provenance': 'caller_supplied_trusted_build_consistency_only'}))
 
               phase = 'summary'
@@ -223,12 +265,22 @@ jobs:
               if startup == 'true':
                   text += ('API_PROCESS_SMOKE_PASSED_DATABASE_NOT_READY\n\n'
                            'API process probes: 10/10; container_removed=true; database_ready=false. '
-                           'Only this run\'s temporary, isolated API container was started.\n\n'
-                           'No physical network isolation, no database startup, migration, seed or real '
+                           'This run\'s temporary, isolated API container was started and removed.\n\n')
+              else:
+                  text += 'API process startup not requested.\n\n'
+              if web_startup == 'true':
+                  text += ('WEB_STARTUP_SSR_PASSED_NOT_BROWSER_OR_OFFLINE_ACCEPTANCE\n\n'
+                           'Web server HTML and disabled-login probes: 2/2; container_removed=true; '
+                           'database_ready=false; api_integration=false; browser_hydration=false; offline_acceptance=false. '
+                           'This run\'s separate, isolated Web container was started and removed. '
+                           'These sequential smokes are not a Web/API/database integration.\n\n')
+              else:
+                  text += 'Web process startup not requested.\n\n'
+              if startup == 'true' or web_startup == 'true':
+                  text += ('No physical network isolation, no database startup, migration, seed or real '
                            'authentication, no browser or company deployment acceptance.\n')
               else:
-                  text += ('API process startup not requested.\n\n'
-                           'No physical network isolation, no application/DB startup, no operator/deployment approval '
+                  text += ('No physical network isolation, no application/DB startup, no operator/deployment approval '
                            'or company acceptance.\n')
               text += ('Integrity checks are not signatures, provenance authentication or '
                        'security/license clearance. No runtime approval is inferred from these results.\n')
