@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 import offline_image_rehearsal as rehearsal
 import offline_api_startup_rehearsal as api_startup
+import offline_web_startup_rehearsal as web_startup
 
 
 class ImageRehearsalTests(unittest.TestCase):
@@ -998,7 +999,8 @@ class ImageBundleWorkflowTests(unittest.TestCase):
                  verify_raw=None, github_sha=None, head=None, fail=None, collision=None,
                  missing_env=None, startup='false', api_return=None, api_error=None,
                  started_ns=None, elapsed=None, now_ns=1000 * 10**9, handler_error=None,
-                 summary_error=False):
+                 summary_error=False, web='false', web_return=None, web_error=None,
+                 handler_error_at=1):
         import contextlib
         import os
         import uuid
@@ -1011,19 +1013,21 @@ class ImageBundleWorkflowTests(unittest.TestCase):
             verified = {'status': 'IMAGE_BUNDLE_VERIFIED_NOT_OFFLINE_ACCEPTANCE',
                         'source_commit': self.COMMIT, 'manifest_sha256': receipt.get('manifest_sha256', self.DIGEST)}
         calls, captured = [], {}
-        api_calls, handlers, timeouts = [], [], []
+        api_calls, web_calls, handlers, timeouts, runtime_order = [], [], [], [], []
         clock = [now_ns]
         previous_handler = object()
         elapsed = {} if elapsed is None else elapsed
         def set_handler(number, handler):
             handlers.append((number, handler))
-            if len(handlers) == 1:
-                clock[0] += int(elapsed.get('handler_install', 0) * 10**9)
-            if handler_error is not None and len(handlers) == 1:
+            if len(handlers) % 2 == 1:
+                stage = 'web_handler_install' if web == 'true' and (startup != 'true' or len(handlers) > 2) else 'handler_install'
+                clock[0] += int(elapsed.get(stage, 0) * 10**9)
+            if handler_error is not None and len(handlers) == handler_error_at:
                 raise handler_error
             return previous_handler
         def run_api(image_id, source_commit):
             api_calls.append((image_id, source_commit))
+            runtime_order.append('api')
             self.assertEqual(len(handlers), 1)
             self.assertEqual(len(calls), 3 if enabled == 'true' else 2)
             clock[0] += int(elapsed.get('api', 0) * 10**9)
@@ -1032,6 +1036,17 @@ class ImageBundleWorkflowTests(unittest.TestCase):
             if api_error is not None:
                 raise api_error
             return (self.api_receipt(), 0) if api_return is None else api_return
+        def run_web(image_id, source_commit):
+            web_calls.append((image_id, source_commit))
+            runtime_order.append('web')
+            self.assertEqual(len(handlers), 3 if startup == 'true' else 1)
+            self.assertEqual(len(calls), 3 if enabled == 'true' else 2)
+            clock[0] += int(elapsed.get('web', 0) * 10**9)
+            if web_error == 'signal':
+                handlers[-1][1](handlers[-1][0], None)
+            if web_error is not None:
+                raise web_error
+            return (self.web_receipt(), 0) if web_return is None else web_return
         out, err = io.StringIO(), io.StringIO()
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
@@ -1042,7 +1057,7 @@ class ImageBundleWorkflowTests(unittest.TestCase):
             elif collision == 'symlink': target.symlink_to(root / 'absent')
             env = {'RUNNER_TEMP': raw, 'GITHUB_STEP_SUMMARY': str(summary),
                    'GITHUB_SHA': self.COMMIT if github_sha is None else github_sha,
-                   'EXPORT_IMAGE_BUNDLE': enabled, 'RUN_API_STARTUP': startup,
+                   'EXPORT_IMAGE_BUNDLE': enabled, 'RUN_API_STARTUP': startup, 'RUN_WEB_STARTUP': web,
                    'REHEARSAL_STARTED_NS': str(clock[0]) if started_ns is None else started_ns}
             if missing_env: env.pop(missing_env)
             ordinary_open = open
@@ -1089,6 +1104,7 @@ class ImageBundleWorkflowTests(unittest.TestCase):
                  patch('signal.getsignal', return_value=previous_handler), \
                  patch('signal.signal', side_effect=set_handler), \
                  patch.object(api_startup, 'run_rehearsal', side_effect=run_api), \
+                 patch.object(web_startup, 'run_rehearsal', side_effect=run_web), \
                  patch('builtins.open', side_effect=public_open), \
                  contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
                 try:
@@ -1099,7 +1115,8 @@ class ImageBundleWorkflowTests(unittest.TestCase):
             captured.update(status=status, calls=calls, stdout=out.getvalue(), stderr=err.getvalue(),
                             summary=summary.read_text() if summary.exists() else '',
                             target_exists=target.exists(), target_is_link=target.is_symlink(),
-                            api_calls=api_calls, handlers=handlers, previous_handler=previous_handler,
+                            api_calls=api_calls, web_calls=web_calls, runtime_order=runtime_order,
+                            handlers=handlers, previous_handler=previous_handler,
                             timeouts=timeouts)
             if collision == 'file':
                 self.assertEqual(target.read_bytes(), b'PRIVATE_EXISTING')
@@ -1113,6 +1130,16 @@ class ImageBundleWorkflowTests(unittest.TestCase):
                 'container_removed': True, 'limitations': api_startup.LIMITATIONS,
                 'image_id': 'sha256:' + 'e' * 64, 'source_commit': self.COMMIT,
                 'database_ready': False,
+                'provenance': 'caller_supplied_trusted_build_consistency_only'}
+
+    def web_receipt(self):
+        return {'status': 'WEB_STARTUP_SSR_PASSED_NOT_BROWSER_OR_OFFLINE_ACCEPTANCE',
+                'phase': 'FINAL_PROCESS', 'cases_passed': 2, 'cases_total': 2,
+                'evidence_kind': 'runtime_attempt', 'container_removed': True,
+                'limitations': web_startup.LIMITATIONS,
+                'image_id': 'sha256:' + 'f' * 64, 'source_commit': self.COMMIT,
+                'database_ready': False, 'api_integration': False,
+                'browser_hydration': False, 'offline_acceptance': False,
                 'provenance': 'caller_supplied_trusted_build_consistency_only'}
 
     def blocked(self, value, *, calls=None):
