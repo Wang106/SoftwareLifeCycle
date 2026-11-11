@@ -522,10 +522,21 @@ def dump_database(admin: PostgresAdmin, database: str, archive: Path) -> None:
         raise RehearsalError("pg_dump did not create a nonempty archive")
 
 
-def archive_digest(archive: Path) -> str:
+def archive_digest(archive: Path, *, max_bytes: int | None = None) -> str:
+    """Hash with an optional input budget; legacy callers retain their behavior."""
+    if max_bytes is not None and (type(max_bytes) is not int or max_bytes < 0):
+        raise RehearsalError("Archive size limit must be a nonnegative integer")
     digest = hashlib.sha256()
+    total = 0
     with archive.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+        while True:
+            size = 1024 * 1024 if max_bytes is None else min(1024 * 1024, max_bytes - total + 1)
+            chunk = stream.read(size)
+            if not chunk:
+                break
+            total += len(chunk)
+            if max_bytes is not None and total > max_bytes:
+                raise RehearsalError("Backup archive exceeds size limit")
             digest.update(chunk)
     return digest.hexdigest()
 
@@ -535,7 +546,8 @@ def write_manifest(path: Path, manifest: dict[str, Any]) -> None:
     path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 
 
-def verify_archive(admin: PostgresAdmin, archive: Path, manifest: dict[str, Any], run_id: str) -> None:
+def verify_archive(admin: PostgresAdmin, archive: Path, manifest: dict[str, Any], run_id: str,
+                   *, max_bytes: int | None = None) -> None:
     if manifest.get("run_id") != run_id:
         raise RehearsalError("Manifest run ID does not match")
     expected = {
@@ -548,7 +560,7 @@ def verify_archive(admin: PostgresAdmin, archive: Path, manifest: dict[str, Any]
         raise RehearsalError("Backup archive is missing")
     if manifest.get("archive_size") != archive.stat().st_size:
         raise RehearsalError("Backup archive size does not match manifest")
-    if manifest.get("archive_sha256") != archive_digest(archive):
+    if manifest.get("archive_sha256") != archive_digest(archive, max_bytes=max_bytes):
         raise RehearsalError("Backup archive checksum does not match manifest")
     listing = _native(["pg_restore", "--list", str(archive)], admin).stdout
     for required in ("audit_events", "alembic_version", "releases"):

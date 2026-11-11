@@ -7,9 +7,11 @@ not production recovery or arbitrary database imports.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
+import stat
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,11 +24,77 @@ SUPPORTED_REVISION = "0029_changeover_batch_history"
 REPORT_NAME = "retained-synthetic-restore.json"
 
 
-def read_object(path: Path) -> dict[str, Any]:
-    if path.is_symlink() or not path.is_file():
-        raise backup.RehearsalError("Package input must be a regular non-symlink file")
+# Fixed synthetic v1 packages only; these are IO budgets, not an RSS guarantee.
+MAX_JSON_BYTES = 64 * 1024
+MAX_ARCHIVE_BYTES = 64 * 1024 * 1024
+COPY_CHUNK_BYTES = 64 * 1024
+
+
+def input_stat(path: Path, limit: int) -> os.stat_result:
     try:
-        value = json.loads(path.read_text())
+        info = path.lstat()
+    except OSError as exc:
+        raise backup.RehearsalError("Package input cannot be inspected") from exc
+    if not stat.S_ISREG(info.st_mode):
+        raise backup.RehearsalError("Package input must be a regular non-symlink file")
+    if info.st_size > limit:
+        raise backup.RehearsalError("Package input exceeds size limit")
+    return info
+
+
+def identity(info: os.stat_result) -> tuple[int, ...]:
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+
+
+def bounded_chunks(path: Path, limit: int):
+    """Read at most limit + one sentinel byte, rejecting concurrent changes."""
+    before = input_stat(path, limit)
+    total = 0
+    try:
+        with path.open("rb") as stream:
+            if identity(os.fstat(stream.fileno())) != identity(before):
+                raise backup.RehearsalError("Package input changed before reading")
+            while True:
+                chunk = stream.read(min(COPY_CHUNK_BYTES, limit - total + 1))
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > limit:
+                    raise backup.RehearsalError("Package input exceeds size limit")
+                yield chunk
+            if (total != before.st_size
+                    or identity(os.fstat(stream.fileno())) != identity(before)
+                    or identity(input_stat(path, limit)) != identity(before)):
+                raise backup.RehearsalError("Package input changed during reading")
+    except OSError as exc:
+        raise backup.RehearsalError("Package input cannot be read") from exc
+
+
+def bounded_digest(path: Path, limit: int) -> str:
+    digest = hashlib.sha256()
+    for chunk in bounded_chunks(path, limit):
+        digest.update(chunk)
+    return digest.hexdigest()
+
+
+def copy_snapshot(path: Path, destination: Path, expected_size: int,
+                  expected_digest: str, limit: int) -> None:
+    digest = hashlib.sha256()
+    total = 0
+    with destination.open("xb") as output:
+        for chunk in bounded_chunks(path, limit):
+            output.write(chunk)
+            total += len(chunk)
+            digest.update(chunk)
+    if (total != expected_size or digest.hexdigest() != expected_digest
+            or destination.stat().st_size != expected_size
+            or bounded_digest(destination, limit) != expected_digest):
+        raise backup.RehearsalError("Package changed during snapshot; no target created")
+
+
+def read_object(path: Path) -> dict[str, Any]:
+    try:
+        value = json.loads(b"".join(bounded_chunks(path, MAX_JSON_BYTES)).decode("utf-8"))
     except (OSError, ValueError) as exc:
         raise backup.RehearsalError("Package JSON cannot be read") from exc
     if not isinstance(value, dict):
@@ -38,6 +106,7 @@ def validate_package(
     admin: backup.PostgresAdmin, archive: Path, manifest_path: Path, baseline_path: Path,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """No database connection/write, migrations or seed calls in this validation."""
+    input_stat(archive, MAX_ARCHIVE_BYTES)
     manifest, baseline = read_object(manifest_path), read_object(baseline_path)
     old_run = manifest.get("run_id")
     if not isinstance(old_run, str) or not backup.RUN_ID_PATTERN.fullmatch(old_run):
@@ -94,7 +163,7 @@ def validate_package(
     match = re.match(r"pg_restore \(PostgreSQL\) (\d+)\.", current_restore)
     if not match or not isinstance(dump_version, str) or not re.match(r"pg_dump \(PostgreSQL\) " + match[1] + r"\.", dump_version):
         raise backup.RehearsalError("Retained package pg_dump version is unsupported")
-    backup.verify_archive(admin, archive, manifest, old_run)
+    backup.verify_archive(admin, archive, manifest, old_run, max_bytes=MAX_ARCHIVE_BYTES)
     return manifest, baseline
 
 
@@ -145,16 +214,18 @@ def recover(
             raise backup.RehearsalError("Recovery server version differs from backup baseline")
     implementation, checkout = backup.git_commits(repo_root)
     inputs = {"archive": archive, "manifest": manifest_path, "baseline": baseline_path}
-    fingerprints = {name: backup.archive_digest(path) for name, path in inputs.items()}
+    limits = {"archive": MAX_ARCHIVE_BYTES, "manifest": MAX_JSON_BYTES, "baseline": MAX_JSON_BYTES}
+    sizes = {name: input_stat(path, limits[name]).st_size for name, path in inputs.items()}
+    fingerprints = {name: bounded_digest(path, limits[name]) for name, path in inputs.items()}
     # Exclusive new output directory is also a snapshot: restoration never reopens
     # the caller's archive after validation. Original backup inputs stay untouched.
     evidence_dir.mkdir(parents=True, exist_ok=False)
     snapshot = evidence_dir / "package"
     snapshot.mkdir()
-    for path in inputs.values():
-        (snapshot / path.name).write_bytes(path.read_bytes())
+    for name, path in inputs.items():
+        copy_snapshot(path, snapshot / path.name, sizes[name], fingerprints[name], limits[name])
     manifest2, baseline2 = validate_package(admin, snapshot / archive.name, snapshot / manifest_path.name, snapshot / baseline_path.name)
-    if manifest2 != manifest or baseline2 != baseline or any(backup.archive_digest(snapshot / path.name) != fingerprints[name] for name, path in inputs.items()):
+    if manifest2 != manifest or baseline2 != baseline or any(bounded_digest(snapshot / path.name, limits[name]) != fingerprints[name] for name, path in inputs.items()):
         raise backup.RehearsalError("Package changed during snapshot; no target created")
     proof_path = backup.ownership_proof_path(evidence_dir, run_id)
     proof = backup.new_ownership_proof(run_id, admin)
@@ -176,7 +247,7 @@ def recover(
         restored = backup.inventory(admin, target, manifest["run_id"], manifest["fixture_ids"])
         backup.assert_restored_inventory_matches(baseline["source_inventory"], restored)
         append_only = prove_target_append_only(admin, target, restored["fixture"]["audit"])
-        if any(backup.archive_digest(path) != fingerprints[name] for name, path in inputs.items()):
+        if any(bounded_digest(path, limits[name]) != fingerprints[name] for name, path in inputs.items()):
             raise backup.RehearsalError("Original backup package changed during recovery")
         report.update(status="passed", target_inventory=restored, append_only=append_only,
                       originals_unchanged=True, cleanup="retained_for_explicit_cleanup")
