@@ -1,4 +1,4 @@
-"""Unwired internal helper for a future trusted, same-run coordinator.
+"""Internal helper for the explicitly opted-in, same-run coordinator.
 
 The caller establishes approval, reviewed checkout/image provenance, original
 budget and ownership of a freshly migrated PG before calling. Live objects and
@@ -15,12 +15,14 @@ import time
 
 import offline_api_startup_rehearsal as startup
 import offline_migration_database_rehearsal as joint
+import offline_migrated_api_guard as guard
 
 Blocked = joint.Blocked
 require = joint.require
 exact = joint.exact
-LIMITATIONS = ('Unwired trusted-caller helper; consistency only, not provenance or authorization. '
+LIMITATIONS = ('Trusted-caller helper; consistency only, not provenance or authorization. '
     'Default read-only PostgreSQL sessions using temporary superuser trust are not a SELECT-only role. '
+    'Nine selected guard contracts bracket five HTTP cases while API is alive, not before startup or after removal. '
     'Selected empty catalogs, structures and four row counts only; not full schema, all data, '
     'real identity, browser, physical isolation or company deployment acceptance. '
     'API removal is not graceful application shutdown. Caller still owns PG cleanup. '
@@ -192,29 +194,35 @@ def _compare_observations(before, after):
 
 
 def _bounded(command, budget, seconds, reserve):
-    deadline=min(time.monotonic()+seconds,budget.deadline-30-reserve)
+    original_deadline=budget.deadline
+    deadline=min(time.monotonic()+seconds,original_deadline-30-reserve)
     def call(args, *, timeout=15, limit=65536):
+        require(budget.deadline==original_deadline,'BUDGET_CHANGED')
         remaining=min(deadline-time.monotonic(),budget.allowance(timeout,reserve))
         require(remaining>0,'API_STAGE_TIMEOUT')
         return command(args,timeout=min(timeout,remaining),limit=limit)
     return call
 
 
-def run_probe(*, pg, netns, image_id, source_commit, command, budget):
-    """Trusted caller only; unwired until a separately reviewed coordinator exists.
+def run_probe(*, pg, netns, image_id, source_commit, command, budget, guard_program, cleanup_command):
+    """Trusted caller only; requires the coordinator's verified guard program.
 
     command must be that coordinator's bounded, local-daemon adapter (stderr
     suppressed, output capped, no retries). budget is its original 55-minute
     Budget. The caller validates build/source provenance and retains PG cleanup
     in its own finally block, including when this function raises BaseException.
+    cleanup_command uses the same daemon but the frozen original deadline, not
+    the mutable work Budget; it is used only by this helper's owned cleanup.
     No boolean, label, CID, JSON receipt or this function grants authorization.
     """
     require(type(image_id) is str and re.fullmatch('sha256:[0-9a-f]{64}',image_id)
             and type(source_commit) is str and re.fullmatch('[0-9a-f]{40}',source_commit),
             'ARGUMENTS_REJECTED')
-    require(callable(command) and type(budget) is joint.builder.Budget
+    require(callable(command) and callable(cleanup_command) and type(budget) is joint.builder.Budget
             and type(budget.deadline) in (int,float) and math.isfinite(budget.deadline),
             'TRUSTED_COORDINATOR_REQUIRED')
+    require(type(guard_program) is str and 0 < len(guard_program.encode('utf-8')) <= 65536,
+            'GUARD_PROGRAM_REJECTED')
     original_deadline=budget.deadline
     budget.reserve(300)
     lease=_PGLease(pg,netns,source_commit)
@@ -228,6 +236,19 @@ def run_probe(*, pg, netns, image_id, source_commit, command, budget):
     baked=startup.verify_image(raw,image_id,source_commit)
     api=_APIContainer(pg.root,image_id,source_commit,baked,lease.cid,netns)
     original=None; cleanup_failed=False; after_failed=False; after=None
+    guards_before=None; guards_after=None
+    def observe_guards():
+        # Private catalog IPC has a separate cap. HTTP framing/limits stay fixed.
+        lease.check(work)
+        api.inspect(work,state='running')
+        code,raw=work(['exec','--user=65532:65532',api.cid,
+            '/usr/local/bin/python','-I','-B','-c',guard_program,netns],
+            timeout=45,limit=524288)
+        require(code==0,'GUARD_COLLECTION_FAILED_OR_UNCERTAIN')
+        result=guard.parse_and_check(raw)
+        lease.check(work)
+        api.inspect(work,state='running')
+        return result
     try:
         lease.check(work)
         api.create(work)
@@ -242,23 +263,31 @@ def run_probe(*, pg, netns, image_id, source_commit, command, budget):
             time.sleep(.2)
         else: raise Blocked('API_STARTUP_TIMEOUT')
         lease.check(work)
+        guards_before=observe_guards()
         for name in CASES:
             code,raw=api.execute(work,PROBE_PROGRAM,name)
             require(code==0 and exact(startup.document(raw),{'case':name,'passed':True}),'API_PROBE_REJECTED')
+        guards_after=observe_guards()
+        guard.checked_pair(guards_before,guards_after)
         code,raw=api.execute(work,PROCESS_PROGRAM,netns)
         require(code==0 and exact(startup.document(raw),PROCESS_RECEIPT),'API_PROCESS_REJECTED')
     except BaseException as error:
         original=error
     finally:
-        clean=_bounded(adapter,budget,40,80)
+        cleanup_deadline=min(time.monotonic()+40,original_deadline-30-80)
+        def clean(args,*,timeout=20,limit=65536):
+            remaining=cleanup_deadline-time.monotonic()
+            require(remaining>0,'API_CLEANUP_UNCONFIRMED')
+            return cleanup_command(args,timeout=min(timeout,remaining),limit=limit)
         try: api.cleanup(clean)
         except BaseException as error:
             cleanup_failed=True
             if original is None and not isinstance(error,Exception): original=error
         # Never claim an end-state while the API could still be writing/reading.
         if api.cleaned:
-            post=_bounded(adapter,budget,30,40)
             try:
+                require(budget.deadline==original_deadline,'BUDGET_CHANGED')
+                post=_bounded(adapter,budget,30,40)
                 after=lease.observe(post)
                 _compare_observations(before,after)
             except BaseException as error:
@@ -270,8 +299,11 @@ def run_probe(*, pg, netns, image_id, source_commit, command, budget):
         raise original
     require(not cleanup_failed and api.cleaned,'API_CLEANUP_UNCONFIRMED')
     require(not after_failed and after is not None,'POST_API_DATABASE_UNCONFIRMED')
-    return {'format':'slc-migrated-api-probe-v1','status':'LIMITED_MIGRATED_API_PASSED_NOT_DEPLOYMENT',
+    return {'format':'slc-migrated-api-probe-v2','status':'LIMITED_MIGRATED_API_PASSED_NOT_DEPLOYMENT',
             'source_commit':source_commit,'api_image_id':image_id,'cases_passed':len(CASES),
             'database_ready':True,'api_container_removed':True,'postgres_removed_by_helper':False,
-            'observation_before':before,'observation_after':after,'readonly_role_verified':False,
+            'observation_before':before,'observation_after':after,
+            'guard_coverage':'api-alive-five-http-cases-three-functions-six-triggers',
+            'guard_checks_before':guards_before['checks'],'guard_checks_after':guards_after['checks'],
+            'guard_transactions_closed':2,'readonly_role_verified':False,
             'complete_schema_verified':False,'provenance_authenticated':False,'limitations':LIMITATIONS}

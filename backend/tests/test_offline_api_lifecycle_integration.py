@@ -22,6 +22,28 @@ API_IMAGE = 'sha256:'+'e'*64
 CIDS = {'pg':'c'*64, 'migration':'d'*64, 'api':'f'*64}
 
 
+def guard_envelope():
+    # Synthetic rows only. Runtime parser/comparator still execute unchanged.
+    facts=json.loads((ROOT/'deploy/offline/migration-schema-0029.json').read_text())['facts']
+    catalog=probe.guard.catalog
+    groups={name:[] for name in catalog.LIMITS}
+    for name in catalog.FUNCTIONS:
+        groups['functions'].append(dict(namespace='public',name=name,identity_arguments='',
+            result='trigger',language='plpgsql',security_definer=False,
+            body_sha256=facts['function:'+name]['body_sha256'],body_bytes=100))
+    for name in catalog.TRIGGERS:
+        fact=facts['trigger:'+name]
+        groups['triggers'].append(dict(namespace='public',table=fact['table'],name=name,
+            function_namespace='public',function_name=fact['function'],function_arguments='',
+            type_bits=27,enabled='O',internal=False,constraint=False,argument_count=0,
+            argument_bytes=0,has_when=False,definition='PRIVATE_SENTINEL'))
+    observation=dict(format='slc-pg16-catalog-observation-v2',status='CATALOG_COLLECTED_NOT_ACCEPTANCE',
+        namespace='public',namespace_oid=2200,server_version_num=160015,database_verified=False,
+        complete_schema_verified=False,transaction_completed=False,observations=groups)
+    return dict(format='slc-migrated-api-guard-observation-v1',rollback_completed=True,
+        connection_closed=True,observation=observation)
+
+
 def snapshot(c, state):
     return {'Id':c.cid, 'Image':c.image_id, 'Name':'/'+c.name, 'Path':c.entrypoint,
         'Args':list(c.args), 'Config':{'Image':c.image_id,
@@ -45,13 +67,19 @@ def snapshot(c, state):
 class LifecycleTests(unittest.TestCase):
     def run_case(self, *, enabled=True, failure=None, prepare_mutation=None,
                  probe_mutation=None, expire_migration_stage=False, preparation_time=0,
-                 budget_mutation_after_probe=False):
+                 budget_mutation_after_probe=False, guard_failure=None, guard_mutation=None):
         self.events=[]; self.calls=[]; self.objects=[]; self.states={}; self.clock=100.0
         self.budget=None; self.probe_budget=None; self.source_calls=[]
+        self.guard_budget=None; self.guard_program=None; self.guard_calls=0
         real_init=m.OwnedContainer.__init__
         real_probe=probe.run_probe
         def init(c,*args,**kwargs):
             real_init(c,*args,**kwargs); self.objects.append(c)
+        def guard_prepare(commit,budget):
+            self.events.append('guard_prepare'); self.guard_budget=budget
+            self.assertEqual(commit,COMMIT)
+            if guard_failure=='prepare': raise m.Blocked('GUARD_PREPARE_FAILURE')
+            return 'MOCK_BOUND_GUARD_PROGRAM'
         def build(commit,**kwargs):
             self.events.append('migration_prepare')
             return {'status':m.builder.SUCCESS,'source_commit':commit,'database_connected':False,
@@ -67,6 +95,7 @@ class LifecycleTests(unittest.TestCase):
             return r
         def run_probe(**kwargs):
             self.events.append('api_probe'); self.probe_budget=kwargs['budget']
+            self.guard_program=kwargs['guard_program']
             self.assertIs(kwargs['budget'],self.budget)
             pg=next(c for c in self.objects if c.kind=='pg')
             self.assertIs(kwargs['pg'],pg); self.assertFalse(pg.cleaned)
@@ -108,8 +137,20 @@ class LifecycleTests(unittest.TestCase):
                 if args[-1]==m.OBSERVE_SQL:
                     self.events.append('observe')
                     return 0,json.dumps({} if failure=='observation' else m.EXPECTED_OBSERVATION).encode()
+                if 'MOCK_BOUND_GUARD_PROGRAM' in args:
+                    self.events.append('guard_collect'); self.guard_calls+=1
+                    phase='before' if self.guard_calls==1 else 'after'
+                    if guard_failure==phase: return 2,b''
+                    if isinstance(guard_failure,tuple) and guard_failure[0]==phase: raise guard_failure[1]
+                    if guard_failure=='exhaust_before': self.clock+=120
+                    if isinstance(guard_failure,tuple) and guard_failure[0]=='mutate_budget':
+                        self.budget.deadline=guard_failure[1]
+                    value=guard_envelope()
+                    if guard_mutation and phase=='after': guard_mutation(value['observation'])
+                    return 0,json.dumps(value).encode()
                 if probe.PROCESS_PROGRAM in args: return 0,json.dumps(probe.PROCESS_RECEIPT).encode()
                 if probe.PROBE_PROGRAM in args:
+                    self.events.append('http:'+args[-1])
                     if isinstance(failure,BaseException): raise failure
                     return (1,b'') if failure=='probe' else (0,json.dumps({'case':args[-1],'passed':True}).encode())
             if args[0]=='rm':
@@ -123,6 +164,7 @@ class LifecycleTests(unittest.TestCase):
             patches=[patch.object(m.tempfile,'mkdtemp',return_value=root),
                 patch.object(m,'source_binding',side_effect=lambda *a,**k:self.source_calls.append((a,k))),
                 patch.object(m.builder,'run',side_effect=build),
+                patch.object(probe.guard,'prepare',side_effect=guard_prepare),
                 patch.object(preparation,'prepare',side_effect=prepare),
                 patch.object(probe,'run_probe',side_effect=run_probe),
                 patch.object(m.builder,'host',return_value=(['docker','--host=unix:///var/run/docker.sock'],{})),
@@ -261,10 +303,13 @@ class SourceAndReceiptTests(unittest.TestCase):
                 m._api_preparation_receipt(value,COMMIT,MIGRATION_IMAGE,preparation)
 
     def test_probe_receipt_rejects_missing_fields_and_boolean_integer_aliases(self):
-        good={'format':'slc-migrated-api-probe-v1','status':'LIMITED_MIGRATED_API_PASSED_NOT_DEPLOYMENT',
+        good={'format':'slc-migrated-api-probe-v2','status':'LIMITED_MIGRATED_API_PASSED_NOT_DEPLOYMENT',
             'source_commit':COMMIT,'api_image_id':API_IMAGE,'cases_passed':5,'database_ready':True,
             'api_container_removed':True,'postgres_removed_by_helper':False,
             'observation_before':dict(m.EXPECTED_OBSERVATION),'observation_after':dict(m.EXPECTED_OBSERVATION),
+            'guard_coverage':'api-alive-five-http-cases-three-functions-six-triggers',
+            'guard_checks_before':probe.guard.expected_checks(),'guard_checks_after':probe.guard.expected_checks(),
+            'guard_transactions_closed':2,
             'readonly_role_verified':False,'complete_schema_verified':False,
             'provenance_authenticated':False,'limitations':probe.LIMITATIONS}
         m._api_probe_receipt(good,COMMIT,API_IMAGE,probe)
