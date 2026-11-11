@@ -5694,3 +5694,25 @@ API action still awaits the owner and is not replaced by this preparation.
 
 Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+
+## 当前检查点 — 2026-11-11：离线只读安装操作指南
+
+基线为 PR221 合并 main `a66d20b2eab8d7949a67d14a8ca32f6ff1fec5fc`，
+[CI43011453078](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43011453078)
+通过3777 tests、3045 subtests、309 PostgreSQL cases无跳过及完整门禁。
+协调任务核对同main Cloudflare `db1bc924`成功；Actions deploy43013280579及continuation43013280666跳过，
+Render未核验，没有新手动API运行。旧记录中的PR221未发布状态是历史；上述是当前基线，不是本候选CI。
+
+本包仅新增[离线只读安装操作指南](docs/offline-operator-installation.md)、两处入口及四份检查点。
+明确五文件交接原件不变，先用独立可信回执验证，再在不同操作员目录复制镜像并精确映射清单，
+秘密输入与私有渲染输出分开；默认false声明不得伪造。现有工具命令和未来人工load/start例子分开，
+缺OS/运行时安装介质、数据库/SELECT-only角色或准确目标许可即停止，不把临时超级用户演练当安装验收。
+双Compose视图都保留no-env-resolution，禁用pull/build且明确文件/项目；不增加新安装器或探针。
+
+本地909既有离线、52自动化及126CI守卫测试全部通过、零跳过；微型合成export/verify→清单映射/镜像副本→false声明拒绝→
+fixture-only配置渲染→原件字节/mtime不变且再次验证通过。9段shell仅语法检查、本地链接、进度及diff检查通过。
+没有执行真实Docker/Compose解析、镜像准备/加载、容器/HTTP/数据库、公司机器、上传或新的手动演练。
+本地验证与独立复审均已通过，无阻断；未提交/发布，待发布及新候选完整CI，不将文档新增计为运行成功。
+业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；
+浏览器阶段1/4、有限计划8/8不变。

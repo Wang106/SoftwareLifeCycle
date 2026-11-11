@@ -1,5 +1,7 @@
 # Offline read-only configuration preflight (preparation only)
 
+完整操作顺序与两种清单的映射见[离线只读安装操作指南](offline-operator-installation.md)。原始五文件交接包保持不变，操作员输入和私有输出分别存放；该指南不代表实际安装验收。
+
 ## Scope and current target decision — 2026-10-26
 
 The user selected a **candidate** physical Windows Server 2016 Standard 1607,

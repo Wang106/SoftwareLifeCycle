@@ -1,5 +1,7 @@
 # Optional local image handoff bundle
 
+完整操作顺序与两种清单的映射见[离线只读安装操作指南](offline-operator-installation.md)。原始五文件交接包保持不变，操作员输入和私有输出分别存放；该指南不代表实际安装验收。
+
 This is an opt-in retention step for the **same successful image rehearsal**,
 followed by an independent read-only verifier. It is not an installer, operator
 bundle, signature, offline acceptance or company deployment approval.
