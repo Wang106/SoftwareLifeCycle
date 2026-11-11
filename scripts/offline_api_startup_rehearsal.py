@@ -191,12 +191,20 @@ def verify_probe(name, code, raw):
 
 
 class Container:
+    # Fixed class contracts let the separate Web probe reuse CID custody and
+    # isolation validation. API defaults and its public interface are unchanged.
+    label = LABEL
+    name_prefix = 'slc-api-startup-'
+    runtime_environment = ENVIRONMENT
+    executable = '/usr/local/bin/python'
+    command = UVICORN_ARGS
+
     def __init__(self, root, child, token, image_id, commit, baked_env):
         require(re.fullmatch('[0-9a-f]{32}', token) is not None, 'ARGUMENTS_REJECTED')
         self.root, self.child, self.token = root, child, token
         self.image_id, self.commit = image_id, commit
-        self.environment = baked_env | ENVIRONMENT
-        self.name = 'slc-api-startup-' + token
+        self.environment = baked_env | self.runtime_environment
+        self.name = self.name_prefix + token
         self.cidfile = root / 'container.cid'
         self.cid = None
         self.pid = None
@@ -204,15 +212,15 @@ class Container:
 
     def create_args(self):
         args = ['create', '--pull=never', '--platform=linux/amd64', '--name', self.name,
-                '--cidfile', str(self.cidfile), '--label', LABEL + '=' + self.token,
+                '--cidfile', str(self.cidfile), '--label', self.label + '=' + self.token,
                 '--network=none', '--log-driver=none', '--read-only', '--user=65532:65532',
                 '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=64',
                 '--memory=512m', '--memory-swap=512m', '--cpus=1', '--shm-size=8m',
                 '--ipc=private', '--cgroupns=private', '--restart=no', '--no-healthcheck',
-                '--workdir=/app', '--entrypoint=/usr/local/bin/python']
+                '--workdir=/app', '--entrypoint=' + self.executable]
         for path, options in TMPFS.items(): args += ['--tmpfs', path + ':' + options]
-        for key, value in ENVIRONMENT.items(): args += ['--env', key + '=' + value]
-        return args + [self.image_id, *UVICORN_ARGS]
+        for key, value in self.runtime_environment.items(): args += ['--env', key + '=' + value]
+        return args + [self.image_id, *self.command]
 
     def record_cid(self):
         try:
@@ -238,12 +246,12 @@ class Container:
         require(all(type(value) is dict for value in (config, host, state)), 'CONTAINER_IDENTITY_REJECTED')
         require(type(config.get('Labels')) is dict and data.get('Id') == self.cid
                 and data.get('Image') == self.image_id and data.get('Name') == '/' + self.name
-                and config.get('Image') == self.image_id and config['Labels'].get(LABEL) == self.token
+                and config.get('Image') == self.image_id and config['Labels'].get(self.label) == self.token
                 and config['Labels'].get('org.opencontainers.image.revision') == self.commit
-                and data.get('Path') == '/usr/local/bin/python' and exact(data.get('Args'), UVICORN_ARGS)
+                and data.get('Path') == self.executable and exact(data.get('Args'), self.command)
                 and config.get('User') == '65532:65532' and config.get('WorkingDir') == '/app'
-                and exact(config.get('Entrypoint'), ['/usr/local/bin/python'])
-                and exact(config.get('Cmd'), UVICORN_ARGS) and config.get('Volumes') in (None, {})
+                and exact(config.get('Entrypoint'), [self.executable])
+                and exact(config.get('Cmd'), self.command) and config.get('Volumes') in (None, {})
                 and exact(config.get('Healthcheck'), {'Test': ['NONE']}), 'CONTAINER_IDENTITY_REJECTED')
         require(exact(environment(config.get('Env'), set(self.environment)), self.environment),
                 'CONTAINER_IDENTITY_REJECTED')
@@ -284,7 +292,7 @@ class Container:
         require(not self.attempted and not os.path.lexists(self.cidfile), 'CREATE_COLLISION')
         with (self.root / 'custody.json').open('x') as handle:
             os.chmod(handle.name, 0o600)
-            json.dump({'name': self.name, 'label': LABEL, 'token': self.token,
+            json.dump({'name': self.name, 'label': self.label, 'token': self.token,
                        'image_id': self.image_id, 'source_commit': self.commit}, handle)
         self.attempted = True
         try:
