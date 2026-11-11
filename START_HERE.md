@@ -1,3 +1,40 @@
+## Current checkpoint — 2026-11-11: default-off Web startup preparation
+
+Baseline main is `95c662e226fd913ac8fb9453aebd1b76032d64b7`. Its verified
+[CI42992455402](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/42992455402)
+succeeded with 3758 tests / 3011 subtests, including 309 PostgreSQL cases without
+skips, frontend, strict browser and aggregate gates. Same-main Cloudflare build
+`3e995fd1-13e6-4e10-8fe9-fbddc442afd6` succeeded. Actions deployment/continuation
+were skipped; Render remains unverified. Baseline evidence is not candidate CI.
+
+This independent preparation adds a separate default-off Web image startup probe
+and mock-only regressions. It fills a missing acceptance contract, not a proved
+application defect. Reused custody checks require a trusted same-commit local
+image, network none, nonroot/read-only root, only internal loopback port 3000,
+disabled identity/submission gates, bounded completed unavailable-data server
+HTML and exact disabled-login response. Removal must confirm the owned CID;
+uncertainty cannot pass. Existing dependency smoke and workflows are unchanged.
+See [scope and validation](docs/offline-web-startup-preparation.md).
+
+Regression-first import failed before implementation. Local 19 new Web tests,
+28 unchanged API startup tests, 909 offline tests total, 52 automation tests,
+126 CI guards, compilation, Node syntax, progress and diff checks passed.
+Independent review identified a short-read issue in the new proc reader. Three
+regression-first cases now verify explicit EOF, late prohibited listeners and
+cap/overflow handling with guaranteed descriptor closure.
+All runtime paths in this package were mocked, including HTTP/proc checks.
+No container, API, database, image build/load, workflow, upload, PR, commit or
+merge occurred at this checkpoint. Independent final review passed, including
+47 focused tests and nine additional fragmented-read/boundary scenarios. Draft
+publication and full exact-candidate CI remain pending.
+Real Web startup requires separate explicit authorization and a trusted prepared
+local image at the same commit. Browser hydration, real API integration, offline
+transfer and company acceptance remain unexecuted. The existing manual migrated
+API action still awaits the owner and is not replaced by this preparation.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
 ## Current checkpoint — 2026-11-11: software producer descriptor cleanup
 
 Baseline is PR219 merged main `b7802f20db26e9d62953b99cb34a12df095f2c92`,
