@@ -1,3 +1,40 @@
+## Current checkpoint — 2026-11-13: PR224 verified Chrome PKG pin repair
+
+Draft [PR224](https://github.com/Wang106/SoftwareLifeCycle/pull/224) published
+candidate `c731b4be1feb1d0d5b30efaf46a3ed56e4d13640`, based on main
+`23e3153f2996d7afbc1bcb9802d062d3070895a8`. Its
+[CI43210045304](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43210045304)
+failed at the browser PKG pin after Google's official package changed; backend
+3811 tests / 3159 subtests / 309 PostgreSQL cases and frontend 2274 passed.
+This is not a full CI pass or browser acceptance. Earlier unpublished statements
+below describe the historical preparation checkpoint.
+
+Separately authorized static [inspection43339469746](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43339469746)
+succeeded once on macos-26-arm64, tooling
+`9ebf5d3def5860be94673cac28d0ba6d617fd80c`, source `c731b4be`.
+Independent review verified the Google/Apple installer chain, notarization,
+strict deep Google app requirement, team EQHXZ8M8AV, com.google.Chrome and
+universal x86_64/arm64. Signed plist version is `157.0.8103.79`, size 272604304,
+SHA256 `ac0d2f98697f5b9ef42668104812bd14c22190b19af0f9ef2ffa88a4b78b8af5`.
+Artifact13997799007: ZIP 1906 bytes, SHA256
+`2789e0a32605c4b49e212f1c3c580378294bb8819119d7ea02a4ac81d02949fa`;
+evidence text 11647 bytes, SHA256
+`9964e3615ec9270378662996346ff6f8780091aa326e9852158fa87b20ff22bc`.
+Static inspection did not install the package, run its scripts or execute Chrome.
+
+This repair changes only the inspected version/hash/size/evidence URL, three
+exact-pin test assertions and four checkpoints. Regression-first recorded the
+expected old-version failure. Local 126 CI guards, 30 focused PKG tests and
+20 Web preparation regressions passed without skips; compilation, progress and
+whitespace checks passed. Repair review/publication and fresh exact-head full
+normal CI remain pending. No diagnostic workflow enters PR224; source URL,
+control flow, trust checks, sandbox, browser/report/aggregate and protection
+gates remain unchanged. No dependency acquisition, local real DB/browser,
+workflow dispatch or deployment was performed for this repair.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
 ## Current checkpoint — 2026-11-11: reserve-aware Web image preparation
 
 Baseline synchronized to main `23e3153f2996d7afbc1bcb9802d062d3070895a8`

@@ -96,10 +96,10 @@ class PackageContract(unittest.TestCase):
         return opener
 
     def test_fixed_source_pin_and_bundle_identity(self):
-        self.assertEqual(guard.VERSION, '157.0.8103.51')
+        self.assertEqual(guard.VERSION, '157.0.8103.79')
         self.assertEqual(guard.SHA256,
-                         '34b6cfbde780a236ec5c1c1a9300e231ad81acb454fc569f409513a7a6525bef')
-        self.assertEqual(guard.PACKAGE_BYTES, 272444759)
+                         'ac0d2f98697f5b9ef42668104812bd14c22190b19af0f9ef2ffa88a4b78b8af5')
+        self.assertEqual(guard.PACKAGE_BYTES, 272604304)
         self.assertEqual(guard.IDENTIFIER, 'com.google.Chrome')
         self.assertEqual(guard.BUNDLE_PARTS,
                          ('expanded', 'GoogleChrome.pkg', 'Payload', 'Google Chrome.app'))
