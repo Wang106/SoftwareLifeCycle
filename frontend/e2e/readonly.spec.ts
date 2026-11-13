@@ -118,6 +118,50 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   await expect(page.getByRole('button', { name: 'Load private correction context', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Send confirmed batch correction', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Prepare batch correction', exact: true })).toHaveCount(0);
+
+  // Existing creation forms must be reachable from Create without a catalog detour.
+  // This remains preparation-only: the harness rejects every non-GET request.
+  const createLink = page.locator('.appactions a[href="/create"]');
+  await createLink.click();
+  await expect(page.getByRole('heading', { name: 'Create lifecycle record', exact: true })).toBeVisible();
+  await expect(page.locator('article.createcard-unavailable')).toHaveCount(4);
+  await expect(page.locator('article.createcard-unavailable').filter({ hasText: 'Application Release' }))
+    .toContainText('Creation form not implemented');
+  await expect(page.getByText('File upload is not implemented. Resource references do not upload or store files.', { exact: true })).toBeVisible();
+  await page.evaluate(() => { (window as Window & { creationDocumentMarker?: boolean }).creationDocumentMarker = true; });
+  for (const [operation, field] of [['test-release', 'testReleaseNo'], ['delivery', 'packageNo'], ['authorization', 'authorizationNo']]) {
+    const href = '/commands?operation=' + operation;
+    await page.locator('.creategrid a[href="' + href + '"]').click();
+    await expect(page).toHaveURL(app.appOrigin + href);
+    await expect(page.locator('form.commandform select').first()).toHaveValue(operation);
+    await expect(page.locator('input[name="' + field + '"]')).toBeEditable();
+    await page.locator('input[name="' + field + '"]').fill('SYNTHETIC-PREPARATION-ONLY');
+    await expect(page.locator('input[name="' + field + '"]')).toHaveValue('SYNTHETIC-PREPARATION-ONLY');
+    await expect(page.getByRole('button', { name: 'Send confirmed business request', exact: true })).toHaveCount(0);
+    await page.goBack();
+    await expect(page).toHaveURL(app.appOrigin + '/create');
+    await expect(page.locator('article.createcard-unavailable')).toHaveCount(4);
+    await page.goForward();
+    await expect(page).toHaveURL(app.appOrigin + href);
+    await expect(page.locator('form.commandform select').first()).toHaveValue(operation);
+    expect(await page.evaluate(() => (window as Window & { creationDocumentMarker?: boolean }).creationDocumentMarker)).toBe(true);
+    await createLink.click();
+    await expect(page).toHaveURL(app.appOrigin + '/create');
+    await page.locator('.creategrid a[href="' + href + '"]').click();
+    await expect(page.locator('form.commandform select').first()).toHaveValue(operation);
+    await createLink.click();
+    await expect(page).toHaveURL(app.appOrigin + '/create');
+  }
+  await page.getByRole('button', { name: '中文', exact: true }).click();
+  await expect(page.locator('article.createcard-unavailable').filter({ hasText: '应用发布' })).toContainText('新建表单尚未实现');
+  await expect(page.getByText('文件上传尚未实现；资源引用不会上传或存储文件。', { exact: true })).toBeVisible();
+  await page.locator('.creategrid a[href="/commands?operation=test-release"]').click();
+  await expect(page.locator('form.commandform select').first()).toHaveValue('test-release');
+  await page.reload();
+  await expect(page.locator('form.commandform select').first()).toHaveValue('test-release');
+  await expect(page.locator('input[name="testReleaseNo"]')).toBeEditable();
+  await expect(page.getByRole('button', { name: '发送已确认的业务请求', exact: true })).toHaveCount(0);
+  await info.attach('synthetic-create-test-release-chinese', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
 });
 
 test('history failure shows no substitute evidence; native retry explicitly performs a fresh read', async ({ page }, info) => {

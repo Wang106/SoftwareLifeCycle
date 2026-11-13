@@ -55,3 +55,10 @@ details[open] > summary .disclosure-closed { display: none; }
 .demo-loading-bar:nth-child(3){width:52%}
 @keyframes demo-loading-pulse{0%{background-position:100% 0}100%{background-position:0 0}}
 @media (prefers-reduced-motion: reduce){.demo-loading-bar{animation:none}}
+
+/* Creation capabilities must not make browse-only catalogs look like forms. */
+.createaction{margin-top:auto;color:#2563eb;font-size:13px}
+a.createcard:focus-visible,.createbrowse:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
+.createcard-unavailable{background:#f8fafc}
+.createcard-unavailable:hover{border-color:#e2e6eb;box-shadow:none}
+.createbrowse{margin-top:auto;font-size:13px;text-decoration:underline;align-self:flex-start}
