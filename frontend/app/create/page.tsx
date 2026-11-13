@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Localized } from '../../components/localized';
 
 const forms = [
+  { title: 'Application Release', description: 'Prepare an empty application release draft from an exact project and standard release.', href: '/releases/application/new' },
   { title: 'Prepare controlled request', description: 'Choose from fourteen existing lifecycle request forms.', href: '/commands' },
   { title: 'Test Release', description: 'Prepare a test release draft from an exact frozen snapshot.', href: '/commands?operation=test-release' },
   { title: 'Delivery Packages', description: 'Prepare a recipient-specific delivery package revision.', href: '/commands?operation=delivery' },
@@ -11,7 +12,6 @@ const planned = [
   { title: 'Software Change Request', href: '/changes' },
   { title: 'Issue', href: '/issues' },
   { title: 'DVP Plan', href: '/testing/dvp' },
-  { title: 'Application Release', href: '/releases/application' },
 ];
 
 export default function Page() {

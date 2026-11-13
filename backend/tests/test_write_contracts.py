@@ -2,7 +2,7 @@ import inspect
 
 from app.main import app
 from app.security_roles import ALL_ROLES
-from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS
+from app.write_contracts import ASR_CREATION_CONTRACTS, WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS
 
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -20,7 +20,8 @@ def test_every_registered_write_route_has_exactly_one_reviewed_contract():
     assert not set(WRITE_CONTRACTS) & set(SESSION_CONTROL_CONTRACTS)
     assert not set(ADMIN_CONTROL_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS))
     assert not set(PRODUCTION_APPROVAL_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS))
-    assert set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) == registered_write_routes()
+    assert not set(ASR_CREATION_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS))
+    assert set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS) == registered_write_routes()
 
 
 def test_current_write_contracts_remain_non_public_and_explicitly_protected():
@@ -123,3 +124,19 @@ def test_production_approval_has_separate_required_dual_person_contract():
     assert contract.idempotency == 'REQUEST_UUID_EXACT_TARGET_ACTOR_CONTEXT_AND_REASON'
     assert contract.concurrency == 'ADMIN_TRANSACTION_GATE_AND_PRINCIPAL_MEMBERSHIP_CHAIN_ROW_LOCKS'
     assert contract.precondition == 'DRAFT_TRUSTED_CREATOR_DISTINCT_APPROVER_AND_UNREVOKED_FROZEN_CHAIN'
+
+
+def test_asr_creation_is_one_strict_independent_contract():
+    # Fourteen UI command families already span twenty-one legacy HTTP routes.
+    assert len(WRITE_CONTRACTS) == 21
+    assert len(SESSION_CONTROL_CONTRACTS) == 2
+    assert len(ADMIN_CONTROL_CONTRACTS) == 6
+    assert set(ASR_CREATION_CONTRACTS) == {('POST', '/api/v1/releases/application')}
+    contract = ASR_CREATION_CONTRACTS[('POST', '/api/v1/releases/application')]
+    assert contract.authentication == 'OIDC_REQUIRED'
+    assert contract.authorization == 'ACTIVE_USER_EXACT_PROJECT_CONTRIBUTOR_AND_SOFTWARE_VISIBILITY'
+    assert contract.actor_binding == 'AUTHENTICATED_PRINCIPAL'
+    assert contract.public_exposure == 'READ_ONLY_BLOCKED'
+    assert contract.audit == 'ATOMIC_APPEND'
+    assert contract.idempotency == 'REQUEST_UUID_EXACT_CONTENT_CONTEXT_AND_ACTOR'
+    assert contract.precondition == 'ACTIVE_PARENTS_UNREVOKED_STANDARD_AND_REVIEWED_CONTEXT'

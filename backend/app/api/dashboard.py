@@ -1,3 +1,4 @@
+from app.api.activity import public_audit_clause
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func, case, and_
@@ -467,7 +468,7 @@ def dashboard_summary(db: Session = Depends(get_db)):
     current = db.scalars(select(Release).where(Release.release_type == "APPLICATION")
         .order_by(Release.created_at.desc(), Release.id.desc()).limit(1)).first()
     coverage = TraceabilityService(db).release_coverage(current.id).as_dict() if current else None
-    events = db.scalars(select(AuditEvent).order_by(AuditEvent.occurred_at.desc(), AuditEvent.event_no.desc()).limit(5)).all()
+    events = db.scalars(select(AuditEvent).where(public_audit_clause()).order_by(AuditEvent.occurred_at.desc(), AuditEvent.event_no.desc()).limit(5)).all()
     return {
         "active_changes": active_changes,
         "open_issues": open_issues,

@@ -1,3 +1,4 @@
+from app.api.activity import public_audit_clause
 """Bounded, read-only lookup of lifecycle identifiers and descriptions."""
 from urllib.parse import quote
 from fastapi import APIRouter, Depends, Query
@@ -84,7 +85,7 @@ def search_records(db: Session, query: str, limit: int) -> list[dict]:
         if remaining <= 0:
             return
         rows = db.scalars(
-            select(model).where(or_(*(field.ilike(pattern, escape="\\") for field in fields)))
+            select(model).where(public_audit_clause() if model is AuditEvent else True).where(or_(*(field.ilike(pattern, escape="\\") for field in fields)))
             .order_by(model.id).limit(min(remaining, 10))
         ).all()
         for row in rows:

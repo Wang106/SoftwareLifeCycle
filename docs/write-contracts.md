@@ -2,6 +2,14 @@
 
 This is the reviewed baseline for every non-read FastAPI route. The executable source is `backend/app/write_contracts.py`; `backend/tests/test_write_contracts.py` fails when a write route is added, removed or renamed without updating that inventory.
 
+The separate [application-release creation contract](application-release-creation.md)
+adds one OIDC-required, request-keyed empty-DRAFT operation under
+`ASR_CREATION_CONTRACTS`. It requires both exact project contributor
+and baseline-software read scope with no administrator bypass. Its private context,
+atomic audit and original receipt do not change any existing command's policy or
+the original fourteen-command acceptance denominator. Exhaustive route coverage
+includes the new inventory without removing any existing category or assertion.
+
 This inventory is backed by runtime guards. Every current write route has `authentication=OIDC_WHEN_ENABLED`, `authorization=SCOPED_WHEN_OIDC`, `audit=ATOMIC_APPEND` and `actor_binding=AUTHENTICATED_WHEN_OIDC`. When OIDC is enabled, a valid active principal must also hold the exact active role resolved through stored software/project relationships, unless it has the exceptional `PLATFORM_ADMIN` override. The public sample service still keeps `READ_ONLY_MODE=true` because no approved provider is configured and provider-backed acceptance, controlled UI and operations remain unfinished; legacy no-key paths remain weaker.
 
 The enforced scoped roles are recorded in the executable contracts and defined in `SECURITY.md`: snapshot creation uses software-maintainer/project-contributor scope; review actions use reviewer; release decisions use release authority; delivery/distribution use distribution authority; production authorization uses production authority; deployment/changeover/batch use production operator. `PLATFORM_ADMIN` is the only scope-free override.

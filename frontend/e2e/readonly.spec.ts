@@ -124,10 +124,28 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   const createLink = page.locator('.appactions a[href="/create"]');
   await createLink.click();
   await expect(page.getByRole('heading', { name: 'Create lifecycle record', exact: true })).toBeVisible();
-  await expect(page.locator('article.createcard-unavailable')).toHaveCount(4);
-  await expect(page.locator('article.createcard-unavailable').filter({ hasText: 'Application Release' }))
+  await expect(page.locator('article.createcard-unavailable')).toHaveCount(3);
+  await expect(page.locator('article.createcard-unavailable').filter({ hasText: 'Software Change Request' }))
     .toContainText('Creation form not implemented');
   await expect(page.getByText('File upload is not implemented. Resource references do not upload or store files.', { exact: true })).toBeVisible();
+  await page.locator('.creategrid a[href="/releases/application/new"]').click();
+  await expect(page.getByRole('heading', { name: 'Create application release draft', exact: true })).toBeVisible();
+  await expect(page.getByText('Currently cannot save online. The public sample is read-only; real identity is not configured.', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Project UUID', { exact: true })).toBeEditable();
+  await expect(page.getByLabel('Standard release UUID', { exact: true })).toBeEditable();
+  await page.getByLabel('Version (maximum 100 characters)', { exact: true }).fill('SYNTHETIC-ASR-DRAFT');
+  await expect(page.getByRole('button', { name: 'Submit empty DRAFT', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '中文', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '新建应用发布草稿', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '新建应用发布草稿', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'English', exact: true }).click();
+  await createLink.click();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Create application release draft', exact: true })).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(app.appOrigin + '/create');
+
   await page.evaluate(() => { (window as Window & { creationDocumentMarker?: boolean }).creationDocumentMarker = true; });
   for (const [operation, field] of [['test-release', 'testReleaseNo'], ['delivery', 'packageNo'], ['authorization', 'authorizationNo']]) {
     const href = '/commands?operation=' + operation;
@@ -140,7 +158,7 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
     await expect(page.getByRole('button', { name: 'Send confirmed business request', exact: true })).toHaveCount(0);
     await page.goBack();
     await expect(page).toHaveURL(app.appOrigin + '/create');
-    await expect(page.locator('article.createcard-unavailable')).toHaveCount(4);
+    await expect(page.locator('article.createcard-unavailable')).toHaveCount(3);
     await page.goForward();
     await expect(page).toHaveURL(app.appOrigin + href);
     await expect(page.locator('form.commandform select').first()).toHaveValue(operation);

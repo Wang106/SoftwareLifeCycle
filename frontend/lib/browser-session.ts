@@ -1169,3 +1169,69 @@ export async function recoverAdminStatus(config:SessionConfig,cookie:string|unde
  const receipt=projectAdminStatusAudit(result.value,command,identity.principal.id);
  return receipt?{status:200,value:receipt}:unknown;
 }
+
+/** Exact pair only: no broad private selection catalog. The API checks both scoped roles. */
+export async function readApplicationReleaseCreationContext(config:SessionConfig,cookie:string|undefined,
+  input:import('./application-release-creation').Target,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseTarget,parseContext,verifyContextDigest}=await import('./application-release-creation');
+  const target=parseTarget(input);
+  if (!target) return {status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if (!identity) return {status:401,value:{error:'session_required'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const path='/api/v1/application-release-creation/context?project_id='+encodeURIComponent(target.project_id)+
+    '&standard_base_release_id='+encodeURIComponent(target.standard_base_release_id);
+  const result=await privateRequest(config,path,envelope.token,asrJsonFetcher(fetcher),{},envelope.sid,32768);
+  if (result?.status === 200) {
+    const context=parseContext(result.value,target);
+    if (context && await verifyContextDigest(context)) return {status:200,value:context};
+  }
+  const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',409:'context_conflict',422:'invalid_request'};
+  return result && denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'outcome_unknown'}};
+}
+/** Reject misleading MIME subtypes without changing the older shared request contract. */
+function asrJsonFetcher(fetcher:typeof fetch):typeof fetch {
+  return async (input,init) => {
+    const response=await fetcher(input,init);
+    if (response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') {
+      await response.body?.cancel();throw Error('invalid_response');
+    }
+    return response;
+  };
+}
+export async function executeApplicationReleaseCreation(config:SessionConfig,cookie:string|undefined,
+  input:import('./application-release-creation').Command,mode:'submit'|'recover',fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseCommand,parseReceipt,verifyContextDigest}=await import('./application-release-creation');
+  const command=parseCommand(input);
+  if (!command || !['submit','recover'].includes(mode) || !await verifyContextDigest(command.context)) return {status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if (!identity) return {status:401,value:{error:'session_required'}};
+  if (mode === 'submit' && identity.read_only_mode) return {status:403,value:{error:'read_only_mode'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const unknown={status:502,value:{error:'outcome_unknown'}};
+  const fixedFetch=asrJsonFetcher(fetcher);
+  if (mode === 'submit') {
+    const result=await privateRequest(config,'/api/v1/releases/application',envelope.token,fixedFetch,
+      {method:'POST',body:JSON.stringify(command.body)},envelope.sid,32768);
+    if (!result) return unknown;
+    if (![200,201].includes(result.status)) {
+      const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',422:'invalid_request'};
+      if (result.status === 409) {
+        const detail=result.value && typeof result.value === 'object'?(result.value as Record<string,unknown>).detail:null;
+        const conflicts:Record<string,string>={asr_context_conflict:'context_conflict',asr_request_conflict:'request_conflict',
+          asr_parent_binding_conflict:'context_conflict',asr_parent_inactive:'context_conflict',standard_release_revoked:'context_conflict',
+          asr_version_conflict:'version_conflict',asr_request_or_version_conflict:'request_conflict'};
+        return {status:409,value:{error:typeof detail === 'string' && conflicts[detail] || 'request_conflict'}};
+      }
+      return denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:unknown;
+    }
+    if (!parseReceipt(result.value,command,identity.principal.id)) return unknown;
+  }
+  // Only the API's original audit receipt proves creation; never fetch a mutable current release.
+  // Recovery reauthorizes at the API, does not POST and cannot choose a new key.
+  const audit=await privateRequest(config,'/api/v1/application-release-creation/receipts/'+encodeURIComponent(command.body.request_id),
+    envelope.token,fixedFetch,{},envelope.sid,32768);
+  if (!audit || audit.status !== 200) return unknown;
+  const receipt=parseReceipt(audit.value,command,identity.principal.id);
+  return receipt?{status:200,value:receipt}:unknown;
+}

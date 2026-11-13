@@ -24,6 +24,7 @@ async function main() {
    DISTRIBUTION_COMMAND_SUBMISSION_MODE:'disabled',DISTRIBUTION_COMMAND_APPROVED_API_BASE_URL:'',DISTRIBUTION_COMMAND_APPROVED_APP_ORIGIN:'',
    GOVERNANCE_COMMAND_SUBMISSION_MODE:'disabled',GOVERNANCE_COMMAND_APPROVED_API_BASE_URL:'',GOVERNANCE_COMMAND_APPROVED_APP_ORIGIN:'',
    RELEASE_CHAIN_REVOCATION_SUBMISSION_MODE:'disabled',RELEASE_CHAIN_REVOCATION_APPROVED_API_BASE_URL:'',RELEASE_CHAIN_REVOCATION_APPROVED_APP_ORIGIN:'',
+   APPLICATION_RELEASE_CREATION_MODE:'disabled',APPLICATION_RELEASE_CREATION_APPROVED_API_BASE_URL:'',APPLICATION_RELEASE_CREATION_APPROVED_APP_ORIGIN:'',
    OIDC_CLIENT_SECRET:'',BROWSER_SESSION_KEY:'',API_BASE_URL:'',NEXT_PUBLIC_API_BASE_URL:'',NEXT_PUBLIC_API_URL:''},stdio:['ignore','pipe','pipe'],
  });
  let logs='';for(const stream of [child.stdout,child.stderr])stream.on('data',chunk=>{logs=(logs+chunk).slice(-12000);});
@@ -89,6 +90,34 @@ async function main() {
    assert.equal(response.status,status);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.ok(response.headers.get('vary').includes('Cookie'));assert.equal(response.headers.get('location'),null);
    const data=await response.json();assert.equal(data.error,status===405?'method_not_allowed':route==='grant-status'?'grant_submission_disabled':route==='admin-registration'?'registration_submission_disabled':route==='principal-status'?'principal_submission_disabled':route.startsWith('first-command')?'first_submission_disabled':route.startsWith('impact-correction')?'impact_correction_disabled':route.startsWith('impact-withdrawal')?'impact_withdrawal_disabled':route.startsWith('acceptance-correction')?'acceptance_correction_disabled':route.startsWith('evidence-command')?'evidence_submission_disabled':route.startsWith('resource-command')?'resource_submission_disabled':route.startsWith('production-command')?'production_submission_disabled':route.startsWith('distribution-command')?'distribution_submission_disabled':route.startsWith('governance-command')?'governance_submission_disabled':route.startsWith('release-chain-revocation')?'release_chain_revocation_disabled':'login_not_configured');
    console.log(`Next production route ${method} /auth/${route}: ${status}, private/no-store`);
+  }
+  // Additive ASR preparation checks: no identity, API base or write capability.
+  for(const [language,title,message,sendLabel] of [
+   ['zh','新建应用发布草稿','当前无法在线保存。公开样例保持只读，真实身份尚未配置。','提交空 DRAFT 草稿'],
+   ['en','Create application release draft','Currently cannot save online. The public sample is read-only; real identity is not configured.','Submit empty DRAFT'],
+  ]) {
+   const response=await fetch(base+'/releases/application/new',{headers:{Cookie:`slc_language=${language}`},redirect:'manual'});
+   assert.equal(response.status,200);assert.ok(response.headers.get('cache-control').includes('no-store'));
+   assert.equal(response.headers.get('location'),null);
+   const html=await response.text();assert.ok(html.includes(title));assert.ok(html.includes(message));
+   assert.ok(html.includes('<form'));assert.ok(!html.includes(sendLabel));assert.ok(!/<input\b[^>]*type="file"/i.test(html));
+   const fieldset=html.match(/<fieldset\b[^>]*>[\s\S]*?<\/fieldset>/)?.[0];assert.ok(fieldset);
+   assert.ok(!/^<fieldset\b[^>]*\bdisabled(?:[=\s>])/.test(fieldset));
+   for(const field of ['project_id','standard_base_release_id','version','release_notes','reason']) {
+    const tag=fieldset.match(new RegExp('<(?:input|textarea)\\b[^>]*id="asr-'+field+'"[^>]*>'))?.[0];
+    assert.ok(tag,`ASR ${language}: editable ${field} exists`);
+    assert.ok(!/\b(?:disabled|readonly)(?:[=\s>])/i.test(tag),`ASR ${language}: ${field} remains editable`);
+   }
+   console.log(`Application release creation SSR ${language}: 200, no-store, five editable fields, cannot save online and no upload/send`);
+  }
+  for(const route of ['application-release-context','application-release-create','application-release-receipt']) {
+   for(const [method,status,error] of [['GET',405,'method_not_allowed'],['POST',503,'application_release_creation_disabled']]) {
+    const response=await fetch(`${base}/auth/${route}`,{method,headers:{Origin:base},redirect:'manual'});
+    assert.equal(response.status,status);assert.equal(response.headers.get('cache-control'),'private, no-store');
+    assert.ok(response.headers.get('vary').includes('Cookie'));assert.equal(response.headers.get('location'),null);
+    assert.deepEqual(await response.json(),{error});
+    console.log(`Next production ASR route ${method} /auth/${route}: ${status}, private/no-store`);
+   }
   }
  } finally {
   child.kill('SIGTERM');

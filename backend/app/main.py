@@ -1,3 +1,4 @@
+from app.api.application_release_creation import router as application_release_creation_router
 from app.api.release_demo import router as release_demo_router
 from app.api.admin_principals import router as admin_principals_router
 from app.api.global_roles import router as global_roles_router
@@ -123,6 +124,7 @@ app.include_router(principal_admin_router)
 app.include_router(admin_principals_router)
 app.include_router(membership_registration_router)
 app.include_router(global_roles_router)
+app.include_router(application_release_creation_router)
 
 
 @app.middleware("http")
@@ -142,7 +144,9 @@ async def read_only_guard(request: Request, call_next):
     is_authorization_approval = re.fullmatch(
         r'/api/v1/authorizations/[^/]+/(?:approval-context|approval|approval-receipts/[^/]+)', path) is not None
     is_distribution_selection = path.startswith(('/api/v1/selection-context/', '/api/v1/evidence-selection-context/'))
-    is_private = is_distribution_selection or is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
+    is_asr_creation = path.startswith('/api/v1/application-release-creation/') or (
+        request.method == 'POST' and path == '/api/v1/releases/application')
+    is_private = is_asr_creation or is_distribution_selection or is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
     if settings.read_only_mode and is_write and not is_session_control:
         return JSONResponse(
@@ -169,7 +173,7 @@ async def read_only_guard(request: Request, call_next):
         vary = response.headers.get("Vary", "")
         if "authorization" not in {part.strip().lower() for part in vary.split(',')}:
             response.headers["Vary"] = (vary + ", Authorization").lstrip(', ')
-        if is_distribution_selection or is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval:
+        if is_asr_creation or is_distribution_selection or is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval:
             response.headers['Vary'] += ', X-Browser-Session'
     return response
 

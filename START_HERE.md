@@ -1,3 +1,59 @@
+## Current checkpoint — 2026-11-13: application release draft creation
+
+Baseline main is `661ae0719982eab8123f1b34cbe0c3c2661d915f` (merged PR226),
+with no open pull request at package start. [Main CI43398386446](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43398386446)
+succeeded across backend/PostgreSQL/migrations, frontend/Cloudflare build, strict
+Chromium and aggregate checks. The coordinating task verified same-main Cloudflare
+production build `129787fa` succeeded. Actions deployment43399844855 and
+continuation43399844806 skipped. Render has no deployment for this frontend-only
+main; the older e5285055 deployment failed and there is no current PostgreSQL
+instance in that workspace. This is not backend recovery or candidate CI evidence.
+
+This bounded package adds [empty ASR DRAFT creation](docs/application-release-creation.md):
+one exact project and STANDARD baseline, server-derived customer/software, strict
+active-human project contributor AND software visibility, immutable context review,
+mandatory request UUID, atomic Release/detail/audit, and private original receipts.
+Unreleased but unrevoked standard baselines are allowed and explicitly labeled.
+The dedicated bilingual form is editable while its independent submission gate
+remains disabled. Recovery text is origin-bound and query-only; recovery permanently
+prevents a later creation POST. No components/files, snapshot or approval are copied
+or created. New audit evidence is excluded from old public audit surfaces. Existing
+public retired GET410/HEAD405 and replacement-catalogue behavior remain intact.
+
+No migration, dependency, workflow, production setting, identity or role assignment
+changes. API0.18.50/schema0029, original fourteen-command acceptance denominator,
+two own-session controls, six administrator controls and strict browser/report gates
+remain unchanged. The new ASR creation route has an independent exhaustive contract.
+A ready-for-review transition or protected merge requires owner confirmation.
+
+Regression-first evidence includes missing-feature tests, six valid HTTP boundary
+assertions against exact baseline, three public-audit leakage regressions and four
+old-public-read assertions before the method-boundary fix. Independent review also
+caught and fixed receipt UUID binding, READY baseline handling and recovery-first
+write prevention. Full-suite validation caught a timing-dependent new UI test and
+missing dynamic localization; the test now waits for actual completion with a
+bounded failing deadline, and all original localization assertions remain.
+
+Local full frontend: **2343 passed**, zero failures/skips. Final Next.js/OpenNext
+production build and real disabled-auth production routes passed, including both
+ASR languages and all three new proxy routes. Local backend excluding dedicated
+PostgreSQL modules: **3044 passed, 554 skipped, 3159 subtests passed**, zero failures.
+The skipped database-dependent cases and twelve new independent PostgreSQL cases
+still require the existing normal CI's disposable migrated database; this is not
+a full backend acceptance pass. 126 CI guards, 52 automation tests, three loopback
+fixture tests, TypeScript, Worker configuration and progress/whitespace checks passed.
+The earlier local Wrangler log-directory warning was resolved with a writable
+scratch log path, not a configuration change. No manual real database, container/API
+rehearsal, company access, public write enablement or new paid resource.
+
+Next: publish the independently reviewed isolated draft PR; verify its exact-head
+normal CI and keep it draft. No merge or next feature package starts
+from this checkpoint. Live database/OIDC and real provider/multi-user acceptance
+remain separate; file upload and component editing are later work.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
 ## Current checkpoint — 2026-11-13: creation entry forms
 
 Baseline main is `f2e101653682b1f8079debf35c5b6f8bd953c73d` (merged PR225),
