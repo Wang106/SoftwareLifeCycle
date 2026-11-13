@@ -140,11 +140,16 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   await page.reload();
   await expect(page.getByRole('heading', { name: '新建应用发布草稿', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'English', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Create application release draft', exact: true })).toBeVisible();
   await createLink.click();
+  await expect(page).toHaveURL(app.appOrigin + '/create');
+  await expect(page.getByRole('heading', { name: 'Create lifecycle record', exact: true })).toBeVisible();
   await page.goBack();
+  await expect(page).toHaveURL(app.appOrigin + '/releases/application/new');
   await expect(page.getByRole('heading', { name: 'Create application release draft', exact: true })).toBeVisible();
   await page.goForward();
   await expect(page).toHaveURL(app.appOrigin + '/create');
+  await expect(page.getByRole('heading', { name: 'Create lifecycle record', exact: true })).toBeVisible();
 
   await page.evaluate(() => { (window as Window & { creationDocumentMarker?: boolean }).creationDocumentMarker = true; });
   for (const [operation, field] of [['test-release', 'testReleaseNo'], ['delivery', 'packageNo'], ['authorization', 'authorizationNo']]) {
@@ -171,7 +176,8 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
     await expect(page).toHaveURL(app.appOrigin + '/create');
   }
   await page.getByRole('button', { name: '中文', exact: true }).click();
-  await expect(page.locator('article.createcard-unavailable').filter({ hasText: '应用发布' })).toContainText('新建表单尚未实现');
+  await expect(page.locator('article.createcard-unavailable').filter({ hasText: '软件变更申请' })).toContainText('新建表单尚未实现');
+  await expect(page.locator('.creategrid a[href="/releases/application/new"]').filter({ hasText: '应用发布' })).toContainText('打开填写表单');
   await expect(page.getByText('文件上传尚未实现；资源引用不会上传或存储文件。', { exact: true })).toBeVisible();
   await page.locator('.creategrid a[href="/commands?operation=test-release"]').click();
   await expect(page.locator('form.commandform select').first()).toHaveValue('test-release');
