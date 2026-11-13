@@ -2463,5 +2463,14 @@
   "Reading application releases": "正在读取关联应用版本",
   "Read application releases again": "重新读取关联应用版本",
   "Read standard releases again": "重新读取标准版本",
-  "Read dashboard again": "重新读取仪表板"
+  "Read dashboard again": "重新读取仪表板",
+  "Choose from fourteen existing lifecycle request forms.": "从十四类已有生命周期请求表单中选择。",
+  "Prepare a test release draft from an exact frozen snapshot.": "基于准确的冻结快照填写测试发布草稿。",
+  "Prepare a recipient-specific delivery package revision.": "填写面向指定接收方的交付包修订请求。",
+  "Prepare a production authorization for an exact distribution.": "为准确的分发记录填写生产授权请求。",
+  "Available forms prepare requests. Submission still requires an approved signed-in environment; the public demo remains read-only.": "已有表单可填写并准备请求；提交仍需获准且已登录的环境，公开演示保持只读。",
+  "File upload is not implemented. Resource references do not upload or store files.": "文件上传尚未实现；资源引用不会上传或存储文件。",
+  "Open form": "打开填写表单",
+  "Creation form not implemented": "新建表单尚未实现",
+  "Browse existing records": "浏览已有记录"
 }

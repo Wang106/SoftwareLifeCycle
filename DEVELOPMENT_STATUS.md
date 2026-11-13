@@ -1,3 +1,46 @@
+## Current checkpoint — 2026-11-13: creation entry forms
+
+Baseline main is `f2e101653682b1f8079debf35c5b6f8bd953c73d` (merged PR225),
+with no open pull request at package start. [Main CI43386161815](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43386161815)
+and all backend/PostgreSQL, frontend, strict Chromium and aggregate jobs succeeded.
+Same-main Cloudflare production build `7ba97c46-7dc2-4a1c-b582-851f8f9d580a`
+succeeded. Actions deployment43387472277 and continuation43387472226 skipped.
+[PR225 final evidence](https://github.com/Wang106/SoftwareLifeCycle/pull/225)
+records no Render deployment for this frontend-only main; its latest older
+`e5285055` deployment failed. This is not backend/database recovery, and baseline
+success does not establish candidate CI. Older pending sidebar records are historical.
+
+This bounded UI fix routes Create's Test Release, Delivery Packages and Production
+Authorizations cards directly to their existing editable command-preparation forms.
+The fourteen-command chooser remains available. SCR, Issue, DVP Plan and Application
+Release creation are explicitly marked not implemented, with separately labeled
+browse-existing links rather than clickable cards pretending to create records.
+Chinese/English copy distinguishes request preparation from approved-session
+submission and explicitly says file upload/storage is not implemented. No API,
+authentication, submission capability, workflow, dependency or browser/report gate
+changes; no new application-release backend or upload feature is claimed.
+
+Regression-first: 12 added tests failed on unchanged main, then all 12 passed.
+The complete frontend suite passed 2312 tests with no failures/skips; 126 CI guards,
+52 automation tests, 3 loopback fixture tests, TypeScript no-emit, Worker configuration,
+production Next.js/OpenNext build and disabled-auth production checks passed.
+Independent review found no blocker and reran the 12 regressions and typecheck.
+Local Node24.22.1 uses existing dependencies from an identical lockfile; the first
+symlink-based build could not resolve Next.js under Turbopack, so those same installed
+bytes were copied into the local workspace and the unchanged build command passed.
+Normal CI retains Node22 and npm ci. Existing browser journeys gain additive checks
+for editable creation forms, repeated entry, Back/Forward, Chinese and reload;
+all prior assertions/titles and strict reports remain. Actual signed macOS Chrome
+execution and exact-head full CI are pending, not replaced by SSR/unit evidence.
+
+Publish only the independent `codex/create-entry-forms` branch and draft PR.
+Ready-for-review/merge require owner confirmation; no main write, manual image,
+container/API/database rehearsal, company access or new paid resource in this package.
+Next: verify exact-head normal CI and retain draft for owner review. Application
+Release creation and real file upload are separate future work, not silently added.
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
 ## Current checkpoint — 2026-11-13: sidebar route highlighting
 
 Baseline main is `e52850557093825abfc8b0f2a5a683857dadfbfd` (merged PR224),
