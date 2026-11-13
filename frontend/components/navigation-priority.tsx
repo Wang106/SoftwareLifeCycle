@@ -53,11 +53,15 @@ export function DashboardReady() {
   useEffect(() => { dashboardReady(); }, [dashboardReady]);
   return null;
 }
-export function PriorityLink({ href, children, allowBackground = false, ...props }: { href: string; children: React.ReactNode; className?: string; allowBackground?: boolean }) {
+export function PriorityLink({ href, children, allowBackground = false, highlightCurrent = false, ...props }: { href: string; children: React.ReactNode; className?: string; allowBackground?: boolean; highlightCurrent?: boolean }) {
+  const pathname = usePathname();
+  // Match path segments, not look-alike prefixes. The dashboard is exact-only.
+  // Reading the router keeps persistent layouts current on Back/Forward too.
+  const current = highlightCurrent && (pathname === href || (href !== '/' && pathname?.startsWith(href + '/')));
   const context = useContext(Priority);
   const allowed = allowBackground ? context.allowed : [];
   // true is intentional: with loading.tsx, automatic prefetch can fetch only a
   // route shell. The two admitted links request full RSC data. All others wait
   // for explicit navigation. Already sent RSC/DB work is not cancelled here.
-  return <Link {...props} href={href} prefetch={allowed.includes(href) ? true : false}><Localized>{children}</Localized></Link>;
+  return <Link {...props} href={href} aria-current={current ? 'page' : undefined} prefetch={allowed.includes(href) ? true : false}><Localized>{children}</Localized></Link>;
 }

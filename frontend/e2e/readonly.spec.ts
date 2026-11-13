@@ -74,10 +74,15 @@ test.afterEach(async ({ browser }, info) => {
 test('real DOM preserves recorded versus corrected evidence through navigation and language changes; writes stay disabled', async ({ page, context }, info) => {
   await page.goto(app.appOrigin + paths.batchPage);
   await expect(page.getByRole('heading', { name: values.batchNo, exact: true })).toBeVisible();
+  const activeNavigation = page.locator('.nav a[aria-current="page"]');
+  await expect(activeNavigation).toHaveCount(1);
+  await expect(activeNavigation).toHaveAttribute('href', '/production/batches');
   const historyLink = page.getByRole('link', { name: '查看更正历史', exact: true });
   await expect(historyLink).toHaveAttribute('href', paths.historyPage);
   await historyLink.click();
   await expect(page).toHaveURL(app.appOrigin + paths.historyPage);
+  await expect(activeNavigation).toHaveCount(1);
+  await expect(activeNavigation).toHaveAttribute('href', '/deployments');
   await expect(page.getByRole('heading', { name: '生产批次更正历史', exact: true })).toBeVisible();
   const main = page.getByRole('main');
   const baseline = main.locator('section').filter({ has: page.getByRole('heading', { name: '原始记录基线', exact: true }) });
@@ -91,10 +96,13 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
 
   await page.getByRole('button', { name: 'English', exact: true }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(activeNavigation).toHaveAttribute('href', '/deployments');
   await expect(page.getByRole('heading', { name: 'Recorded baseline', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Effective recorded facts', exact: true })).toBeVisible();
   expect((await context.cookies()).find(cookie => cookie.name === 'slc_language')?.value).toBe('en');
   await page.reload();
+  await expect(activeNavigation).toHaveCount(1);
+  await expect(activeNavigation).toHaveAttribute('href', '/deployments');
   await expect(page.getByRole('heading', { name: 'Batch correction history', exact: true })).toBeVisible();
   const englishBaseline = main.locator('section').filter({ has: page.getByRole('heading', { name: 'Recorded baseline', exact: true }) });
   const englishEffective = main.locator('section').filter({ has: page.getByRole('heading', { name: 'Effective recorded facts', exact: true }) });

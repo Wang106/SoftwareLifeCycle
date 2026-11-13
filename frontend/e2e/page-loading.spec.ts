@@ -39,6 +39,13 @@ test.afterEach(async ({ browser }, info) => {
 test('dashboard streams before data; bounded full prefetch follows; long sidebar and mobile remain consistent', async ({ page }, info) => {
   await page.goto(app.appOrigin + '/', { waitUntil: 'commit' });
   await expect(page.getByRole('heading', { name: '生命周期仪表盘', exact: true })).toBeVisible();
+  const activeNavigation = page.locator('.nav a[aria-current="page"]');
+  await expect(activeNavigation).toHaveCount(1);
+  await expect(activeNavigation).toHaveAttribute('href', '/');
+  await expect(activeNavigation).toHaveCSS('color', 'rgb(147, 197, 253)');
+  await activeNavigation.hover();
+  await expect(activeNavigation).toHaveCSS('color', 'rgb(147, 197, 253)');
+  await expect(activeNavigation).toHaveCSS('font-weight', '700');
   await expect(page.getByRole('status')).toContainText('正在加载页面数据');
   await expect.poll(() => app.fixture.requests.filter(r => r.path === endpoints.dashboard).length).toBe(1);
   await page.waitForTimeout(800); // Observe a held upstream, not a response-speed threshold.
@@ -66,9 +73,14 @@ test('dashboard streams before data; bounded full prefetch follows; long sidebar
 });
 
 test('foreground navigation proceeds while dashboard is held; late dashboard cannot replace the current route', async ({ page }) => {
+  const activeNavigation = page.locator('.nav a[aria-current="page"]');
   await page.goto(app.appOrigin + '/', { waitUntil: 'commit' });
   await expect(page.getByRole('status')).toBeVisible();
+  await expect(activeNavigation).toHaveAttribute('href', '/');
+  await page.evaluate(() => { (window as Window & { sidebarDocumentMarker?: boolean }).sidebarDocumentMarker = true; });
   await page.locator('.side a[href="/projects"]').click();
+  await expect(activeNavigation).toHaveCount(1);
+  await expect(activeNavigation).toHaveAttribute('href', '/projects');
   await expect(page.getByRole('heading', { name: '项目', exact: true })).toBeVisible();
   await expect.poll(() => browserReads.some(r => r.path === '/projects' && r.rsc && !r.prefetch)).toBe(true);
   expect(app.fixture.requests.some(r => r.path === endpoints.projects)).toBe(true);
@@ -78,6 +90,16 @@ test('foreground navigation proceeds while dashboard is held; late dashboard can
   await expect(page.getByRole('heading', { name: '项目', exact: true })).toBeVisible();
   await expect(page.getByText('SYNTHETIC_LOADING_ACTIVITY_0', { exact: true })).toHaveCount(0);
   expect(app.fixture.requests.some(r => r.path === endpoints.changes || r.path === endpoints.issues)).toBe(false);
+  await expect(activeNavigation).toHaveAttribute('href', '/projects');
+  await page.goBack();
+  await expect(page).toHaveURL(app.appOrigin + '/');
+  await expect(activeNavigation).toHaveCount(1);
+  await expect(activeNavigation).toHaveAttribute('href', '/');
+  await page.goForward();
+  await expect(page).toHaveURL(app.appOrigin + '/projects');
+  await expect(activeNavigation).toHaveCount(1);
+  await expect(activeNavigation).toHaveAttribute('href', '/projects');
+  expect(await page.evaluate(() => (window as Window & { sidebarDocumentMarker?: boolean }).sidebarDocumentMarker)).toBe(true);
 });
 
 test('dashboard failure reveals no private error or fabricated data; explicit native retry recovers', async ({ page }) => {

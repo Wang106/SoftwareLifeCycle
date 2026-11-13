@@ -1,3 +1,5 @@
+Latest checkpoint: [2026-11-13 sidebar route highlighting](#2026-11-13-sidebar-route-highlighting). Older entries below remain historical.
+
 最新补充：[2026-11-11 Web 启动探针准备](#2026-11-11-web-startup-preparation)，详见文末；既有记录保留为历史。
 
 最新补充：[2026-11-09迁移镜像输入准备](#2026-11-09-offline-migration-inputs)，详细记录追加于文末；此前顶部记录保留为历史。
@@ -5790,6 +5792,48 @@ normal CI remain pending. No diagnostic workflow enters PR224; source URL,
 control flow, trust checks, sandbox, browser/report/aggregate and protection
 gates remain unchanged. No dependency acquisition, local real DB/browser,
 workflow dispatch or deployment was performed for this repair.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+
+## 2026-11-13: sidebar route highlighting
+
+Baseline main is `e52850557093825abfc8b0f2a5a683857dadfbfd` (merged PR224),
+with no open pull request at package start. [Main CI43363461326](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43363461326)
+passed backend/PostgreSQL, frontend/Cloudflare build, strict Chromium and aggregate
+checks. The coordinating task verified same-main Cloudflare production build
+`443eb87d` succeeded; Render `dep-dbr8q48jo6nc73er9a20` failed after the expired
+old database hostname could not resolve. Actions deployment/continuation skipped.
+This does not claim backend recovery, and baseline evidence is not candidate CI.
+The older PR224-pending checkpoints below are historical.
+
+This bounded UI package opts in all 21 sidebar links to router-derived selection.
+Dashboard matches `/` only; other links match their exact pathname or slash-delimited
+descendants, not similar prefixes. The current label is light blue on a distinct
+background with heavier weight and `aria-current="page"`. Brand/header links,
+localization, read-only boundaries and the existing bounded prefetch remain unchanged.
+No workflow, browser/report gate, dependency, API, database or permission change.
+
+Regression-first: 26 new tests gave 25 failures on main, then all 26 passed after
+implementation. The complete frontend suite passed 2300 tests without skips;
+126 CI guards, 52 automation tests, 3 loopback fixture tests, TypeScript no-emit,
+Worker configuration, progress and whitespace checks passed. Independent review
+found no blocker and reran 277 focused navigation/prefetch/report/language tests.
+Local checks use Node24.22.1 with existing dependencies from an identical lockfile;
+normal CI still uses pinned Node22 and freshly installed locked dependencies.
+The existing browser journeys retain every prior assertion and additionally check
+home color/hover, navigation while loading, Back/Forward in the same document,
+subpage selection, language switching and reload. Actual macOS Chrome execution
+and full exact-head CI remain pending; simulated router unit checks are not browser
+acceptance. The local production Next.js/OpenNext Cloudflare build and disabled-auth
+production-route/bilingual account checks also passed.
+
+Publication is limited to an independent branch and draft PR; ready/merge require
+owner confirmation. No main write, manual container/API/database rehearsal,
+company access, new fee or additional paid model API is part of this package.
+Next: verify exact-head normal CI and keep the result draft for the owner to review.
+No unrelated feature package is started by this navigation task.
 
 Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
