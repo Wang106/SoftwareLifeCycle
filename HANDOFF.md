@@ -5716,3 +5716,80 @@ fixture-only配置渲染→原件字节/mtime不变且再次验证通过。9段s
 本地验证与独立复审均已通过，无阻断；未提交/发布，待发布及新候选完整CI，不将文档新增计为运行成功。
 业务36/44=82%、增量0；模块100/100演示/100演示/100/89/60/17；计划100/100/20/33/40/40/0；
 浏览器阶段1/4、有限计划8/8不变。
+
+
+## 2026-11-11: reserve-aware Web image preparation
+
+Baseline synchronized to main `23e3153f2996d7afbc1bcb9802d062d3070895a8`
+(PR223). CI43034751465 succeeded at 14:18:03 UTC with 3791 tests / 3122
+subtests, 309 PostgreSQL cases without skips, frontend, strict Chromium and
+aggregate gates. Artifact13862634185 SHA256
+`50121eda7f2b096cc26a115849b49512e6d4f01cf9a7bb1985a96aac20d83dea`
+matched with clean XML; recovery source/checkout matched main and protections
+were enabled. Cloudflare production build `a34ddad2` succeeded; Actions
+deploy43037153555 and continuation43037153829 skipped; Render unverified.
+These are verified baseline observations, not candidate CI, which remains pending.
+
+This package adds an unwired Web-only `prepare(commit, root, budget)` helper,
+new synthetic regressions and a [scope/validation document](docs/offline-web-image-preparation.md).
+It reuses exact-source 399-artifact npm contracts, official pinned Node base,
+dedicated Web Dockerfile, fixed local-daemon policy and inert immutable image
+checks. No API build, workflow wiring or production/dependency change is added.
+Original 3300-second deadline is retained with 1630 downstream + 60 owned local
+cleanup + existing 30 final seconds. This is admission headroom, not proof a
+real build or future three-layer integration fits; future phase checks remain.
+
+Regression-first: eight missing-module failures, then preserving-read and dynamic-route
+failures were recorded before their implementations. Independent initial review identified
+the dynamic-route incompatibility; the authorized narrow fix adds only a Web-specific
+validator, leaving the shared migration grammar unchanged. Actual tracked route bytes
+are covered; all 265 selected tracked inputs, including 47 dynamic routes, validate.
+Local 20 new focused / 943 all-offline tests, 52 automation and 126 CI guards passed
+without skips; Python compilation, progress and diff checks passed. Independent final
+review passed with no remaining code blocker, including 20 focused tests, all 265
+tracked source bytes/archive hash and tiny owned-directory cleanup. Publication
+is pending; uncommitted, unpublished, with no candidate CI.
+No downloads, Docker, image build/load, containers, HTTP, database, workflow,
+upload, company target or deployment was executed. Real acquisition/build and
+later Web/API/PG integration remain separately authorized work.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+
+## 2026-11-13: PR224 verified Chrome PKG pin repair
+
+Draft [PR224](https://github.com/Wang106/SoftwareLifeCycle/pull/224) published
+candidate `c731b4be1feb1d0d5b30efaf46a3ed56e4d13640`, based on main
+`23e3153f2996d7afbc1bcb9802d062d3070895a8`. Its
+[CI43210045304](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43210045304)
+failed at the browser PKG pin after Google's official package changed; backend
+3811 tests / 3159 subtests / 309 PostgreSQL cases and frontend 2274 passed.
+This is not a full CI pass or browser acceptance. Earlier unpublished statements
+elsewhere describe the historical preparation checkpoint.
+
+Separately authorized static [inspection43339469746](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43339469746)
+succeeded once on macos-26-arm64, tooling
+`9ebf5d3def5860be94673cac28d0ba6d617fd80c`, source `c731b4be`.
+Independent review verified the Google/Apple installer chain, notarization,
+strict deep Google app requirement, team EQHXZ8M8AV, com.google.Chrome and
+universal x86_64/arm64. Signed plist version is `157.0.8103.79`, size 272604304,
+SHA256 `ac0d2f98697f5b9ef42668104812bd14c22190b19af0f9ef2ffa88a4b78b8af5`.
+Artifact13997799007: ZIP 1906 bytes, SHA256
+`2789e0a32605c4b49e212f1c3c580378294bb8819119d7ea02a4ac81d02949fa`;
+evidence text 11647 bytes, SHA256
+`9964e3615ec9270378662996346ff6f8780091aa326e9852158fa87b20ff22bc`.
+Static inspection did not install the package, run its scripts or execute Chrome.
+
+This repair changes only the inspected version/hash/size/evidence URL, three
+exact-pin test assertions and four checkpoints. Regression-first recorded the
+expected old-version failure. Local 126 CI guards, 30 focused PKG tests and
+20 Web preparation regressions passed without skips; compilation, progress and
+whitespace checks passed. Repair review/publication and fresh exact-head full
+normal CI remain pending. No diagnostic workflow enters PR224; source URL,
+control flow, trust checks, sandbox, browser/report/aggregate and protection
+gates remain unchanged. No dependency acquisition, local real DB/browser,
+workflow dispatch or deployment was performed for this repair.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
