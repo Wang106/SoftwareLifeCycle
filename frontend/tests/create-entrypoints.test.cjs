@@ -24,10 +24,11 @@ const available = [
   ['Test Release', '/commands?operation=test-release'],
   ['Delivery Packages', '/commands?operation=delivery'],
   ['Production Authorizations', '/commands?operation=authorization'],
+  ['Application Release', '/releases/application/new'],
 ];
 const unavailable = [
   ['Software Change Request', '/changes'], ['Issue', '/issues'],
-  ['DVP Plan', '/testing/dvp'], ['Application Release', '/releases/application'],
+  ['DVP Plan', '/testing/dvp'],
 ];
 for (const [label, href] of available) {
   test(label + ' opens the preparation form rather than a catalog, in both languages', () => {
@@ -85,7 +86,7 @@ async function destination(href) {
   const tree = await module.exports.default({ searchParams: Promise.resolve(query) });
   return nodes(tree).find(node => node.type === Workbench);
 }
-for (const [label, href] of available.slice(1)) {
+for (const [label, href] of available.slice(1).filter(([,href]) => href.startsWith('/commands?'))) {
   test(label + ' destination selects its existing editable form without enabling any write capability', async () => {
     const html = center('en');
     const link = (html.match(/<a\b[\s\S]*?<\/a>/g) || []).find(value => value.includes('<b>' + label + '</b>'));

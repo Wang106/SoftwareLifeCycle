@@ -4,6 +4,16 @@
 
 The repository has a provider-neutral identity/scoped-role model plus configurable OIDC authentication and authorization for write requests. With `AUTH_MODE=oidc`, a write requires a valid Bearer token, an ACTIVE local principal matching `(issuer, subject)` and the exact active project/software role required by that route. Every current write records an atomic audit event bound to that principal. The public sample API must continue using `READ_ONLY_MODE=true` because no approved provider is configured and legacy no-key writes retain weaker semantics; controlled UI, provider-backed acceptance and operations remain unfinished.
 
+The separately added [application-release creation command](docs/application-release-creation.md)
+is stricter than the historical generic contracts below. It requires OIDC, an
+active human principal, exact project CONTRIBUTOR **and** exact baseline-software
+SOFTWARE_VIEWER/SOFTWARE_MAINTAINER scope. PLATFORM_ADMIN alone does not bypass those requirements.
+Its private context and original-receipt reads apply the same scopes; its new audit
+events are excluded from older public activity/catalogue/search/dashboard routes.
+The original fourteen-command, two-session and six-administrator inventories retain
+their existing behavior and acceptance counts. No real identity or public write
+setting is enabled by adding this command.
+
 ## Authentication boundary
 
 The boundary is an external OpenID Connect (OIDC) provider such as a company SSO. The API validates a configured issuer's signing key through its explicit HTTPS JWKS URL, the configured audience, expiry/issued-at claims and a fixed asymmetric-algorithm allow-list. It then maps the stable `(issuer, subject)` pair to a local `security_principals` record.

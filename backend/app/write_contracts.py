@@ -336,3 +336,22 @@ PRODUCTION_APPROVAL_CONTRACTS = {
     ('POST', '/api/v1/authorizations/{authorization_no}/approval'):
         ProductionApprovalContract('Approve production authorization with dual-person separation'),
 }
+
+
+@dataclass(frozen=True)
+class AsrCreationContract:
+    operation: str
+    authentication: str = 'OIDC_REQUIRED'
+    authorization: str = 'ACTIVE_USER_EXACT_PROJECT_CONTRIBUTOR_AND_SOFTWARE_VISIBILITY'
+    actor_binding: str = 'AUTHENTICATED_PRINCIPAL'
+    public_exposure: str = 'READ_ONLY_BLOCKED'
+    audit: str = 'ATOMIC_APPEND'
+    concurrency: str = 'ADMIN_GATE_PRINCIPAL_MEMBERSHIPS_RELEASE_PARENTS_ROW_LOCKS'
+    idempotency: str = 'REQUEST_UUID_EXACT_CONTENT_CONTEXT_AND_ACTOR'
+    precondition: str = 'ACTIVE_PARENTS_UNREVOKED_STANDARD_AND_REVIEWED_CONTEXT'
+
+
+# This does not change the fourteen ordinary commands, six admin or two session controls.
+ASR_CREATION_CONTRACTS = {
+    ('POST', '/api/v1/releases/application'): AsrCreationContract('Create empty application release DRAFT'),
+}

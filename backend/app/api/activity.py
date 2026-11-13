@@ -18,6 +18,11 @@ from app.models.snapshot import ReleaseSnapshot
 router = APIRouter(prefix="/api/v1", tags=["audit"])
 
 
+def public_audit_clause():
+    """New strict ASR evidence is available only through its private receipt path."""
+    return (AuditEvent.event_type != 'APPLICATION_RELEASE_CREATED') & ~func.upper(AuditEvent.event_no).like('EVT-ASR-%')
+
+
 def _release_links(db: Session, events: list[AuditEvent]) -> dict[tuple[str, object], str]:
     snapshot_ids = {event.entity_id for event in events
                     if event.entity_type == "RELEASE_SNAPSHOT" and event.entity_id}
@@ -68,7 +73,7 @@ def list_activity(
     limit: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
 ):
-    statement = select(AuditEvent)
+    statement = select(AuditEvent).where(public_audit_clause())
     if event_type:
         statement = statement.where(AuditEvent.event_type == event_type)
     if entity_type:
@@ -87,7 +92,7 @@ def list_activity(
 @router.get("/activity/{event_no}")
 def get_activity(event_no: str, db: Session = Depends(get_db)):
     event = db.scalars(
-        select(AuditEvent).where(AuditEvent.event_no == event_no)
+        select(AuditEvent).where(public_audit_clause()).where(AuditEvent.event_no == event_no)
     ).first()
     if not event:
         raise HTTPException(status_code=404, detail="audit event not found")
@@ -126,7 +131,7 @@ class AuditFilters(BaseModel):
 @router.get("/audit/events")
 def audit_catalog(filters: Annotated[AuditFilters, Query()], db: Session = Depends(get_db)):
     """Read-only summaries; payload and long detail remain on exact event profiles."""
-    stmt = select(AuditEvent)
+    stmt = select(AuditEvent).where(public_audit_clause())
     for name in ("event_type", "entity_type", "entity_ref", "entity_id", "action", "actor_name", "actor_principal_id"):
         value = getattr(filters, name)
         if value is not None and value != "":
