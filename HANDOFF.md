@@ -1,3 +1,5 @@
+Latest checkpoint: [2026-11-13 local artifact storage core](#2026-11-13-local-artifact-storage-core). Older entries below remain historical.
+
 Latest checkpoint: [2026-11-13 creation entry forms](#2026-11-13-creation-entry-forms). Older entries below remain historical.
 
 Latest checkpoint: [2026-11-13 sidebar route highlighting](#2026-11-13-sidebar-route-highlighting). Older entries below remain historical.
@@ -5937,6 +5939,51 @@ Next: publish the independently reviewed isolated draft PR; verify its exact-hea
 normal CI and keep it draft. No merge or next feature package starts
 from this checkpoint. Live database/OIDC and real provider/multi-user acceptance
 remain separate; file upload and component editing are later work.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+
+## 2026-11-13: local artifact storage core
+
+Baseline main `fcbcbe416ac4bbfea0e32fd8d750f202880dd3d5` is merged PR227.
+No open PR was present at package start. [Main CI43445242134](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43445242134)
+passed backend/PostgreSQL/migrations, frontend, strict browser and aggregate gates;
+same-main Cloudflare check succeeded. Actions deployment/continuation skipped.
+These are baseline results, not candidate acceptance or backend recovery evidence.
+
+This bounded package adds a [default-disabled local storage core](docs/local-artifact-storage-core.md)
+and synthetic regression tests. The import-inert standard-library module reserves a
+service UUID descriptor before I/O, stages bounded bytes with exact size/SHA-256,
+publishes once without replacement, and inspects retained uncertain outcomes without
+repair or retry. One successful stage grants one same-instance publication attempt.
+Caller-persisted receipts, serialized/non-reentrant use and trusted private Linux
+local storage are explicit prerequisites. Current byte verification is not durable
+acknowledgement, database READY, upload acceptance or a malware/origin verdict.
+
+No application caller, HTTP route, form, environment switch, database/migration,
+dependency, workflow, deployment setting, identity, grant or company storage path
+is added. Existing public writes stay disabled. No real file, container/API/database
+rehearsal, company access, resource purchase or manual workflow was used.
+
+Regression-first: initial missing-module failure, followed by a reproduced uncertain
+close retry/leak and three reproduced review regressions (atime false positive,
+caller-exception close suppression and duplicate-stage capability). Narrow repairs
+were independently verified. Final 29 focused tests and five independent fault
+probes passed. Existing 943 offline, 52 automation, 126 CI guards and 2343 frontend
+tests passed with no skips. Frontend setup errors were resolved using unchanged
+matching-lock dependencies and the correct working directory, not source changes.
+Compilation, progress-ledger and whitespace checks passed. Full backend and native
+PostgreSQL/migration checks, production build and strict signed-browser execution
+remain for the exact candidate's existing normal CI; no complete candidate pass is
+claimed locally. Local Python lacks the full backend test dependencies.
+
+Independent final review approved the module, focused tests and scope contract.
+Next: publish only `codex/local-artifact-storage-core` as a draft PR, verify exact-head
+normal CI, and retain draft. Ready-for-review and merge require owner confirmation.
+Component declaration, authenticated upload/download, private metadata reads,
+durable database/file reconciliation and an approved writable offline deployment
+remain separate work. Do not start another feature package from this checkpoint.
 
 Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
