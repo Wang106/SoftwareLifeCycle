@@ -265,7 +265,7 @@ class MigrationImageTests(unittest.TestCase):
                 if failure == 'start_interrupt': raise KeyboardInterrupt()
                 if kind == 'default': return 1, b''
                 raw = {'status': 'MIGRATION_DEPENDENCIES_AND_SOURCE_VERIFIED', 'wheel_count': 30,
-                       'migration_count': 29, 'source_file_count': 1, 'database_connected': False,
+                       'migration_count': 30, 'source_file_count': 1, 'database_connected': False,
                        'migrations_executed': False}
                 if failure == 'probe_alias': raw['database_connected'] = 0
                 return 0, json.dumps(raw).encode()

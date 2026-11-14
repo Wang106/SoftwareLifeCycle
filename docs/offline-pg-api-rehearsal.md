@@ -18,7 +18,7 @@ GitHub Actions CI身份、仓库Wang106/SoftwareLifeCycle、明确现有
 127.0.0.1:5432/software_lifecycle_ci/slc_ci目标，无URL选项、PG*环境覆盖或外部回退。
 这只是防误用检查，不是抵御伪造环境、loopback隧道或恶意同UID进程的安全证明。
 
-fixture为每项测试创建新的ci_catalog_<UUID>，在该schema实际执行原0001→0029，
+fixture为每项测试创建新的ci_catalog_<UUID>，在该schema实际执行原0001→0030，
 不stamp、create_all、seed、不读写public。第二项额外创建本次ci_api_<UUID>空schema，
 不通过手填版本号制造错误head。成功或失败均只在核对本次名字、OID及当前所有权后
 清理自己的schema；不扫描前缀、删除数据库或自动重试不确定清理。
@@ -61,7 +61,7 @@ SIGALRM整段截止，拒绝非主线程或已有ITIMER_REAL计时器，结束/�
 
 ## 两项真实场景及有限结论
 
-1. 真实迁移后的新schema：ready200和固定0029 head；release/audit目录200、total0及空items；
+1. 真实迁移后的新schema：ready200和固定0030 head；release/audit目录200、total0及空items；
    业务部署POST403 read_only_mode；身份读取401 oidc_not_enabled。API正常退出后，PR205有限
    目录观察、releases/release_snapshots/audit_events/deployments四表计数及版本头保持不变。
    不等于全库/所有数据未变，也不是验证全部写路由或真实OIDC。

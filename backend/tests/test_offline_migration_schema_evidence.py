@@ -13,7 +13,7 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / 'scripts/offline_migration_schema_evidence.py'
-MANIFEST = ROOT / 'deploy/offline/migration-schema-0029.json'
+MANIFEST = ROOT / 'deploy/offline/migration-schema-0030.json'
 
 
 class SchemaEvidenceTests(unittest.TestCase):
@@ -165,7 +165,7 @@ class SchemaEvidenceTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(MANIFEST.read_bytes()).hexdigest(), self.m.MANIFEST_SHA256)
         for path, digest in self.manifest['repository_file_sha256'].items():
             self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest)
-        self.assertEqual(self.manifest['facts_baseline_commit'], '44e307a71a22f93f8c2ae611cf10678b0420499f')
+        self.assertEqual(self.manifest['facts_baseline_commit'], '576a6452194d36377ea92dc28f3e0ffec1241cf1')
 
     def v2_manifest(self):
         value = copy.deepcopy(self.manifest)
@@ -201,8 +201,13 @@ class SchemaEvidenceTests(unittest.TestCase):
             with self.subTest(index=index): self.assertEqual(self.manifest_check(value)['status'], 'UNKNOWN')
 
     def test_original_120_facts_remain_exactly_unchanged(self):
-        self.assertEqual(len(self.manifest['facts']), 120)
-        raw = json.dumps(self.manifest['facts'], sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()
+        legacy = json.loads((ROOT / 'deploy/offline/migration-schema-0029.json').read_text())
+        self.assertEqual(len(legacy['facts']), 120)
+        for key, value in legacy['facts'].items():
+            if key != 'version':
+                self.assertEqual(self.manifest['facts'][key], value)
+        self.assertEqual(len(self.manifest['facts']), 147)
+        raw = json.dumps(legacy['facts'], sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode()
         self.assertEqual(hashlib.sha256(raw).hexdigest(), 'bc754be5abbb1386f6c6872303c1e9e238a9f5a11315bff91ab7412daf0f4cdc')
 
     def test_scope_includes_tables_columns_constraints_indexes_functions_triggers(self):
@@ -213,7 +218,8 @@ class SchemaEvidenceTests(unittest.TestCase):
             self.assertIn('trigger:' + table + '_append_only', facts)
         self.assertEqual(sum(k.startswith('function:') for k in facts), 3)
         self.assertEqual(sum(k.startswith('trigger:') for k in facts), 6)
-        self.assertEqual(sum(k.startswith('index:') for k in facts), 4)
+        self.assertEqual(sum(k.startswith('index:') and not k.startswith('index:ix_private_upload_') for k in facts), 4)
+        self.assertEqual(sum(k.startswith('index:') for k in facts), 5)
         self.assertIn('column:releases.software_id', facts)
         self.assertIn('column:release_snapshots.content_hash', facts)
         self.assertEqual(facts['version']['column_type'], 'character varying(64)')

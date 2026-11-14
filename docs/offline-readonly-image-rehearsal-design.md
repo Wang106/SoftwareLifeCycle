@@ -68,7 +68,7 @@ never production credentials/data or the expired public database. Secret files s
 outside git/logs/CI artifacts. Database setup, role grants, image load/start and
 host egress controls need their own applicable authorization before execution.
 
-- Before startup, independently attest schema0029, synthetic dataset and a
+- Before startup, independently attest schema0030, synthetic dataset and a
   non-owner/non-superuser SELECT-only role without write/CREATE/TEMP privileges.
   Validate actual grants/role inheritance, not operator JSON booleans. Record a
   baseline schema/data digest. Setup writes belong to a separately authorized

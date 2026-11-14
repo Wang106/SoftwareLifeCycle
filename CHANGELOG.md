@@ -1,5 +1,11 @@
 # Changelog
 
+## Private upload session preparation — 2026-11-14
+- Add default-off, non-HTTP private upload reservation/phase/recovery coordination with synthetic byte tests; no Artifact or real file transfer.
+- Add schema0030 recovery metadata and synchronized current offline/health checks while retaining historical0029 evidence.
+- Preserve exact actor/scope checks, one-shot storage, immutable receipts, public audit isolation and all normal CI gates.
+- File policy, retention, writable deployment and real-user upload acceptance remain open. Business acceptance increment is zero.
+
 ## 0.18.45 — 2026-10-19
 - 新增 `0026_release_chain_revocation` 永久追加式账本，四类目标严格 XOR/唯一、不可更新删除且有历史时拒绝降级。
 - 新增 Release、DeliveryPackage、Distribution、SoftwareAuthorization 四类后台撤销命令与统一 `ACTIVE`/`REVOKED`/`BLOCKED_BY_ANCESTOR` 读取。

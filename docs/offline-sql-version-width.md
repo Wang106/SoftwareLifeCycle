@@ -24,7 +24,7 @@ online既有64列维护逻辑不变，不宣称全局registry身份没有变化�
 
 ## 真实生成回归（尚未运行）
 
-两个不连接DB的依赖型测试由正常完整CI执行：实际生成0001→0029 SQL，确认宽度/PK/29步及事务边界；
+两个不连接DB的依赖型测试由正常完整CI执行：实际生成0001→0030 SQL，确认宽度/PK/30步（另保留0001→0029的29步历史回归）及事务边界；
 重复加载公开hook，在offline→online→offline之间核对宽度、schema、PK和固定继承关系。
 生成器用固定Python独立子进程、空临时cwd及明确合成不可用DSN，不读开发者.env。
 禁止engine_from_config/psycopg.connect；stdout为临时文件，RLIMIT_FSIZE限制1MiB，60秒整段截止，
@@ -35,10 +35,10 @@ stderr不公开。生成产物仅内存用于测试，不提供公司执行入�
 两项PG测试只接受既有repository/CI身份、精确127.0.0.1:5432/software_lifecycle_ci/slc_ci及PG16，
 拒绝任何PG*覆盖。复用已有ci_url/观察函数，但不复用会先online迁移的fixture。
 各自新建ci_sql_<UUID>空schema，记录OID；不读取旧业务数据，不建角色或GRANT/REVOKE。
-所有SQL只来自本提交现有29迁移生成内容，不接受任意SQL文件或远端输入。
+所有SQL只来自本提交现有30迁移生成内容，不接受任意SQL文件或远端输入。
 
 1. 将未经改写的完整SQL一次交给psycopg simple query（prepare=False），不按分号拆分，保留
-   $$函数/DO块及BEGIN/COMMIT。确认子进程成功、事务IDLE、唯一0029头、版本列64/NOT NULL，
+   $$函数/DO块及BEGIN/COMMIT。确认子进程成功、事务IDLE、唯一0030头、版本列64/NOT NULL，
    并读取有限7表/3函数/6触发器观察；不是全schema认证或公司数据验收。
 2. 仅负向测试把唯一版本列64声明改为32，要求实际SQLSTATE22001（子进程专用退出32），
    并确认失败事务未留下已提交表。这个人为反例不是生产转换逻辑，也不冒充历史数据库实测。

@@ -72,21 +72,21 @@ class MigrationInputsTests(unittest.TestCase):
         self.assertEqual(result['status'], 'MIGRATION_INPUTS_PREPARED_NOT_EXECUTED')
         self.assertFalse(result['database_connected'])
         self.assertFalse(result['image_built'])
-        self.assertEqual(result['migration_count'], 29)
+        self.assertEqual(result['migration_count'], 30)
         with patch.object(migration.wheels, 'metadata'), \
              patch.object(migration.wheels, 'pip_closure', side_effect=AssertionError('verify must not run pip')):
             verified = migration.verify(path, COMMIT, result['manifest_sha256'])
         self.assertEqual(verified['status'], 'MIGRATION_INPUTS_VERIFIED_NOT_EXECUTED')
         self.assertEqual((path / 'alembic/env.py').read_bytes(), (ROOT / 'backend/alembic/env.py').read_bytes())
-        self.assertEqual(len(list((path / 'alembic/versions').glob('*.py'))), 29)
+        self.assertEqual(len(list((path / 'alembic/versions').glob('*.py'))), 30)
         self.assertFalse((path / 'entrypoint.sh').exists())
 
     def test_chain_is_ast_only_and_exact(self):
         sources = self.sources()
-        self.assertEqual(migration.validate_sources(sources)['migration_count'], 29)
+        self.assertEqual(migration.validate_sources(sources)['migration_count'], 30)
         key = 'backend/alembic/versions/0001_core_and_snapshot.py'
         sources[key] = b"raise RuntimeError('must never execute')\n" + sources[key]
-        self.assertEqual(migration.validate_sources(sources)['migration_count'], 29)
+        self.assertEqual(migration.validate_sources(sources)['migration_count'], 30)
 
     def test_missing_required_sources_rejected(self):
         for name in migration.FIXED_SOURCES | {'backend/alembic/versions/0001_core_and_snapshot.py'}:
@@ -128,7 +128,7 @@ class MigrationInputsTests(unittest.TestCase):
 
     def test_base_head_and_lock_mismatch(self):
         for name, old, new in (
-            ('backend/app/core/config.py', b'0029_changeover_batch_history', b'0028_deployment_actual_guard'),
+            ('backend/app/core/config.py', b'0030_private_upload_sessions', b'0028_deployment_actual_guard'),
             ('deploy/offline/base-images.json', b'linux/amd64', b'linux/arm64'),
             ('backend/requirements-linux-cp312.lock', b'alembic==', b'alembic>='),
         ):
@@ -313,7 +313,7 @@ class MigrationInputsTests(unittest.TestCase):
     def test_independent_verify_never_invokes_any_child(self):
         path, receipt = self.prepare()
         with patch.object(migration, 'bounded_command', side_effect=AssertionError('must not execute')):
-            self.assertEqual(migration.verify(path, COMMIT, receipt['manifest_sha256'])['migration_count'], 29)
+            self.assertEqual(migration.verify(path, COMMIT, receipt['manifest_sha256'])['migration_count'], 30)
 
     def test_manifest_close_uncertainty_and_final_verify_failure_never_succeed(self):
         for reason in ('manifest_close', 'verify'):

@@ -124,7 +124,7 @@ change is included. Container `network=none` is not physical host disconnection.
 The API image deliberately contains `app/` but not `alembic.ini` or the migration
 directory. A later database package must provide separately reviewed, trusted
 migration source or a one-time migration-tool image and actually execute the full
-schema 0029 chain in a newly approved disposable database. Filling in
+schema 0030 chain in a newly approved disposable database. Filling in
 `alembic_version` manually cannot substitute for migrations. Database/role/grant
 setup, real SELECT behavior, backup/restore, frontend/browser acceptance and
 company deployment remain separate. No collector rule is relaxed to obtain

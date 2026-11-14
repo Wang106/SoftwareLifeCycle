@@ -6051,3 +6051,69 @@ other creation flows and writable offline deployment remain separate work.
 
 Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+
+## 2026-11-14: private upload session state machine
+
+Baseline main `576a6452194d36377ea92dc28f3e0ffec1241cf1` is merged PR229,
+with tree `873a469b029ca9c348f01515a63aa9c26285c546` and no open PR at start.
+[Main CI43544711439](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43544711439)
+passed 4006 backend cases plus3175 subtests,334 PostgreSQL-module cases without
+skips,2378 frontend tests, isolated browser and aggregate gates. Actions deployment
+43545865472 and continuation43545865456 skipped. These are baseline results, not
+candidate acceptance, backend recovery or company deployment evidence.
+
+This [default-disabled private upload session package](docs/private-upload-sessions.md)
+connects the existing byte core only to an explicitly enabled trusted Python
+coordinator tested with synthetic bytes. No application caller, HTTP upload or
+download route, browser file input, environment enable switch, Artifact, snapshot,
+approval, delivery or production configuration is added. Public operation remains
+sample-only/read-only. File types, real size/quota limits, classification, scanning,
+retention and actual storage configuration are not decided by test values.
+
+Schema0030 adds one private recovery table without existing-row backfill. It stores
+an actor-bound request and immutable reservation, service object UUID and trusted
+storage namespace, exact private component context, monotonic phase and optional
+original stored receipt. Current schema pins, offline manifests and health checks
+advance together; historical0029 migration/manifest evidence remains unchanged.
+Downgrade refuses retained upload rows. No real database migration was executed.
+
+RESERVED→RECEIVING→STAGED→PUBLISHING→STORED_PRIVATE commits each phase before
+its corresponding byte operation. Every transition rechecks current identity,
+session, project contributor, software visibility and exact DRAFT/unrevoked parent
+bindings. Authorization locks are released during byte I/O. A competing or restarted
+receiver cannot consume the source again. Failures retain bytes and the last durable
+phase, optionally recording RECONCILIATION_REQUIRED. Inspection is read-only and
+never creates a success receipt. An acknowledged stored receipt still is not a
+scan verdict, Artifact, formal release or download/distribution permission.
+
+Regression-first established the absent service/schema and stale health-version
+failures. Fault cases cover every database commit window, lost acknowledgements,
+interruption, exact evidence types, scope changes, replay/conflicts and public audit
+isolation. Source review found a JSON bool/integer equality ambiguity, reproduced
+before a type-sensitive comparison repair. Existing declaration receipt access
+remains actor-bound; an independent authorized contributor may prepare an upload
+against the exact retained declaration through the new private coordinator only.
+
+Independent final source review found no blocking issue; additional persisted
+malformed-evidence and return-alias probes passed. Final local backend checks:
+3235 passed plus3364 subtests,858 PostgreSQL-dependent skips,zero failures/errors.
+Exactly13 cases in four explicitly GitHub-CI-only files were excluded locally;
+no CI environment was spoofed. The first broad run mistakenly included two such
+CI-only cases, which refused the local target; no tests or guards were relaxed.
+New8 PostgreSQL concurrency cases and1 schema case still require normal CI.
+
+Frontend2379 passed without failures/skips. TypeScript, Next/OpenNext production
+builds, Worker configuration, disabled production auth checks,3 browser-fixture
+checks,52 automation and126 CI guards passed. The local build first rejected a
+node_modules symlink outside its root; copying unchanged matching-lock dependencies
+resolved the environment without altering project configuration. Local Node24.22.1
+checks do not replace the normal CI's pinned Node22 execution. Syntax, progress
+ledger and whitespace checks passed. Keep publication as an isolated draft PR;
+new real PostgreSQL and exact-head normal CI remain required.
+Ready-for-review and merge require the owner's later approval. Real file transport,
+private Artifact/frozen metadata, delivery, retention and writable deployment remain
+separate work, not completed by this package.
+
+Business36/44=82%, increment0; modules100/100 demo/100 demo/100/89/60/17;
+plans100/100/20/33/40/40/0; browser stage1/4 and finite plan8/8 unchanged.

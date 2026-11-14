@@ -429,7 +429,7 @@ class HostTests(unittest.TestCase):
 
     def test_probe_constants_match_current_application_contract(self):
         self.assertIn('APP_VERSION = "0.18.50"', (ROOT / 'backend/app/main.py').read_text())
-        self.assertIn('required_db_revision: str = "0029_changeover_batch_history"',
+        self.assertIn('required_db_revision: str = "0030_private_upload_sessions"',
                       (ROOT / 'backend/app/core/config.py').read_text())
         self.assertNotIn('alembic', ' '.join(rehearsal.UVICORN_ARGS))
         self.assertNotIn('entrypoint.sh', ' '.join(rehearsal.UVICORN_ARGS))

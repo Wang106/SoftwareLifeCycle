@@ -32,7 +32,7 @@ def test_real_readonly_api_ready_catalogs_and_denied_writes(owned_catalog_schema
         status, body = process.request('GET', '/health/ready')
         ready = api.json_body(body)
         assert status == 200 and ready == {'status': 'ready', 'version': '0.18.50',
-                                         'database_revision': '0029_changeover_batch_history'}
+                                         'database_revision': '0030_private_upload_sessions'}
         for path in ('/api/v1/release-catalog/application?limit=1', '/api/v1/audit/events?limit=1'):
             status, body = process.request('GET', path)
             catalog = api.json_body(body)
@@ -46,7 +46,7 @@ def test_real_readonly_api_ready_catalogs_and_denied_writes(owned_catalog_schema
     assert observe(kwargs, namespace) == before_catalog
     assert selected_rows(admin, namespace) == before_rows
     assert admin.execute(sql.SQL('SELECT version_num FROM {}.alembic_version').format(
-        sql.Identifier(namespace))).fetchall() == [('0029_changeover_batch_history',)]
+        sql.Identifier(namespace))).fetchall() == [('0030_private_upload_sessions',)]
 
 
 def test_empty_owned_schema_not_ready_and_no_startup_migration(owned_catalog_schema):

@@ -609,3 +609,13 @@ acceptance denominators. It does not supply file upload, dictionary management,
 private artifact distribution or a writable deployment. See
 [the declaration contract](docs/application-component-declaration.md) and current
 HANDOFF for exact verification and publication state. Business remains 36/44=82%.
+
+
+## Private upload session preparation (2026-11-14)
+
+Default-off trusted Python coordination now has a durable private reservation and
+phase/audit contract, synthetic crash/revocation tests and schema0030 compatibility.
+It adds no HTTP file transfer, Artifact, download, formal publication or writable
+deployment. Company file/retention decisions and exact-candidate PostgreSQL/normal
+CI remain required. All acceptance denominators and percentages stay unchanged.
+See [private upload sessions](docs/private-upload-sessions.md).

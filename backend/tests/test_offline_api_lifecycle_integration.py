@@ -24,7 +24,7 @@ CIDS = {'pg':'c'*64, 'migration':'d'*64, 'api':'f'*64}
 
 def guard_envelope():
     # Synthetic rows only. Runtime parser/comparator still execute unchanged.
-    facts=json.loads((ROOT/'deploy/offline/migration-schema-0029.json').read_text())['facts']
+    facts=json.loads((ROOT/'deploy/offline/migration-schema-0030.json').read_text())['facts']
     catalog=probe.guard.catalog
     groups={name:[] for name in catalog.LIMITS}
     for name in catalog.FUNCTIONS:

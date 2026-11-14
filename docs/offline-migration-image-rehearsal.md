@@ -43,7 +43,7 @@ CLI只有该明确运行入口；不提供任意URL、数据库连接、镜像�
 
 先在固定受信、有总时限的子进程使用原context工具读取干净checkout的精确Git对象，并核对实际文件字节。
 只返回64KiB以内的严格commit/requirements/inventory/探针期望回执；父进程再次校验键、类型、锁关系和源码路径/摘要预算。
-原源码白名单、29份单链AST检查、requirements和30项wheel锁全部保留。
+原源码白名单、30份单链AST检查、requirements和30项wheel锁全部保留。
 新BUILD_SOURCES另核对当前协调器、工作流以及实际使用的context、下载工具和传递依赖的Git字节。
 这不扩大原context清单白名单；原api/web流程和严格双角色协议完全不变。
 
@@ -86,7 +86,7 @@ CLI只有该明确运行入口；不提供任意URL、数据库连接、镜像�
    创建成功、运行超时或普通Docker失败都不能冒充默认拒绝通过。
 2. 依赖及源码：只允许固定Python -I -B程序。核对Python3.12.14、30项分发版本、
    原生依赖导入、psycopg binary后端和pip check；检查Python模块入口存在，不依赖未复制的console script。
-   镜像/app必须只有精确原始app、alembic.ini、env.py和29份迁移文件/目录；逐项检查大小/SHA、
+   镜像/app必须只有精确原始app、alembic.ini、env.py和30份迁移文件/目录；逐项检查大小/SHA、
    编译语法和AST单链。编译不执行模块。
 
 探针不import应用、模型或env.py，不调用Alembic current/heads/history/upgrade，不生成SQL，
@@ -123,7 +123,7 @@ Docker CLI停止不能证明daemon侧pull/build已停止；超时、取消或宿
 硬限或重复信号也可能阻止清理，不宣称无条件成功清理。
 
 成功回执为独立slc-offline-migration-image-rehearsal-v1，包括精确commit、context/tar摘要、
-image ID、平台、30依赖/29迁移源码数量、默认退出1及两个容器已清理；
+image ID、平台、30依赖/30迁移源码数量、默认退出1及两个容器已清理；
 database_connected=false、migrations_executed=false。
 状态为MIGRATION_IMAGE_SMOKE_PASSED_NOT_DATABASE_ACCEPTANCE。
 公开步骤摘要只列固定安全信息，不发布原始日志、路径、数据库URL、凭据或大制品。

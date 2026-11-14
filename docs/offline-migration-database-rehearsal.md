@@ -69,13 +69,13 @@ none网络/无外接口/无端口及loopback监听。具有该namespace或Docker
 
 只在新容器初始化的固定slc_migration空数据库中执行；先检查public的关系与函数均为0。
 原镜像默认仍/bin/false。只有该协调器明确覆盖为固定Python -I -B bootstrap，先检查身份/网络，
-显式加入/app到sys.path，再用Alembic公开command.upgrade调用固定0029目标。
+显式加入/app到sys.path，再用Alembic公开command.upgrade调用固定0030目标。
 不调用未复制console脚本，不stamp、不手填版本、不create_all、不降级、不seed、不修改历史迁移。
 
 连接只指向127.0.0.1:5432/slc_migration，服务器固定5秒statement、1秒lock、15秒idle超时，
 连接超时5秒。观察由新连接在READ ONLY/REPEATABLE READ事务中执行，rollback结束；
 原迁移独立事务已经提交，不能把观察rollback称为撤销迁移。
-成功要求迁移进程exit0、固定完成回执、无OOM/daemon错误，以及精确0029单头、版本列64、
+成功要求迁移进程exit0、固定完成回执、无OOM/daemon错误，以及精确0030单头、版本列64、
 7张选定表/3个函数/6个启用触发器、4张选定业务表行数0。
 只检查这些有限关系和计数，不证明全部schema、所有数据、函数行为或权限。
 
