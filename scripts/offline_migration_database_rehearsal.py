@@ -22,7 +22,7 @@ Blocked = builder.Blocked
 require = builder.require
 exact = builder.exact
 ROOT = Path(__file__).resolve().parents[1]
-HEAD = '0029_changeover_batch_history'
+HEAD = '0030_private_upload_sessions'
 PG_IMAGE = 'postgres@sha256:5983db9a9c6ad225a48a46cfe2e03e6680b1826662befd0465eb05b34cb1c64e'
 PG_ID = 'sha256:cadebe7c08430c896edac883fa92f8de2c36e330805e770fbee8a7eae13f144f'
 LABEL = 'org.software-lifecycle.migration-database-rehearsal'
@@ -33,7 +33,7 @@ API_RUNTIME_SOURCES = builder.BUILD_SOURCES | RUNTIME_SOURCES | frozenset({
     'scripts/offline_api_startup_rehearsal.py', 'scripts/offline_database_rehearsal.py',
     'scripts/offline_database_readiness.py', 'scripts/offline_migrated_api_guard.py',
     'scripts/offline_pg_catalog_evidence.py', 'scripts/offline_pg_guard_contracts.py',
-    'scripts/offline_migration_schema_evidence.py', 'deploy/offline/migration-schema-0029.json'})
+    'scripts/offline_migration_schema_evidence.py', 'deploy/offline/migration-schema-0030.json'})
 PG_TMPFS = {
     '/var/lib/postgresql/data':'rw,noexec,nosuid,nodev,size=536870912,uid=999,gid=999,mode=0700',
     '/var/run/postgresql':'rw,noexec,nosuid,nodev,size=16777216,uid=999,gid=999,mode=0770',
@@ -49,7 +49,7 @@ assert os.readlink('/proc/self/ns/net') == sys.argv[1]
 sys.path.insert(0, '/app')
 from alembic import command
 from alembic.config import Config
-command.upgrade(Config('/app/alembic.ini'), '0029_changeover_batch_history')
+command.upgrade(Config('/app/alembic.ini'), '0030_private_upload_sessions')
 print('MIGRATION_COMMAND_COMPLETED')
 '''
 EMPTY_SQL = "SELECT json_build_object('version',current_setting('server_version_num')::int,'relations',(SELECT count(*) FROM pg_catalog.pg_class WHERE relnamespace='public'::regnamespace),'functions',(SELECT count(*) FROM pg_catalog.pg_proc WHERE pronamespace='public'::regnamespace));"

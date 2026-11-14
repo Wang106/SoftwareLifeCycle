@@ -193,7 +193,7 @@ def source_child(commit, env, timeout):
     require(exact(expected['versions'], versions), 'SOURCE_RECEIPT_REJECTED')
     files = expected['files']; total = 0
     require({'alembic.ini', 'alembic/env.py', 'app/core/config.py'} <= set(files)
-            and len([name for name in files if name.startswith('alembic/versions/')]) == 29,
+            and len([name for name in files if name.startswith('alembic/versions/')]) == 30,
             'SOURCE_RECEIPT_REJECTED')
     for name, item in files.items():
         require(type(name) is str and (name.startswith(('app/', 'alembic/')) or name == 'alembic.ini')
@@ -260,7 +260,7 @@ def acquire_child(inventory, destination, env, timeout):
 
 def input_receipt(commit, digest, *, prepared):
     return {'status': 'MIGRATION_INPUTS_PREPARED_NOT_EXECUTED' if prepared else 'MIGRATION_INPUTS_VERIFIED_NOT_EXECUTED',
-            'source_commit': commit, 'manifest_sha256': digest, 'migration_count': 29,
+            'source_commit': commit, 'manifest_sha256': digest, 'migration_count': 30,
             'database_connected': False, 'image_built': False}
 
 
@@ -425,9 +425,9 @@ def main():
             assert declarations['down_revision'] == previous
             assert declarations['branch_labels'] is None and declarations['depends_on'] is None
             previous = declarations['revision']; count += 1
-    assert count == 29 and previous == '0029_changeover_batch_history'
+    assert count == 30 and previous == '0030_private_upload_sessions'
     print(json.dumps({'status': 'MIGRATION_DEPENDENCIES_AND_SOURCE_VERIFIED', 'wheel_count': 30,
-                      'migration_count': 29, 'source_file_count': len(files), 'database_connected': False,
+                      'migration_count': 30, 'source_file_count': len(files), 'database_connected': False,
                       'migrations_executed': False}, sort_keys=True))
 try:
     main()
@@ -530,7 +530,7 @@ class Container:
             require(code == 1 and raw == b'', 'DEFAULT_DID_NOT_REFUSE')
         else:
             expected = {'status': 'MIGRATION_DEPENDENCIES_AND_SOURCE_VERIFIED', 'wheel_count': 30,
-                        'migration_count': 29, 'source_file_count': len(self.expected['files']),
+                        'migration_count': 30, 'source_file_count': len(self.expected['files']),
                         'database_connected': False, 'migrations_executed': False}
             require(code == 0 and exact(document(raw), expected), 'DEPENDENCY_PROBE_REJECTED')
 
@@ -615,7 +615,7 @@ def run(commit, *, root=None):
     budget.reserve(0)
     return {'format': FORMAT, 'status': SUCCESS, 'source_commit': commit, 'context_manifest_sha256': digest,
             'build_context_sha256': build_digest, 'image_id': image_id, 'platform': 'linux/amd64',
-            'wheel_count': 30, 'migration_count': 29, 'source_file_count': len(expected['files']),
+            'wheel_count': 30, 'migration_count': 30, 'source_file_count': len(expected['files']),
             'default_exit_code': 1, 'containers_removed': removed, 'database_connected': False,
             'migrations_executed': False, 'limitations': LIMITATIONS}
 
@@ -642,7 +642,7 @@ def main(argv=None):
                 output.write('## Migration image preparation\n\n' + SUCCESS + '\n\nSource: ' + result['source_commit']
                     + '\n\nImage: ' + result['image_id'] + '\n\nContext SHA256: ' + result['context_manifest_sha256']
                     + '\n\nBuild input SHA256: ' + result['build_context_sha256']
-                    + '\n\nDefault exit 1; 30 dependencies and 29 migration source files checked; both owned containers removed.\n\n'
+                    + '\n\nDefault exit 1; 30 dependencies and 30 migration source files checked; both owned containers removed.\n\n'
                     + LIMITATIONS + '\n')
         print(json.dumps(result, sort_keys=True))
         return 0

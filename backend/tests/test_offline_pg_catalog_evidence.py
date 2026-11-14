@@ -177,7 +177,7 @@ class CatalogTests(unittest.TestCase):
         ast.parse(text)
         for required in ('GITHUB_ACTIONS', 'GITHUB_REPOSITORY', '127.0.0.1', 'software_lifecycle_ci',
                          'slc_ci', 'uuid.uuid4().hex', 'nspowner', 'timeout=90',
-                         "'0029_changeover_batch_history'", 'SET LOCAL search_path=pg_catalog'):
+                         "'0030_private_upload_sessions'", 'SET LOCAL search_path=pg_catalog'):
             self.assertIn(required, text)
         for excluded in ('command.stamp(', 'create_all(', 'GRANT ', 'REVOKE ', 'CREATE ROLE', 'docker run'):
             self.assertNotIn(excluded, text)

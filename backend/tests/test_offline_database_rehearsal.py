@@ -138,7 +138,7 @@ class ResultContracts(unittest.TestCase):
             self.assertNotIn('ALTER ROLE', sql)
             if case != 'missing_table': self.assertIn('VARCHAR(64)', sql)
         self.assertIn('PRIMARY KEY', rehearsal.fixture_sql('baseline'))
-        self.assertIn('0029_changeover_batch_history', rehearsal.fixture_sql('baseline'))
+        self.assertIn('0030_private_upload_sessions', rehearsal.fixture_sql('baseline'))
 
     def test_unknown_case_never_becomes_sql(self):
         with self.assertRaises(rehearsal.Blocked):

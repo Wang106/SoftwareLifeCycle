@@ -99,7 +99,7 @@ postgresql+psycopg、127.0.0.1:5432、software_lifecycle_ci、slc_ci、非空密
 
 只复用现有标准runner自带的一次性PG16服务，不新增付费资源或容器。
 每个case生成新的ci_catalog_<随机UUID>，CREATE后记录OID，原样执行现有
-0001→0029链（固定Python模块命令、90秒上限、无seed/stamp/create_all）。
+0001→0030链（固定Python模块命令、90秒上限、无seed/stamp/create_all）。
 迁移连接search_path仅该自有schema；不操作public、旧公共数据库或公司数据库。
 只在本次schema构造反例，不GRANT/REVOKE、不建角色、不改数据库权限。
 结束时精确核对本次namespace/OID/当前所有者后仅DROP该schema，身份改变即停；

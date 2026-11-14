@@ -77,7 +77,7 @@ API 固定 loopback 8000，READ_ONLY_MODE=true，AUTH_MODE=disabled、管理员/
 
 固定 5 个 HTTP 请求，均通过 API 容器内独立 Python 程序访问 127.0.0.1:8000：
 
-1. GET /health/ready 必须 200，精确 ready、版本 0.18.50 和 0029 revision。
+1. GET /health/ready 必须 200，精确 ready、版本 0.18.50 和 0030 revision。
 2. GET application release catalog?limit=1 必须精确空分页，含 kind=application。
 3. GET audit/events?limit=1 必须精确空分页及空 event_type_counts。
 4. POST /api/v1/deployments 只发空 JSON，必须 403/read_only_mode。
@@ -93,7 +93,7 @@ HTTP 禁代理、跳转、压缩、chunked、不确定长度及重复 JSON/响�
 固定进程与 HTTP 检查 → 再检查进程 → 一次精确 API CID 清理 → 重新核对 PG 与只读 SQL。
 只有 API 已确认移除后才读取终态；清理失败绝不把“可能仍在运行”的快照当稳定终态。
 固定 SQL 为原有限 READ ONLY/REPEATABLE READ 观察，结束 rollback；不接受自定义 SQL。
-开始/结束要求原 0029、varchar64、选定 7 表/3 函数/6 触发器，以及 releases、release_snapshots、
+开始/结束要求当前 0030、varchar64、选定 7 表/3 函数/6 触发器，以及 releases、release_snapshots、
 audit_events、deployments 四表均 0，精确类型和值完全一致。这不证明全部 schema 或所有表没变化。
 
 进入 helper 至少保留 330 秒原预算。工作最多 120 秒，并留 150 秒；只对同一次启动最多

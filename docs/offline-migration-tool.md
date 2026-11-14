@@ -28,7 +28,7 @@
 离线API镜像只复制site-packages及app，现有源码快照白名单不含alembic.ini/迁移目录。
 生产entrypoint会自动迁移并可能seed，不能复用作只读API或准备工具入口。
 新镜像复用已核对的Python linux/amd64平台摘要、现有完整30项wheel锁和安装校验，
-额外复制原始配置、env.py及全部0001至0029迁移，不新增依赖。
+额外复制原始配置、env.py及全部0001至0030迁移，不新增依赖。
 
 配方默认ENTRYPOINT为/bin/false、CMD为空、用户65532:65532，不公开端口/卷。
 构建安装RUN明确network=none；现有wheel验证、no-index、require-hashes、only-binary和pip check保留。
@@ -112,7 +112,7 @@ python scripts/offline_migration_context.py verify \
 1. 另行批准本次新建、可销毁、只含合成数据的PostgreSQL16目标、容器隔离/连接和本次拥有权清理。
    拒绝公司库、既有数据库、非空应用schema及任意外部连接串。不复用迁移权限启动只读API。
 2. 单独核验迁移镜像精确ID/commit及输入摘要，设计有限时间、无并发、固定目标和固定head的执行入口。
-   必须真实运行现有0001→0029链，不stamp、不手填版本号、不以create_all替代。
+   必须真实运行现有0001→0030链，不stamp、不手填版本号、不以create_all替代。
 3. 除唯一head和VARCHAR(64)版本列外，核对实际目录中的业务表、列、FK/check、唯一/部分索引、
    函数及触发器；至少覆盖0001核心表和0029四张历史表。仅版本匹配不证明schema完整。
 4. 不自动downgrade、seed、重试、不为追求CHECKLIST_MATCHED改权限或放宽原检查。

@@ -13,7 +13,7 @@
 - 联网准备机必须有已批准的构建/下载条件；现有构建器检查临时目录及 Docker 文件系统
   各至少 20 GiB 可用空间。导出另有两镜像合计 16 GiB 上限及额外 1 GiB 余量检查，
   并不保证峰值空间足够。目标机容量、平台兼容性及运行时安装介质仍需独立确认。
-- 目标必须已有获准的 PostgreSQL 16、真实迁移到 `0029_changeover_batch_history` 的
+- 目标必须已有获准的 PostgreSQL 16、真实迁移到 `0030_private_upload_sessions` 的
   合成数据库，以及非所有者、非超级用户的 SELECT-only 角色。这里只读运行应用，
   不提供数据库安装、迁移、seed、建角色、授权或修改 PUBLIC 权限的隐含步骤。
 - 两个应用镜像不包含可安装的 Ubuntu/Hyper-V/Docker/Compose/PostgreSQL 套件。
@@ -82,7 +82,7 @@ python scripts/offline_image_bundle.py verify "$HANDOFF" \
 | --- | --- |
 | `format` | 固定字符串 `slc-offline-readonly-v1` |
 | `source_commit` | 已核验交接清单的 `source_commit`，必须与独立可信提交一致 |
-| `required_db_revision` | 固定字符串 `0029_changeover_batch_history` |
+| `required_db_revision` | 固定字符串 `0030_private_upload_sessions` |
 | `images.api` | 原清单的整个 `images.api` 对象，字段及值不变 |
 | `images.web` | 原清单的整个 `images.web` 对象，字段及值不变 |
 

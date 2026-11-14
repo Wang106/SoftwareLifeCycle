@@ -1,8 +1,17 @@
 # API
 
-Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.47`; readiness requires `0027_production_actual_history`. This is the code contract, not verified Render deployment metadata.
+Base path: `/api/v1` except health endpoints. Interactive OpenAPI documentation is served at `/docs` when FastAPI is running. Application version is `0.18.50`; readiness requires `0030_private_upload_sessions`. This is the code contract, not verified Render deployment metadata.
 
 This document is a maintained map, not a replacement for the generated OpenAPI schema or endpoint tests.
+
+## Private upload session preparation (schema0030)
+
+The default-disabled Python coordinator has no registered HTTP endpoint or
+application caller. Reservation, single-use receive, original receipt and read-only
+inspection are internal trusted interfaces tested with synthetic bytes. Existing
+public metadata APIs do not expose its table or private audit events. No upload,
+download, Artifact or formal release API is added by this package. See
+[the state and authorization contract](docs/private-upload-sessions.md).
 
 ## Production actual history consistency (0.18.47)
 

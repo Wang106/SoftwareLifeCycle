@@ -27,7 +27,7 @@ FORMAT = 'slc-migrated-api-guard-observation-v1'
 SOURCES = frozenset({
     'scripts/offline_migrated_api_guard.py', 'scripts/offline_pg_catalog_evidence.py',
     'scripts/offline_pg_guard_contracts.py', 'scripts/offline_migration_schema_evidence.py',
-    'deploy/offline/migration-schema-0029.json',
+    'deploy/offline/migration-schema-0030.json',
 })
 _CHECKS = (
     'function:reject_changeover_batch_history_mutation',
@@ -127,7 +127,7 @@ def prepare(commit, budget):
                              (schema, 'offline_migration_schema_evidence')):
             _require(module.__name__ == name and Path(module.__file__).absolute() == ROOT / ('scripts/' + name + '.py'))
         _require(comparator.catalog is catalog and comparator.schema is schema
-                 and schema.MANIFEST_PATH == ROOT / 'deploy/offline/migration-schema-0029.json')
+                 and schema.MANIFEST_PATH == ROOT / 'deploy/offline/migration-schema-0030.json')
         deadline = budget.deadline
         def check():
             _require(budget.deadline == deadline)
@@ -151,7 +151,7 @@ def prepare(commit, budget):
                 checked[path] = local
                 check()
             check()
-        _require(hashlib.sha256(checked['deploy/offline/migration-schema-0029.json']).hexdigest()
+        _require(hashlib.sha256(checked['deploy/offline/migration-schema-0030.json']).hexdigest()
                  == schema.MANIFEST_SHA256)
         program = _BOOTSTRAP % checked['scripts/offline_pg_catalog_evidence.py']
         _require(len(program.encode('utf-8')) <= MAX_SOURCE)

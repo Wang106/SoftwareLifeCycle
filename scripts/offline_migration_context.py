@@ -24,7 +24,7 @@ import time
 
 import offline_python_wheelhouse as wheels
 
-REVISION = '0029_changeover_batch_history'
+REVISION = '0030_private_upload_sessions'
 BASE = 'docker.io/library/python@sha256:1aaa65a85fda306ffb8b910824d4e93bdce61e212c7e87168123ea3073b41a1a'
 BASE_CONFIG = 'sha256:febd0be41adb897a0ab8f1f1c693d8912669ea60c4940e076e9946b60e210ef0'
 MANIFEST = 'migration-inputs.json'
@@ -195,7 +195,7 @@ def validate_sources(sources):
                     for name, raw in sources.items()))
         require(sum(map(len, sources.values())) <= MAX_SOURCE_TOTAL)
         versions = sorted(name for name in sources if name.startswith('backend/alembic/versions/'))
-        require(len(versions) == 29)
+        require(len(versions) == 30)
         predecessor = None
         for index, name in enumerate(versions, 1):
             item = revision_values(sources[name])
@@ -224,7 +224,7 @@ def validate_sources(sources):
         wheels.validate_manifest(inventory, sources['backend/requirements.txt'])
         require(len(inventory['artifacts']) == 30 and
                 sources['backend/requirements-linux-cp312.lock'] == wheels.lock_text(inventory).encode())
-        return {'migration_count': 29, 'required_db_revision': REVISION, 'inventory': inventory}
+        return {'migration_count': 30, 'required_db_revision': REVISION, 'inventory': inventory}
     except (Exception, KeyboardInterrupt):
         raise Blocked('MIGRATION_INPUTS_BLOCKED') from None
 
@@ -427,7 +427,7 @@ def verify(context, expected_commit, expected_manifest_sha256):
                     manifest['source_commit'] == expected_commit and manifest['platform'] == 'linux/amd64' and
                     manifest['base_image'] == BASE and manifest['base_config_digest'] == BASE_CONFIG and
                     manifest['required_db_revision'] == REVISION and type(manifest['migration_count']) is int and
-                    manifest['migration_count'] == 29 and manifest['database_connected'] is False and
+                    manifest['migration_count'] == 30 and manifest['database_connected'] is False and
                     manifest['image_built'] is False and type(manifest['closure_report_sha256']) is str and
                     HEX64.fullmatch(manifest['closure_report_sha256']))
             entries = manifest['files']
@@ -466,7 +466,7 @@ def verify(context, expected_commit, expected_manifest_sha256):
             require(inventory_tree(fd) == (files, directories, identities))
             require(read_at(fd, MANIFEST, MAX_MANIFEST) == raw)
         return {'status': 'MIGRATION_INPUTS_VERIFIED_NOT_EXECUTED', 'source_commit': expected_commit,
-                'manifest_sha256': expected_manifest_sha256, 'migration_count': 29,
+                'manifest_sha256': expected_manifest_sha256, 'migration_count': 30,
                 'database_connected': False, 'image_built': False}
     except (Exception, KeyboardInterrupt):
         raise Blocked('MIGRATION_INPUTS_BLOCKED') from None
@@ -507,7 +507,7 @@ def prepare(repository, expected_commit, wheelhouse, destination):
                         type(closure.get('closure_report_sha256')) is str and HEX64.fullmatch(closure['closure_report_sha256']))
                 manifest = {'format': FORMAT, 'source_commit': expected_commit, 'platform': 'linux/amd64',
                             'base_image': BASE, 'base_config_digest': BASE_CONFIG, 'required_db_revision': REVISION,
-                            'migration_count': 29, 'source_file_count': len(sources),
+                            'migration_count': 30, 'source_file_count': len(sources),
                             'source_size_bytes': sum(map(len, sources.values())),
                             'closure_report_sha256': closure['closure_report_sha256'], 'files': entries,
                             'database_connected': False, 'image_built': False}

@@ -13,7 +13,7 @@ No arguments and `--help` only display usage. Native operations require an expli
 `--trusted-own-synthetic` flag. An already configured `TEST_POSTGRES_URL` must refer
 to disposable numeric-loopback PostgreSQL with the existing temporary-database
 permissions; do not put credentials on a command line. The existing tools enforce
-schema0029, canonical fixture, exact PostgreSQL compatibility and owned targets.
+schema0030, canonical fixture, exact PostgreSQL compatibility and owned targets.
 
 ```sh
 python scripts/offline_joint_retained_restore.py produce --trusted-own-synthetic

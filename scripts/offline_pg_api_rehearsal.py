@@ -111,7 +111,7 @@ def child_environment(base, namespace):
     return {'LANG': 'C.UTF-8', 'DATABASE_URL': scoped_url(base, namespace),
             'READ_ONLY_MODE': 'true', 'AUTH_MODE': 'disabled', 'SEED_ON_STARTUP': 'false',
             'ADMIN_OPERATOR_ENABLED': 'false', 'REQUEST_TELEMETRY_ENABLED': 'false',
-            'CORS_ORIGINS': '', 'REQUIRED_DB_REVISION': '0029_changeover_batch_history'}
+            'CORS_ORIGINS': '', 'REQUIRED_DB_REVISION': '0030_private_upload_sessions'}
 
 
 def json_body(body):

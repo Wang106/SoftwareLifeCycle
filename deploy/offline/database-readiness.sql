@@ -186,7 +186,7 @@ SELECT pg_catalog.jsonb_build_object(
 SELECT pg_catalog.jsonb_build_object(
     'migration_row_count', pg_catalog.count(*),
     'migration_expected_head_count', pg_catalog.count(*) FILTER (
-        WHERE v.version_num COLLATE pg_catalog."C" = '0029_changeover_batch_history'
+        WHERE v.version_num COLLATE pg_catalog."C" = '0030_private_upload_sessions'
     )
 ) AS migration
 FROM (SELECT version_num FROM ONLY public.alembic_version LIMIT 2) AS v

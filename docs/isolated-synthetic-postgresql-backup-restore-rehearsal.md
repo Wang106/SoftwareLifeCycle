@@ -89,7 +89,7 @@ python -m app.ops.retained_synthetic_restore \
 
 Optional `--run-id` must be a new 12-character lowercase hex ID, never the backup
 run ID. The output directory must not exist. Before any target database write,
-the command checks version1 manifest, fixed schema0029, deterministic canonical
+the command checks version1 manifest, fixed schema0030, deterministic canonical
 fixture IDs/content/relations/audit baseline, exact report/provenance/owned-name
 binding, checksum/size/native archive catalog, exact pg_restore build and matching
 pg_dump major, exact server version and absent new target. Cross-version migration
