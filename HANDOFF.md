@@ -6117,3 +6117,43 @@ separate work, not completed by this package.
 
 Business36/44=82%, increment0; modules100/100 demo/100 demo/100/89/60/17;
 plans100/100/20/33/40/40/0; browser stage1/4 and finite plan8/8 unchanged.
+
+
+## 2026-11-14: offline operator assembly preparation
+
+Baseline main `e2038a9462770a29254674dd86c0e7b26b26a221` is owner-merged PR230.
+No open PR or active matching workflow was present at start. Main CI43606166169
+passed; Actions deployment and continuation skipped. Render remains unrecovered;
+no provider settings, database or deployment operation is part of this package.
+
+[Same-main rehearsal43608376324](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43608376324)
+completed successfully on attempt1 at 2026-11-14T15:07:38Z, with run_migrated_api=true.
+Actual evidence: schema0030_private_upload_sessions, API0.18.50, five readiness/
+read/refusal probes, three function and six trigger contracts matched before and
+after, two closed guard transactions, two preparation plus three joint containers
+removed. All123 synthetic contracts passed. Zero artifacts were uploaded or retained.
+This limited synthetic runtime is not transferable-image, full-schema, SELECT-only
+role, physical offline, real identity/upload or company acceptance evidence.
+
+This bounded package reuses the unpublished local f094884 assembly implementation
+on current main and pins its current schema to0030. The explicit local assembler
+strictly verifies a five-file API/web handoff, copies both archives to independent
+private files and writes a new operator manifest/template. Both database assertions
+remain false; existing preflight must refuse the unready directory. No credentials,
+Docker, network, database, extraction, image upload/load/start, cleanup or retry is
+introduced. Existing validators/tests/workflows and historical migration evidence
+are unchanged. See [operator assembly](docs/offline-operator-assembly.md).
+
+Current local validation:39 assembly tests,982 complete offline tests,52 automation
+and126 CI guards passed, zero skips. Independent review passed142 focused cases and
+fresh-process synthetic assembly, original bytes/mtime/inode preservation,
+existing-destination refusal and stale-schema refusal before creation. Final code
+and documentation review found no blocker. These file-level fixtures are not
+runnable images. Exact candidate normal CI remains pending publication.
+
+Publish development files only to isolated draft PR; no ready/merge is authorized.
+Real image retention and transfer destination/recipient approval remain separate.
+The prior rehearsal's deleted temporary runner output cannot be recovered by this
+assembler. Target OS/runtime/storage/OIDC and real-write policies remain unconfirmed.
+Business36/44=82%, increment0; modules100/100 demo/100 demo/100/89/60/17;
+plans100/100/20/33/40/40/0; browser stage1/4 and finite plan8/8 unchanged.
