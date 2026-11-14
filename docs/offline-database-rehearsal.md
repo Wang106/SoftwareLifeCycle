@@ -82,7 +82,7 @@ host trust 规则，且该容器不开放 TCP。这不是可复用的生产认�
 这些 ACL 未在本包真实执行中测量；不能把 mock 中的 1/17 称为观察结果。
 
 - baseline：标准 `version_num VARCHAR(64) NOT NULL PRIMARY KEY`，唯一正确头
-  `0029_changeover_batch_history`，预期 CHECKLIST_MISMATCH，而不是 MATCHED。
+  `0030_private_upload_sessions`，预期 CHECKLIST_MISMATCH，而不是 MATCHED。
 - 表 INSERT 与单列 UPDATE：分别要求相对 baseline 的表/列计数精确增加 1/2 与 0/1。
   PUBLIC 已有危险项不能掩盖没有检测到新增授权。
 - 直接成员关系、表所有者：精确检查成员/所有权与写计数。

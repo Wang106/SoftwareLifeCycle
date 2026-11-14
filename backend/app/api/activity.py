@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1", tags=["audit"])
 
 def public_audit_clause():
     """New strict ASR evidence is available only through its private receipt path."""
-    return (AuditEvent.event_type.notin_(('APPLICATION_RELEASE_CREATED', 'APPLICATION_COMPONENT_DECLARED'))) & ~func.upper(AuditEvent.event_no).like('EVT-ASR-%') & ~func.upper(AuditEvent.event_no).like('EVT-ASRC-%')
+    return (AuditEvent.event_type.notin_(('APPLICATION_RELEASE_CREATED', 'APPLICATION_COMPONENT_DECLARED', 'PRIVATE_UPLOAD_SESSION'))) & ~func.upper(AuditEvent.event_no).like('EVT-ASR-%') & ~func.upper(AuditEvent.event_no).like('EVT-ASRC-%') & ~func.upper(AuditEvent.event_no).like('EVT-UP-%')
 
 
 def _release_links(db: Session, events: list[AuditEvent]) -> dict[tuple[str, object], str]:

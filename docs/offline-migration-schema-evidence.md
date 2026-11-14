@@ -1,3 +1,26 @@
+# 当前0030有限结构证据检查
+
+## 2026-11-14 compatibility update
+
+Current code pins `0030_private_upload_sessions`, exactly 30 migrations, and
+`deploy/offline/migration-schema-0030.json` with checklist
+`0030-core-history-upload-subset-v1`. Its 147 facts retain the historical 119
+non-version facts, advance the version fact, and add 27 private-upload table,
+column, constraint and index facts. Repository hashes bind the unchanged older
+sources and the new 0030 migration. The fixed 160-fact bound is unchanged.
+
+The old 0029 manifest remains byte-for-byte preserved; it is historical evidence,
+not accepted as a current-schema document. Old input with its old checklist is
+UNKNOWN; relabeling it current still mismatches. Existing live PG catalog guard
+collection remains its original selected 7 tables/3 functions/6 triggers. It does
+not collect the new upload table. Dedicated synthetic CI migration tests check
+upload constraints separately. No current database or deployment is established.
+
+The following 0029 description and example are historical. For current offline
+comparison, use the current checklist and all 147 facts from the new manifest;
+never relabel an old observation as new evidence. Real migrations or rehearsals
+still require their existing authorization and isolation boundaries.
+
 # 固定0029有限结构证据检查
 
 ## 状态和严格边界
@@ -114,7 +137,7 @@ JSON拒绝重复键、BOM、非UTF8、浮点/指数/NaN/Infinity、负数或超�
 ## 后续验收依赖
 
 后续独立包需设计经审核的只读系统目录采集、可信执行来源、完整退出状态、受控映射与
-采集时点；另行明确获准的一次性合成PG16空库必须真实运行0001→0029，不能stamp、
+采集时点；另行明确获准的一次性合成PG16空库必须真实运行当前0001→0030，不能stamp、
 手填版本表或create_all替代。不得因本清单匹配而取消原数据库权限检查或追求MATCHED改权限。
 真实函数/约束行为、完整schema、只读角色、API连接、恢复和公司部署仍分别待验收。
 本包不提高36/44总体、七模块、七计划或浏览器阶段比例。

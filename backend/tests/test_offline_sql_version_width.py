@@ -69,7 +69,8 @@ class WidthContractTests(unittest.TestCase):
             for node in ast.parse(path.read_text()).body:
                 if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'revision' for t in node.targets):
                     revisions.append(ast.literal_eval(node.value))
-        self.assertEqual(len(revisions), 29)
+        self.assertEqual(len([r for r in revisions if r != '0030_private_upload_sessions']), 29)
+        self.assertEqual(len(revisions), 30)
         self.assertGreater(max(map(len, revisions)), 32)
         self.assertLessEqual(max(map(len, revisions)), 64)
 

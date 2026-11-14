@@ -15,7 +15,7 @@ import sys
 import tarfile
 from urllib.parse import unquote, urlsplit
 
-REVISION = "0029_changeover_batch_history"
+REVISION = "0030_private_upload_sessions"
 MAX_LAYER_TAR_HEADERS = 100000
 MAX_IMAGE_TAR_HEADERS = 500000
 MAX_LAYER_TAR_METADATA = 64 * 1024 * 1024

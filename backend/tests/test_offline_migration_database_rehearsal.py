@@ -70,7 +70,7 @@ class JointTests(unittest.TestCase):
         self.assertIn("os.readlink('/proc/self/ns/net') == sys.argv[1]", m.MIGRATE)
 
     def test_runtime_is_original_chain_no_shortcuts(self):
-        self.assertIn("command.upgrade(Config('/app/alembic.ini'), '0029_changeover_batch_history')", m.MIGRATE)
+        self.assertIn("command.upgrade(Config('/app/alembic.ini'), '0030_private_upload_sessions')", m.MIGRATE)
         for forbidden in ('command.stamp', 'create_all', 'command.downgrade', 'seed_demo'):
             self.assertNotIn(forbidden, m.MIGRATE)
         self.assertIn("sys.path.insert(0, '/app')", m.MIGRATE)

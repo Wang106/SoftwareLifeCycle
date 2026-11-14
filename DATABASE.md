@@ -5,13 +5,24 @@
 - Engine: PostgreSQL 16 in the local Compose environment; current Render inventory reports PostgreSQL 18. The local real-concurrency regression uses 16.15.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0026_release_chain_revocation` (code contract; online Render schema not verified).
+- Required schema revision: `0030_private_upload_sessions` (code contract; no real database migration is performed by this package).
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
 SQLite is used by isolated tests where supported, but it does not validate PostgreSQL JSONB, database triggers or row-lock concurrency. PostgreSQL is required for schema and append-only-rule verification.
 
 ## Table groups
+
+Revision0030 adds `private_upload_sessions`, storing the original request/actor,
+exact private ReleaseComponent, trusted storage namespace/object UUID, expected
+size/SHA256, durable phase/revision and original reservation/stored receipts.
+State, nonnegative counters, required JSON, stored-receipt pairing, unique object
+and restrictive parent references are constrained. Service transitions also validate
+the complete retained audit chain and current scope. Existing rows are untouched;
+downgrade refuses retained upload records. No Artifact or byte data enters this
+table, and no HTTP upload or production writer is enabled. The coordinated database
+and filesystem recovery limitations are recorded in [the contract](docs/private-upload-sessions.md).
+
 
 Revision 0026 adds `release_chain_revocations`, an append-only XOR ledger with one
 nullable true FK for Release, DeliveryPackage, Distribution or SoftwareAuthorization.

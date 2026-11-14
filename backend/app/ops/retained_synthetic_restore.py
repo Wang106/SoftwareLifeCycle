@@ -20,7 +20,7 @@ import psycopg
 
 from app.ops import postgresql_backup_restore as backup
 
-SUPPORTED_REVISION = "0029_changeover_batch_history"
+SUPPORTED_REVISION = "0030_private_upload_sessions"
 REPORT_NAME = "retained-synthetic-restore.json"
 
 

@@ -13,9 +13,9 @@ MAX_NODES = 10000
 MAX_DEPTH = 12
 MAX_STRING = 512
 EVIDENCE_FORMAT = 'slc-offline-migration-schema-evidence-v1'
-CHECKLIST = '0029-core-history-subset-v1'
-MANIFEST_PATH = Path(__file__).resolve().parents[1] / 'deploy/offline/migration-schema-0029.json'
-MANIFEST_SHA256 = '0eabda2f0f69fc3cb49d2fde23d9134f62a4acd4071a74a159083e53de67ec54'
+CHECKLIST = '0030-core-history-upload-subset-v1'
+MANIFEST_PATH = Path(__file__).resolve().parents[1] / 'deploy/offline/migration-schema-0030.json'
+MANIFEST_SHA256 = '886bae2ea415121edcde91da6cbd5c83226aa0a68699c030854a255341ed656f'
 LIMITATIONS = (
     'Offline comparison of untrusted, self-reported evidence for a fixed subset only. '
     'A fabricated or stale document can match. No database connection, collector, '
@@ -161,11 +161,12 @@ def expected_facts():
     keys = {'format', 'checklist', 'facts_baseline_commit', 'repository_file_sha256', 'facts'}
     paths = {'backend/alembic/env.py', 'backend/alembic/versions/0001_core_and_snapshot.py',
              'backend/alembic/versions/0024_release_customer_scope.py',
-             'backend/alembic/versions/0029_changeover_batch_history.py'}
+             'backend/alembic/versions/0029_changeover_batch_history.py',
+             'backend/alembic/versions/0030_private_upload_sessions.py'}
     if (type(manifest) is not dict or set(manifest) != keys
             or manifest['format'] != 'slc-offline-migration-schema-manifest-v2'
             or manifest['checklist'] != CHECKLIST
-            or manifest['facts_baseline_commit'] != '44e307a71a22f93f8c2ae611cf10678b0420499f'
+            or manifest['facts_baseline_commit'] != '576a6452194d36377ea92dc28f3e0ffec1241cf1'
             or type(manifest['facts']) is not dict
             or type(manifest['repository_file_sha256']) is not dict
             or set(manifest['repository_file_sha256']) != paths):

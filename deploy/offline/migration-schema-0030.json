@@ -1,0 +1,1469 @@
+{
+  "checklist": "0030-core-history-upload-subset-v1",
+  "facts": {
+    "column:batch_baselines.baseline_event_no": {
+      "data_type": "character varying(50)",
+      "name": "baseline_event_no",
+      "nullable": true,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.batch_id": {
+      "data_type": "uuid",
+      "name": "batch_id",
+      "nullable": false,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.changeover_id": {
+      "data_type": "uuid",
+      "name": "changeover_id",
+      "nullable": true,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.id": {
+      "data_type": "uuid",
+      "name": "id",
+      "nullable": false,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.recorded_at": {
+      "data_type": "timestamp with time zone",
+      "name": "recorded_at",
+      "nullable": false,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.recorded_ended_at": {
+      "data_type": "timestamp with time zone",
+      "name": "recorded_ended_at",
+      "nullable": true,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.recorded_note": {
+      "data_type": "text",
+      "name": "recorded_note",
+      "nullable": true,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.recorded_started_at": {
+      "data_type": "timestamp with time zone",
+      "name": "recorded_started_at",
+      "nullable": true,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.recorded_status": {
+      "data_type": "character varying(30)",
+      "name": "recorded_status",
+      "nullable": false,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.release_id": {
+      "data_type": "uuid",
+      "name": "release_id",
+      "nullable": false,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.snapshot_id": {
+      "data_type": "uuid",
+      "name": "snapshot_id",
+      "nullable": false,
+      "table": "batch_baselines"
+    },
+    "column:batch_baselines.source": {
+      "data_type": "character varying(30)",
+      "name": "source",
+      "nullable": false,
+      "table": "batch_baselines"
+    },
+    "column:batch_corrections.actor_name": {
+      "data_type": "character varying(120)",
+      "name": "actor_name",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.actor_principal_id": {
+      "data_type": "uuid",
+      "name": "actor_principal_id",
+      "nullable": true,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.audit_event_no": {
+      "data_type": "character varying(50)",
+      "name": "audit_event_no",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.baseline_id": {
+      "data_type": "uuid",
+      "name": "baseline_id",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.batch_id": {
+      "data_type": "uuid",
+      "name": "batch_id",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.changeover_id": {
+      "data_type": "uuid",
+      "name": "changeover_id",
+      "nullable": true,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.correction_reason": {
+      "data_type": "text",
+      "name": "correction_reason",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.ended_at": {
+      "data_type": "timestamp with time zone",
+      "name": "ended_at",
+      "nullable": true,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.id": {
+      "data_type": "uuid",
+      "name": "id",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.note": {
+      "data_type": "text",
+      "name": "note",
+      "nullable": true,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.predecessor_id": {
+      "data_type": "uuid",
+      "name": "predecessor_id",
+      "nullable": true,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.recorded_at": {
+      "data_type": "timestamp with time zone",
+      "name": "recorded_at",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.request_json": {
+      "data_type": "jsonb",
+      "name": "request_json",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.revision": {
+      "data_type": "integer",
+      "name": "revision",
+      "nullable": false,
+      "table": "batch_corrections"
+    },
+    "column:batch_corrections.started_at": {
+      "data_type": "timestamp with time zone",
+      "name": "started_at",
+      "nullable": true,
+      "table": "batch_corrections"
+    },
+    "column:changeover_baselines.baseline_event_no": {
+      "data_type": "character varying(50)",
+      "name": "baseline_event_no",
+      "nullable": true,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.changeover_id": {
+      "data_type": "uuid",
+      "name": "changeover_id",
+      "nullable": false,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.from_release_id": {
+      "data_type": "uuid",
+      "name": "from_release_id",
+      "nullable": false,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.id": {
+      "data_type": "uuid",
+      "name": "id",
+      "nullable": false,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.recorded_at": {
+      "data_type": "timestamp with time zone",
+      "name": "recorded_at",
+      "nullable": false,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.recorded_changed_at": {
+      "data_type": "timestamp with time zone",
+      "name": "recorded_changed_at",
+      "nullable": true,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.recorded_note": {
+      "data_type": "text",
+      "name": "recorded_note",
+      "nullable": true,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.recorded_status": {
+      "data_type": "character varying(30)",
+      "name": "recorded_status",
+      "nullable": false,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.source": {
+      "data_type": "character varying(30)",
+      "name": "source",
+      "nullable": false,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_baselines.to_release_id": {
+      "data_type": "uuid",
+      "name": "to_release_id",
+      "nullable": false,
+      "table": "changeover_baselines"
+    },
+    "column:changeover_corrections.actor_name": {
+      "data_type": "character varying(120)",
+      "name": "actor_name",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.actor_principal_id": {
+      "data_type": "uuid",
+      "name": "actor_principal_id",
+      "nullable": true,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.audit_event_no": {
+      "data_type": "character varying(50)",
+      "name": "audit_event_no",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.baseline_id": {
+      "data_type": "uuid",
+      "name": "baseline_id",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.changed_at": {
+      "data_type": "timestamp with time zone",
+      "name": "changed_at",
+      "nullable": true,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.changeover_id": {
+      "data_type": "uuid",
+      "name": "changeover_id",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.correction_reason": {
+      "data_type": "text",
+      "name": "correction_reason",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.from_release_id": {
+      "data_type": "uuid",
+      "name": "from_release_id",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.id": {
+      "data_type": "uuid",
+      "name": "id",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.note": {
+      "data_type": "text",
+      "name": "note",
+      "nullable": true,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.predecessor_id": {
+      "data_type": "uuid",
+      "name": "predecessor_id",
+      "nullable": true,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.recorded_at": {
+      "data_type": "timestamp with time zone",
+      "name": "recorded_at",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.request_json": {
+      "data_type": "jsonb",
+      "name": "request_json",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:changeover_corrections.revision": {
+      "data_type": "integer",
+      "name": "revision",
+      "nullable": false,
+      "table": "changeover_corrections"
+    },
+    "column:private_upload_sessions.actor_principal_id": {
+      "data_type": "uuid",
+      "name": "actor_principal_id",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.context_json": {
+      "data_type": "json",
+      "name": "context_json",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.created_at": {
+      "data_type": "timestamp with time zone",
+      "name": "created_at",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.expected_bytes": {
+      "data_type": "bigint",
+      "name": "expected_bytes",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.id": {
+      "data_type": "uuid",
+      "name": "id",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.object_id": {
+      "data_type": "uuid",
+      "name": "object_id",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.release_component_id": {
+      "data_type": "uuid",
+      "name": "release_component_id",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.request_json": {
+      "data_type": "json",
+      "name": "request_json",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.reservation_receipt_json": {
+      "data_type": "json",
+      "name": "reservation_receipt_json",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.revision": {
+      "data_type": "integer",
+      "name": "revision",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.sha256": {
+      "data_type": "character varying(64)",
+      "name": "sha256",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.state": {
+      "data_type": "character varying(32)",
+      "name": "state",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.storage_scope_id": {
+      "data_type": "uuid",
+      "name": "storage_scope_id",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.stored_receipt_json": {
+      "data_type": "json",
+      "name": "stored_receipt_json",
+      "nullable": true,
+      "table": "private_upload_sessions"
+    },
+    "column:private_upload_sessions.updated_at": {
+      "data_type": "timestamp with time zone",
+      "name": "updated_at",
+      "nullable": false,
+      "table": "private_upload_sessions"
+    },
+    "column:release_snapshots.content_hash": {
+      "data_type": "character varying(64)",
+      "name": "content_hash",
+      "nullable": false,
+      "table": "release_snapshots"
+    },
+    "column:release_snapshots.id": {
+      "data_type": "uuid",
+      "name": "id",
+      "nullable": false,
+      "table": "release_snapshots"
+    },
+    "column:release_snapshots.release_id": {
+      "data_type": "uuid",
+      "name": "release_id",
+      "nullable": false,
+      "table": "release_snapshots"
+    },
+    "column:release_snapshots.snapshot_number": {
+      "data_type": "integer",
+      "name": "snapshot_number",
+      "nullable": false,
+      "table": "release_snapshots"
+    },
+    "column:releases.id": {
+      "data_type": "uuid",
+      "name": "id",
+      "nullable": false,
+      "table": "releases"
+    },
+    "column:releases.release_type": {
+      "data_type": "character varying(20)",
+      "name": "release_type",
+      "nullable": false,
+      "table": "releases"
+    },
+    "column:releases.software_id": {
+      "data_type": "uuid",
+      "name": "software_id",
+      "nullable": false,
+      "table": "releases"
+    },
+    "column:releases.status": {
+      "data_type": "character varying(30)",
+      "name": "status",
+      "nullable": false,
+      "table": "releases"
+    },
+    "column:releases.version": {
+      "data_type": "character varying(100)",
+      "name": "version",
+      "nullable": false,
+      "table": "releases"
+    },
+    "constraint:batch_baselines.ck_batch_baseline_source": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "source IN ('LEGACY_CURRENT','IMPORTED_CURRENT','FIRST_RECORD')",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_batch_baseline_source",
+      "table": "batch_baselines",
+      "validated": true
+    },
+    "constraint:batch_baselines.foreign_key:batch_id": {
+      "columns": [
+        "batch_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_baselines",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "production_batches",
+      "validated": true
+    },
+    "constraint:batch_baselines.foreign_key:changeover_id": {
+      "columns": [
+        "changeover_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_baselines",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "software_changeovers",
+      "validated": true
+    },
+    "constraint:batch_baselines.foreign_key:release_id": {
+      "columns": [
+        "release_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_baselines",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "releases",
+      "validated": true
+    },
+    "constraint:batch_baselines.foreign_key:snapshot_id": {
+      "columns": [
+        "snapshot_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_baselines",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "release_snapshots",
+      "validated": true
+    },
+    "constraint:batch_baselines.primary_key:id": {
+      "columns": [
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "primary_key",
+      "name": null,
+      "table": "batch_baselines",
+      "validated": true
+    },
+    "constraint:batch_baselines.uq_batch_baseline_target": {
+      "columns": [
+        "batch_id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_batch_baseline_target",
+      "table": "batch_baselines",
+      "validated": true
+    },
+    "constraint:batch_corrections.ck_batch_corr_ended_after_started": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "(ended_at IS NULL) OR (started_at IS NULL) OR (ended_at >= started_at)",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_batch_corr_ended_after_started",
+      "table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:batch_corrections.ck_batch_corr_reason": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "length(btrim(correction_reason)) BETWEEN 1 AND 2000",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_batch_corr_reason",
+      "table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:batch_corrections.ck_batch_corr_revision_positive": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "revision >= 1",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_batch_corr_revision_positive",
+      "table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:batch_corrections.fk_batch_corr_predecessor": {
+      "columns": [
+        "batch_id",
+        "predecessor_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": "fk_batch_corr_predecessor",
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_corrections",
+      "target_columns": [
+        "batch_id",
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:batch_corrections.foreign_key:baseline_id": {
+      "columns": [
+        "baseline_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_corrections",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "batch_baselines",
+      "validated": true
+    },
+    "constraint:batch_corrections.foreign_key:batch_id": {
+      "columns": [
+        "batch_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_corrections",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "production_batches",
+      "validated": true
+    },
+    "constraint:batch_corrections.foreign_key:changeover_id": {
+      "columns": [
+        "changeover_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "batch_corrections",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "software_changeovers",
+      "validated": true
+    },
+    "constraint:batch_corrections.primary_key:id": {
+      "columns": [
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "primary_key",
+      "name": null,
+      "table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:batch_corrections.uq_batch_corr_baseline_revision": {
+      "columns": [
+        "baseline_id",
+        "revision"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_batch_corr_baseline_revision",
+      "table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:batch_corrections.uq_batch_corr_revision": {
+      "columns": [
+        "batch_id",
+        "revision"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_batch_corr_revision",
+      "table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:batch_corrections.uq_batch_corr_target_id": {
+      "columns": [
+        "batch_id",
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_batch_corr_target_id",
+      "table": "batch_corrections",
+      "validated": true
+    },
+    "constraint:changeover_baselines.ck_changeover_baseline_source": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "source IN ('LEGACY_CURRENT','IMPORTED_CURRENT','FIRST_RECORD')",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_changeover_baseline_source",
+      "table": "changeover_baselines",
+      "validated": true
+    },
+    "constraint:changeover_baselines.foreign_key:changeover_id": {
+      "columns": [
+        "changeover_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "changeover_baselines",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "software_changeovers",
+      "validated": true
+    },
+    "constraint:changeover_baselines.foreign_key:from_release_id": {
+      "columns": [
+        "from_release_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "changeover_baselines",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "releases",
+      "validated": true
+    },
+    "constraint:changeover_baselines.foreign_key:to_release_id": {
+      "columns": [
+        "to_release_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "changeover_baselines",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "releases",
+      "validated": true
+    },
+    "constraint:changeover_baselines.primary_key:id": {
+      "columns": [
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "primary_key",
+      "name": null,
+      "table": "changeover_baselines",
+      "validated": true
+    },
+    "constraint:changeover_baselines.uq_changeover_baseline_target": {
+      "columns": [
+        "changeover_id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_changeover_baseline_target",
+      "table": "changeover_baselines",
+      "validated": true
+    },
+    "constraint:changeover_corrections.ck_changeover_corr_reason": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "length(btrim(correction_reason)) BETWEEN 1 AND 2000",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_changeover_corr_reason",
+      "table": "changeover_corrections",
+      "validated": true
+    },
+    "constraint:changeover_corrections.ck_changeover_corr_revision_positive": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "revision >= 1",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_changeover_corr_revision_positive",
+      "table": "changeover_corrections",
+      "validated": true
+    },
+    "constraint:changeover_corrections.fk_changeover_corr_predecessor": {
+      "columns": [
+        "changeover_id",
+        "predecessor_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": "fk_changeover_corr_predecessor",
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "changeover_corrections",
+      "target_columns": [
+        "changeover_id",
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "changeover_corrections",
+      "validated": true
+    },
+    "constraint:changeover_corrections.foreign_key:baseline_id": {
+      "columns": [
+        "baseline_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "changeover_corrections",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "changeover_baselines",
+      "validated": true
+    },
+    "constraint:changeover_corrections.foreign_key:changeover_id": {
+      "columns": [
+        "changeover_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "changeover_corrections",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "software_changeovers",
+      "validated": true
+    },
+    "constraint:changeover_corrections.foreign_key:from_release_id": {
+      "columns": [
+        "from_release_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "changeover_corrections",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "releases",
+      "validated": true
+    },
+    "constraint:changeover_corrections.primary_key:id": {
+      "columns": [
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "primary_key",
+      "name": null,
+      "table": "changeover_corrections",
+      "validated": true
+    },
+    "constraint:changeover_corrections.uq_changeover_corr_baseline_revision": {
+      "columns": [
+        "baseline_id",
+        "revision"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_changeover_corr_baseline_revision",
+      "table": "changeover_corrections",
+      "validated": true
+    },
+    "constraint:changeover_corrections.uq_changeover_corr_revision": {
+      "columns": [
+        "changeover_id",
+        "revision"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_changeover_corr_revision",
+      "table": "changeover_corrections",
+      "validated": true
+    },
+    "constraint:changeover_corrections.uq_changeover_corr_target_id": {
+      "columns": [
+        "changeover_id",
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_changeover_corr_target_id",
+      "table": "changeover_corrections",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.ck_private_upload_bytes": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "expected_bytes >= 0",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_private_upload_bytes",
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.ck_private_upload_required_json": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "trim(CAST(request_json AS TEXT)) <> 'null' AND trim(CAST(context_json AS TEXT)) <> 'null' AND trim(CAST(reservation_receipt_json AS TEXT)) <> 'null'",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_private_upload_required_json",
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.ck_private_upload_revision": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "revision >= 0",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_private_upload_revision",
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.ck_private_upload_sha256": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "length(sha256) = 64",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_private_upload_sha256",
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.ck_private_upload_state": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "state IN ('RESERVED','RECEIVING','STAGED','PUBLISHING','STORED_PRIVATE','RECONCILIATION_REQUIRED')",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_private_upload_state",
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.ck_private_upload_stored_receipt": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "(state = 'STORED_PRIVATE' AND stored_receipt_json IS NOT NULL AND trim(CAST(stored_receipt_json AS TEXT)) <> 'null') OR (state <> 'STORED_PRIVATE' AND stored_receipt_json IS NULL)",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_private_upload_stored_receipt",
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.foreign_key:actor_principal_id": {
+      "columns": [
+        "actor_principal_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "private_upload_sessions",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "security_principals",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.foreign_key:release_component_id": {
+      "columns": [
+        "release_component_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "private_upload_sessions",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "release_components",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.primary_key:id": {
+      "columns": [
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "primary_key",
+      "name": null,
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:private_upload_sessions.uq_private_upload_object": {
+      "columns": [
+        "object_id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": "uq_private_upload_object",
+      "table": "private_upload_sessions",
+      "validated": true
+    },
+    "constraint:release_snapshots.foreign_key:release_id": {
+      "columns": [
+        "release_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "release_snapshots",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "releases",
+      "validated": true
+    },
+    "constraint:release_snapshots.primary_key:id": {
+      "columns": [
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "primary_key",
+      "name": null,
+      "table": "release_snapshots",
+      "validated": true
+    },
+    "constraint:release_snapshots.unique:release_id,snapshot_number": {
+      "columns": [
+        "release_id",
+        "snapshot_number"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "unique",
+      "name": null,
+      "table": "release_snapshots",
+      "validated": true
+    },
+    "constraint:releases.ck_release_type": {
+      "columns": [],
+      "deferrable": false,
+      "expression": "release_type IN ('STANDARD','APPLICATION')",
+      "initially_deferred": false,
+      "kind": "check",
+      "name": "ck_release_type",
+      "table": "releases",
+      "validated": true
+    },
+    "constraint:releases.foreign_key:software_id": {
+      "columns": [
+        "software_id"
+      ],
+      "deferrable": false,
+      "initially_deferred": false,
+      "kind": "foreign_key",
+      "match": "SIMPLE",
+      "name": null,
+      "on_delete": "NO ACTION",
+      "on_update": "NO ACTION",
+      "table": "releases",
+      "target_columns": [
+        "id"
+      ],
+      "target_schema": "public",
+      "target_table": "software_products",
+      "validated": true
+    },
+    "constraint:releases.primary_key:id": {
+      "columns": [
+        "id"
+      ],
+      "deferrable": false,
+      "expression": null,
+      "initially_deferred": false,
+      "kind": "primary_key",
+      "name": null,
+      "table": "releases",
+      "validated": true
+    },
+    "function:guard_batch_physical_write": {
+      "argument_types": [],
+      "body_encoding": "pg_proc.prosrc-utf8-exact-v1",
+      "body_sha256": "2345792b0d5a875efcc302701ed6c197c9ffdd264196130e7e91869c7cbff64c",
+      "language": "plpgsql",
+      "name": "guard_batch_physical_write",
+      "return_type": "trigger",
+      "schema": "public",
+      "security_definer": false
+    },
+    "function:guard_changeover_physical_write": {
+      "argument_types": [],
+      "body_encoding": "pg_proc.prosrc-utf8-exact-v1",
+      "body_sha256": "a8b3d19a80fd8d00e268ac31d04c5ae1f2899470d978758fddfd78b76c524a89",
+      "language": "plpgsql",
+      "name": "guard_changeover_physical_write",
+      "return_type": "trigger",
+      "schema": "public",
+      "security_definer": false
+    },
+    "function:reject_changeover_batch_history_mutation": {
+      "argument_types": [],
+      "body_encoding": "pg_proc.prosrc-utf8-exact-v1",
+      "body_sha256": "9cddbbe85e38ec7d5ad2881833e4609f9922878e7fe0a1b31e4ed0de4368ef2b",
+      "language": "plpgsql",
+      "name": "reject_changeover_batch_history_mutation",
+      "return_type": "trigger",
+      "schema": "public",
+      "security_definer": false
+    },
+    "index:ix_batch_corr_target_revision": {
+      "columns": [
+        "batch_id",
+        "revision"
+      ],
+      "live": true,
+      "method": "btree",
+      "name": "ix_batch_corr_target_revision",
+      "predicate": null,
+      "ready": true,
+      "schema": "public",
+      "table": "batch_corrections",
+      "unique": false,
+      "valid": true
+    },
+    "index:ix_changeover_corr_target_revision": {
+      "columns": [
+        "changeover_id",
+        "revision"
+      ],
+      "live": true,
+      "method": "btree",
+      "name": "ix_changeover_corr_target_revision",
+      "predicate": null,
+      "ready": true,
+      "schema": "public",
+      "table": "changeover_corrections",
+      "unique": false,
+      "valid": true
+    },
+    "index:ix_private_upload_component_created": {
+      "columns": [
+        "release_component_id",
+        "created_at"
+      ],
+      "live": true,
+      "method": "btree",
+      "name": "ix_private_upload_component_created",
+      "predicate": null,
+      "ready": true,
+      "schema": "public",
+      "table": "private_upload_sessions",
+      "unique": false,
+      "valid": true
+    },
+    "index:ux_batch_corr_single_successor": {
+      "columns": [
+        "predecessor_id"
+      ],
+      "live": true,
+      "method": "btree",
+      "name": "ux_batch_corr_single_successor",
+      "predicate": "predecessor_id IS NOT NULL",
+      "ready": true,
+      "schema": "public",
+      "table": "batch_corrections",
+      "unique": true,
+      "valid": true
+    },
+    "index:ux_changeover_corr_single_successor": {
+      "columns": [
+        "predecessor_id"
+      ],
+      "live": true,
+      "method": "btree",
+      "name": "ux_changeover_corr_single_successor",
+      "predicate": "predecessor_id IS NOT NULL",
+      "ready": true,
+      "schema": "public",
+      "table": "changeover_corrections",
+      "unique": true,
+      "valid": true
+    },
+    "table:batch_baselines": {
+      "access_method": "heap",
+      "force_row_security": false,
+      "kind": "ordinary_table",
+      "name": "batch_baselines",
+      "persistence": "permanent",
+      "row_security": false,
+      "schema": "public"
+    },
+    "table:batch_corrections": {
+      "access_method": "heap",
+      "force_row_security": false,
+      "kind": "ordinary_table",
+      "name": "batch_corrections",
+      "persistence": "permanent",
+      "row_security": false,
+      "schema": "public"
+    },
+    "table:changeover_baselines": {
+      "access_method": "heap",
+      "force_row_security": false,
+      "kind": "ordinary_table",
+      "name": "changeover_baselines",
+      "persistence": "permanent",
+      "row_security": false,
+      "schema": "public"
+    },
+    "table:changeover_corrections": {
+      "access_method": "heap",
+      "force_row_security": false,
+      "kind": "ordinary_table",
+      "name": "changeover_corrections",
+      "persistence": "permanent",
+      "row_security": false,
+      "schema": "public"
+    },
+    "table:private_upload_sessions": {
+      "access_method": "heap",
+      "force_row_security": false,
+      "kind": "ordinary_table",
+      "name": "private_upload_sessions",
+      "persistence": "permanent",
+      "row_security": false,
+      "schema": "public"
+    },
+    "table:release_snapshots": {
+      "access_method": "heap",
+      "force_row_security": false,
+      "kind": "ordinary_table",
+      "name": "release_snapshots",
+      "persistence": "permanent",
+      "row_security": false,
+      "schema": "public"
+    },
+    "table:releases": {
+      "access_method": "heap",
+      "force_row_security": false,
+      "kind": "ordinary_table",
+      "name": "releases",
+      "persistence": "permanent",
+      "row_security": false,
+      "schema": "public"
+    },
+    "trigger:batch_baselines_append_only": {
+      "arguments": [],
+      "constraint": false,
+      "enabled": "O",
+      "events": [
+        "DELETE",
+        "UPDATE"
+      ],
+      "function": "reject_changeover_batch_history_mutation",
+      "function_argument_types": [],
+      "function_schema": "public",
+      "internal": false,
+      "level": "ROW",
+      "name": "batch_baselines_append_only",
+      "schema": "public",
+      "table": "batch_baselines",
+      "timing": "BEFORE",
+      "when": null
+    },
+    "trigger:batch_corrections_append_only": {
+      "arguments": [],
+      "constraint": false,
+      "enabled": "O",
+      "events": [
+        "DELETE",
+        "UPDATE"
+      ],
+      "function": "reject_changeover_batch_history_mutation",
+      "function_argument_types": [],
+      "function_schema": "public",
+      "internal": false,
+      "level": "ROW",
+      "name": "batch_corrections_append_only",
+      "schema": "public",
+      "table": "batch_corrections",
+      "timing": "BEFORE",
+      "when": null
+    },
+    "trigger:batch_physical_write_guard": {
+      "arguments": [],
+      "constraint": false,
+      "enabled": "O",
+      "events": [
+        "DELETE",
+        "UPDATE"
+      ],
+      "function": "guard_batch_physical_write",
+      "function_argument_types": [],
+      "function_schema": "public",
+      "internal": false,
+      "level": "ROW",
+      "name": "batch_physical_write_guard",
+      "schema": "public",
+      "table": "production_batches",
+      "timing": "BEFORE",
+      "when": null
+    },
+    "trigger:changeover_baselines_append_only": {
+      "arguments": [],
+      "constraint": false,
+      "enabled": "O",
+      "events": [
+        "DELETE",
+        "UPDATE"
+      ],
+      "function": "reject_changeover_batch_history_mutation",
+      "function_argument_types": [],
+      "function_schema": "public",
+      "internal": false,
+      "level": "ROW",
+      "name": "changeover_baselines_append_only",
+      "schema": "public",
+      "table": "changeover_baselines",
+      "timing": "BEFORE",
+      "when": null
+    },
+    "trigger:changeover_corrections_append_only": {
+      "arguments": [],
+      "constraint": false,
+      "enabled": "O",
+      "events": [
+        "DELETE",
+        "UPDATE"
+      ],
+      "function": "reject_changeover_batch_history_mutation",
+      "function_argument_types": [],
+      "function_schema": "public",
+      "internal": false,
+      "level": "ROW",
+      "name": "changeover_corrections_append_only",
+      "schema": "public",
+      "table": "changeover_corrections",
+      "timing": "BEFORE",
+      "when": null
+    },
+    "trigger:changeover_physical_write_guard": {
+      "arguments": [],
+      "constraint": false,
+      "enabled": "O",
+      "events": [
+        "DELETE",
+        "UPDATE"
+      ],
+      "function": "guard_changeover_physical_write",
+      "function_argument_types": [],
+      "function_schema": "public",
+      "internal": false,
+      "level": "ROW",
+      "name": "changeover_physical_write_guard",
+      "schema": "public",
+      "table": "software_changeovers",
+      "timing": "BEFORE",
+      "when": null
+    },
+    "version": {
+      "column": "version_num",
+      "column_type": "character varying(64)",
+      "head": "0030_private_upload_sessions",
+      "nullable": false,
+      "row_count": 1,
+      "schema": "public",
+      "table": "alembic_version"
+    }
+  },
+  "facts_baseline_commit": "576a6452194d36377ea92dc28f3e0ffec1241cf1",
+  "format": "slc-offline-migration-schema-manifest-v2",
+  "repository_file_sha256": {
+    "backend/alembic/env.py": "5ad971604c0ef58e1e6f0d110c28d6b41ae77cad05490f0c8113488f05137ba2",
+    "backend/alembic/versions/0001_core_and_snapshot.py": "005cbdfffa164dd85d6a0eb020345e248cf3acb063f0f398cb628e9e39ee5682",
+    "backend/alembic/versions/0024_release_customer_scope.py": "a3ee69bf46e02c50552f9eb2b6bfba2f955bb838a3b10ed49b0477702de6f1a5",
+    "backend/alembic/versions/0029_changeover_batch_history.py": "0d58bb3df42ef0f795f259530ff5a9212990633aafd1a63e33daa43481d873ae",
+    "backend/alembic/versions/0030_private_upload_sessions.py": "72d96bc6f0a483d41981dd3bb0f1334d9687d179bacfd3ab81917799a51e3431"
+  }
+}

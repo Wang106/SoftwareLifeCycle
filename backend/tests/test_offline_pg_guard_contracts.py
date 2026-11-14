@@ -20,7 +20,7 @@ class GuardTests(unittest.TestCase):
         self.m = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.m)
         self.namespace = 'ci_catalog_' + 'a' * 32
-        facts = json.loads((ROOT / 'deploy/offline/migration-schema-0029.json').read_text())['facts']
+        facts = json.loads((ROOT / 'deploy/offline/migration-schema-0030.json').read_text())['facts']
         groups = {key: [] for key in catalog.LIMITS}
         for name in catalog.FUNCTIONS:
             fact = facts['function:' + name]

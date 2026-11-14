@@ -25,7 +25,7 @@ GitHub Actions在外网执行测试和构建；在联网构建环境准备固定
 - 测试用户由用户指定；按项目/软件范围配置角色，不在代码中硬编码真人或自动赋予管理员。
 
 ## 实际验收步骤
-1. 导入固定提交安装包，记录commit/镜像digest及校验和；部署独立样例数据库，核对迁移 `0029_changeover_batch_history`，健康检查通过。真实公司数据暂不导入。
+1. 导入固定提交安装包，记录commit/镜像digest及校验和；部署独立样例数据库，核对迁移 `0030_private_upload_sessions`，健康检查通过。真实公司数据暂不导入。
 2. 配置内网可信HTTPS；当前浏览器会话要求HTTPS，不能通过忽略证书警告完成验收。配置与密钥仅由内部部署人员保管。
 3. 身份服务确定后，配置issuer、API audience、client、授权/token/JWKS及精确/auth/callback；浏览器登录和服务器token/JWKS路径均在内网。先保持只读，验收身份/授权读取。
 4. 指定独立测试用户：平台管理员、普通用户、评审人、发布授权人和生产授权人；现有确切角色名称/作用域以backend/app/security_roles.py为准。管理员授予流程另按管理操作实现与离线operator手册，不随启动自动创建。
@@ -45,4 +45,4 @@ GitHub Actions在外网执行测试和构建；在联网构建环境准备固定
 
 ## 2026-10-26 独立离线只读配置预检
 
-已实现 [离线只读预检](offline-readonly-config-preflight.md)：校验 own trusted 镜像归档/固定 commit/platform/image ID/校验和，缺少操作员配置则失败关闭，生成仅 Linux localhost 的只读配置；不启动 Docker、不联网、不初始化/迁移/seed 数据库。数据库必须另行批准并预置只读角色/schema0029；无真实镜像、Docker 运行或内网验收证据，不能称完整离线安装包或生产安全。现有开发 compose 保持原样，不得直接用于公司环境。服务器可稍后准备，不阻塞仓库开发。
+已实现 [离线只读预检](offline-readonly-config-preflight.md)：校验 own trusted 镜像归档/固定 commit/platform/image ID/校验和，缺少操作员配置则失败关闭，生成仅 Linux localhost 的只读配置；不启动 Docker、不联网、不初始化/迁移/seed 数据库。数据库必须另行批准并预置只读角色/schema0030；无真实镜像、Docker 运行或内网验收证据，不能称完整离线安装包或生产安全。现有开发 compose 保持原样，不得直接用于公司环境。服务器可稍后准备，不阻塞仓库开发。

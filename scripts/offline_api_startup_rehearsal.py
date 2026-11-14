@@ -37,7 +37,7 @@ ENVIRONMENT = {
     'PGCONNECT_TIMEOUT': '2', 'PGOPTIONS': '-c default_transaction_read_only=on',
     'READ_ONLY_MODE': 'true', 'AUTH_MODE': 'disabled', 'ADMIN_OPERATOR_ENABLED': 'false',
     'SEED_ON_STARTUP': 'false', 'SEED_ZFI_DEMO': 'false',
-    'REQUEST_TELEMETRY_ENABLED': 'false', 'REQUIRED_DB_REVISION': '0029_changeover_batch_history',
+    'REQUEST_TELEMETRY_ENABLED': 'false', 'REQUIRED_DB_REVISION': '0030_private_upload_sessions',
     'CORS_ORIGINS': 'http://127.0.0.1:3000',
 }
 SAFE_IMAGE_ENV = {'PATH', 'LANG', 'PYTHON_VERSION', 'PYTHON_SHA256', 'PYTHON_PIP_VERSION',

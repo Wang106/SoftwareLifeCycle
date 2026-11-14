@@ -15,3 +15,5 @@ from app.models.resource import *
 from app.models.security import *
 from app.models.revocation import *
 from app.models.production_history import *
+
+from app.models.upload import *

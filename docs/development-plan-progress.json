@@ -9,15 +9,15 @@
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "package": "application-component-declaration",
-    "branch": "codex/asr-component-declaration",
-    "state": "Final bounded source review and scoped regressions passed; broad local non-PG rerun in progress at draft-publication checkpoint. No full backend/PostgreSQL or signed-browser acceptance yet.",
-    "evidence": "HANDOFF.md#2026-11-14-private-asr-component-declarations",
-    "selected_scope": "Private append-only ASR component instances with optional exact baseline, multiple versions, atomic original receipts, public projection isolation and bilingual default-disabled preparation/recovery.",
-    "current_pr_ci": "Not published at checkpoint. Exact-head normal CI including13 new PostgreSQL cases and additive strict browser assertions remains required.",
-    "current_main_ci": "Exact main48a0d84b72f49111f40111556f08c5d83b3159a2, merged PR228; CI43459692522 backend/PostgreSQL/migrations, frontend, strict browser and aggregate passed.",
-    "current_deployment": "Same-main Cloudflare build check succeeded. Actions deploy43462689412 and continuation43462689769 skipped. No traffic allocation, Render recovery or company acceptance claimed.",
-    "next_package": "Publish isolated draft and verify exact-head full normal CI, retaining draft. Ready/merge require owner approval. Upload/storage integration remains separate.",
+    "package": "private-upload-sessions",
+    "branch": "codex/private-upload-sessions",
+    "state": "Independent final source review passed without blockers. Local backend3235+3364 subtests,858 skips,13 explicit CI-only exclusions; frontend2379 and build/auth/type/guard checks passed. No exact-head CI yet; public writes remain off.",
+    "evidence": "HANDOFF.md#2026-11-14-private-upload-session-state-machine",
+    "selected_scope": "Actor-bound private upload reservation and one-shot storage phases, original recovery receipts, synthetic bytes only, additive schema0030 and synchronized current offline/health checks; no HTTP caller or Artifact.",
+    "current_pr_ci": "Not yet published. Exact-head unchanged normal CI including new PostgreSQL/schema cases remains required.",
+    "current_main_ci": "Exact main576a6452194d36377ea92dc28f3e0ffec1241cf1, merged PR229; CI43544711439 passed4006 backend+3175 subtests,334 PostgreSQL cases,2378 frontend, browser and aggregate.",
+    "current_deployment": "Baseline Actions deployment43545865472 and continuation43545865456 skipped. No new deployment, real migration, Render recovery or company acceptance claimed.",
+    "next_package": "Publish reviewed isolated draft and verify exact-head unchanged normal CI, retaining draft. Ready/merge require owner approval. Real HTTP upload, Artifact/frozen metadata and approved file policies remain separate.",
     "previous_checkpoint": {
       "owner": "current_ChatGPT_Work_cloud_task",
       "business_acceptance_increment": 0,
@@ -1244,6 +1244,12 @@
       "component_browser": "not_run_due_to_preceding_failure",
       "browser_failure": "child_retry_changed_only_fragment_no_new_document_or_API_read",
       "new_CI": "not_run"
+    },
+    "prerequisite_package": {
+      "package": "application-component-declaration",
+      "merged_pr": 229,
+      "main": "576a6452194d36377ea92dc28f3e0ffec1241cf1",
+      "ci": "43544711439_success"
     }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",

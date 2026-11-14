@@ -258,10 +258,10 @@ def fixture_sql(case):
            f'CREATE ROLE {role} NOLOGIN {flags};\n' +
            'CREATE TABLE public.fixture (id INTEGER, value TEXT);\n')
     if case == 'migration_view':
-        sql += "CREATE VIEW public.alembic_version AS SELECT '0029_changeover_batch_history'::VARCHAR(64) AS version_num;\n"
+        sql += "CREATE VIEW public.alembic_version AS SELECT '0030_private_upload_sessions'::VARCHAR(64) AS version_num;\n"
     elif case != 'missing_table':
         sql += 'CREATE TABLE public.alembic_version (version_num VARCHAR(64) NOT NULL PRIMARY KEY);\n'
-        head = 'not_the_expected_head' if case == 'wrong_head' else '0029_changeover_batch_history'
+        head = 'not_the_expected_head' if case == 'wrong_head' else '0030_private_upload_sessions'
         sql += f"INSERT INTO public.alembic_version VALUES ('{head}');\n"
         if case == 'multiple_heads':
             sql += "INSERT INTO public.alembic_version VALUES ('another_head');\n"

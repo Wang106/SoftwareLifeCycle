@@ -276,7 +276,7 @@ class DatabaseEvidenceTests(unittest.TestCase):
                       "'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'",
                       "'INSERT,UPDATE,REFERENCES'", "'USAGE,UPDATE'", "'TEMP'",
                       'relrowsecurity', 'relforcerowsecurity', 'relhasrules', 'pg_catalog.pg_inherits',
-                      'pg_catalog.pg_largeobject_metadata', '0029_changeover_batch_history'):
+                      'pg_catalog.pg_largeobject_metadata', '0030_private_upload_sessions'):
             self.assertIn(token, sql)
         guard = sql.index('\\if :readiness_migration_readable')
         read = sql.index('FROM ONLY public.alembic_version')

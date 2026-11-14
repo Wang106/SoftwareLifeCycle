@@ -97,7 +97,7 @@ RLS、rewrite rule 或非内部触发器；唯一用户列必须为非空、无�
 否则两计数为 null，检查结果不匹配。不是用 SQL CASE 包住一个缺失表查询来假装可执行。
 
 版本查询仅 `FROM ONLY public.alembic_version LIMIT 2`，使用固定 C collation，
-只返回总数及等于 `0029_changeover_batch_history` 的数量，不输出版本原文。
+只返回总数及等于 `0030_private_upload_sessions` 的数量，不输出版本原文。
 0 行、错误头、多行（包括两个相同头）全部拒绝。此匹配并不证明迁移实际全部运行、
 业务表完整、约束/数据正确或 schema 未被改动；它只是固定 bookkeeping 检查。
 版本表不是业务数据表，本脚本不读取其他非系统表的任何行。

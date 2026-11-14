@@ -47,6 +47,7 @@ test('fixed identities match the backend UUID namespaces and sample versions',()
  }
 });
 for(const [name,override,state] of [
+ ['previous upload schema',{database_revision:'0029_changeover_batch_history'},'mismatch'],
  ['old API',{version:'0.18.42'},'mismatch'],['old schema',{database_revision:'0023_impact_withdrawal_history'},'mismatch'],
  ['not ready',{status:'not_ready'},'incomplete'],['missing version',{version:undefined},'invalid'],
  ['missing schema',{database_revision:undefined},'invalid'],['unexpected status',{status:'ok'},'invalid'],

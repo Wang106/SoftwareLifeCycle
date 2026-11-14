@@ -33,7 +33,7 @@ OPTIONS = ('-c default_transaction_read_only=on -c statement_timeout=5000 '
 
 
 def observation():
-    facts = json.loads((ROOT / 'deploy/offline/migration-schema-0029.json').read_text())['facts']
+    facts = json.loads((ROOT / 'deploy/offline/migration-schema-0030.json').read_text())['facts']
     groups = {key: [] for key in catalog.LIMITS}
     for name in catalog.FUNCTIONS:
         groups['functions'].append(dict(namespace='public', name=name,
@@ -164,7 +164,7 @@ class GuardTransportTests(unittest.TestCase):
             program = m.prepare(COMMIT, self.budget)
         expected = {'scripts/offline_migrated_api_guard.py', 'scripts/offline_pg_catalog_evidence.py',
                     'scripts/offline_pg_guard_contracts.py', 'scripts/offline_migration_schema_evidence.py',
-                    'deploy/offline/migration-schema-0029.json'}
+                    'deploy/offline/migration-schema-0030.json'}
         self.assertEqual({args[-1].split(':', 1)[1] for args, _ in calls}, expected)
         self.assertIsInstance(program, str)
         self.assertTrue(all(call.args == (1330,) for call in reserve.call_args_list))
@@ -366,7 +366,7 @@ class GuardTransportTests(unittest.TestCase):
             backup = target.read_bytes()
             with ExitStack() as stack:
                 stack.enter_context(patch.object(m, 'ROOT', root))
-                stack.enter_context(patch.object(comparator.schema, 'MANIFEST_PATH', root / 'deploy/offline/migration-schema-0029.json'))
+                stack.enter_context(patch.object(comparator.schema, 'MANIFEST_PATH', root / 'deploy/offline/migration-schema-0030.json'))
                 for module, attr, path in paths: stack.enter_context(patch.object(module, attr, str(path)))
                 stack.enter_context(patch.object(joint.builder.migration, 'bounded_command', side_effect=git))
                 for kind in ('symlink', 'hardlink', 'oversize'):
@@ -381,11 +381,11 @@ class GuardTransportTests(unittest.TestCase):
         original = joint.builder.migration.read_at
         def changed_read(fd, path, limit):
             raw = original(fd, path, limit)
-            return raw + b' ' if path.endswith('migration-schema-0029.json') else raw
+            return raw + b' ' if path.endswith('migration-schema-0030.json') else raw
         def git(args, **kwargs):
             path = args[-1].split(':', 1)[1]
             raw = (ROOT / path).read_bytes()
-            return raw + b' ' if path.endswith('migration-schema-0029.json') else raw
+            return raw + b' ' if path.endswith('migration-schema-0030.json') else raw
         with patch.object(joint.builder.migration, 'bounded_command', side_effect=git), \
              patch.object(joint.builder.migration, 'read_at', side_effect=changed_read):
             with self.assertRaises(m.Blocked): m.prepare(COMMIT, self.budget)

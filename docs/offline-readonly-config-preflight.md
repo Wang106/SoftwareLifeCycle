@@ -61,7 +61,7 @@ Required operator-owned inputs, after separate approval:
 - Explicit `database_preprovisioned=true`, `database_readonly_role=true` and
   `data_classification=synthetic-only` are declarations, **not verified facts**.
   An independently authorized operator must already have provisioned PostgreSQL,
-  exact schema `0029_changeover_batch_history`, a non-owner/non-superuser SELECT-only
+  exact schema `0030_private_upload_sessions`, a non-owner/non-superuser SELECT-only
   role without write/CREATE/TEMP privileges, and approved synthetic data. This
   package does not create or grant that role or provide a database installation.
 

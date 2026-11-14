@@ -100,12 +100,18 @@ class ApplicationComponentDeclarationService(ApplicationReleaseCreationService):
             'audit_event_no':'EVT-ASRC-'+uuid.UUID(command['request_id']).hex,
             'actor_principal_id':str(actor_id), 'created_at':created_at}
 
-    def _evidence(self, event, request_id, actor, command=None):
+    def _evidence(self, event, request_id, actor, command=None, *, bound_actor=True):
+        # Existing declaration/recovery calls stay actor-bound. The private,
+        # non-HTTP upload coordinator may validate a collaborator's declaration
+        # only after authenticating the current reader, whose exact current scope
+        # is still checked by _context below. Historical authors need not retain
+        # their grants for another authorized contributor to use the component.
         try:
             payload = event.payload_json
             if (event.event_no != 'EVT-ASRC-'+request_id.hex or event.event_type != 'APPLICATION_COMPONENT_DECLARED' or
                 event.action != 'CREATED' or event.entity_type != 'RELEASE_COMPONENT' or event.entity_id != request_id or
-                event.entity_ref != str(request_id) or event.actor_principal_id != actor.id or event.declared_actor_name is not None or
+                event.entity_ref != str(request_id) or event.actor_principal_id is None or
+                (bound_actor and event.actor_principal_id != actor.id) or event.declared_actor_name is not None or
                 not isinstance(payload,dict) or set(payload) != {'version','request','context','receipt','actor_source'} or
                 type(payload['version']) is not int or payload['version'] != 1 or payload['actor_source'] != 'AUTHENTICATED_PRINCIPAL'):
                 fail('asrc_request_conflict')
@@ -120,7 +126,7 @@ class ApplicationComponentDeclarationService(ApplicationReleaseCreationService):
                 fail('asrc_request_conflict')
             occurred = event.occurred_at.replace(tzinfo=event.occurred_at.tzinfo or timezone.utc)
             stamped = datetime.fromisoformat(result['created_at'])
-            if stamped.tzinfo is None or stamped != occurred or result != self._result(original,ctx,actor.id,result['created_at']):
+            if stamped.tzinfo is None or stamped != occurred or result != self._result(original,ctx,event.actor_principal_id,result['created_at']):
                 fail('asrc_request_conflict')
             current = self._context(uuid.UUID(original['release_id']), uuid.UUID(original['component_definition_id']),
                 uuid.UUID(original['base_component_id']) if original['base_component_id'] else None, actor, fresh=False)

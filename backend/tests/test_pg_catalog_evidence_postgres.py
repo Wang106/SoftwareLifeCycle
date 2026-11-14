@@ -72,13 +72,13 @@ def owned_catalog_schema():
             env.update(DATABASE_URL=scoped.render_as_string(hide_password=False), AUTH_MODE='disabled',
                        SEED_ON_STARTUP='false', READ_ONLY_MODE='false')
             # Actual existing chain, no shell, explicit fixed cwd and finite subprocess.
-            result = subprocess.run([sys.executable, '-m', 'alembic', 'upgrade', '0029_changeover_batch_history'],
+            result = subprocess.run([sys.executable, '-m', 'alembic', 'upgrade', '0030_private_upload_sessions'],
                                     cwd=BACKEND, env=env, stdout=subprocess.DEVNULL,
                                     stderr=subprocess.DEVNULL, timeout=90, check=False)
             if result.returncode != 0:
                 raise RuntimeError('Isolated catalog fixture migration failed')
             actual = admin.execute(sql.SQL('SELECT version_num FROM {}.alembic_version').format(sql.Identifier(namespace))).fetchall()
-            assert actual == [('0029_changeover_batch_history',)]
+            assert actual == [('0030_private_upload_sessions',)]
             yield admin, kwargs, namespace
         finally:
             if created:
