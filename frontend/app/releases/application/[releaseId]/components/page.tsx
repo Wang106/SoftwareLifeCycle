@@ -19,6 +19,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   return <>
     <div className="top"><div><div className="eyebrow"><Localized>{"APPLICATION RELEASE COMPONENTS"}</Localized></div><h1><Localized>{"ASR "}</Localized><Localized>{data.version}</Localized></h1>
       <p className="muted"><Localized>{"Declared component differences against "}</Localized><Localized>{data.base_release ? `SSR ${data.base_release.version}` : 'an unrecorded SSR base'}</Localized><Localized>{"."}</Localized></p></div></div>
+    <p><Link prefetch={false} href={base+'/components/new'}><Localized>{'Declare application release component'}</Localized></Link></p>
     <AsrComponentPages releaseId={releaseId} baseReleaseId={data.base_release?.id ?? null}
       search={await searchParams} componentCount={data.component_count} unlinkedCount={data.unlinked_base_count} />
     <p className="datasource"><Link href={base}><Localized>{"← Release profile"}</Localized></Link></p>

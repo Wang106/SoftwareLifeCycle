@@ -104,12 +104,14 @@ def test_registry_has_exact_retirement_scope_and_retains_commands_and_replacemen
     assert ('/api/v1/deployments', 'POST') in paths
     assert ('/api/v1/deployments/{deployment_no}/actual', 'POST') in paths
     assert ('/api/v1/deployments/{deployment_no}/batches', 'POST') in paths
-    from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS, ASR_CREATION_CONTRACTS
+    from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS, ASR_CREATION_CONTRACTS, ASR_COMPONENT_DECLARATION_CONTRACTS
     writes = {(method, path) for path, method in paths if method == 'POST'}
     assert len(WRITE_CONTRACTS) == 21
     assert set(ASR_CREATION_CONTRACTS) == {('POST', '/api/v1/releases/application')}
     assert not set(ASR_CREATION_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS))
-    assert writes == set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS)
+    assert set(ASR_COMPONENT_DECLARATION_CONTRACTS) == {('POST', '/api/v1/application-component-declarations')}
+    assert not set(ASR_COMPONENT_DECLARATION_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS))
+    assert writes == set(ASR_COMPONENT_DECLARATION_CONTRACTS) | set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS)
     schema = app.openapi()
     for path in retired:
         operation = schema['paths'][path]['get']

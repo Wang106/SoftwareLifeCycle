@@ -1,3 +1,4 @@
+from app.api.application_component_declaration import router as application_component_declaration_router
 from app.api.application_release_creation import router as application_release_creation_router
 from app.api.release_demo import router as release_demo_router
 from app.api.admin_principals import router as admin_principals_router
@@ -125,6 +126,7 @@ app.include_router(admin_principals_router)
 app.include_router(membership_registration_router)
 app.include_router(global_roles_router)
 app.include_router(application_release_creation_router)
+app.include_router(application_component_declaration_router)
 
 
 @app.middleware("http")
@@ -146,14 +148,19 @@ async def read_only_guard(request: Request, call_next):
     is_distribution_selection = path.startswith(('/api/v1/selection-context/', '/api/v1/evidence-selection-context/'))
     is_asr_creation = path.startswith('/api/v1/application-release-creation/') or (
         request.method == 'POST' and path == '/api/v1/releases/application')
-    is_private = is_asr_creation or is_distribution_selection or is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
+    is_asrc = path.startswith('/api/v1/application-component-declaration/') or path == '/api/v1/application-component-declarations'
+    is_private = is_asrc or is_asr_creation or is_distribution_selection or is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
+    if is_asrc:
+        private_headers['Vary'] += ', X-Browser-Session'
     if settings.read_only_mode and is_write and not is_session_control:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={"detail": "read_only_mode"},
             headers=private_headers if is_private else None,
         )
+    if is_asrc and not settings.application_component_declaration_enabled:
+        return JSONResponse(status_code=403, content={'detail':'asrc_disabled'}, headers=private_headers)
     if is_private and settings.auth_mode != "oidc":
         return JSONResponse(status_code=401, content={"detail": "oidc_not_enabled"},
                             headers={**private_headers, "WWW-Authenticate": "Bearer"})
@@ -173,7 +180,7 @@ async def read_only_guard(request: Request, call_next):
         vary = response.headers.get("Vary", "")
         if "authorization" not in {part.strip().lower() for part in vary.split(',')}:
             response.headers["Vary"] = (vary + ", Authorization").lstrip(', ')
-        if is_asr_creation or is_distribution_selection or is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval:
+        if is_asrc or is_asr_creation or is_distribution_selection or is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval:
             response.headers['Vary'] += ', X-Browser-Session'
     return response
 

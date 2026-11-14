@@ -3,6 +3,7 @@ from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from app.models.core import Artifact, ReleaseComponent
+from app.services.component_privacy import public_component_clause
 from app.models.policy import ArtifactDistributionRule
 
 
@@ -36,7 +37,7 @@ class ArtifactPolicyService:
         return self.db.scalars(
             select(Artifact)
             .join(ReleaseComponent, ReleaseComponent.id == Artifact.release_component_id)
-            .where(ReleaseComponent.release_id == release_id)
+            .where(ReleaseComponent.release_id == release_id, public_component_clause(ReleaseComponent.id))
         ).all()
 
     def summarize_release(self, release_id) -> ArtifactPolicySummary:
@@ -58,7 +59,7 @@ class ArtifactPolicyService:
             total(case((internal, 0), (rules('APPROVAL_REQUIRED'), 1), else_=0)),
             total(case((internal, 1), else_=0)))
             .select_from(Artifact).join(ReleaseComponent, ReleaseComponent.id == artifact.release_component_id)
-            .where(ReleaseComponent.release_id == release_id)).one()
+            .where(ReleaseComponent.release_id == release_id, public_component_clause(ReleaseComponent.id))).one()
         return ArtifactPolicySummary(*row)
 
     def evaluate(self, artifact: Artifact, recipient_type: str, purpose: str, recipient_code: str | None = None) -> str:

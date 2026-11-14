@@ -472,6 +472,17 @@ these are declaration/baseline observations; separate totals/pages may differ du
 concurrent writes. Frontend keeps release_limit and independent component/application
 offsets, forwarding invalid values rather than silently resetting them. No migration.
 
+## Private ASR component declarations
+
+The independently default-disabled declaration operation and its strict private
+context/original-receipt routes are documented in
+[application-component-declaration.md](docs/application-component-declaration.md).
+It creates one append-only component instance, not files or a completed release.
+Multiple versions and additions without a baseline link are supported. New private
+declarations and their events are excluded from historical public sample reads,
+including component counts and baseline-link aggregates. No general private
+component directory or artifact upload is supplied by this package.
+
 ## ASR component summary and independent pages — API 0.18.8
 
 All paths begin `/api/v1/releases/application/id/{release_id}/components`.

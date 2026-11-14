@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session, aliased
 from app.core.db import get_db
 from app.models.core import ApplicationReleaseDetail, ComponentDefinition, Release, ReleaseComponent
 
+from app.services.component_privacy import public_component_clause
+
 router = APIRouter(prefix='/api/v1/releases/application/id', tags=['application components'])
 
 
@@ -35,23 +37,24 @@ def context(db, release_id):
 def declarations(release_id, base_id):
     c, d, b = ReleaseComponent, ComponentDefinition, aliased(ReleaseComponent)
     valid_link = and_(b.id == c.base_component_id, b.release_id == base_id,
-                      b.component_definition_id == c.component_definition_id) if base_id else false()
+                      b.component_definition_id == c.component_definition_id, public_component_clause(b.id)) if base_id else false()
     return select(c.id, d.code, d.name, c.version.label('asr_version'),
         c.delta_type.label('declared_delta_type'), b.version.label('base_component_version'),
         case((b.id.is_not(None), 'VALID'), (c.base_component_id.is_not(None), 'INVALID'),
              else_='NOT_RECORDED').label('base_link_status'))\
         .select_from(c).outerjoin(b, valid_link).outerjoin(d, d.id == c.component_definition_id)\
-        .where(c.release_id == release_id)
+        .where(c.release_id == release_id, public_component_clause(c.id))
 
 
 def unlinked_bases(release_id, base_id):
     b, a, d = ReleaseComponent, aliased(ReleaseComponent), ComponentDefinition
     valid_asr_link = select(a.id).where(a.release_id == release_id,
-        a.base_component_id == b.id, a.component_definition_id == b.component_definition_id).exists()
-    # NOT EXISTS considers every declaration, not just the current page. Invalid
+        a.base_component_id == b.id, a.component_definition_id == b.component_definition_id,
+        public_component_clause(a.id)).exists()
+    # NOT EXISTS considers every public declaration, not just this page. Invalid
     # links never hide a base row; duplicate valid links hide it exactly once.
     return select(b.id, d.code, d.name, b.version).select_from(b).outerjoin(d, d.id == b.component_definition_id)\
-        .where(b.release_id == base_id if base_id else false(), ~valid_asr_link)
+        .where(b.release_id == base_id if base_id else false(), public_component_clause(b.id), ~valid_asr_link)
 
 
 def count(db, stmt):

@@ -31,6 +31,8 @@ from app.models.core import (
     ReleaseComponent,
 )
 
+from app.services.component_privacy import public_component_clause
+
 DELTA_TYPES = ("UNCHANGED", "MODIFIED", "ADDED", "REMOVED")
 LINK_STATUSES = ("VALID", "INVALID", "NOT_RECORDED")
 
@@ -54,7 +56,7 @@ def _delta_aggregate(db: Session, base_id: uuid.UUID, asr_ids: list[uuid.UUID]) 
     # base pointer exists, or NOT_RECORDED when absent. This mirrors asr_components.
     b = ReleaseComponent.__table__
     c = ReleaseComponent.__table__.alias("c")
-    base_def = select(c.c.component_definition_id).where(c.c.id == b.c.base_component_id).scalar_subquery()
+    base_def = select(c.c.component_definition_id).where(c.c.id == b.c.base_component_id, public_component_clause(c.c.id)).scalar_subquery()
     link_status = case(
         (b.c.base_component_id.is_(None), "NOT_RECORDED"),
         (base_def == b.c.component_definition_id, "VALID"),
@@ -67,7 +69,7 @@ def _delta_aggregate(db: Session, base_id: uuid.UUID, asr_ids: list[uuid.UUID]) 
 
     rows = db.execute(
         select(b.c.delta_type, link_status, func.count())
-        .where(b.c.release_id.in_(asr_ids))
+        .where(b.c.release_id.in_(asr_ids), public_component_clause(b.c.id))
         .group_by(b.c.delta_type, link_status)
     ).all()
     total = 0
@@ -84,7 +86,7 @@ def _unlinked_aggregate(db: Session, base_id: uuid.UUID, asr_ids: list[uuid.UUID
     # definition. A definition with zero baseline components is skipped.
     base_components = db.execute(
         select(ReleaseComponent.id, ReleaseComponent.component_definition_id)
-        .where(ReleaseComponent.release_id == base_id)
+        .where(ReleaseComponent.release_id == base_id, public_component_clause(ReleaseComponent.id))
         .order_by(ReleaseComponent.id)
     ).all()
 
@@ -107,6 +109,7 @@ def _unlinked_aggregate(db: Session, base_id: uuid.UUID, asr_ids: list[uuid.UUID
             # the query bounded regardless of how many declarations each ASR has.
             valid_link_exists = select(ReleaseComponent.id).where(
                 ReleaseComponent.release_id.in_(asr_ids),
+                public_component_clause(ReleaseComponent.id),
                 ReleaseComponent.base_component_id == component.id,
                 ReleaseComponent.component_definition_id == component.component_definition_id,
             ).exists()
@@ -114,6 +117,7 @@ def _unlinked_aggregate(db: Session, base_id: uuid.UUID, asr_ids: list[uuid.UUID
             linked_asr_ids = db.scalars(
                 select(ReleaseComponent.release_id).where(
                     ReleaseComponent.release_id.in_(asr_ids),
+                    public_component_clause(ReleaseComponent.id),
                     ReleaseComponent.base_component_id == component.id,
                     ReleaseComponent.component_definition_id == component.component_definition_id,
                 ).distinct()
