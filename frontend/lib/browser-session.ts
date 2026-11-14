@@ -1235,3 +1235,58 @@ export async function executeApplicationReleaseCreation(config:SessionConfig,coo
   const receipt=parseReceipt(audit.value,command,identity.principal.id);
   return receipt?{status:200,value:receipt}:unknown;
 }
+
+/** Exact pair only: no broad private selection catalog. The API checks both scoped roles. */
+export async function readApplicationComponentDeclarationContext(config:SessionConfig,cookie:string|undefined,
+  input:import('./application-component-declaration').Target,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseTarget,parseContext,verifyContextDigest}=await import('./application-component-declaration');
+  const target=parseTarget(input);
+  if (!target) return {status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if (!identity) return {status:401,value:{error:'session_required'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const query=new URLSearchParams({release_id:target.release_id,component_definition_id:target.component_definition_id});
+  if(target.base_component_id!==null)query.set('base_component_id',target.base_component_id);
+  const path='/api/v1/application-component-declaration/context?'+query;
+  const result=await privateRequest(config,path,envelope.token,asrJsonFetcher(fetcher),{},envelope.sid,32768);
+  if (result?.status === 200) {
+    const context=parseContext(result.value,target);
+    if (context && await verifyContextDigest(context)) return {status:200,value:context};
+  }
+  const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',409:'context_conflict',422:'invalid_request'};
+  return result && denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'outcome_unknown'}};
+}
+export async function executeApplicationComponentDeclaration(config:SessionConfig,cookie:string|undefined,
+  input:import('./application-component-declaration').Command,mode:'submit'|'recover',fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+  const {parseCommand,parseReceipt,verifyContextDigest}=await import('./application-component-declaration');
+  const command=parseCommand(input);
+  if (!command || !['submit','recover'].includes(mode) || !await verifyContextDigest(command.context)) return {status:400,value:{error:'invalid_request'}};
+  const identity=await resolveSession(config,cookie,fetcher);
+  if (!identity) return {status:401,value:{error:'session_required'}};
+  if (mode === 'submit' && identity.read_only_mode) return {status:403,value:{error:'read_only_mode'}};
+  const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+  const unknown={status:502,value:{error:'outcome_unknown'}};
+  const fixedFetch=asrJsonFetcher(fetcher);
+  if (mode === 'submit') {
+    const result=await privateRequest(config,'/api/v1/application-component-declarations',envelope.token,fixedFetch,
+      {method:'POST',body:JSON.stringify(command.body)},envelope.sid,32768);
+    if (!result) return unknown;
+    if (![200,201].includes(result.status)) {
+      const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',422:'invalid_request'};
+      if (result.status === 409) {
+        const detail=result.value && typeof result.value === 'object'?(result.value as Record<string,unknown>).detail:null;
+        const conflicts:Record<string,string>={asrc_context_conflict:'context_conflict',asrc_request_conflict:'request_conflict',asrc_parent_binding_conflict:'context_conflict',asrc_parent_inactive:'context_conflict',asrc_release_not_draft:'context_conflict',asrc_release_revoked:'context_conflict',asrc_base_component_conflict:'base_component_conflict',asrc_definition_inactive:'context_conflict',asr_parent_binding_conflict:'context_conflict',asr_parent_inactive:'context_conflict',standard_release_revoked:'context_conflict'};
+        return {status:409,value:{error:typeof detail === 'string' && conflicts[detail] || 'request_conflict'}};
+      }
+      return denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:unknown;
+    }
+    if (!parseReceipt(result.value,command,identity.principal.id)) return unknown;
+  }
+  // Only the API's original audit receipt proves creation; never fetch a mutable current release.
+  // Recovery reauthorizes at the API, does not POST and cannot choose a new key.
+  const audit=await privateRequest(config,'/api/v1/application-component-declaration/receipts/'+encodeURIComponent(command.body.request_id),
+    envelope.token,fixedFetch,{},envelope.sid,32768);
+  if (!audit || audit.status !== 200) return unknown;
+  const receipt=parseReceipt(audit.value,command,identity.principal.id);
+  return receipt?{status:200,value:receipt}:unknown;
+}

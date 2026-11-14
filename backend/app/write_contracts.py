@@ -355,3 +355,11 @@ class AsrCreationContract:
 ASR_CREATION_CONTRACTS = {
     ('POST', '/api/v1/releases/application'): AsrCreationContract('Create empty application release DRAFT'),
 }
+
+
+# Independent bounded command; original fourteen-command denominator is unchanged.
+ASR_COMPONENT_DECLARATION_CONTRACTS = {
+    ('POST', '/api/v1/application-component-declarations'): AsrCreationContract(
+        'Declare independent application component instance',
+        precondition='ENABLED_ACTIVE_DEFINITION_DRAFT_ASR_EXACT_UNREVOKED_BASELINE_REVIEWED_CONTEXT'),
+}

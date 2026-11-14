@@ -1,7 +1,7 @@
 import { test, expect, type BrowserContext } from '@playwright/test';
 
 // No production identity, auth bypass or business fixture route is installed.
-const { startApp, paths, values } = require('./fixture-server.cjs');
+const { startApp, paths, values, ids } = require('./fixture-server.cjs');
 type Harness = {
   appOrigin: string;
   fixture: {
@@ -150,6 +150,32 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   await page.goForward();
   await expect(page).toHaveURL(app.appOrigin + '/create');
   await expect(page.getByRole('heading', { name: 'Create lifecycle record', exact: true })).toBeVisible();
+
+  // Additive component declaration preparation; no private backend request or write is permitted.
+  const componentFormPath = '/releases/application/' + ids.release1 + '/components/new';
+  await page.goto(app.appOrigin + componentFormPath);
+  await expect(page.getByRole('heading', { name: 'Declare application release component', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Application release UUID', { exact: true })).toHaveValue(ids.release1);
+  await expect(page.getByLabel('Application release UUID', { exact: true })).not.toBeEditable();
+  await page.getByLabel('Active component definition UUID', { exact: true }).fill(ids.release2);
+  await page.getByLabel('Version (maximum 100 characters)', { exact: true }).fill('SYNTHETIC-COMPONENT');
+  await page.getByLabel('Reason (maximum 4000 characters)', { exact: true }).fill('Synthetic preparation only');
+  await page.getByRole('button', { name: 'Prepare immutable preview', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Submit component declaration', exact: true })).toHaveCount(0);
+  await expect(page.locator('input[type="file"]')).toHaveCount(0);
+  await expect(page.getByText('Declare one component on an existing DRAFT ASR. File upload is not implemented here.', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '中文', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '声明应用发布组件', exact: true })).toBeVisible();
+  await expect(page.locator('#asr-version')).toHaveValue('SYNTHETIC-COMPONENT');
+  await page.getByRole('button', { name: 'English', exact: true }).click();
+  await createLink.click();
+  await expect(page).toHaveURL(app.appOrigin + '/create');
+  await page.goBack();
+  await expect(page).toHaveURL(app.appOrigin + componentFormPath);
+  await expect(page.getByRole('heading', { name: 'Declare application release component', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Submit component declaration', exact: true })).toHaveCount(0);
+  await page.goForward();
+  await expect(page).toHaveURL(app.appOrigin + '/create');
 
   await page.evaluate(() => { (window as Window & { creationDocumentMarker?: boolean }).creationDocumentMarker = true; });
   for (const [operation, field] of [['test-release', 'testReleaseNo'], ['delivery', 'packageNo'], ['authorization', 'authorizationNo']]) {

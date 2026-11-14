@@ -9,15 +9,15 @@
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "package": "local-artifact-storage-core",
-    "branch": "codex/local-artifact-storage-core",
-    "state": "Local implementation and independent review passed; draft publication and exact-head complete CI pending. No app integration or real file upload; public writes remain disabled.",
-    "evidence": "HANDOFF.md#2026-11-13-local-artifact-storage-core",
-    "selected_scope": "Standalone default-disabled stdlib local byte storage with pre-I/O UUID receipt, bounded size/SHA-256 verification, one-shot no-overwrite publication and read-only uncertain-state inspection. Synthetic temporary directories only.",
-    "current_pr_ci": "Not published. Focused29 and five independent fault probes, offline943, automation52, CI guards126 and frontend2343 passed; compile/progress/whitespace checks passed. Full candidate backend/PostgreSQL/migrations, production build and strict browser await normal CI.",
-    "current_main_ci": "Exact main fcbcbe416ac4bbfea0e32fd8d750f202880dd3d5, merged PR227; CI43445242134 backend/PostgreSQL/migrations, frontend, strict browser and aggregate succeeded.",
-    "current_deployment": "Same-main public Cloudflare check succeeded; Actions deployment/continuation skipped. No new candidate deployment or backend recovery claimed.",
-    "next_package": "Publish independently reviewed local storage core as a draft, verify exact-head normal CI and retain draft. Ready/merge require owner confirmation. Application upload and writable offline deployment remain separate.",
+    "package": "application-component-declaration",
+    "branch": "codex/asr-component-declaration",
+    "state": "Final bounded source review and scoped regressions passed; broad local non-PG rerun in progress at draft-publication checkpoint. No full backend/PostgreSQL or signed-browser acceptance yet.",
+    "evidence": "HANDOFF.md#2026-11-14-private-asr-component-declarations",
+    "selected_scope": "Private append-only ASR component instances with optional exact baseline, multiple versions, atomic original receipts, public projection isolation and bilingual default-disabled preparation/recovery.",
+    "current_pr_ci": "Not published at checkpoint. Exact-head normal CI including13 new PostgreSQL cases and additive strict browser assertions remains required.",
+    "current_main_ci": "Exact main48a0d84b72f49111f40111556f08c5d83b3159a2, merged PR228; CI43459692522 backend/PostgreSQL/migrations, frontend, strict browser and aggregate passed.",
+    "current_deployment": "Same-main Cloudflare build check succeeded. Actions deploy43462689412 and continuation43462689769 skipped. No traffic allocation, Render recovery or company acceptance claimed.",
+    "next_package": "Publish isolated draft and verify exact-head full normal CI, retaining draft. Ready/merge require owner approval. Upload/storage integration remains separate.",
     "previous_checkpoint": {
       "owner": "current_ChatGPT_Work_cloud_task",
       "business_acceptance_increment": 0,
@@ -1144,11 +1144,10 @@
       "main_component_browser": 16
     },
     "limitations": [
-      "Only the standard-release directory is changed; homepage first-open performance remains unmeasured and has no proven shared-shell blocking source.",
-      "The existing apiGet connection wait precedes its timer, so the remaining parent/batch allowance is not a strict end-to-end 15-second bound.",
-      "Mock/stream tests and prepared browser fixtures do not substitute for complete frontend/build, exact candidate CI or signed-browser execution.",
-      "Parent and child real empty data remain distinct from unavailable values; no automatic retries, additional row reads or database changes are introduced.",
-      "The expired public database is not restored; actual company installation, identities, business writes and operational acceptance remain outside this package."
+      "Existing active component definitions only; no global dictionary creation, editing/removal, artifacts or file transport.",
+      "New private components are visible through authorized context/original receipts, not a general private browsing directory.",
+      "Audit-derived privacy requires atomic creation and retained append-only audit evidence; future writers and artifact integration require separate review.",
+      "Exact candidate PostgreSQL, signed-browser and aggregate CI pending; synthetic checks do not complete company deployment or actual-user acceptance."
     ],
     "baseline_main_evidence": {
       "commit": "7549f846cf9c65da589004eea802c8340f2a6abb",
@@ -1161,7 +1160,7 @@
       "Actions_deployment": "not_observed_not_claimed_success",
       "Render": "latest_PR206_update_failed_no_PR207_deploy_observed"
     },
-    "local_validation": "35_executions_22_distinct_methods_675_offline_52_automation_126_guards_passed",
+    "local_validation": "Backend focused73 passed/13 PG skipped; affected final185 passed/14 PG skipped. Frontend2378 zero failures/skips; Next/OpenNext/type/config/production auth and browserfixture3 passed. Independent source review no blockers.",
     "previous_synthetic_database_run": "migration_image_only_42660395986_attempt1_commit4624e01f_success_no_DB_SQL_no_artifacts",
     "previous_api_startup_package": {
       "merged_pr": 200,
@@ -1171,7 +1170,7 @@
       "actual_API_startup": "not_executed"
     },
     "manual_api_evidence": "42536231169_success_RUN_API_STARTUP_and_EXPORT_IMAGE_BUNDLE_true_not_database_or_offline_acceptance",
-    "local_checks": "465_targeted_frontend_173_focused_TypeScript_diff_progress_passed",
+    "local_checks": "Automation52,CIguards126,offline+storage972/3175 subtests passed. Initial broad backend3122 passed/843 skipped/3 failed/12 CI-only errors; two inventory failures and -I environment failure fixed, affected185 passed. Broad final local rerun pending; no PG bypass.",
     "previous_package_record": {
       "package": "change-issue-catalog-loading",
       "branch": "fix/change-issue-shell",

@@ -14,6 +14,7 @@ from app.models.production import Deployment, ProductionBatch
 from app.models.approval import ApprovalRequest
 from app.models.distribution import DeliveryPackage, Distribution, SoftwareAuthorization
 from app.models.audit import AuditEvent
+from app.services.component_privacy import public_component_clause
 
 router = APIRouter(prefix="/api/v1", tags=["search"])
 
@@ -59,7 +60,8 @@ def _frozen_artifact_results(db: Session, pattern: str, limit: int) -> list[dict
 def _artifact_results(db: Session, pattern: str, limit: int) -> list[dict]:
     if limit <= 0:
         return []
-    rows = db.scalars(select(Artifact).where(or_(
+    rows = db.scalars(select(Artifact).where(
+        public_component_clause(Artifact.release_component_id), or_(
         Artifact.filename.ilike(pattern, escape="\\"),
         Artifact.sha256.ilike(pattern, escape="\\"),
     )).order_by(Artifact.id).limit(min(limit, 10))).all()

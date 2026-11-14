@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     required_db_revision: str = "0029_changeover_batch_history"
     read_only_mode: bool = False
     auth_mode: Literal["disabled", "oidc"] = "disabled"
+    application_component_declaration_enabled: bool = False
     request_telemetry_enabled: bool = False
     admin_operator_enabled: bool = False
     oidc_issuer_url: str | None = None

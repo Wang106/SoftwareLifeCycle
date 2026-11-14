@@ -84,9 +84,11 @@ def test_full_candidate_closure_is_disjoint_exact_and_commands_are_preserved():
     for path in bounded:
         routes=[r for r in app.routes if r.path==path and 'GET' in (getattr(r,'methods',None) or set())]
         assert len(routes)==1 and not routes[0].deprecated
-    from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS, ASR_CREATION_CONTRACTS
+    from app.write_contracts import WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS, ASR_CREATION_CONTRACTS, ASR_COMPONENT_DECLARATION_CONTRACTS
     writes = {('POST', r.path) for r in app.routes if 'POST' in (getattr(r,'methods',None) or set())}
     assert len(WRITE_CONTRACTS) == 21
     assert set(ASR_CREATION_CONTRACTS) == {('POST', '/api/v1/releases/application')}
     assert not set(ASR_CREATION_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS))
-    assert writes == set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS)
+    assert set(ASR_COMPONENT_DECLARATION_CONTRACTS) == {('POST', '/api/v1/application-component-declarations')}
+    assert not set(ASR_COMPONENT_DECLARATION_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS))
+    assert writes == set(ASR_COMPONENT_DECLARATION_CONTRACTS) | set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS)

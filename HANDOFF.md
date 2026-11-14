@@ -1,3 +1,5 @@
+Latest checkpoint: [2026-11-14 private ASR component declarations](#2026-11-14-private-asr-component-declarations). Older entries remain historical.
+
 Latest checkpoint: [2026-11-13 local artifact storage core](#2026-11-13-local-artifact-storage-core). Older entries below remain historical.
 
 Latest checkpoint: [2026-11-13 creation entry forms](#2026-11-13-creation-entry-forms). Older entries below remain historical.
@@ -5984,6 +5986,68 @@ normal CI, and retain draft. Ready-for-review and merge require owner confirmati
 Component declaration, authenticated upload/download, private metadata reads,
 durable database/file reconciliation and an approved writable offline deployment
 remain separate work. Do not start another feature package from this checkpoint.
+
+Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
+plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.
+
+
+## 2026-11-14: private ASR component declarations
+
+Baseline main `48a0d84b72f49111f40111556f08c5d83b3159a2` is merged PR228,
+with exact tree `0d10bb301cbdbd87bebe6bf1d53cb86dab6f82d9` and no open PR at start.
+[Main CI43459692522](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/43459692522)
+passed backend/PostgreSQL/migrations, frontend, strict browser and aggregate gates.
+Same-main Cloudflare build check succeeded; Actions deployment43462689412 and
+continuation43462689769 skipped. These are baseline results, not candidate CI,
+verified traffic allocation, backend recovery or company acceptance.
+
+The owner permits ASR components absent from the selected SSR and multiple versions
+of one component type; each ASR still references exactly one SSR. This bounded
+[declaration package](docs/application-component-declaration.md) references existing
+active definitions, accepts exact optional baseline UUIDs and explicit declared
+ADDED/UNCHANGED/MODIFIED semantics, and creates one independent component plus
+immutable audit receipt. No name/version deduplication, definition management,
+component editing/removal or file copying is added.
+
+Strict OIDC human identity, exact project contributor AND software visibility,
+transactional rechecks, mandatory request UUID and atomic audit preserve the new
+write boundary. Dedicated backend and frontend capabilities remain disabled.
+Private context and original receipts do not use the public sample catalog as
+an authorization source. New audit evidence and components are excluded from old
+public lists, counts, anti-joins and SSR aggregates. Artifact projections exclude
+private sources and snapshots refuse them instead of silently freezing incomplete
+evidence. The audit-derived privacy marker requires append-only retained evidence.
+
+The bilingual form pins its ASR UUID, invalidates stale confirmation, preserves
+unknown outcomes and imports only query-only recovery. Exact UUID linkage remains
+valid when a baseline component version is null. The success display is the
+original private receipt, not a public component page that hides the new row.
+The byte-storage core remains unconnected; no file upload or company data is used.
+
+Regression-first reproduced missing private routes and public component/count/link
+leakage. Final focused backend checks passed 73 cases; 13 new PostgreSQL cases
+collected but require CI. Independent final source review found no blocking issue.
+Frontend 2378 tests passed without failures/skips, with Next/OpenNext builds,
+TypeScript, Worker configuration, expanded real disabled-route auth checks and
+three browser-fixture tests. Automation52, CIguards126 and offline/storage972
+(with3175 subtests) passed. No dependencies or lockfiles were changed.
+
+The first broad local backend run had 3122 passes,3175 subtests,843 skips,3 failures
+and12 CI-only PostgreSQL setup errors. Two exhaustive route inventories needed
+additive registration of this independent command; all old counts/disjointness
+checks remain. The SQL-generation subprocess lacked dependencies under python -I;
+an isolated temporary venv fixed that environment, not the test. The final affected
+185-case bundle passed,14 PostgreSQL cases skipped. A clean broad rerun excluding
+only the12 explicit GitHub-CI-only cases is in progress at this publication checkpoint.
+These are not a complete backend/PostgreSQL pass. Exact-head normal CI and strict
+signed-browser execution remain required; no full acceptance is claimed yet.
+No schema, dependency lock, workflow, identity/grant, provider or deployment setting
+is changed; no manual container/API/database rehearsal or new paid resource.
+
+Next: finish final checks, publish only an isolated draft PR and verify exact-head
+normal CI. Keep it draft; ready-for-review and merge require the owner's later
+approval. Real OIDC, private artifact lifecycle/upload/download, storage reconciliation,
+other creation flows and writable offline deployment remain separate work.
 
 Business 36/44=82%, increment 0; modules 100/100 demo/100 demo/100/89/60/17;
 plans 100/100/20/33/40/40/0; browser stage 1/4 and finite plan 8/8 unchanged.

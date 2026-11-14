@@ -598,3 +598,14 @@ all14 commands, broader append-only corrections and operational acceptance follo
 No approved provider or company target is inferred from CI success. Backup/restore,
 monitoring, environment separation, gated deploy/rollback and company network/data
 acceptance are still incomplete. This is not a production-ready certificate.
+
+
+## Private application component declaration preparation — 2026-11-14
+
+The user permits additions absent from the selected SSR and multiple component
+versions in one ASR. The bounded default-disabled declaration package preserves
+one exact SSR, private atomic receipts, historical sample reads and all existing
+acceptance denominators. It does not supply file upload, dictionary management,
+private artifact distribution or a writable deployment. See
+[the declaration contract](docs/application-component-declaration.md) and current
+HANDOFF for exact verification and publication state. Business remains 36/44=82%.

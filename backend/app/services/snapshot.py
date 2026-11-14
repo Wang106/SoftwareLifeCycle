@@ -9,6 +9,7 @@ from app.models.policy import ArtifactDistributionRule
 from app.models.snapshot import ReleaseSnapshot, SnapshotArtifact
 from app.models.snapshot_policy import SnapshotArtifactDistributionRule
 from app.services.audit import commit_with_audit
+from app.services.component_privacy import private_component_clause
 from app.services.command_retry import atomic_command, retry_result
 
 class SnapshotError(ValueError):
@@ -40,6 +41,14 @@ class SnapshotService:
         if existing is not None:
             db.commit()
             return existing
+
+        # Never silently freeze an incomplete public subset. Private artifact
+        # integration requires its own authorization and frozen-read policy.
+        if db.scalar(select(Artifact.id).join(ReleaseComponent,
+                Artifact.release_component_id == ReleaseComponent.id).where(
+                ReleaseComponent.release_id == release_id,
+                private_component_clause(ReleaseComponent.id)).limit(1)) is not None:
+            raise SnapshotError("Private component artifacts cannot be frozen")
 
         rows = db.execute(
             select(Artifact, ReleaseComponent, ComponentDefinition)

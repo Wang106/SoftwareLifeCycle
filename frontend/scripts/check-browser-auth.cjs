@@ -24,6 +24,7 @@ async function main() {
    DISTRIBUTION_COMMAND_SUBMISSION_MODE:'disabled',DISTRIBUTION_COMMAND_APPROVED_API_BASE_URL:'',DISTRIBUTION_COMMAND_APPROVED_APP_ORIGIN:'',
    GOVERNANCE_COMMAND_SUBMISSION_MODE:'disabled',GOVERNANCE_COMMAND_APPROVED_API_BASE_URL:'',GOVERNANCE_COMMAND_APPROVED_APP_ORIGIN:'',
    RELEASE_CHAIN_REVOCATION_SUBMISSION_MODE:'disabled',RELEASE_CHAIN_REVOCATION_APPROVED_API_BASE_URL:'',RELEASE_CHAIN_REVOCATION_APPROVED_APP_ORIGIN:'',
+   APPLICATION_COMPONENT_DECLARATION_MODE:'disabled',APPLICATION_COMPONENT_DECLARATION_APPROVED_API_BASE_URL:'',APPLICATION_COMPONENT_DECLARATION_APPROVED_APP_ORIGIN:'',
    APPLICATION_RELEASE_CREATION_MODE:'disabled',APPLICATION_RELEASE_CREATION_APPROVED_API_BASE_URL:'',APPLICATION_RELEASE_CREATION_APPROVED_APP_ORIGIN:'',
    OIDC_CLIENT_SECRET:'',BROWSER_SESSION_KEY:'',API_BASE_URL:'',NEXT_PUBLIC_API_BASE_URL:'',NEXT_PUBLIC_API_URL:''},stdio:['ignore','pipe','pipe'],
  });
@@ -117,6 +118,31 @@ async function main() {
     assert.ok(response.headers.get('vary').includes('Cookie'));assert.equal(response.headers.get('location'),null);
     assert.deepEqual(await response.json(),{error});
     console.log(`Next production ASR route ${method} /auth/${route}: ${status}, private/no-store`);
+   }
+  }
+  // Component preparation has its own disabled routes and never enables uploads.
+  const releaseId='22222222-2222-4222-8222-222222222222';
+  for(const [language,title,message] of [
+   ['zh','声明应用发布组件','当前无法在线保存。公开样例保持只读，真实身份尚未配置。'],
+   ['en','Declare application release component','Currently cannot save online. The public sample is read-only; real identity is not configured.'],
+  ]) {
+   const response=await fetch(base+'/releases/application/'+releaseId+'/components/new',{headers:{Cookie:`slc_language=${language}`},redirect:'manual'});
+   assert.equal(response.status,200);assert.ok(response.headers.get('cache-control').includes('no-store'));assert.equal(response.headers.get('location'),null);
+   const html=await response.text();assert.ok(html.includes(title));assert.ok(html.includes(message));
+   assert.ok(!/<input\b[^>]*type="file"/i.test(html));
+   const fieldset=html.match(/<fieldset\b[^>]*>[\s\S]*?<\/fieldset>/)?.[0];assert.ok(fieldset);assert.ok(!/^<fieldset\b[^>]*\bdisabled(?:[=\s>])/.test(fieldset));
+   for(const field of ['component_definition_id','base_component_id','version','reason']){
+    const tag=fieldset.match(new RegExp('<(?:input|textarea)\\b[^>]*id="asr-'+field+'"[^>]*>'))?.[0];assert.ok(tag);assert.ok(!/\b(?:disabled|readonly)(?:[=\s>])/i.test(tag));
+   }
+   const target=fieldset.match(/<input\b[^>]*id="asr-release_id"[^>]*>/)?.[0];assert.ok(target?.includes(releaseId));assert.ok(/\breadonly(?:[=\s>])/i.test(target));
+   assert.ok(!html.includes(language==='zh'?'提交组件声明':'Submit component declaration'));
+   console.log(`Application component SSR ${language}: exact ASR, editable preparation, no-store and no upload/send`);
+  }
+  for(const route of ['application-component-context','application-component-create','application-component-receipt']){
+   for(const [method,status,error] of [['GET',405,'method_not_allowed'],['POST',503,'application_component_declaration_disabled']]){
+    const response=await fetch(`${base}/auth/${route}`,{method,headers:{Origin:base},redirect:'manual'});
+    assert.equal(response.status,status);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.ok(response.headers.get('vary').includes('Cookie'));assert.equal(response.headers.get('location'),null);assert.deepEqual(await response.json(),{error});
+    console.log(`Next production ASRC route ${method} /auth/${route}: ${status}, private/no-store`);
    }
   }
  } finally {
