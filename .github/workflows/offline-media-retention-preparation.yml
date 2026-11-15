@@ -1,0 +1,42 @@
+name: Manual offline media retention preparation
+
+on:
+  workflow_dispatch:
+    inputs:
+      validate_preparation:
+        description: Validate synthetic retention contracts only; no build or media upload
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-image-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  contracts:
+    if: ${{ inputs.validate_preparation }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify selected tool checkout and synthetic contracts
+        env:
+          TOOL_COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TOOL_COMMIT"
+          python3 -B -m unittest discover -s backend/tests -p test_offline_media_retention.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_operator_assembly.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_image_bundle.py -v
+      - name: State unresolved upload prerequisites
+        run: |
+          echo 'Preparation contracts only. Image source remains e2038a9462770a29254674dd86c0e7b26b26a221.'
+          echo 'NO MEDIA UPLOAD: zero incremental cost, public content clearance and stored size remain unverified.'
+          echo 'Future authorized artifact retention must be exactly seven days, with identity/size/expiry checked afterward.'

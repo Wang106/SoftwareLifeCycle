@@ -1,3 +1,29 @@
+## Current checkpoint — 2026-11-15: seven-day media retention preparation
+
+Owner merged PR231; main a6b6e593a27d6146b25a0a3a4ebc498bb0e7c292 has reviewed
+tree7616929cafe05fccd8a34d465d23681f37e639d3. Main CI43693857236 passed all four
+jobs:4148 backend+3418 subtests,343 PG cases without skips,2379 frontend,16+16
+strict browser journeys and migration0030 round trip. Same-main Workers build
+b81c5bcd-65ca-41e4-b4b9-1836cc359934 passed. Actions deployment43694743897 and
+continuation43694743883 skipped; Render remains unrecovered and unchanged.
+
+The next bounded package inventories an existing five-file handoff for conditional
+seven-day public-repository artifact retention. It reuses pinned verification,
+counts metadata in the16GiB input ceiling and emits exact sizes/hashes. Image source
+remains e2038a9462770a29254674dd86c0e7b26b26a221/schema0030, distinct from tool HEAD.
+No compatibility map expansion, image build, upload, runtime or billing change.
+The default-off workflow runs synthetic contracts only. Upload remains unavailable:
+zero incremental cost, public content clearance, actual stored size and expiration
+are unverified; no user approval boolean can clear them. Raw account details stay
+private. Payload byte-hours are not billing proof. See docs/offline-media-retention-preparation.md.
+
+Regression-first collection failed before implementation;12 targeted,997 full offline,
+52 automation and126 CI guards pass, along with ledger/syntax/diff checks. Independent
+100 focused tests plus fresh-process/source-preservation/interruption probes passed;
+final independent review passed; draft exact-head normal CI pending.
+No new PR ready/merge authorization. Business36/44=82%,increment0; modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0; browser1/4,finite8/8.
+
 ## Current checkpoint — 2026-11-15: PR231 source/schema compatibility repair
 
 PR231 remains draft; ready/merge paused. Published head5069e77 passed CI43654433839,
@@ -6197,3 +6223,29 @@ review passed145 focused tests and regenerated the genuine legacy fixture byte-f
 Repaired-head normal CI is pending; prior-head success is not repaired-head evidence.
 No runtime, upload, DB/API execution, security change, ready transition or merge.
 Business36/44=82%, increment0; existing module/plan milestones unchanged.
+
+## Current checkpoint — 2026-11-15: seven-day media retention preparation
+
+Owner merged PR231; main a6b6e593a27d6146b25a0a3a4ebc498bb0e7c292 has reviewed
+tree7616929cafe05fccd8a34d465d23681f37e639d3. Main CI43693857236 passed all four
+jobs:4148 backend+3418 subtests,343 PG cases without skips,2379 frontend,16+16
+strict browser journeys and migration0030 round trip. Same-main Workers build
+b81c5bcd-65ca-41e4-b4b9-1836cc359934 passed. Actions deployment43694743897 and
+continuation43694743883 skipped; Render remains unrecovered and unchanged.
+
+The next bounded package inventories an existing five-file handoff for conditional
+seven-day public-repository artifact retention. It reuses pinned verification,
+counts metadata in the16GiB input ceiling and emits exact sizes/hashes. Image source
+remains e2038a9462770a29254674dd86c0e7b26b26a221/schema0030, distinct from tool HEAD.
+No compatibility map expansion, image build, upload, runtime or billing change.
+The default-off workflow runs synthetic contracts only. Upload remains unavailable:
+zero incremental cost, public content clearance, actual stored size and expiration
+are unverified; no user approval boolean can clear them. Raw account details stay
+private. Payload byte-hours are not billing proof. See docs/offline-media-retention-preparation.md.
+
+Regression-first collection failed before implementation;12 targeted,997 full offline,
+52 automation and126 CI guards pass, along with ledger/syntax/diff checks. Independent
+100 focused tests plus fresh-process/source-preservation/interruption probes passed;
+final independent review passed; draft exact-head normal CI pending.
+No new PR ready/merge authorization. Business36/44=82%,increment0; modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0; browser1/4,finite8/8.
