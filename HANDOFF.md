@@ -1,3 +1,23 @@
+## Current checkpoint — 2026-11-15: PR231 source/schema compatibility repair
+
+PR231 remains draft; ready/merge paused. Published head5069e77 passed CI43654433839,
+but independent follow-up found a metadata compatibility gap: v1 handoffs omit
+schema, and the assembler stamped current0030 for any digest-valid source commit.
+A genuine old576a6452/schema0029 handoff and unknown-commit regression both failed
+before repair (39 existing tests passed). This did not demonstrate runnable-image
+failure or permission bypass; the output remained unready and preflight refused it.
+
+Trusted code now binds only exact source e2038a9462770a29254674dd86c0e7b26b26a221
+to0030_private_upload_sessions, based on source review and rehearsal43608376324.
+Unknown/old sources and preflight mismatch fail before mkdir; the output revision
+comes from that binding. Existing integrity/close/source-preservation checks remain.
+Compatibility is not provenance. New commits require reviewed compatibility evidence.
+42 assembly,985 complete offline,52 automation and126 CI guards pass. Independent
+review passed145 focused tests and regenerated the genuine legacy fixture byte-for-byte.
+Repaired-head normal CI is pending; prior-head success is not repaired-head evidence.
+No runtime, upload, DB/API execution, security change, ready transition or merge.
+Business36/44=82%, increment0; existing module/plan milestones unchanged.
+
 Latest checkpoint: [2026-11-14 private ASR component declarations](#2026-11-14-private-asr-component-declarations). Older entries remain historical.
 
 Latest checkpoint: [2026-11-13 local artifact storage core](#2026-11-13-local-artifact-storage-core). Older entries below remain historical.
@@ -6157,3 +6177,23 @@ The prior rehearsal's deleted temporary runner output cannot be recovered by thi
 assembler. Target OS/runtime/storage/OIDC and real-write policies remain unconfirmed.
 Business36/44=82%, increment0; modules100/100 demo/100 demo/100/89/60/17;
 plans100/100/20/33/40/40/0; browser stage1/4 and finite plan8/8 unchanged.
+
+## Current checkpoint — 2026-11-15: PR231 source/schema compatibility repair
+
+PR231 remains draft; ready/merge paused. Published head5069e77 passed CI43654433839,
+but independent follow-up found a metadata compatibility gap: v1 handoffs omit
+schema, and the assembler stamped current0030 for any digest-valid source commit.
+A genuine old576a6452/schema0029 handoff and unknown-commit regression both failed
+before repair (39 existing tests passed). This did not demonstrate runnable-image
+failure or permission bypass; the output remained unready and preflight refused it.
+
+Trusted code now binds only exact source e2038a9462770a29254674dd86c0e7b26b26a221
+to0030_private_upload_sessions, based on source review and rehearsal43608376324.
+Unknown/old sources and preflight mismatch fail before mkdir; the output revision
+comes from that binding. Existing integrity/close/source-preservation checks remain.
+Compatibility is not provenance. New commits require reviewed compatibility evidence.
+42 assembly,985 complete offline,52 automation and126 CI guards pass. Independent
+review passed145 focused tests and regenerated the genuine legacy fixture byte-for-byte.
+Repaired-head normal CI is pending; prior-head success is not repaired-head evidence.
+No runtime, upload, DB/API execution, security change, ready transition or merge.
+Business36/44=82%, increment0; existing module/plan milestones unchanged.

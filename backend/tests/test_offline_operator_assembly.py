@@ -1,4 +1,6 @@
 """Real tiny local copies only: no runnable image, resource or deployment evidence."""
+import base64
+import zlib
 import contextlib
 import copy
 import hashlib
@@ -20,7 +22,7 @@ import test_offline_image_bundle as fixtures
 import offline_image_bundle as bundle
 import offline_operator_assembly as assembly
 
-COMMIT = fixtures.COMMIT
+COMMIT = 'e2038a9462770a29254674dd86c0e7b26b26a221'
 OUTPUT_FILES = {'api.tar', 'web.tar', 'manifest.json', 'operator.json'}
 
 
@@ -28,7 +30,8 @@ class OperatorAssemblyTests(unittest.TestCase):
     def setUp(self):
         # Import the fixture module, not an aliased TestCase that pytest recollects.
         self.fixture = fixtures.ImageBundleTests(methodName='runTest')
-        self.fixture.setUp()
+        with patch.object(fixtures, 'COMMIT', COMMIT):
+            self.fixture.setUp()
         self.addCleanup(self.fixture.doCleanups)
         self.root = self.fixture.root
         (self.fixture.source / 'database.env').write_text('PRIVATE_DATABASE')
@@ -86,6 +89,43 @@ class OperatorAssemblyTests(unittest.TestCase):
         self.assertEqual(self.snapshot(), before)
         self.assertNotIn('PRIVATE', (self.dest / 'operator.json').read_text())
         self.assertNotIn('PRIVATE', (self.dest / 'manifest.json').read_text())
+
+    def test_genuine_schema0029_handoff_refused_before_creation(self):
+        # Frozen output of the actual 576a6452 exporter and fixture, not a
+        # current exporter relabelled with an old revision. Generator hashes
+        # and the independently retained export digest accompany the fixture.
+        record = json.loads((ROOT / 'backend/tests/fixtures/offline_handoff_schema0029.json').read_text())
+        self.assertEqual(record['required_db_revision'], '0029_changeover_batch_history')
+        old = self.root / 'legacy'
+        old.mkdir()
+        for name, value in record['files'].items():
+            (old / name).write_bytes(zlib.decompress(base64.b64decode(value)))
+        digest = 'd39e7734c5837ea5d770b478c7adf5f093f8b8430af80af957424c3c6b18e2d1'
+        self.assertEqual(record['manifest_sha256'], digest)
+        bundle.verify_bundle(old, expected_commit=record['source_commit'], expected_manifest_sha256=digest)
+        before = {p.name: p.read_bytes() for p in old.iterdir()}
+        with self.assertRaises(assembly.AssemblyError):
+            assembly.assemble(old, self.dest, expected_commit=record['source_commit'], expected_manifest_sha256=digest)
+        self.assertFalse(self.dest.exists())
+        self.assertEqual(before, {p.name: p.read_bytes() for p in old.iterdir()})
+
+    def test_valid_unknown_commit_handoff_refused_before_creation(self):
+        other = fixtures.ImageBundleTests(methodName='runTest')
+        with patch.object(fixtures, 'COMMIT', 'b' * 40):
+            other.setUp()
+        self.addCleanup(other.doCleanups)
+        other.ready()
+        digest = other.result['manifest_sha256']
+        bundle.verify_bundle(other.dest, expected_commit='b' * 40, expected_manifest_sha256=digest)
+        with self.assertRaises(assembly.AssemblyError):
+            assembly.assemble(other.dest, self.dest, expected_commit='b' * 40, expected_manifest_sha256=digest)
+        self.assertFalse(self.dest.exists())
+
+    def test_supported_commit_with_mismatched_preflight_refused_before_creation(self):
+        with patch.object(bundle.preflight, 'REVISION', '0029_changeover_batch_history'):
+            with self.assertRaises(assembly.AssemblyError):
+                self.assemble()
+        self.assertFalse(self.dest.exists())
 
     def test_receipt_is_fixed_safe_nonacceptance_data_only(self):
         result = self.assemble()

@@ -19,7 +19,13 @@ import offline_image_bundle as bundle
 
 MAX_TOTAL_BYTES = 16 * 1024**3
 RESERVE_BYTES = 1024**3
-REVISION = '0030_private_upload_sessions'
+# v1 handoffs omit database schema. Only reviewed source commits may be
+# assembled: never infer compatibility from the running tool or package hash.
+# e2038a94: source migration0030 and same-commit rehearsal43608376324 verified.
+# Adding a commit requires source/schema review; this is not image provenance.
+SOURCE_REVISIONS = {
+    'e2038a9462770a29254674dd86c0e7b26b26a221': '0030_private_upload_sessions',
+}
 FILES = frozenset({'api.tar', 'web.tar', 'manifest.json', 'operator.json'})
 LIMITATIONS = ('Trusted local Linux filesystem only', 'Hashes are not signatures or provenance',
               'Database prerequisites and operator approval are not supplied',
@@ -95,7 +101,8 @@ def _assemble(source, destination, expected_commit, expected_manifest_sha256):
     source_parts, destination_parts = bundle.path_parts(source), bundle.path_parts(destination)
     common = min(len(source_parts), len(destination_parts))
     bundle.require(len(destination_parts) > 1 and source_parts[:common] != destination_parts[:common])
-    bundle.require(bundle.preflight.REVISION == REVISION)
+    revision = SOURCE_REVISIONS.get(expected_commit)
+    bundle.require(revision is not None and bundle.preflight.REVISION == revision)
 
     with _ClosingStack() as stack:
         source_dir = bundle.Directory.open(source, stack)
@@ -109,7 +116,7 @@ def _assemble(source, destination, expected_commit, expected_manifest_sha256):
                                       expected_manifest_sha256, completed=True)
         marker.check()
         manifest = {'format': 'slc-offline-readonly-v1', 'source_commit': handoff['source_commit'],
-                    'required_db_revision': REVISION,
+                    'required_db_revision': revision,
                     'images': {role: dict(handoff['images'][role]) for role in ('api', 'web')}}
         metadata = {'manifest.json': bundle.canonical(manifest),
                     'operator.json': bundle.canonical(operator_template())}
