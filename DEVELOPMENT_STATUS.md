@@ -1,3 +1,32 @@
+## Current checkpoint — 2026-11-15: fixed-source media build and measurement
+
+Baseline owner-merged PR232 main9c43a5d3dde4b719cc6c2f19cbd4920da9d1349f has
+reviewed tree247e4319163b19393008791114221019cb9a1a87. CI43697888158 passed all
+four jobs:4160backend+3423subtests,343PG without skips,schema0030 round trip,
+2379frontend and16+16strict browser journeys. Workers b42e877b passed;
+Actions deployment43699250947 and continuation43699250979 skipped. Render's
+current deployment remains unverified here; no database/provider changes.
+
+This bounded implementation adds a default-off fixed-source build/measure workflow
+and coordinator. Current tooling is distinct from image sourcee2038a94/schema0030.
+Git snapshot rejects changed source before acquisition/build; same-run trusted
+receipt reconstructs the expected handoff digest before #232 inventory checks.
+Exact five-file archives/metadata are measured; no uploader or approval override.
+The new deadline path uses serial main-thread downloads, shared55minute budget,
+60minute hard cap, safe uncertain-export receipts and existing exact-CID cleanup.
+
+14new synthetic and1011full offline tests,52automation and126CIguards pass.
+Independent review approved138focused tests,410exact source-file byte/hash
+comparisons and real timer interruption with one mocked owned-CID removal. No actual image build, dependency download, container,
+workflow dispatch, upload, laptop/server access or settings change was executed.
+Ordinary exact-head CI follows draft publication; no ready/merge authorization.
+Actual zero-cost7day storage, content clearance and stored artifact size remain
+unverified. Windows10 Home x64 staging laptop reportedly has>50GB;100GB is only
+proposed. Direct intranet copy replaces USB, with pre/post-copy hashes still needed;
+server/storage/filesystem and company installation remain unverified.
+See docs/offline-media-build-measure.md. Business36/44=82%,increment0; modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0 unchanged.
+
 ## Current checkpoint — 2026-11-15: seven-day media retention preparation
 
 Owner merged PR231; main a6b6e593a27d6146b25a0a3a4ebc498bb0e7c292 has reviewed

@@ -9,15 +9,15 @@
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "package": "offline-media-retention-preparation",
-    "branch": "codex/offline-media-retention-preparation",
-    "state": "Local997 offline,52 automation,126 CI guards, ledger and syntax checks passed. Independent100 focused tests and fresh-process/no-input-access/interruption probes passed; independent final review passed; draft exact-head CI pending.",
+    "package": "offline-media-build-measure",
+    "branch": "codex/offline-media-build-measure",
+    "state": "Local1011offline,52automation,126CIguards pass. Independent138focused tests,410source-file byte/hash comparisons, real timer/mock owned-CID cleanup passed; review approved. Draft exact-head CI pending.",
     "evidence": "HANDOFF.md",
-    "selected_scope": "Five-file inventory, metadata-inclusive16GiB cap and fixed7day plan; default-off synthetic workflow only. Cost/content/stored-size/expiry unverified.",
-    "current_pr_ci": "Not published; exact-head CI pending.",
-    "current_main_ci": "a6b6e593 CI43693857236 all four jobs passed;4148backend+3418subtests,343PG,2379frontend,16+16browser,migration0030.",
-    "current_deployment": "Same-main Workers b81c5bcd passed; deploy43694743897 and continuation43694743883 skipped; Render unrecovered, unchanged.",
-    "next_package": "Verify draft exact-head CI. Before enabling upload establish actual zero incremental cost, public-content clearance and stored-size/expiry controls. No new ready/merge approval.",
+    "selected_scope": "Default-off fixed-source build/measure implementation, exact5file handoff and independent receipt digest; no dispatch or upload.",
+    "current_pr_ci": "Unpublished; exact-head normal CI pending.",
+    "current_main_ci": "9c43a5d3 CI43697888158 allfourjobs passed:4160backend+3423subtests,343PG,2379frontend,16+16browser,schema0030.",
+    "current_deployment": "Same-main Workers b42e877b passed; Actions deploy43699250947 and continuation43699250979 skipped. Render unverified here, unchanged.",
+    "next_package": "Independent review and draft exact-head CI; no ready/merge. Actual build dispatch and all conditional storage/content/size/expiry facts remain separate.",
     "previous_checkpoint": {
       "owner": "current_ChatGPT_Work_cloud_task",
       "business_acceptance_increment": 0,
@@ -1144,21 +1144,22 @@
       "main_component_browser": 16
     },
     "limitations": [
-      "Preparation-only: no image build, runtime upload, billing change, company data or installation.",
-      "Exact image source e2038a94 only; tool HEAD is distinct. Payload bytes and byte-hours do not verify stored ZIP size or billing.",
-      "Zero incremental cost, public-content clearance and actual artifact identity/size/expiration remain unverified."
+      "No actual image build/download/container/workflow dispatch or runtime upload during development.",
+      "Image source fixede2038a94/schema0030; current tool commit distinct.",
+      "Actual zero-cost7day storage, content clearance, stored artifact size and expiration unverified.",
+      "Laptop reported Windows10Home x64 >50GB; server/storage/network acceptance unverified; directcopy intended, no company access."
     ],
     "baseline_main_evidence": {
-      "commit": "a6b6e593a27d6146b25a0a3a4ebc498bb0e7c292",
-      "CI_run": 43693857236,
+      "commit": "9c43a5d3dde4b719cc6c2f19cbd4920da9d1349f",
+      "CI_run": 43697888158,
       "CI_result": "success_all_four_jobs",
-      "provider_build": "b81c5bcd-65ca-41e4-b4b9-1836cc359934",
+      "provider_build": "b42e877b-5637-446c-916c-eb0cfc7cf891",
       "provider_result": "success_not_backend_health",
-      "Actions_continuation": "43694743883_skipped",
-      "Actions_deployment": "43694743897_skipped",
-      "Render": "unrecovered_unchanged"
+      "Actions_continuation": "43699250979_skipped",
+      "Actions_deployment": "43699250947_skipped",
+      "Render": "unverified_here_unchanged"
     },
-    "local_validation": "997 offline tests,52 automation and126 CI guards passed without skips;12 targeted inventory tests. Independent100 focused tests and fresh-process/preservation/close-interruption probes passed.",
+    "local_validation": "14new tests;1011full offline;52automation;126CIguards passed. Independent138focused,410exact source files and timer/owned-CID interruption probes passed; code/workflow approved.",
     "previous_synthetic_database_run": "migration_image_only_42660395986_attempt1_commit4624e01f_success_no_DB_SQL_no_artifacts",
     "previous_api_startup_package": {
       "merged_pr": 200,
@@ -1168,7 +1169,7 @@
       "actual_API_startup": "not_executed"
     },
     "manual_api_evidence": "42536231169_success_RUN_API_STARTUP_and_EXPORT_IMAGE_BUNDLE_true_not_database_or_offline_acceptance",
-    "local_checks": "997 offline,52 automation,126 CI guards, progress ledger, Python AST, YAML and git diff checks passed. No local real runtime or upload.",
+    "local_checks": "Offline,automation,CIguards,ledger,AST,YAML,diff checks passed. No real build/runtime/upload.",
     "previous_package_record": {
       "package": "change-issue-catalog-loading",
       "branch": "fix/change-issue-shell",
