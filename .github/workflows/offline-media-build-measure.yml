@@ -8,6 +8,11 @@ on:
         type: boolean
         required: false
         default: false
+      prepare_transport:
+        description: Also form and measure one temporary canonical transport file; no upload or retention
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -43,19 +48,28 @@ jobs:
         run: |
           python3 -B -m unittest discover -s backend/tests -p test_offline_media_build_measure.py -v
           python3 -B -m unittest discover -s backend/tests -p test_offline_media_retention.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_media_transport.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_transport_measure_integration.py -v
           python3 -B -m unittest discover -s backend/tests -p test_offline_image_rehearsal.py -v
       - name: Build pinned source and measure verified five-file handoff
         working-directory: tools
         shell: bash
         env:
           TOOL_COMMIT: ${{ github.sha }}
+          PREPARE_TRANSPORT: ${{ inputs.prepare_transport }}
         run: |
           set -euo pipefail
           export TMPDIR="$RUNNER_TEMP"
+          transport_args=()
+          case "$PREPARE_TRANSPORT" in
+            true) transport_args=(--transport-destination "$RUNNER_TEMP/slc-fixed-source-transport.tar") ;;
+            false) ;;
+            *) exit 2 ;;
+          esac
           python3 -B scripts/offline_media_build_measure.py --run \
             --source-root "$GITHUB_WORKSPACE/image-source" \
             --destination "$RUNNER_TEMP/slc-fixed-source-handoff" \
-            --tool-commit "$TOOL_COMMIT" --started-ns "$MEDIA_STARTED_NS"
+            --tool-commit "$TOOL_COMMIT" --started-ns "$MEDIA_STARTED_NS" "${transport_args[@]}"
       - name: Record non-retention boundary
         if: ${{ always() }}
         run: |
