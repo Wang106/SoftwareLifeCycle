@@ -1,3 +1,35 @@
+## Current checkpoint — 2026-11-15: exact local transport archive
+
+Baseline owner-merged PR233 main bce42c249a4e68b04056a78ce1ca7c01c2137eda;
+CI43710387455 all four jobs passed (4174backend+3440subtests,343PG without
+skips,2379frontend,16+16strict browser,schema0030). Same-main Workers
+6dcfb3e2-f6dd-4146-aa37-1da2a3f35962 passed; Actions deployment43711714404 and
+continuation43711714464 skipped. Render remains unverified here and unchanged.
+
+Owner-authorized one-time measurement43713722202 succeeded attempt1 in2m37s:
+fixed image sourcee2038a94/schema0030,138synthetic tests,real API/Web build,
+dependency-only smoke and both owned containers removed; no app/DB startup.
+Five-file payload1,360,327,335 bytes was discarded; zero artifacts retained.
+Those historical hashes cannot validate a future rebuild or downloadable media.
+
+This package implements local canonical USTAR pack/unpack around the unchanged
+five-file handoff. Actual outer bytes/size/hash are verified separately from the
+trusted inner manifest digest; fixed-source compatibility and #232 inventory
+remain mandatory. Total outer cap16GiB includes padding/headers; per-member
+USTAR limit8GiB-1. No build workflow change, uploader or approval override.
+Strict framing/digest gate precedes extraction mkdir; inner validation and payload
+closes precede COMPLETE. Failed/uncertain output stays for inspection, no retry.
+
+Regression-first import failed before implementation.18targeted tests pass;
+full offline1029,52automation,126CIguards
+pass. Independent review found and verified repair of premature completion marker;
+16focused tests plus interruption+close,late-marker-close and nesting probes passed.
+Draft exact-head normal CI pending; no ready/merge authorization.
+No actual image build, dispatch, runtime media upload or company access in this
+package. Cost/content/remote stored bytes/seven-day expiration remain unverified.
+See docs/offline-media-transport.md. Business36/44=82%,increment0; modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0 unchanged.
+
 ## Current checkpoint — 2026-11-15: fixed-source media build and measurement
 
 Baseline owner-merged PR232 main9c43a5d3dde4b719cc6c2f19cbd4920da9d1349f has
@@ -6306,4 +6338,36 @@ unverified. Windows10 Home x64 staging laptop reportedly has>50GB;100GB is only
 proposed. Direct intranet copy replaces USB, with pre/post-copy hashes still needed;
 server/storage/filesystem and company installation remain unverified.
 See docs/offline-media-build-measure.md. Business36/44=82%,increment0; modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0 unchanged.
+
+## Current checkpoint — 2026-11-15: exact local transport archive
+
+Baseline owner-merged PR233 main bce42c249a4e68b04056a78ce1ca7c01c2137eda;
+CI43710387455 all four jobs passed (4174backend+3440subtests,343PG without
+skips,2379frontend,16+16strict browser,schema0030). Same-main Workers
+6dcfb3e2-f6dd-4146-aa37-1da2a3f35962 passed; Actions deployment43711714404 and
+continuation43711714464 skipped. Render remains unverified here and unchanged.
+
+Owner-authorized one-time measurement43713722202 succeeded attempt1 in2m37s:
+fixed image sourcee2038a94/schema0030,138synthetic tests,real API/Web build,
+dependency-only smoke and both owned containers removed; no app/DB startup.
+Five-file payload1,360,327,335 bytes was discarded; zero artifacts retained.
+Those historical hashes cannot validate a future rebuild or downloadable media.
+
+This package implements local canonical USTAR pack/unpack around the unchanged
+five-file handoff. Actual outer bytes/size/hash are verified separately from the
+trusted inner manifest digest; fixed-source compatibility and #232 inventory
+remain mandatory. Total outer cap16GiB includes padding/headers; per-member
+USTAR limit8GiB-1. No build workflow change, uploader or approval override.
+Strict framing/digest gate precedes extraction mkdir; inner validation and payload
+closes precede COMPLETE. Failed/uncertain output stays for inspection, no retry.
+
+Regression-first import failed before implementation.18targeted tests pass;
+full offline1029,52automation,126CIguards
+pass. Independent review found and verified repair of premature completion marker;
+16focused tests plus interruption+close,late-marker-close and nesting probes passed.
+Draft exact-head normal CI pending; no ready/merge authorization.
+No actual image build, dispatch, runtime media upload or company access in this
+package. Cost/content/remote stored bytes/seven-day expiration remain unverified.
+See docs/offline-media-transport.md. Business36/44=82%,increment0; modules
 100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0 unchanged.
