@@ -1,0 +1,63 @@
+name: Manual fixed-source offline media build and measure
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_and_measure:
+        description: Build fixed e2038a94 API/Web images and measure a temporary handoff; no upload
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-image-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    if: ${{ inputs.build_and_measure }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Start shared budget without changing the host
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -c 'import os,time; open(os.environ["GITHUB_ENV"], "a").write("MEDIA_STARTED_NS=" + str(time.monotonic_ns()) + "\n")'
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: tools
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: e2038a9462770a29254674dd86c0e7b26b26a221
+          path: image-source
+          persist-credentials: false
+      - name: Validate synthetic contracts without Docker
+        working-directory: tools
+        run: |
+          python3 -B -m unittest discover -s backend/tests -p test_offline_media_build_measure.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_media_retention.py -v
+          python3 -B -m unittest discover -s backend/tests -p test_offline_image_rehearsal.py -v
+      - name: Build pinned source and measure verified five-file handoff
+        working-directory: tools
+        shell: bash
+        env:
+          TOOL_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          export TMPDIR="$RUNNER_TEMP"
+          python3 -B scripts/offline_media_build_measure.py --run \
+            --source-root "$GITHUB_WORKSPACE/image-source" \
+            --destination "$RUNNER_TEMP/slc-fixed-source-handoff" \
+            --tool-commit "$TOOL_COMMIT" --started-ns "$MEDIA_STARTED_NS"
+      - name: Record non-retention boundary
+        if: ${{ always() }}
+        run: |
+          echo 'Temporary build/measure only; no artifact uploaded or retained. Failure/cancellation has no automatic retry.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Zero incremental cost, content clearance, stored artifact size and seven-day expiration remain unverified.' >> "$GITHUB_STEP_SUMMARY"

@@ -292,11 +292,13 @@ def source_allowed(name):
                for directory, extensions in SOURCE_DIRS.items())
 
 
-def snapshot(root, target):
+def snapshot(root, target, *, expected_commit=None):
     require(not command(['git', 'status', '--porcelain', '--untracked-files=all'], cwd=root).strip(),
             'clean committed checkout required')
     commit = command(['git', 'rev-parse', 'HEAD'], cwd=root).decode().strip()
     require(re.fullmatch(r'[0-9a-f]{40}', commit), 'exact commit required')
+    if expected_commit is not None:
+        require(commit == expected_commit, 'source checkout changed or unsupported')
     records = command(['git', 'ls-tree', '-r', '-z', commit], cwd=root).split(b'\0')
     selected, hashes = set(), {}
     for record in filter(None, records):
@@ -338,16 +340,29 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         raise ValueError('redirect refused')
 
 
-def fetch(item, target, algorithm, opener=None):
+def fetch(item, target, algorithm, opener=None, *, deadline_ns=None):
     """Only called with validated, repository-pinned official artifact entries."""
     reject_inherited_proxy()
+    def available():
+        left = 60 if deadline_ns is None else (deadline_ns - time.monotonic_ns()) / 10**9
+        require(left > 0, 'artifact acquisition deadline exceeded')
+        return min(60, left)
+    timeout = available()
     opener = opener or urllib.request.build_opener(NoRedirect())
     h, size, started = hashlib.new(algorithm), 0, time.monotonic()
     request = urllib.request.Request(item['url'], headers={'Accept-Encoding': 'identity'})
     with (target / item['filename']).open('xb') as output:
-        with opener.open(request, timeout=60) as response:
+        with opener.open(request, timeout=timeout) as response:
             require(response.status == 200 and response.url == item['url'], 'unexpected artifact response')
-            while block := response.read(min(1024**2, item['size_bytes'] + 1 - size)):
+            while True:
+                available()
+                # The bounded path uses at most one underlying read per iteration;
+                # read(n) could wait for n trickled bytes despite inactivity timeouts.
+                read = response.read if deadline_ns is None else response.read1
+                block = read(min(1024**2, item['size_bytes'] + 1 - size))
+                available()
+                if not block:
+                    break
                 size += len(block)
                 require(size <= item['size_bytes'] and time.monotonic() - started < 300,
                         'artifact download bounds exceeded')
@@ -356,7 +371,7 @@ def fetch(item, target, algorithm, opener=None):
     require(size == item['size_bytes'] and h.hexdigest() == item[algorithm], 'artifact bytes mismatch')
 
 
-def acquire(source, api_context, web_context):
+def acquire(source, api_context, web_context, *, deadline_ns=None):
     reject_inherited_proxy()
     py = wheels.read_json(source / 'backend/offline-python-wheelhouse.json')[0]
     requirements = wheels.read_bytes(source / 'backend/requirements.txt')
@@ -380,6 +395,13 @@ def acquire(source, api_context, web_context):
     npm_dir.mkdir()
     for manifest, destination, algorithm in ((py, wheel_dir, 'sha256'), (recorded, npm_dir, 'sha512')):
         # Bounded public-source GETs; no retry, mirror, credentials or redirects.
+        if deadline_ns is not None:
+            # The deadline-controlled coordinator stays on the main thread so its
+            # alarm can interrupt DNS/open/read as well as ordinary Python work.
+            # No executor shutdown can extend this path beyond the shared budget.
+            for item in manifest['artifacts']:
+                fetch(item, destination, algorithm, deadline_ns=deadline_ns)
+            continue
         with ThreadPoolExecutor(max_workers=4) as pool:
             futures = [pool.submit(fetch, item, destination, algorithm) for item in manifest['artifacts']]
             try:
@@ -558,7 +580,7 @@ def parse_compose(manifest, destination):
     return {'status': 'COMPOSE_PARSED_ONLY', 'operator_approval': False, 'application_started': False}
 
 
-def run(root=ROOT, *, bundle_destination=None):
+def run(root=ROOT, *, bundle_destination=None, expected_source_commit=None, deadline_ns=None):
     global RUN_ENV, LOG_ROOT, STEP
     STEP = 'host prerequisites'
     host = check_host()  # Must precede directories, downloads, pulls and builds.
@@ -575,11 +597,17 @@ def run(root=ROOT, *, bundle_destination=None):
     source = run_dir / 'source'
     source.mkdir()
     STEP = 'exact source snapshot'
-    commit, source_hashes = snapshot(root, source)
+    if expected_source_commit is None:
+        commit, source_hashes = snapshot(root, source)
+    else:
+        commit, source_hashes = snapshot(root, source, expected_commit=expected_source_commit)
     bases = load_bases(source)
     contexts = prepare_contexts(source, run_dir)
     STEP = 'official artifacts and existing audits'
-    dependencies = acquire(source, contexts['api'], contexts['web'])
+    if deadline_ns is None:
+        dependencies = acquire(source, contexts['api'], contexts['web'])
+    else:
+        dependencies = acquire(source, contexts['api'], contexts['web'], deadline_ns=deadline_ns)
     manifest = {'format': 'slc-offline-readonly-v1', 'source_commit': commit,
                 'required_db_revision': preflight.REVISION, 'images': {}}
     native_smoke = {}
