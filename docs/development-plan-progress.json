@@ -9,15 +9,15 @@
     "browser_stage_total_packages": 4,
     "previous_finite_plan_closed_packages": 8,
     "previous_finite_plan_total_packages": 8,
-    "package": "offline-operator-assembly-current",
-    "branch": "codex/offline-operator-assembly-current",
-    "state": "PR231 draft compatibility repair: two regressions failed before fix;42 assembly,985 offline,52 automation,126 CI guards passed. Independent145 focused tests and byte-for-byte legacy fixture reproduction passed. Repaired-head CI pending.",
+    "package": "offline-media-retention-preparation",
+    "branch": "codex/offline-media-retention-preparation",
+    "state": "Local997 offline,52 automation,126 CI guards, ledger and syntax checks passed. Independent100 focused tests and fresh-process/no-input-access/interruption probes passed; independent final review passed; draft exact-head CI pending.",
     "evidence": "HANDOFF.md",
-    "selected_scope": "Bind accepted image source e2038a94 to reviewed schema0030; reject old/unknown commits before mkdir. Preserve unready and no-runtime boundaries.",
-    "current_pr_ci": "Prior5069e77 CI43654433839 passed; repaired-head CI pending.",
-    "current_main_ci": "e2038a9462770a29254674dd86c0e7b26b26a221 CI43606166169 success; manual rehearsal43608376324 success on schema0030, five probes, nine guard contracts before/after, five owned containers removed; zero artifacts.",
-    "current_deployment": "Baseline Actions deployment43545865472 and continuation43545865456 skipped. No new deployment, real migration, Render recovery or company acceptance claimed.",
-    "next_package": "Verify repair review and exact-head normal CI; changed head requires fresh owner ready/merge approval.",
+    "selected_scope": "Five-file inventory, metadata-inclusive16GiB cap and fixed7day plan; default-off synthetic workflow only. Cost/content/stored-size/expiry unverified.",
+    "current_pr_ci": "Not published; exact-head CI pending.",
+    "current_main_ci": "a6b6e593 CI43693857236 all four jobs passed;4148backend+3418subtests,343PG,2379frontend,16+16browser,migration0030.",
+    "current_deployment": "Same-main Workers b81c5bcd passed; deploy43694743897 and continuation43694743883 skipped; Render unrecovered, unchanged.",
+    "next_package": "Verify draft exact-head CI. Before enabling upload establish actual zero incremental cost, public-content clearance and stored-size/expiry controls. No new ready/merge approval.",
     "previous_checkpoint": {
       "owner": "current_ChatGPT_Work_cloud_task",
       "business_acceptance_increment": 0,
@@ -1144,23 +1144,21 @@
       "main_component_browser": 16
     },
     "limitations": [
-      "Existing active component definitions only; no global dictionary creation, editing/removal, artifacts or file transport.",
-      "New private components are visible through authorized context/original receipts, not a general private browsing directory.",
-      "Audit-derived privacy requires atomic creation and retained append-only audit evidence; future writers and artifact integration require separate review.",
-      "Exact candidate PostgreSQL, signed-browser and aggregate CI pending; synthetic checks do not complete company deployment or actual-user acceptance."
+      "Preparation-only: no image build, runtime upload, billing change, company data or installation.",
+      "Exact image source e2038a94 only; tool HEAD is distinct. Payload bytes and byte-hours do not verify stored ZIP size or billing.",
+      "Zero incremental cost, public-content clearance and actual artifact identity/size/expiration remain unverified."
     ],
     "baseline_main_evidence": {
-      "commit": "7549f846cf9c65da589004eea802c8340f2a6abb",
-      "CI_run": 42596292860,
-      "CI_result": "success_all_three_jobs_and_CI_acceptance",
-      "provider_build": "eb319c93-e130-4448-82d1-8466b4504964",
-      "provider_version": "688b730a-df49-47dc-8c4a-87388ead4245",
+      "commit": "a6b6e593a27d6146b25a0a3a4ebc498bb0e7c292",
+      "CI_run": 43693857236,
+      "CI_result": "success_all_four_jobs",
+      "provider_build": "b81c5bcd-65ca-41e4-b4b9-1836cc359934",
       "provider_result": "success_not_backend_health",
-      "Actions_continuation": "42596902428_skipped",
-      "Actions_deployment": "not_observed_not_claimed_success",
-      "Render": "latest_PR206_update_failed_no_PR207_deploy_observed"
+      "Actions_continuation": "43694743883_skipped",
+      "Actions_deployment": "43694743897_skipped",
+      "Render": "unrecovered_unchanged"
     },
-    "local_validation": "Backend focused73 passed/13 PG skipped; affected final185 passed/14 PG skipped. Frontend2378 zero failures/skips; Next/OpenNext/type/config/production auth and browserfixture3 passed. Independent source review no blockers.",
+    "local_validation": "997 offline tests,52 automation and126 CI guards passed without skips;12 targeted inventory tests. Independent100 focused tests and fresh-process/preservation/close-interruption probes passed.",
     "previous_synthetic_database_run": "migration_image_only_42660395986_attempt1_commit4624e01f_success_no_DB_SQL_no_artifacts",
     "previous_api_startup_package": {
       "merged_pr": 200,
@@ -1170,7 +1168,7 @@
       "actual_API_startup": "not_executed"
     },
     "manual_api_evidence": "42536231169_success_RUN_API_STARTUP_and_EXPORT_IMAGE_BUNDLE_true_not_database_or_offline_acceptance",
-    "local_checks": "Automation52,CIguards126,offline+storage972/3175 subtests passed. Initial broad backend3122 passed/843 skipped/3 failed/12 CI-only errors; two inventory failures and -I environment failure fixed, affected185 passed. Broad final local rerun pending; no PG bypass.",
+    "local_checks": "997 offline,52 automation,126 CI guards, progress ledger, Python AST, YAML and git diff checks passed. No local real runtime or upload.",
     "previous_package_record": {
       "package": "change-issue-catalog-loading",
       "branch": "fix/change-issue-shell",
@@ -1250,7 +1248,19 @@
       "merged_pr": 229,
       "main": "576a6452194d36377ea92dc28f3e0ffec1241cf1",
       "ci": "43544711439_success"
-    }
+    },
+    "historical_baseline_main_evidence": {
+      "commit": "7549f846cf9c65da589004eea802c8340f2a6abb",
+      "CI_run": 42596292860,
+      "CI_result": "success_all_three_jobs_and_CI_acceptance",
+      "provider_build": "eb319c93-e130-4448-82d1-8466b4504964",
+      "provider_version": "688b730a-df49-47dc-8c4a-87388ead4245",
+      "provider_result": "success_not_backend_health",
+      "Actions_continuation": "42596902428_skipped",
+      "Actions_deployment": "not_observed_not_claimed_success",
+      "Render": "latest_PR206_update_failed_no_PR207_deploy_observed"
+    },
+    "historical_local_checks": "Automation52,CIguards126,offline+storage972/3175 subtests passed. Initial broad backend3122 passed/843 skipped/3 failed/12 CI-only errors; two inventory failures and -I environment failure fixed, affected185 passed. Broad final local rerun pending; no PG bypass."
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [
