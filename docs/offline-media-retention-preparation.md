@@ -121,3 +121,9 @@ are recorded in the latest handoff; historical main CI is not candidate evidence
 Tests use tiny synthetic archives, not runnable media or billing verification.
 Business36/44=82%,increment0; modules100/100demo/100demo/100/89/60/17;
 plans100/100/20/33/40/40/0; browser1/4 and finite plan8/8 unchanged.
+
+## Exact local transport bytes
+
+[Transport packaging](offline-media-transport.md) now supplies an explicit local
+pack/unpack CLI with exact outer size/SHA-256 and unchanged inner inventory.
+It adds no upload step and does not clear cost/content/remote-size/expiry gates.
