@@ -66,6 +66,8 @@ python scripts/offline_image_bundle.py verify "$HANDOFF" \
 
 ## 4. 单独组装操作员目录：不是更名原清单
 
+可用[显式本地组装器](offline-operator-assembly.md)执行下述两份镜像副本与清单映射；它只创建全新私有目录，两个数据库声明仍为false，不生成凭据或启动配置。以下字段映射与后续停止点保持不变。
+
 操作员预先准备三个互不嵌套的私有绝对目录，均位于受信本地 Linux 文件系统：
 
 - `HANDOFF`：上节五文件原件，保持不变。
