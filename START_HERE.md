@@ -1,3 +1,37 @@
+## Current checkpoint — 2026-11-16: complete receiver source toolkit
+
+Owner merged PR236 at04:47:55UTC. Main7f0278a8861677d678de8a5a39ba250c4e3d72d4
+has reviewed treec6e97e31591fcec86f7399b86f5fc2d7bccf40a5. MainCI43806230371
+passed allfourjobs:4201backend+3456subtests,343PGwithoutskips,schema0030.
+Same-main Workers ef9018cd passed; Actions deploy43807520015 and continuation
+43807519988 skipped. Render unverified: no selected workspace and GitHub connector
+has no deployments endpoint support; no provider/settings changes.
+
+This bounded package creates a deterministic source-only receiver .pyz from five
+exact committed modules, their complete local dependency closure, fixed entry,
+README and byte/hash inventory. Isolated Python -I -S runs outside the repository;
+no pip, Git or checkout is needed on the receiver. Python3.12+, Linux and
+/proc/self/fd remain external prerequisites. No runtime or image is included.
+Same generator version plus same module-source commit is required for identical
+output; tool_commit describes module sources, not a signature or generator identity.
+Fixed image sourcee2038a94/schema0030 and existing consumer refusals remain intact.
+
+Regression-first import failed; independent review reproduced Git replacement,
+interrupt-plus-close and receipt-short-write defects before fixes. All12receiver,
+1050offline,52automation,126CIguards now pass. Independent re-review approved
+original-blob, control-exception and short-write fixes. No existing test/gate changed.
+A mistargeted local backend CI-evidence unittest could not import pytest; actual
+required scripts/ci suite passed, complete backend remains ordinary CI responsibility.
+Local reviewed-generator output is74350bytes, SHA256
+0783da728b3a79ccca3a700a79a205f5672a4dc8b8ca7b668a04751939ef0ab3,
+module source7f0278a8. Isolated archive help and synthetic media roundtrip passed;
+this is source tooling, not retained runtime media, physical offline or company proof.
+Draft publication/exact-head CI pending. No real build/dispatch/upload/container,
+company access or runtime installation. New actual image build requires approval;
+zero-cost/content/size/7day upload conditions remain unproven. See
+ docs/offline-receiver-toolkit.md. Business36/44=82%,increment0; modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0 unchanged.
+
 ## Current checkpoint — 2026-11-16: operator guide alignment
 
 Owner merged PR235 at03:09:28UTC. Main e5ebb57a2e8643859d98ced8677a2a06a066309f
