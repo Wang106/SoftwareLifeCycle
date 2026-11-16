@@ -1,3 +1,30 @@
+## Optional exact transport measurement — 2026-11-15
+
+After a separately authorized build dispatch, `prepare_transport=true` additionally
+forms one temporary canonical USTAR file from the same-run five-file handoff.
+Both workflow booleans default false. `build_and_measure=true` without this new
+option retains its existing behavior; prepare_transport alone cannot start a job.
+The optional CLI argument is `--transport-destination /absolute/new/media.tar`.
+
+The coordinator passes its reconstructed trusted manifest digest directly to the
+[transport packer](offline-media-transport.md), inside the existing shared55minute
+budget. No digest is read from an adjacent untrusted file. The final JSON adds
+`transport` (null when disabled), with exact local outer bytes/size/SHA-256,
+unchanged inner inventory and false upload permission. Source remains exact
+e2038a9462770a29254674dd86c0e7b26b26a221/schema0030; tool commit stays separate.
+Existing or nested transport destinations are rejected before acquisition/build;
+exclusive creation, capacity and16GiB outer/8GiB-1 member limits are checked again
+by the packer. Failures preserve owned temporary output for inspection and never
+retry. No uploader, cache, application/DB startup or extra smoke container is added.
+
+This integration has only synthetic fixture evidence. The prior one-time run
+43713722202 was used and retained no media; it did not execute this integration.
+A new real build needs fresh explicit authorization. Any future result remains
+local temporary runner output, not a downloadable artifact, public content
+clearance, free-storage guarantee, seven-day retention or company installation.
+Actual remote stored bytes must still be verified after an independently reviewed,
+conditionally authorized upload; all #232 prerequisite flags remain false.
+
 # Fixed-source API/Web build and measurement
 
 This default-off implementation uses the selected current-tool checkout separately

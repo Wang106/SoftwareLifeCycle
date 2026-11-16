@@ -20,6 +20,7 @@ import time
 import offline_image_bundle as bundle
 import offline_image_rehearsal as builder
 import offline_media_retention as media
+import offline_media_transport as transport
 import offline_operator_assembly as assembly
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,13 +73,21 @@ def budget(started_ns):
         for s, handler in previous.items(): signal.signal(s, handler)
 
 
-def build_and_measure(source_root, destination, *, tool_commit, started_ns):
+def build_and_measure(source_root, destination, *, tool_commit, started_ns, transport_destination=None):
     # Compatibility is from reviewed code, never a received label/user schema flag.
     bundle.require(media.IMAGE_SOURCE == SOURCE and assembly.SOURCE_REVISIONS.get(SOURCE) == REVISION
                    and bundle.preflight.REVISION == REVISION)
     with budget(started_ns) as deadline_ns:
         verify_checkout(ROOT, tool_commit)
         verify_checkout(source_root, SOURCE)
+        if transport_destination is not None:
+            target = bundle.path_parts(transport_destination)
+            for directory in (ROOT, source_root, destination):
+                parts = bundle.path_parts(directory)
+                bundle.require(target[:len(parts)] != parts)
+            # Refuse known output conflicts before expensive acquisition/build.
+            # pack later repeats exclusive creation and actual capacity checks.
+            bundle.check_destination(transport_destination)
         # Builder snapshots bytes with git show from the checked commit. It checks
         # expected_source_commit again BEFORE dependency acquisition or image build.
         result = builder.run(source_root, bundle_destination=destination, expected_source_commit=SOURCE,
@@ -95,10 +104,15 @@ def build_and_measure(source_root, destination, *, tool_commit, started_ns):
         # output, not taken from received manifest bytes or its adjacent hash.
         inventory = media.inspect_candidate(destination, expected_commit=SOURCE,
                                             expected_manifest_sha256=digest)
+        transport_result = None
+        if transport_destination is not None:
+            transport_result = transport.pack(destination, transport_destination,
+                expected_commit=SOURCE, expected_manifest_sha256=digest)
+            bundle.require(transport_result['inventory'] == inventory)
         verify_checkout(ROOT, tool_commit)
         verify_checkout(source_root, SOURCE)
     return {'status': 'MEDIA_BUILD_MEASURED_NOT_RETAINED_OR_UPLOAD_APPROVED',
-            'tool_commit': tool_commit, 'inventory': inventory,
+            'tool_commit': tool_commit, 'inventory': inventory, 'transport': transport_result,
             'application_started': False, 'database_started': False,
             'runtime_media_retained': False,
             'limitations': ['Temporary runner output only; no downloadable artifact',
@@ -117,18 +131,20 @@ def main(argv=None):
     parser.add_argument('--run', action='store_true')
     parser.add_argument('--source-root', type=Path)
     parser.add_argument('--destination', type=Path)
+    parser.add_argument('--transport-destination', type=Path)
     parser.add_argument('--tool-commit')
     parser.add_argument('--started-ns', type=int)
     try:
         args = parser.parse_args(argv)
         supplied = (args.source_root, args.destination, args.tool_commit, args.started_ns)
         if not args.run:
-            bundle.require(not any(x is not None for x in supplied))
+            bundle.require(not any(x is not None for x in supplied) and args.transport_destination is None)
             print('DISABLED: explicit --run required; no build, runtime or upload performed.')
             return 0
         bundle.require(all(x is not None for x in supplied))
         result = build_and_measure(args.source_root, args.destination,
-                                   tool_commit=args.tool_commit, started_ns=args.started_ns)
+                                   tool_commit=args.tool_commit, started_ns=args.started_ns,
+                                   transport_destination=args.transport_destination)
         assembly._emit(sys.stdout, json.dumps(result, sort_keys=True))
         return 0
     except bundle.CompletionInterrupted as error:

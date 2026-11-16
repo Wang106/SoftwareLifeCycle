@@ -1,3 +1,32 @@
+## Current checkpoint — 2026-11-15: optional same-run transport measurement
+
+Owner merged PR234 at14:14:22UTC. Main91447b1209c11c5cd47e46fe7fa021ef0f4b3a96
+has reviewed tree58165ff197fbc6985681e00817b25b642af82a2e. Main CI43723262748
+passed allfourjobs:4192backend+3451subtests,343PGwithoutskips,2379frontend,
+16+16strictbrowser and schema0030. Same-main Workers e4c2fe1c passed; Actions
+deploy43724764675 and continuation43724764701 skipped. Render current deployment
+unverified because no connector workspace selected; no selection/provider change.
+
+This bounded package connects the existing fixed-source measurement coordinator
+to the reviewed transport packer with optional transport_destination and defaultoff
+prepare_transport workflow input. The same-run reconstructed trusted manifest
+digest feeds pack directly inside the existing55minute shared budget. Existing/
+nested output conflicts fail before builder acquisition; all original exact-CID,
+source/schema, inner validation and cleanup gates remain unchanged. Final JSON
+reports separate outer size/hash and unchanged inner inventory. No uploader,
+cache, additional runtime container, permission expansion or approval override.
+
+Regression-first7tests failed before implementation.9new integration,1038full
+offline,52automation,126CIguards pass. Independent review approved39focused tests
+and a real-alarm synthetic pack interruption: original bytes preserved, partial
+owned output retained without retry, timer restored. Final9integration tests/docs review approved.
+Draft publication and exact-head normal CI pending; no ready/merge authorization.
+No actual image build, dispatch, runtime-media upload or company access executed.
+Prior run43713722202 retained no media and cannot authorize or validate a new run.
+Fresh real build permission and all cost/content/remote-size/7day prerequisites
+remain separate. See docs/offline-media-build-measure.md. Business36/44=82%,
+increment0; modules100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0.
+
 ## Current checkpoint — 2026-11-15: exact local transport archive
 
 Baseline owner-merged PR233 main bce42c249a4e68b04056a78ce1ca7c01c2137eda;
