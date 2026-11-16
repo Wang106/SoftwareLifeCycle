@@ -24,19 +24,24 @@
 
 ## 2. 联网准备：取得真正保留的镜像及可信回执
 
-使用独立核对提交的受信、干净 checkout；以下路径变量由操作员设置为实际绝对路径，
-没有默认值。`NEW_HANDOFF` 必须不存在，父目录必须已存在；不能复用空目录或失败目录。
-本节命令会下载、构建及运行依赖烟测，**本指南编写时没有执行**，只在这些操作已获准后使用：
+使用最新已审核的受信、干净工具 checkout，并将镜像源码单独固定到
+`e2038a9462770a29254674dd86c0e7b26b26a221`。工具提交与镜像提交不同；当前组装器
+只接受该镜像提交到 `0030_private_upload_sessions` 的已审核映射，不接受任意新 main
+镜像。不要在当前工具 checkout 直接运行通用 `offline_image_rehearsal.py --run`
+来生成此安装路线的镜像，也不要手工写入 schema 来绕过兼容性拒绝。
 
-```sh
-: "${NEW_HANDOFF:?填写不存在的镜像交接绝对路径}"
-python scripts/offline_image_rehearsal.py --run --export-bundle "$NEW_HANDOFF"
-```
+后续获准构建应使用[固定源构建与测量流程](offline-media-build-measure.md)：
+`build_and_measure=true` 才启动工作，另加 `prepare_transport=true` 才测量同次传输包。
+该流程验证两个干净 checkout 的真实提交，从固定源构建，再从同次可信构建证据重建
+清单摘要。两项输入都默认关闭；本文不授权新 dispatch。既往一次构建的权限已使用，
+临时输出已丢弃，不能作为当前可下载镜像或未来重建的期望摘要。
 
-成功后从本次可信构建进程的 `image_bundle` 回执，独立保存完整 `source_commit` 和
-`manifest_sha256`；不能从收到的包计算一个摘要再称其为可信期望值。
-镜像/标签/摘要一致性不是签名认证，仍需独立的来源、安全及许可证审核。
-详细限制见[镜像准备](offline-image-rehearsal.md)和[镜像交接包](offline-image-bundle.md)。
+成功后独立保存本次可信协调器回执中的 `inventory.image_source_commit` 和
+`inventory.handoff_manifest_sha256`；
+不能从收到的包计算一个摘要再称其为可信期望值。若生成传输包，另行保存外层摘要，
+不能用它替代内层可信清单摘要。镜像/标签/摘要一致性不是签名认证，仍需独立的来源、
+安全及许可证审核。详细限制见[镜像交接包](offline-image-bundle.md)和
+[传输包](offline-media-transport.md)。
 
 手动 CI 的 `export_bundle=true` 只在临时 runner 导出并校验，**没有持久可下载制品**。
 不能从历史成功运行恢复那些镜像；需要在获准、可保留输出的环境重新准备。
@@ -68,23 +73,36 @@ python scripts/offline_image_bundle.py verify "$HANDOFF" \
 
 可用[显式本地组装器](offline-operator-assembly.md)执行下述两份镜像副本与清单映射；它只创建全新私有目录，两个数据库声明仍为false，不生成凭据或启动配置。以下字段映射与后续停止点保持不变。
 
-操作员预先准备三个互不嵌套的私有绝对目录，均位于受信本地 Linux 文件系统：
+操作员先确定三个互不嵌套的绝对路径，均位于受信本地 Linux 文件系统：
 
 - `HANDOFF`：上节五文件原件，保持不变。
-- `OPERATOR`：全新工作目录，只放两个独立普通文件镜像副本、新操作员清单、操作员声明和私密数据库输入。
+- `OPERATOR`：必须尚不存在，父目录已存在且受信；不要提前 mkdir，即使空目录也会被组装器拒绝。组装器创建私有目录，先只放两份镜像、新清单和默认声明；私密数据库输入在后续独立停止点处理。
 - `OUTPUT`：另一私有输出目录，用于渲染、解析、运行记录；不能在原件内，也不能有旧配置可被误用。
 
-镜像复制不是解包：将已核验的 `api.tar`、`web.tar` 逐字节复制到 `OPERATOR`，
-不得覆盖旧文件、用链接代替副本或移动原件。用源清单中的 size/SHA256 核对副本，
-之后配置预检还会重新检查实际镜像字节；复制、任何校验或来源状态不确定就停止。
+从受信工具 checkout 执行显式本地组装；上节可信回执必须属于固定镜像提交。
+本步骤仅复制及校验现有文件，不构建、加载或启动镜像：
 
-在 `OPERATOR/manifest.json` 新建 JSON，按如下**完整字段映射**填写，不添加其他键：
+```sh
+: "${HANDOFF:?填写已核验交接包绝对路径}"
+: "${OPERATOR:?填写尚不存在的操作员目录绝对路径}"
+: "${EXPECTED_COMMIT:?填写独立可信固定镜像提交}"
+: "${EXPECTED_MANIFEST_SHA256:?填写独立可信清单摘要}"
+python scripts/offline_operator_assembly.py assemble "$HANDOFF" "$OPERATOR" --run \
+  --expected-commit "$EXPECTED_COMMIT" \
+  --expected-manifest-sha256 "$EXPECTED_MANIFEST_SHA256"
+```
+
+只有退出 0 且返回 `OPERATOR_DIRECTORY_ASSEMBLED_NOT_READY` 才进入后续准备。
+失败或结果不确定时保留原件和输出供核查，不覆盖、不删除、不盲目重跑。
+不要再手动复制覆盖生成文件。组装器在创建目录前核对来源/schema 映射及可信摘要，
+再逐字节复制两份镜像；拒绝旧版、未知提交或不匹配映射。以下仅解释生成字段，
+不是允许绕过组装器手工声明兼容性的替代步骤：
 
 | 新操作员清单字段 | 唯一取值来源 |
 | --- | --- |
 | `format` | 固定字符串 `slc-offline-readonly-v1` |
-| `source_commit` | 已核验交接清单的 `source_commit`，必须与独立可信提交一致 |
-| `required_db_revision` | 固定字符串 `0030_private_upload_sessions` |
+| `source_commit` | 已核验交接清单的固定镜像提交，必须与独立可信提交一致 |
+| `required_db_revision` | 已审核源映射中的 `0030_private_upload_sessions` |
 | `images.api` | 原清单的整个 `images.api` 对象，字段及值不变 |
 | `images.web` | 原清单的整个 `images.web` 对象，字段及值不变 |
 
@@ -97,8 +115,9 @@ python scripts/offline_image_bundle.py verify "$HANDOFF" \
 新清单也不能拿去冒充原交接清单通过 handoff verifier。映射只是格式转换，
 不会认证来源、增加权限、证明数据库状态或批准部署。
 
-将 [operator.example.json](../deploy/offline-readonly/operator.example.json) 内容复制为
-`OPERATOR/operator.json`。保留默认两个 `false`；不要为了通过预检直接改为 `true`。
+组装器生成的 `OPERATOR/operator.json` 与
+[operator.example.json](../deploy/offline-readonly/operator.example.json) 的默认声明一致。
+保留两个 `false`；不要为了通过预检直接改为 `true`。
 [manifest.example.json](../deploy/offline-readonly/manifest.example.json) 仅供对照结构，
 其中占位提交、零尺寸、假摘要不能使用。
 

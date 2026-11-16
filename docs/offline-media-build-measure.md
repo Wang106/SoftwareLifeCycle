@@ -29,13 +29,17 @@ conditionally authorized upload; all #232 prerequisite flags remain false.
 
 This default-off implementation uses the selected current-tool checkout separately
 from image source `e2038a9462770a29254674dd86c0e7b26b26a221`, the sole reviewed
-schema `0030_private_upload_sessions` mapping. It has not been dispatched and
-produces no downloadable material during development. It is not a company installer.
+schema `0030_private_upload_sessions` mapping. The prior build-only run43713722202 discarded its media; the optional
+transport integration has only synthetic evidence. No downloadable material exists.
+It is not a company installer.
 
 ## Explicit future execution
 
-The `Manual fixed-source offline media build and measure` workflow has one boolean,
-`build_and_measure`, default false. True would use an existing standard Ubuntu24.04
+The `Manual fixed-source offline media build and measure` workflow has two booleans,
+`build_and_measure` and `prepare_transport`, both default false. Only
+`build_and_measure=true` starts the job; `prepare_transport=true` additionally
+forms the same-run temporary transport archive and cannot start a job alone.
+An authorized build would use an existing standard Ubuntu24.04
 runner, two credential-free checkouts, read-only repository permission, the existing
 non-cancelling `offline-image-rehearsal` concurrency group and a60minute hard limit.
 No scheduled/push/PR trigger, cache, artifact upload, alternate destination or fee

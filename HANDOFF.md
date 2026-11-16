@@ -1,3 +1,25 @@
+## Current checkpoint — 2026-11-16: operator guide alignment
+
+Owner merged PR235 at03:09:28UTC. Main e5ebb57a2e8643859d98ced8677a2a06a066309f
+has reviewed tree e1be0e4aea10a52efae52d5dcf97246eb1ec01a7. Main CI43796443767
+passed all four jobs:4201backend+3456subtests,343PGwithoutskips,schema0030.
+Same-main Workers5db3cac2 passed; Actions deploy43797691331 and continuation
+43797691269 skipped. Render workspace unspecified; deployment unverified, unchanged.
+
+This documentation-only correction routes preparation through the existing fixed
+image-source coordinator, describes both default-off workflow inputs, and requires
+an absent operator destination with an existing parent. The guide uses the actual
+inventory receipt keys and the guarded assembler instead of manual schema claims.
+No source mapping, executable code, tests, workflow, permissions or gates changed.
+Existing42assembly+14measurement+9integration synthetic tests passed. Shell syntax,
+local links, progress and diff checks passed; independent review approved the actual
+receipt/source/input/destination contracts. Draft publication and exact-head CI pending.
+No real build, dispatch, upload, runtime or company access executed. Prior run
+43713722202 discarded all media and its one-time authorization is consumed. A new
+real build needs fresh approval; zero-cost/content/size/7day upload gates remain.
+Business36/44=82%,increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; browserstage1/4,previousfiniteplan8/8 unchanged.
+
 ## Current checkpoint — 2026-11-15: optional same-run transport measurement
 
 Owner merged PR234 at14:14:22UTC. Main91447b1209c11c5cd47e46fe7fa021ef0f4b3a96
