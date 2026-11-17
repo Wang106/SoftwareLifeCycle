@@ -126,6 +126,10 @@ python scripts/offline_operator_assembly.py assemble "$HANDOFF" "$OPERATOR" --ru
 
 ## 5. 数据库与秘密输入是单独的停止点
 
+[固定PostgreSQL镜像交接工具](offline-postgres-image-bundle.md)提供独立四文件导出/核验协议，
+不包含在API/Web五文件包或旧接收源码工具中；它不安装数据库、不执行迁移或生成角色/凭据。
+实际取得、导出及传输数据库镜像仍需单独明确范围，不能由下列准备步骤推导许可。
+
 只有针对明确合成目标/现有角色的独立准备与验证已完成、获准并记录后，操作员才可如实
 填写 `database_preprovisioned` 和 `database_readonly_role`。预检要求它们为 true，
 但声明本身不证明事实。当前联合演练的临时 PostgreSQL 超级用户只读事务，
