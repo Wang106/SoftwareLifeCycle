@@ -105,6 +105,41 @@ class ReceiverToolkitTests(unittest.TestCase):
         self.assertEqual(self.cli('assembly','assemble',restored,operator,'--run',*args).returncode,2)
         self.assertEqual(before,fixture.snapshot())
 
+    def test_postgres_help_and_export_refusal(self):
+        self.build()
+        result = self.cli('postgres-verify', '--help')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for args in [('export', '--run'), ('--run',), ('--destination', str(self.root/'forbidden'))]:
+            with self.subTest(args=args):
+                result = self.cli('postgres-verify', *args, '--expected-commit', 'a'*40,
+                                  '--directory', str(self.root/'missing'), '--expected-manifest-sha256', 'b'*64)
+                self.assertEqual(result.returncode, 2)
+        self.assertFalse((self.root/'forbidden').exists())
+
+    def test_postgres_synthetic_archive_roundtrip_without_runtime(self):
+        import test_offline_postgres_image_bundle as pg
+        fixture = pg.PostgresBundleTests(methodName='runTest')
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        receipt = fixture.export()  # All daemon operations mocked by fixture.
+        path = self.repo/'scripts/offline_postgres_image_bundle.py'
+        raw = (ROOT/'scripts/offline_postgres_image_bundle.py').read_text()
+        # Only this synthetic Git fixture substitutes non-runnable image pins.
+        import re
+        for name, value in [('IMAGE_ID',fixture.image_id), ('CONFIG_SIZE',len(fixture.raw_config)), ('LAYER_COUNT',2)]:
+            raw = re.sub(r'^'+name+r' = .*$', name+' = '+repr(value), raw, flags=re.M)
+        path.write_text(raw)
+        self.commit()
+        self.build()
+        before = {p.name:(p.read_bytes(),p.stat().st_mtime_ns) for p in fixture.dest.iterdir()}
+        args = ['postgres-verify','--directory',fixture.dest,'--expected-commit',pg.COMMIT,
+                '--expected-manifest-sha256',receipt['manifest_sha256']]
+        result = self.cli(*args)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(json.loads(result.stdout)['status'],pg.m.VERIFIED)
+        self.assertEqual(self.cli(*args[:-1],'b'*64).returncode,2)
+        self.assertEqual(before,{p.name:(p.read_bytes(),p.stat().st_mtime_ns) for p in fixture.dest.iterdir()})
+
     def test_wrong_commit_and_missing_module_refuse_before_output(self):
         with self.assertRaises(toolkit.ToolkitError): self.build(commit='a'*40)
         self.assertFalse(self.output.exists())

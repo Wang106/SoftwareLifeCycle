@@ -18,7 +18,7 @@ import sys
 import zipfile
 
 MODULES = ('offline_image_bundle', 'offline_media_retention', 'offline_media_transport',
-           'offline_operator_assembly', 'offline_readonly_preflight')
+           'offline_operator_assembly', 'offline_readonly_preflight', 'offline_postgres_image_bundle')
 IMAGE_SOURCE = 'e2038a9462770a29254674dd86c0e7b26b26a221'
 REVISION = '0030_private_upload_sessions'
 MAX_SOURCE_BYTES = 2 * 1024**2
@@ -28,26 +28,32 @@ import importlib
 import sys
 COMMANDS = {'bundle':'offline_image_bundle', 'transport':'offline_media_transport',
             'assembly':'offline_operator_assembly', 'retention':'offline_media_retention',
-            'preflight':'offline_readonly_preflight'}
+            'preflight':'offline_readonly_preflight', 'postgres-verify':'offline_postgres_image_bundle'}
 if len(sys.argv) == 1 or sys.argv[1:] == ['--help']:
-    print('Receiver toolkit: bundle | transport | assembly | retention | preflight; append --help. Requires Linux/Python3.12+, /proc/self/fd. No runtime included. Verify trusted toolkit SHA256 before execution; media hashes are separate.')
+    print('Receiver toolkit: bundle | transport | assembly | retention | preflight | postgres-verify; append --help. Requires Linux/Python3.12+, /proc/self/fd. No runtime included. Verify trusted toolkit SHA256 before execution; media hashes are separate.')
     raise SystemExit(0)
 if sys.platform != 'linux' or sys.version_info < (3,12) or sys.argv[1] not in COMMANDS:
     print('RECEIVER_COMMAND_OR_PLATFORM_REJECTED', file=sys.stderr)
     raise SystemExit(2)
-raise SystemExit(importlib.import_module(COMMANDS[sys.argv[1]]).main(sys.argv[2:]))
+arguments = sys.argv[2:]
+if sys.argv[1] == 'postgres-verify':
+    arguments = ['verify', *arguments]
+raise SystemExit(importlib.import_module(COMMANDS[sys.argv[1]]).main(arguments))
 '''
 README = b'''SOURCE-ONLY RECEIVER TOOLKIT
 Use an independently trusted SHA256 of this entire .pyz before running it.
 A hash calculated only from a received package does not establish trust.
 python3 -I -S receiver.pyz --help
 python3 -I -S receiver.pyz transport --help
-The existing CLI arguments and refusal behavior are unchanged. No extraction of
+postgres-verify fixes verify mode; export, --run and --destination are rejected.
+Other existing CLI arguments and refusal behavior are unchanged. No extraction of
 this tool archive is needed. Python3.12+, Linux and /proc/self/fd must already be
 available; Python, OS, Docker, Compose, PostgreSQL and images are NOT included.
 This is not a Windows runtime installer, company installation or content clearance.
 TOOLKIT.json binds exact module bytes to a tool commit, not an image commit and
-not a signature. The fixed image source remains e2038a94/schema0030.
+not a signature. The API/Web image source remains e2038a94/schema0030.
+PostgreSQL uses its separate fixed official digest, not the API/Web source commit.
+Its expected-commit binds the separately trusted handoff tool-source receipt.
 Keep toolkit SHA256, media transport SHA256 and trusted handoff manifest SHA256
 separate. The latter two must come from the independently trusted media receipt.
 No credentials, databases, logs, site-packages or broad workspace contents included.

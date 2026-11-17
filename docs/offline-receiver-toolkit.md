@@ -1,12 +1,12 @@
 # 接收端源码工具包：完整脚本依赖，不是运行时安装包
 
-`offline_receiver_toolkit.py` 把现有接收端五个模块及全部仓库内导入依赖封装为一个
+`offline_receiver_toolkit.py` 把现有接收端六个模块及全部仓库内导入依赖封装为一个
 `.pyz`。接收端无需 Git、pip、项目 checkout 或工具包解压步骤，使用已有的
 Linux/Python 3.12+ 标准库直接运行。需要已有 `/proc/self/fd` 与受信本地文件系统；
 不声称支持 Windows 原生运行、恶意并发修改或公司机器安装。
 
 包含的原样模块：`offline_image_bundle`、`offline_media_transport`、
-`offline_media_retention`、`offline_operator_assembly`、`offline_readonly_preflight`。
+`offline_media_retention`、`offline_operator_assembly`、`offline_readonly_preflight`、`offline_postgres_image_bundle`。
 此外只有固定入口、README 和逐文件大小/SHA256清单。标准库不是打进包里的 Python；
 Python、Linux、Docker、Compose、PostgreSQL、API/Web 镜像、数据库、凭据和公司文件均不包含。
 原来的49KB源码ZIP不能作为本工具包完整性或当前版本的证据。
@@ -16,7 +16,7 @@ Python、Linux、Docker、Compose、PostgreSQL、API/Web 镜像、数据库、�
 以下仅打包已审核源码，不构建镜像、不下载依赖、不运行容器或上传文件。
 `TOOL_COMMIT` 是独立核对的完整工具提交，必须等于指定源码 checkout 的 HEAD；
 与固定镜像提交 `e2038a9462770a29254674dd86c0e7b26b26a221` 不同。
-生成器从该提交的五个固定 Git blob 读取，不读取工作区的未提交脚本、凭据或其他文件。
+生成器从该提交的六个固定 Git blob 读取，不读取工作区的未提交脚本、凭据或其他文件。
 它验证普通文件、大小、静态导入闭包及唯一源/schema0030映射；这不是任意代码安全分析。
 工具源码本身须先经过审查，不能仅相信包内自报提交或哈希。
 
@@ -31,7 +31,7 @@ python3 -B scripts/offline_receiver_toolkit.py --run \
 
 父目录必须已存在，路径不能经过符号链接；输出只允许全新文件，最大4MiB。
 生成器固定ZIP成员与元数据，使用ZIP_STORED；同一生成器版本及同一工具提交的原始脚本
-得到相同字节。入口和README来自生成器，清单中的工具提交只标识五个原始模块的来源；
+得到相同字节。入口和README来自生成器，清单中的工具提交只标识六个原始模块的来源；
 须同时审查生成器版本，并独立保留整个输出摘要。
 只有写入、回读比较、fsync及关闭成功才给出 `RECEIVER_SOURCE_TOOLKIT_CREATED_NOT_RUNTIME`
 回执。单独保留回执中的工具提交、实际字节数、SHA256。失败/中断/回执丢失可能留下输出，
@@ -57,6 +57,7 @@ python3 -I -S "$TOOLKIT" bundle --help
 python3 -I -S "$TOOLKIT" assembly --help
 python3 -I -S "$TOOLKIT" retention --help
 python3 -I -S "$TOOLKIT" preflight --help
+python3 -I -S "$TOOLKIT" postgres-verify --help
 ```
 
 无命令只显示帮助；未知命令拒绝。上述帮助不读取媒体或创建操作员目录。
@@ -71,3 +72,28 @@ python3 -I -S "$TOOLKIT" preflight --help
 的合成镜像验证传输解包→交接校验→组装→默认预检拒绝，保持原件不变。它不证明真实
 镜像、Python/系统安装介质、物理离线运行或公司验收。未执行新的真实镜像构建或上传；
 原构建一次授权已使用，实际媒体保留仍需零新增费用、内容检查、16GiB及七天条件全部满足。
+
+## PostgreSQL 独立接收验证
+
+新增 `postgres-verify` 固定调用 PostgreSQL 模块的 verify 模式；不接受 export、
+`--run` 或 `--destination`。打包原始模块并不授予运行其中导出函数的权限；
+该入口不连接 Docker、不创建数据库、不解压镜像，也不执行 Git 或安装依赖。
+
+```sh
+: "${PG_HANDOFF:?填写独立的四文件PostgreSQL交接目录}"
+: "${PG_TOOL_COMMIT:?填写独立可信PG交接回执中的完整工具源码提交}"
+: "${PG_MANIFEST_SHA256:?填写独立可信PG交接清单摘要}"
+python3 -I -S "$TOOLKIT" postgres-verify \
+  --directory "$PG_HANDOFF" --expected-commit "$PG_TOOL_COMMIT" \
+  --expected-manifest-sha256 "$PG_MANIFEST_SHA256"
+```
+
+PostgreSQL交接仍严格为 postgres.tar、manifest.json、evidence.json、COMPLETE；
+不要混入API/Web五文件交接或源码工具包。PG_TOOL_COMMIT是导出工具来源，
+不是上游PostgreSQL源码，也不是API/Web固定源e2038a94。PostgreSQL仍验证其独立
+固定官方镜像ID/配置/层链；API/Web的e2038a94/schema0030映射完全不变。
+新生成器需要包含第六模块的已审核提交；旧五模块提交缺少它时在输出前拒绝。
+
+合成测试只在测试仓库替换不可运行镜像的配置摘要和层数，验证隔离归档入口的
+成功、错误摘要拒绝和原件不变。生产模块的官方固定值没有修改；测试不是实际
+PostgreSQL媒体、数据库或安装验收。源码工具包的生成/交付与运行镜像交付仍分开。
