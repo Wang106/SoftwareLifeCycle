@@ -1,3 +1,37 @@
+## Current checkpoint — 2026-11-17: PostgreSQL receiver verification closure
+
+Baseline main12ae1741afd443ca8ad52972843238a9bbfffcc0 (merged PR238),
+CI44120267463 all four jobs successful. Backend4271+3514subtests,
+frontend2379, schema0030 roundtrip and actual16+16browser journeys passed.
+The401 PostgreSQL-module cases include synthetic packaging tests; they are not
+all real database cases. Same-main Workers ce6dca96 succeeded; Actions deployment
+44122683527 and continuation44122683799 skipped. No company runtime acceptance.
+Prior PR238 browser cancellation remains unexplained, separate from main success.
+
+Selected a concrete receiver delivery gap: the source toolkit contained five
+modules and could not run newly merged PostgreSQL verification independently.
+Added the sixth original module plus postgres-verify, which forces filesystem-only
+verify mode and rejects export/run/destination arguments. Existing API/Web commands,
+fixed e2038a94/schema0030 mapping, PostgreSQL image pins and trust semantics remain.
+Unpublished migration bundleb84604d was inspected but not ported: it still binds
+29 migrations and invokes the online builder. Its source/compatibility adaptation
+is separate work; this package does not publish stale metadata or duplicate it.
+
+Two new regressions failed before implementation;14receiver and1110offline tests
+now pass. Independent review approved dependency closure and eight additional
+no-export/no-subprocess dispatch probes. Positive isolated-archive PG test uses
+explicitly substituted non-runnable fixture pins only in a temporary test Git tree;
+production pins are unchanged. Wrong trusted digest refuses and input bytes/mtime
+remain unchanged. Documentation/privacy review approved; exact-head draft CI pending.
+
+No actual image build/download/export/upload, manual workflow dispatch, offline
+Docker/API/DB/VM execution, company data, credentials, fees or settings changes.
+No source-tool archive was delivered. Linux/Python3.12+/proc remain prerequisites;
+source toolkit, migration image and runtime media are separate deliverables.
+Runtime media authorization/cost/content/size/retention gates remain unproven.
+Business36/44=82%,increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0 unchanged. Stop after this draft package; no ready/merge.
+
 ## Current checkpoint — 2026-11-17: fixed PostgreSQL image handoff
 
 Verified main975e95c76b9d5757acf678b4fd220882ff8a5a4a (owner-merged PR237),
