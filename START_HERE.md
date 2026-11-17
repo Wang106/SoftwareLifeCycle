@@ -1,3 +1,41 @@
+## Current checkpoint — 2026-11-17: fixed PostgreSQL image handoff
+
+Verified main975e95c76b9d5757acf678b4fd220882ff8a5a4a (owner-merged PR237),
+tree f8176de88bd5be08e63e68958c61e5653175dbf9. MainCI43811209168 allfourjobs
+passed:4213backend+3463subtests,343PGwithoutskips,schema0030. Same-main Workers
+09a5b3d4 passed; Actions deploy43812498831 and continuation43812498964 skipped.
+Render remains unverified/unchanged. No open PRs before this isolated package.
+API/Web image source remains e2038a94.
+
+Selected the concrete missing PostgreSQL image handoff capability, adapting only
+three files from unpublished7748a16 onto currentmain. Its fixed official digest/ID
+match current rehearsal; independent archive contract does not weaken API/Web rules.
+Historical migration bundleb84604d still hardcodes29 migrations; runtime plan3ae830b
+only validates declarations and always blocks. Neither was ported or published;
+all historical worktrees preserved. The new default-off exporter can save one
+already-present fixed image once; read-only verifier checks actual bytes without
+Docker. No pull/build/load/containers/SQL or upload implementation is added.
+
+Regression-first53tests failed for absent capability, then passed after adaptation.
+Three new reporting/execution regressions failed before fixes: abbreviated flags,
+short success receipt and failing diagnostics. Explicit arguments, checked writes
+and sanitized uncertain diagnostics now pass. Added real temporary clean-Git source
+binding/dirty refusal plus current-pin checks;58focused, full1108offline,
+52automation and126CIguards pass.
+Independent code review approved archive/file/cleanup boundaries; independent
+30ms alarm and50ms synthetic-child timeout restored timer and reaped only owned
+process group. Final documentation/new Git test review approved; wording corrected
+to distinguish source tooling from runtime media.
+Draft publication and exact-head CI pending.
+
+No actual media download/export/build, Docker/API/DB/VM, upload, company data,
+credentials, fees or security change. Future PG acquisition/export/transfer needs
+its own explicit scope; prior API/Web upload permission is not expanded. All
+zero-cost/content/16GiB/7day gates remain. Source hashes are not content clearance
+or provenance, synthetic tars are not database installation/physical offline proof.
+See docs/offline-postgres-image-bundle.md. Business36/44=82%,increment0;
+modules100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0 unchanged.
+
 ## Current checkpoint — 2026-11-16: complete receiver source toolkit
 
 Owner merged PR236 at04:47:55UTC. Main7f0278a8861677d678de8a5a39ba250c4e3d72d4
