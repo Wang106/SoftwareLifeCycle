@@ -1,3 +1,35 @@
+## Current checkpoint — 2026-11-18: minimum Next.js security patch
+
+Baseline main5c4af4fa6d4b0fba4e3950904622a1454f55b416; main CI44346936989
+passed all four jobs. No open PR at package start. This isolated package pins
+Next16.4.5 to address GHSA-mfr8-8qww-v76h and GHSA-vc7v-qv4w-wrv8; both
+upstream advisories identify16.4.5 as patched. Only Next, @next/env and eight
+matching SWC lock records change. OpenNext1.20.12, React, Wrangler, root lock,
+CI gates and all application/default-off authorization controls are unchanged.
+No audit-fix, compatibility override or security-check bypass was used.
+
+Refreshed the real npm archive manifest:412 occurrences/399 tarballs, all exact
+official registry URLs, lock SHA512 and bounded archive metadata verified.
+Compressed785835853 bytes; expanded2427340288 bytes. Lock SHA256
+090b0594b61df638d0a7f0c6eddde2924cded64bb9772aeb1e60f4e5073eece9.
+All389 non-Next artifact records remain identical. The old manifest's lock-hash
+regression failed first; refreshed inventory/artifact suite45 passed. Verified
+local tarballs populated npm cache; npm ci --offline succeeded. Frontend2387
+passed with zero skips/cancellations; Next and OpenNext production builds,
+worker configuration and disabled-auth/bilingual SSR checks passed. Local
+Node24.22.3 evidence is separate from the unchanged Node22/macOS strict CI.
+Independent code/archive/privacy review approved the final eight-file scope;
+draft exact-head CI is pending at this source checkpoint.
+
+The fixed e2038a94/schema0030 image mapping and historical Next16.4.2 probe are
+unchanged. No new offline image/runtime acceptance is claimed; the current-ref
+optional image rehearsal is not validated for16.4.5 by this package. No images,
+real API/database, identity, deployment, VM or security settings were operated.
+Existing ASR confirmation/recovery work is preserved outside this package.
+Business acceptance increment0; overall36/44=82%. Modules100/100demo/100demo/
+100/89/60/17; plans100/100/20/33/40/40/0 remain unchanged. Next step: complete
+independent review and exact-head draft CI, then await ready/merge approval.
+
 ## Current checkpoint — 2026-11-18: ASR baseline component selection
 
 Baseline main2a7e7d0532a419a623b6c5679e64e782e44fa2d7; exact main

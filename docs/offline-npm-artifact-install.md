@@ -1,3 +1,35 @@
+## Current refresh — 2026-11-18: Next16.4.5
+
+The current manifest supersedes the numerical totals in the historical record
+below. Starting from main5c4af4fa6d4b0fba4e3950904622a1454f55b416, this minimum
+patch changes only Next16.4.2 to16.4.5 and its required env/eight SWC packages.
+Official advisories [GHSA-mfr8-8qww-v76h](https://github.com/vercel/next.js/security/advisories/GHSA-mfr8-8qww-v76h)
+and [GHSA-vc7v-qv4w-wrv8](https://github.com/vercel/next.js/security/advisories/GHSA-vc7v-qv4w-wrv8)
+identify16.4.5 as patched. Existing OpenNext1.20.12 permits this version; no
+other dependency or safety check changed and npm audit fix was not used.
+
+All412 lock occurrences/399 distinct official npm tarballs were checked against
+lock SHA512 and the existing bounded, no-extraction archive auditor. Measured
+compressed total:785835853 bytes; expanded:2427340288 bytes. Current lock SHA256:
+`090b0594b61df638d0a7f0c6eddde2924cded64bb9772aeb1e60f4e5073eece9`.
+The389 non-Next artifact records remain byte-for-byte equivalent. Hashes verify
+lock consistency, not provenance signatures or general vulnerability clearance.
+
+The stale manifest regression failed before refresh; all45 inventory/artifact
+tests then passed. Verified local tarballs were ingested into npm cache and
+npm ci --offline installed the exact lock. On Node24.22.3, all2387 frontend tests,
+Next production build, OpenNext production build, worker configuration and
+existing disabled-auth/bilingual SSR checks passed without bypass parameters.
+This is local build/test evidence, not physical network isolation, real identity
+acceptance or deployment. Normal strict CI remains separately required.
+
+Fixed image source e2038a94/schema0030 and the historical16.4.2 startup probe
+remain unchanged. No image was built or exercised. The optional current-ref
+image rehearsal/probe is not claimed compatible with16.4.5; use of that path
+requires separate reviewed version-bound validation, not weakening the probe.
+
+## Historical evidence — 2026-11-07 (unchanged)
+
 # Real npm artifacts and isolated-cache installation
 
 Baseline: main `33580defdb3e04d7240c1862ba26a7eb594be49d`, 2026-11-07
