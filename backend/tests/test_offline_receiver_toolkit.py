@@ -105,6 +105,25 @@ class ReceiverToolkitTests(unittest.TestCase):
         self.assertEqual(self.cli('assembly','assemble',restored,operator,'--run',*args).returncode,2)
         self.assertEqual(before,fixture.snapshot())
 
+    def test_migration_verify_roundtrip_without_build_dependencies(self):
+        import test_offline_migration_image_bundle as migration
+        fixture=migration.MigrationBundleTests(methodName='runTest');fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        receipt=fixture.export()  # Synthetic archive; all build/save operations mocked.
+        self.build()
+        with zipfile.ZipFile(self.output) as archive:
+            self.assertNotIn('offline_migration_image_rehearsal.py',archive.namelist())
+        args=['migration-verify','--directory',fixture.dest,'--expected-commit',migration.COMMIT,
+              '--expected-manifest-sha256',receipt['manifest_sha256']]
+        before={p.name:p.read_bytes() for p in fixture.dest.iterdir()}
+        result=self.cli(*args)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(json.loads(result.stdout)['image_source_commit'],migration.COMMIT)
+        for extra in [('export',),('--run',),('--source-directory',str(self.repo)),('--destination',str(self.root/'bad'))]:
+            self.assertEqual(self.cli(*args,*extra).returncode,2)
+        self.assertEqual(before,{p.name:p.read_bytes() for p in fixture.dest.iterdir()})
+        self.assertFalse((self.root/'bad').exists())
+
     def test_postgres_help_and_export_refusal(self):
         self.build()
         result = self.cli('postgres-verify', '--help')

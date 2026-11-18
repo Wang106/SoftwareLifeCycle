@@ -1,3 +1,31 @@
+## Current checkpoint — 2026-11-18: fixed-source migration handoff
+
+Baseline main d103d1900bb6678819d1a1d117a343b66af06ed6 (merged PR240).
+Main CI44239764533 attempt1 passed; exact Chrome158 strict16+16 journeys passed
+with sandbox=true. Same-head Workers passed; Actions deploy44241384010 and
+continuation44241383684 skipped. No new Render deployment or company acceptance.
+
+Selected the missing executable migration handoff, adapting unpublished b84604d
+without publishing its stale29-migration/schema-less contract. New v2 separates
+trusted tool commit from fixed e2038a94 image source/schema0030. Exact original
+source scripts and clean checkouts surround one isolated fresh builder invocation;
+only its immutable image ID is saved once. Receiver verifies files only and ships
+as the seventh source module, without builder/download dependencies.
+API/Web five-file contract, compatibility map and existing CI gates unchanged.
+
+Regression-first31 synthetic tests exposed two old acceptance failures (legacy29
+receipt and self-consistent unknown source). After adaptation39 migration tests
+and15 receiver tests pass, including distinct commits, recomputed malformed
+manifest rejection, isolated zipapp roundtrip and original failure/close bounds.
+Independent code/privacy review passed; exact-head draft CI pending. These fixtures
+are synthetic archives, not real image build/export or database execution.
+No workflow dispatch, image/media upload, VM operation, cost or settings change.
+Future real build/smokes/export require separate authorization; receiver runtime,
+media provenance/content clearance and actual offline installation remain open.
+Historical public records preserved; additions contain technical evidence only.
+Business36/44=82%,increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0 unchanged. No ready/merge in this package.
+
 ## Current checkpoint — 2026-11-18: independently verified Chrome158 pin repair
 
 Baseline main87758ea9c5d237fa94bec3affad31d03721bf0a2 (merged PR239).

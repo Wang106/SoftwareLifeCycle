@@ -1,3 +1,12 @@
+## Separate migration image handoff capability
+
+[Fixed-source migration handoff](offline-migration-image-bundle.md) now defines
+an explicit default-off export and pure receiver verification path for the
+reviewed e2038a94/schema0030 image source. Tool commit and image commit are separate.
+This does not initialize the database or replace the installation prerequisites
+below; no actual migration image has been retained by this development package.
+API/Web retains its exact five-file contract and existing compatibility mapping.
+
 # 离线只读安装操作指南：从镜像交接到有条件启动
 
 本指南把现有工具串成一条操作顺序，解决镜像交接清单与操作员清单不兼容的问题。
