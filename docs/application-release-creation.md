@@ -163,3 +163,30 @@ size/type/integrity checks, temporary-to-final commit behavior, incomplete-uploa
 cleanup, failure recovery and authorized download/distribution rules. This package
 does not select or purchase storage, transmit a file or pretend a local browser
 cache is a saved application release.
+
+
+## Confirmation and recovery capability repair
+
+A prepared command may be created only while its current preview generation and
+current confirmation still match. Edits, navigation, cancellation and unchecking
+invalidate old submit callbacks; a newly confirmed preview cannot reauthorize an
+older callback. Recovery text edits have their own revision so an old Restore
+callback cannot import a different request from the text currently displayed.
+Restore is rejected while preparation/submission is active or a request is already
+locked. Import creates a recovery-only controller with creation permanently closed,
+including before the first receipt lookup and after failed/disabled lookups.
+Normal new requests retain their single-attempt creation and original receipt
+contract. These frontend guards do not replace API authentication or authorization.
+
+The recorded repair was recovered onto main7f6af929 after the independent Next16.4.5
+security patch. The four affected source/test files had no baseline changes;
+component, controller and controller-test blobs match the earlier reviewed source.
+UI regression statements were recovered from literal review excerpts; full prior
+file byte identity is not claimed. Fresh tests reproduced the original7 failures
+before repair, then194 related and2398 full frontend tests passed with no skips.
+Next/OpenNext production builds and configuration/disabled-auth checks passed.
+Exact-head strict CI is separately required; synthetic checks are not real identity
+or business acceptance. No API, database, dependency, permission or gate changed.
+Historical e2038a94/schema0030 images and the16.4.2 probe remain unchanged and are
+not covered by the source/build security patch. Any future runtime media requires
+actual source/version/patch verification; current-ref image compatibility is unproven.

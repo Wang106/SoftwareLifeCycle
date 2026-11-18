@@ -1,3 +1,33 @@
+## Current checkpoint — 2026-11-18: ASR confirmation and read-only recovery repair
+
+Baseline main7f6af929fd48518796e9cf29e5ae57d88d62dec6; exact main CI44417406899
+completed success after PR244. No open PR at package start. This resumes the
+previously reviewed nine-file ASR empty-DRAFT repair on the security-patched
+baseline. Original recorded implementation/test excerpts were recovered; component,
+controller and controller-test blobs match the recorded candidate. The UI test
+statements match recorded excerpts; whole prior candidate byte identity is not
+claimed. Current public history, Next16.4.5 and all dependency locks are preserved.
+
+Current preview generation and confirmation jointly authorize a single new request.
+Edits/navigation/cancel/uncheck invalidate retained submit callbacks; new confirmation
+cannot revive an older callback. Recovery text revisions reject old Restore handlers.
+Recovery cannot replace pending preparation, submission or a locked original request.
+Imported controllers permanently close creation before any receipt lookup and after
+failed/disabled lookups. Existing request digest, confirmation, one-attempt submission
+and original receipt contract remain. Default-off and same-origin controls are unchanged.
+
+Fresh regression-first validation reproduced7 failures on current main, followed by
+194 related tests and2398 complete frontend tests passing with zero skips/cancellations.
+Actual Next16.4.5 and OpenNext production builds, worker configuration and disabled-auth/
+bilingual SSR checks passed. Independent final code/privacy review approved all nine files;
+draft exact-head strict CI pending at this source checkpoint.
+No API/database/dependency/security/branch gate changes; no real identity, company data,
+deployment, VM or runtime-image operations. Fixed e2038a94/schema0030 historical images
+and Next16.4.2 probe are unchanged, not repaired by current source/build validation.
+Future media requires actual source/version/patch evidence, not updated labels.
+Business acceptance increment0; overall36/44=82%; modules100/100demo/100demo/100/89/60/17
+and plans100/100/20/33/40/40/0 unchanged. Complete draft CI; no ready/merge without approval.
+
 ## Current checkpoint — 2026-11-18: minimum Next.js security patch
 
 Baseline main5c4af4fa6d4b0fba4e3950904622a1454f55b416; main CI44346936989
