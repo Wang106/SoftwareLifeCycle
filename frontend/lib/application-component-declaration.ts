@@ -68,3 +68,19 @@ export function importCreationRecovery(raw:string,origin:string):Command|null{
  if(new TextEncoder().encode(raw).length>32768)return null;
  try{const value=record(JSON.parse(raw));if(!value||!exactFields(value,['version','app_origin','command'])||value.version!==1||value.app_origin!==origin)return null;return parseCommand(value.command);}catch{return null;}
 }
+
+export type OptionsQuery=Readonly<{release_id:string;limit:number;after:string|null}>;
+export type BaselineOption=Readonly<{base_component_id:string;component_definition_id:string;component_code:string;component_name:string;base_component_version:string|null}>;
+export type BaselineOptions=Readonly<{version:1;release_id:string;standard_base_release_id:string;items:readonly BaselineOption[];next_after:string|null}>;
+export function parseOptionsQuery(value:unknown):OptionsQuery|null {
+ const q=record(value);return q&&exactFields(q,['release_id','limit','after'])&&id(q.release_id)&&typeof q.limit==='number'&&Number.isInteger(q.limit)&&q.limit>=1&&q.limit<=50&&(q.after===null||id(q.after))?Object.freeze({...q}) as OptionsQuery:null;
+}
+export function parseBaselineOptions(value:unknown,query:OptionsQuery):BaselineOptions|null {
+ const q=parseOptionsQuery(query),d=record(value);
+ if(!q||!d||!exactFields(d,['version','release_id','standard_base_release_id','items','next_after'])||d.version!==1||d.release_id!==q.release_id||!id(d.standard_base_release_id)||d.standard_base_release_id===q.release_id||!Array.isArray(d.items)||d.items.length>q.limit)return null;
+ const items:BaselineOption[]=[];let previous=q.after??'';
+ for(const value of d.items){const r=record(value);if(!r||!exactFields(r,['base_component_id','component_definition_id','component_code','component_name','base_component_version'])||!id(r.base_component_id)||r.base_component_id<=previous||!id(r.component_definition_id)||!canonical(r.component_code,1000)||!canonical(r.component_name,1000)||(r.base_component_version!==null&&!canonical(r.base_component_version,100)))return null;
+ previous=r.base_component_id;items.push(Object.freeze({...r}) as BaselineOption);}
+ if(d.next_after!==null&&(items.length!==q.limit||d.next_after!==previous))return null;
+ return Object.freeze({version:1,release_id:q.release_id,standard_base_release_id:d.standard_base_release_id,items:Object.freeze(items),next_after:d.next_after}) as BaselineOptions;
+}

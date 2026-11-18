@@ -55,7 +55,7 @@ class ApplicationComponentDeclarationService(ApplicationReleaseCreationService):
         if not settings.application_component_declaration_enabled: fail('asrc_disabled', 403)
         return super()._actor(request, write)
 
-    def _context(self, release_id, definition_id, base_id, actor, *, fresh):
+    def _release_context(self, release_id, actor, *, fresh):
         candidate = self.db.execute(select(ApplicationReleaseDetail.project_id,
             ApplicationReleaseDetail.standard_base_release_id).where(ApplicationReleaseDetail.release_id == release_id)).one_or_none()
         if candidate is None: fail('asrc_release_not_found', 404)
@@ -72,19 +72,50 @@ class ApplicationComponentDeclarationService(ApplicationReleaseCreationService):
             detail.project_id != project_id or detail.standard_base_release_id != standard_id or
             str(detail.customer_id) != ctx['customer_id'] or str(row.customer_scope_id) != ctx['customer_id'] or
             str(row.software_id) != ctx['software_id']): fail('asrc_parent_binding_conflict')
-        definition = self._locked(ComponentDefinition, definition_id)
-        if definition is None: fail('asrc_definition_not_found', 404)
-        base = self._locked(ReleaseComponent, base_id) if base_id else None
-        if base_id and (base is None or base.release_id != standard_id or base.component_definition_id != definition_id):
-            fail('asrc_base_component_conflict')
         if fresh:
             if row.status != 'DRAFT': fail('asrc_release_not_draft')
             if self.db.scalar(select(ReleaseChainRevocation.id).where(ReleaseChainRevocation.release_id == row.id)) is not None:
                 fail('asrc_release_revoked')
-            if not definition.is_active: fail('asrc_definition_inactive')
-        return {**ctx, 'release_id':str(row.id), 'release_version':row.version, 'release_status':row.status,
-            'component_definition_id':str(definition.id), 'component_code':definition.code, 'component_name':definition.name,
+        return {**ctx, 'release_id': str(row.id), 'release_version': row.version, 'release_status': row.status}
+
+    def _context(self, release_id, definition_id, base_id, actor, *, fresh):
+        ctx = self._release_context(release_id, actor, fresh=fresh)
+        definition = self._locked(ComponentDefinition, definition_id)
+        if definition is None: fail('asrc_definition_not_found', 404)
+        base = self._locked(ReleaseComponent, base_id) if base_id else None
+        if base_id and (base is None or str(base.release_id) != ctx['standard_base_release_id'] or base.component_definition_id != definition_id):
+            fail('asrc_base_component_conflict')
+        if fresh and not definition.is_active: fail('asrc_definition_inactive')
+        return {**ctx, 'component_definition_id':str(definition.id), 'component_code':definition.code, 'component_name':definition.name,
             'base_component_id':str(base.id) if base else None, 'base_component_version':base.version if base else None}
+
+    def baseline_options(self, release_id, request, *, limit=25, after=None):
+        """Bounded exact-SSR discovery, never a declaration or global dictionary."""
+        from app.services.component_privacy import public_component_clause
+        try:
+            if type(limit) is not int or not 1 <= limit <= 50: fail('invalid_asrc_options_query', 422)
+            try:
+                release_id = uuid.UUID(str(CreateApplicationRelease.canonical_uuid(release_id)))
+                cursor = uuid.UUID(str(CreateApplicationRelease.canonical_uuid(after))) if after is not None else None
+            except (TypeError, ValueError): fail('invalid_asrc_options_query', 422)
+            actor = self._actor(request, False)
+            ctx = self._release_context(release_id, actor, fresh=True)
+            scope = (ReleaseComponent.release_id == uuid.UUID(ctx['standard_base_release_id']),
+                     ComponentDefinition.is_active.is_(True), public_component_clause(ReleaseComponent.id))
+            query = select(ReleaseComponent.id, ReleaseComponent.component_definition_id,
+                ComponentDefinition.code, ComponentDefinition.name, ReleaseComponent.version).join(
+                    ComponentDefinition, ComponentDefinition.id == ReleaseComponent.component_definition_id).where(*scope)
+            if cursor is not None:
+                if self.db.execute(query.where(ReleaseComponent.id == cursor)).first() is None:
+                    fail('asrc_options_cursor_conflict')
+                query = query.where(ReleaseComponent.id > cursor)
+            rows = self.db.execute(query.order_by(ReleaseComponent.id).limit(limit + 1)).all()
+            items = [{'base_component_id':str(r.id), 'component_definition_id':str(r.component_definition_id),
+                      'component_code':r.code, 'component_name':r.name, 'base_component_version':r.version}
+                     for r in rows[:limit]]
+            return {'version':1, 'release_id':ctx['release_id'], 'standard_base_release_id':ctx['standard_base_release_id'],
+                    'items':items, 'next_after':items[-1]['base_component_id'] if len(rows)>limit else None}
+        finally: self.db.rollback()
 
     def context(self, release_id, component_definition_id, base_component_id, request):
         try:

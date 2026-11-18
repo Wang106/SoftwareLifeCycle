@@ -1,3 +1,28 @@
+## Current checkpoint — 2026-11-18: ASR baseline component selection
+
+Baseline main2a7e7d0532a419a623b6c5679e64e782e44fa2d7; exact main
+CI44299598998 completed success. No open PR at package start.
+Added one default-off business UX capability: choose an exact component instance
+from the current ASR's sole SSR instead of copying two UUIDs manually. Server
+reuses current human/session and exact project/software authority, parent locks,
+DRAFT/binding/revocation checks; active definitions only, private audit markers
+excluded. Pagination25/default50max is bounded and reauthorized on every read.
+No global component dictionary, file copy, new grant or new write endpoint.
+
+Selection fills IDs only; explicit delta/version/reason, final context digest,
+confirmation, idempotent creation and original receipt recovery are preserved.
+Target changes clear selection; generation guards reject late responses and old
+callbacks. Unknown submissions stay locked. Same-origin no-store read proxy and
+Chinese labels use existing disabled capability gates.
+
+Regression-first15 backend failures and1 UI failure established missing behavior.
+Affected backend synthetic suite149 passed;195 frontend/localization tests
+and production frontend build passed. Independent code/privacy review approved.
+Exact-head draft CI pending. No ready/merge, actual identity/company writes,
+runtime media, deployment, VM, permission, fee or security setting change.
+Business36/44=82%,increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0 unchanged. Synthetic checks are not real acceptance.
+
 ## Current checkpoint — 2026-11-18: joint media verification
 
 Baseline main1ec1b1f8917064df5022a1d943865bf0141a540a (merged PR241).

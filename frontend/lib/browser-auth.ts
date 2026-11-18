@@ -1033,8 +1033,8 @@ export function applicationComponentDeclarationConfigured(env:Environment,config
     env.APPLICATION_COMPONENT_DECLARATION_APPROVED_APP_ORIGIN === config.session.origin;
 }
 export async function handleApplicationComponentDeclaration(request:Request,env:Environment,
-  mode:'context'|'submit'|'recover',fetcher:typeof fetch=fetch):Promise<Response> {
-  if (!['context','submit','recover'].includes(mode)) return json('invalid_request',400);
+  mode:'context'|'submit'|'recover'|'options',fetcher:typeof fetch=fetch):Promise<Response> {
+  if (!['context','submit','recover','options'].includes(mode)) return json('invalid_request',400);
   if (request.method !== 'POST') { const response=json('method_not_allowed',405);response.headers.set('Allow','POST');return response; }
   if (env.APPLICATION_COMPONENT_DECLARATION_MODE !== 'enabled') return json('application_component_declaration_disabled',503);
   let config:AuthConfig|null;
@@ -1053,10 +1053,13 @@ export async function handleApplicationComponentDeclaration(request:Request,env:
     for (const chunk of chunks) { bytes.set(chunk,offset);offset+=chunk.length; }
     value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
   } catch { return json('invalid_request',400); } finally { reader.releaseLock(); }
-  const {parseTarget,parseCommand}=await import('./application-component-declaration');
-  const {readApplicationComponentDeclarationContext,executeApplicationComponentDeclaration}=await import('./browser-session');
+  const {parseTarget,parseCommand,parseOptionsQuery}=await import('./application-component-declaration');
+  const {readApplicationComponentDeclarationContext,executeApplicationComponentDeclaration,readApplicationComponentOptions}=await import('./browser-session');
   let result:{status:number;value:unknown};
-  if (mode === 'context') {
+  if (mode === 'options') {
+    const q=parseOptionsQuery(value);if(!q)return json('invalid_request',400);
+    result=await readApplicationComponentOptions(config.session,readCookie(request,SESSION_COOKIE),q,fetcher);
+  } else if (mode === 'context') {
     const target=parseTarget(value);if (!target) return json('invalid_request',400);
     result=await readApplicationComponentDeclarationContext(config.session,readCookie(request,SESSION_COOKIE),target,fetcher);
   } else {

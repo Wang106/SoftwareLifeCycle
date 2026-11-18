@@ -46,3 +46,24 @@ def declaration_receipt(request_id: str, request: Request, db: Session = Depends
     except (TypeError, ValueError):
         raise HTTPException(422, 'invalid_asrc_receipt_id')
     return ApplicationComponentDeclarationService(db).receipt(key,request)
+
+
+@router.get('/application-component-declaration/baseline-options')
+def baseline_options(request: Request, db: Session = Depends(get_db)):
+    from app.services.application_release_creation import CreateApplicationRelease
+    try:
+        pairs = list(request.query_params.multi_items())
+        values = dict(pairs)
+        if len(pairs) != len(values) or set(values) - {'release_id','limit','after'}:
+            raise ValueError('unexpected query fields')
+        release_id = uuid.UUID(str(CreateApplicationRelease.canonical_uuid(values.get('release_id'))))
+        raw_limit = values.get('limit','25')
+        if not raw_limit.isascii() or not raw_limit.isdecimal() or str(int(raw_limit)) != raw_limit:
+            raise ValueError('invalid limit')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 50: raise ValueError('limit out of bounds')
+        after = values.get('after')
+        if after is not None: CreateApplicationRelease.canonical_uuid(after)
+    except (TypeError, ValueError, ValidationError):
+        raise HTTPException(422, 'invalid_asrc_options_query')
+    return ApplicationComponentDeclarationService(db).baseline_options(release_id,request,limit=limit,after=after)
