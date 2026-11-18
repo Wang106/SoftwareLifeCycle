@@ -1,3 +1,33 @@
+## Current checkpoint — 2026-11-18: independently verified Chrome158 pin repair
+
+Baseline main87758ea9c5d237fa94bec3affad31d03721bf0a2 (merged PR239).
+MainCI44203117280 backend/frontend passed, browser stopped on changed official
+PKG bytes before signatures or execution; aggregate failed. Same-main Workers
+3bff0206 succeeded; Actions deploy44205297246/continuation44205297267 skipped.
+Render dep-dbuehfajnfac73bf8g8g failed on retired DB hostname DNS; unchanged.
+
+Separate static inspection44206735625/job134474495460 succeeded once on standard
+macos-26-arm64. Toolinged9613919a49aada6ecadbc2fe8efc2f254ebac2 inspected exact
+source87758ea9. Independently reviewed original official URL download and disk
+reread:279407814bytes, SHA256
+c8e6eaa794526109bd2a965d3a160424f93809f872440f683403d4bd0cedc332.
+Apple-trusted Google Installer chain and notarization, strict deep application
+signature/Google requirement, teamEQHXZ8M8AV and com.google.Chrome passed.
+Signed plist version158.0.8127.37,744members,universal x86_64/arm64.
+No installer/scripts/Chrome execution or security changes; zero artifact uploads.
+Post-job cleanup completed but individual temporary PKG erasure was not verified.
+Static metadata does not prove executed version, Gatekeeper launch or sandbox.
+
+Repair changes only version,size,SHA256,evidence URL and three exact-pin test
+assertions. Regression-first30tests had one old-version failure; after the minimal
+repair all126CIguards passed. Original URL, download/trust/signature control flow,
+Gatekeeper settings, sandbox, strict16+16journeys/report/aggregate gates unchanged.
+Independent repair/privacy review approved; new draft exact-head normalCI pending.
+Historical records retained unchanged; no private scheduling or delivery details.
+No repeated static dispatch, offline runtime media/VM/company DB/provider action.
+Business36/44=82%,increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0 unchanged. No ready/merge in this repair package.
+
 ## Current checkpoint — 2026-11-17: PostgreSQL receiver verification closure
 
 Baseline main12ae1741afd443ca8ad52972843238a9bbfffcc0 (merged PR238),
