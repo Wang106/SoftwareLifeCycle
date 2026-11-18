@@ -1290,3 +1290,17 @@ export async function executeApplicationComponentDeclaration(config:SessionConfi
   const receipt=parseReceipt(audit.value,command,identity.principal.id);
   return receipt?{status:200,value:receipt}:unknown;
 }
+
+/** Read only the authorized ASR's exact SSR; no caller-controlled upstream or SSR. */
+export async function readApplicationComponentOptions(config:SessionConfig,cookie:string|undefined,
+ input:import('./application-component-declaration').OptionsQuery,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
+ const {parseOptionsQuery,parseBaselineOptions}=await import('./application-component-declaration');
+ const q=parseOptionsQuery(input);if(!q)return {status:400,value:{error:'invalid_request'}};
+ const identity=await resolveSession(config,cookie,fetcher);if(!identity)return {status:401,value:{error:'session_required'}};
+ const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+ const query=new URLSearchParams({release_id:q.release_id,limit:String(q.limit)});if(q.after)query.set('after',q.after);
+ const result=await privateRequest(config,'/api/v1/application-component-declaration/baseline-options?'+query,envelope.token,asrJsonFetcher(fetcher),{},envelope.sid,32768);
+ if(result?.status===200){const value=parseBaselineOptions(result.value,q);if(value)return {status:200,value};}
+ const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',409:'context_conflict',422:'invalid_request'};
+ return result&&denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'options_unavailable'}};
+}

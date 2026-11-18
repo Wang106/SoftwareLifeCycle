@@ -2558,5 +2558,16 @@
   "actor_principal_id": "操作人员 UUID",
   "created_at": "创建时间",
   "request_id": "请求 UUID",
-  "expected_context_digest": "预期上下文摘要"
+  "expected_context_digest": "预期上下文摘要",
+  "Load SSR baseline components": "读取 SSR 基线组件",
+  "Exact SSR UUID": "精确 SSR UUID",
+  "Select exact baseline component": "选择精确基线组件",
+  "Choose a component instance": "选择一个组件实例",
+  "Next baseline page": "下一页基线组件",
+  "Enter an exact ASR UUID before loading its baseline.": "请先输入精确 ASR UUID，再读取其基线。",
+  "Choose an exact baseline component, then explicitly declare its delta.": "选择精确基线组件，然后明确声明差异类型。",
+  "No eligible components in this baseline page.": "此基线页面没有可选组件。",
+  "Baseline unavailable or changed. Check identity, permissions and exact ASR.": "基线不可用或已变化，请检查身份、权限及精确 ASR。",
+  "Baseline IDs selected. Choose UNCHANGED or MODIFIED explicitly; version and reason remain your declaration.": "已选定基线标识。请明确选择 UNCHANGED 或 MODIFIED；版本和理由仍由你声明。",
+  "SSR baseline components": "SSR 基线组件"
 }

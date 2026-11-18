@@ -138,3 +138,38 @@ No real file transmission, storage location, file policy, cleanup or retention
 decision, company database, manual container rehearsal or writable deployment is
 part of this package. The byte-storage core remains unconnected. Business acceptance
 stays 36/44=82%; code and synthetic CI do not complete company or real-user acceptance.
+
+
+## Exact SSR baseline selection (default off)
+
+The declaration form can read one bounded page of eligible components from the
+ASR's server-derived sole SSR. It fills only the exact component-definition and
+baseline-instance UUIDs. Code/name/version help identify the instance; equal
+names or versions never merge instances or establish binary equivalence. Version,
+reason and UNCHANGED/MODIFIED remain explicit declarations. The existing manual
+ADDED path, final context digest, confirmation, idempotent write and original
+receipt recovery remain unchanged. Selection never creates a record or uploads a file.
+
+`GET /api/v1/application-component-declaration/baseline-options` accepts only a
+canonical `release_id`, optional decimal `limit` (default25, maximum50) and optional
+canonical `after` component UUID. The server derives the SSR, rechecks the current
+human/session and exact project/software roles, locks/rechecks both parent releases,
+and rejects non-DRAFT, inactive/inconsistent parents and recorded chain revocations.
+Only active definitions and components without private declaration audit markers
+are returned. The cursor must still be eligible in this exact SSR; each page is
+ordered by component UUID, fetches at most limit+1 rows and rolls back read locks.
+Pages are current reads, not a frozen snapshot; final preparation revalidates the
+selected pair. A deleted/ineligible cursor requires restarting the selection.
+
+The browser uses fixed same-origin POST `/auth/application-component-options` to
+make the authenticated read, with existing default-off capability and origin
+binding, no-store responses, bounded JSON and no caller-controlled upstream/SSR.
+The minimal version1 response contains ASR/SSR UUIDs, items (baseline UUID,
+definition UUID, code, name, nullable version) and next_after. It is selection
+information, not a write receipt or readiness proof. Only one page is retained.
+Navigation/target edits clear options and confirmation; generation checks reject
+late responses and retained old callbacks. An uncertain submission remains locked.
+
+Synthetic tests cover denial, pagination/instance identity, private markers,
+revocation/session checks, malformed transport and UI races. No real identity,
+company write or deployment acceptance is claimed; existing switches stay off.

@@ -2,18 +2,41 @@
 import {useEffect,useRef,useState} from 'react';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {Localized} from './localized';
-import {CreationSubmission,parseTarget,parseContext,parseCommand,readCreationResponse,verifyContextDigest,exportCreationRecovery,importCreationRecovery,type Command,type CreationState} from '../lib/application-component-declaration';
+import {CreationSubmission,parseTarget,parseContext,parseCommand,readCreationResponse,verifyContextDigest,exportCreationRecovery,importCreationRecovery,parseOptionsQuery,parseBaselineOptions,type BaselineOptions,type Command,type CreationState} from '../lib/application-component-declaration';
 export default function ApplicationComponentDeclaration({enabled=false,releaseId=""}:{enabled?:boolean;releaseId?:string}){
  const pathname=usePathname(),query=useSearchParams();
  const [fields,setFields]=useState({release_id:releaseId,component_definition_id:'',base_component_id:'',version:'',delta_type:'ADDED',reason:''});
  const [review,setReview]=useState<Command|null>(null),[confirmed,setConfirmed]=useState(false),[state,setState]=useState<CreationState|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState('');
+ const [options,setOptions]=useState<BaselineOptions|null>(null);
  const generation=useRef(0),active=useRef(false),submission=useRef<CreationSubmission|null>(null),heading=useRef<HTMLHeadingElement>(null);
  const preparedGeneration=useRef(-1),confirmation=useRef(false);
  const locked=!!submission.current;
- useEffect(()=>{generation.current++;confirmation.current=false;setReview(null);setConfirmed(false);if(!submission.current)setFields({...fields,release_id:releaseId});heading.current?.focus();},[pathname,query,releaseId]);
+ const renderGeneration=generation.current;
+ useEffect(()=>{generation.current++;confirmation.current=false;setReview(null);setConfirmed(false);setOptions(null);if(!submission.current)setFields({...fields,release_id:releaseId,component_definition_id:'',base_component_id:''});heading.current?.focus();},[pathname,query,releaseId]);
  useEffect(()=>{return()=>{generation.current++;};},[]);
  useEffect(()=>{const prevent=(event:BeforeUnloadEvent)=>{if(submission.current&&submission.current.state.phase!=='confirmed'){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',prevent);return()=>window.removeEventListener('beforeunload',prevent);},[]);
- function change(name:keyof typeof fields,value:string){if(locked||(name==='release_id'&&releaseId))return;generation.current++;confirmation.current=false;setFields({...fields,[name]:value});setReview(null);setConfirmed(false);setMessage('');}
+ function change(name:keyof typeof fields,value:string){if(locked||(name==='release_id'&&releaseId))return;generation.current++;confirmation.current=false;setFields(name==='release_id'?{...fields,release_id:value,component_definition_id:'',base_component_id:''}:{...fields,[name]:value});if(name==='release_id')setOptions(null);setReview(null);setConfirmed(false);setMessage('');}
+ async function loadOptions(next=false){
+  if(active.current||submission.current||!enabled||generation.current!==renderGeneration)return;
+  const q=parseOptionsQuery({release_id:fields.release_id.trim().toLowerCase(),limit:25,after:next?options?.next_after??null:null});
+  if(!q){setMessage('Enter an exact ASR UUID before loading its baseline.');return;}
+  const expectedSSR=next?options?.standard_base_release_id:null;
+  const token=++generation.current;confirmation.current=false;setReview(null);setConfirmed(false);setOptions(null);active.current=true;setBusy(true);
+  try{const response=await fetch('/auth/application-component-options',{method:'POST',body:JSON.stringify(q),headers:{'Content-Type':'application/json',Accept:'application/json'},credentials:'same-origin',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(15000)});
+   const value=await readCreationResponse(response);if(token!==generation.current||submission.current)return;
+   const page=response.status===200?parseBaselineOptions(value,q):null;
+   if(!page||(expectedSSR&&page.standard_base_release_id!==expectedSSR))throw Error('options');
+   setOptions(page);setMessage(page.items.length?'Choose an exact baseline component, then explicitly declare its delta.':'No eligible components in this baseline page.');
+  }catch{if(token===generation.current)setMessage('Baseline unavailable or changed. Check identity, permissions and exact ASR.');}
+  finally{active.current=false;setBusy(false);}
+ }
+ function selectBaseline(value:string){
+  if(active.current||submission.current||generation.current!==renderGeneration||!options||options.release_id!==fields.release_id.trim().toLowerCase())return;
+  const item=options.items.find(row=>row.base_component_id===value);if(!item)return;
+  generation.current++;confirmation.current=false;setReview(null);setConfirmed(false);
+  setFields({...fields,component_definition_id:item.component_definition_id,base_component_id:item.base_component_id});
+  setMessage('Baseline IDs selected. Choose UNCHANGED or MODIFIED explicitly; version and reason remain your declaration.');
+ }
  async function prepare(){if(active.current||locked)return;confirmation.current=false;setReview(null);setConfirmed(false);const target=parseTarget({release_id:fields.release_id.trim().toLowerCase(),component_definition_id:fields.component_definition_id.trim().toLowerCase(),base_component_id:fields.base_component_id.trim().toLowerCase()||null});
   if(!target||!fields.version.trim()||fields.version.trim().length>100||!fields.reason.trim()||fields.reason.trim().length>4000){setMessage('Enter exact UUIDs, a version and a reason within the stated limits.');return;}
   if(!enabled){setMessage('Currently cannot save online. The public sample is read-only; real identity is not configured.');return;}
@@ -31,6 +54,13 @@ export default function ApplicationComponentDeclaration({enabled=false,releaseId
  <form onSubmit={event=>{event.preventDefault();void prepare();}}>
  <fieldset disabled={locked}><legend><Localized>{'Exact component declaration inputs'}</Localized></legend>
  <Localized>{([['release_id','Application release UUID',36],['component_definition_id','Active component definition UUID',36],['base_component_id','Base component UUID (optional, exact selected SSR component)',36],['version','Version (maximum 100 characters)',100],['reason','Reason (maximum 4000 characters)',4000]] as const).map(([name,label,max])=><p key={name}><label htmlFor={'asr-'+name}><Localized>{label}</Localized></label><br/>{name==='reason'?<textarea id={'asr-'+name} value={fields[name]} maxLength={max} required={name==='reason'} onChange={e=>change(name,e.target.value)}/>:<input id={'asr-'+name} value={fields[name]} maxLength={max} readOnly={name==='release_id'&&!!releaseId} required={name!=='base_component_id'} onChange={e=>change(name,e.target.value)}/>}</p>)}</Localized>
+ <p><button type="button" disabled={!enabled||busy||locked} onClick={()=>void loadOptions()}><Localized>{'Load SSR baseline components'}</Localized></button></p>
+ <Localized>{options&&<section aria-label="SSR baseline components"><p><Localized>{'Exact SSR UUID'}</Localized>: {options.standard_base_release_id}</p>
+ <label htmlFor="asrc-baseline-options"><Localized>{'Select exact baseline component'}</Localized></label>
+ <select id="asrc-baseline-options" value={options.items.some(r=>r.base_component_id===fields.base_component_id)?fields.base_component_id:''} disabled={busy||locked} onChange={e=>selectBaseline(e.target.value)}>
+ <option value=""><Localized>{'Choose a component instance'}</Localized></option>
+ {options.items.map(r=><option key={r.base_component_id} value={r.base_component_id}>{r.component_code} — {r.component_name} — {r.base_component_version??'—'} — {r.base_component_id}</option>)}</select>
+ {options.next_after&&<button type="button" disabled={busy||locked} onClick={()=>void loadOptions(true)}><Localized>{'Next baseline page'}</Localized></button>}</section>}</Localized>
  <p><label htmlFor="asrc-delta"><Localized>{'Declared delta (not binary equivalence)'}</Localized></label><select id="asrc-delta" value={fields.delta_type} onChange={e=>change('delta_type',e.target.value)}><Localized>{['ADDED','UNCHANGED','MODIFIED'].map(v=><option key={v} value={v}><Localized>{v}</Localized></option>)}</Localized></select></p>
  <button type="submit" disabled={busy}><Localized>{'Prepare immutable preview'}</Localized></button></fieldset></form>
  <p role="status" aria-live="polite"><Localized>{message}</Localized></p>
