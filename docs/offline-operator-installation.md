@@ -1,3 +1,12 @@
+## Check the complete image handoff set before any future import
+
+[Joint media verification](offline-joint-media.md) checks the actual API/Web,
+PostgreSQL and migration handoffs together and reports their four verified image
+identities. It accepts independent trusted receipts for each and preserves the
+fixed e2038a94/schema0030 mapping. No real media is supplied by this capability.
+It does not import images, initialize a database, set either database declaration
+to true, or replace the existing preprovisioned-database preflight below.
+
 ## Separate migration image handoff capability
 
 [Fixed-source migration handoff](offline-migration-image-bundle.md) now defines

@@ -18,7 +18,7 @@ import sys
 import zipfile
 
 MODULES = ('offline_image_bundle', 'offline_media_retention', 'offline_media_transport',
-           'offline_operator_assembly', 'offline_readonly_preflight', 'offline_postgres_image_bundle', 'offline_migration_image_bundle')
+           'offline_operator_assembly', 'offline_readonly_preflight', 'offline_postgres_image_bundle', 'offline_migration_image_bundle', 'offline_joint_media')
 IMAGE_SOURCE = 'e2038a9462770a29254674dd86c0e7b26b26a221'
 REVISION = '0030_private_upload_sessions'
 MAX_SOURCE_BYTES = 2 * 1024**2
@@ -29,15 +29,15 @@ import sys
 COMMANDS = {'bundle':'offline_image_bundle', 'transport':'offline_media_transport',
             'assembly':'offline_operator_assembly', 'retention':'offline_media_retention',
             'preflight':'offline_readonly_preflight', 'postgres-verify':'offline_postgres_image_bundle',
-            'migration-verify':'offline_migration_image_bundle'}
+            'migration-verify':'offline_migration_image_bundle', 'media-set-verify':'offline_joint_media'}
 if len(sys.argv) == 1 or sys.argv[1:] == ['--help']:
-    print('Receiver toolkit: bundle | transport | assembly | retention | preflight | postgres-verify | migration-verify; append --help. Requires Linux/Python3.12+, /proc/self/fd. No runtime included. Verify trusted toolkit SHA256 before execution; media hashes are separate.')
+    print('Receiver toolkit: bundle | transport | assembly | retention | preflight | postgres-verify | migration-verify | media-set-verify; append --help. Requires Linux/Python3.12+, /proc/self/fd. No runtime included. Verify trusted toolkit SHA256 before execution; media hashes are separate.')
     raise SystemExit(0)
 if sys.platform != 'linux' or sys.version_info < (3,12) or sys.argv[1] not in COMMANDS:
     print('RECEIVER_COMMAND_OR_PLATFORM_REJECTED', file=sys.stderr)
     raise SystemExit(2)
 arguments = sys.argv[2:]
-if sys.argv[1] in ('postgres-verify','migration-verify'):
+if sys.argv[1] in ('postgres-verify','migration-verify','media-set-verify'):
     arguments = ['verify', *arguments]
 raise SystemExit(importlib.import_module(COMMANDS[sys.argv[1]]).main(arguments))
 '''
@@ -46,7 +46,7 @@ Use an independently trusted SHA256 of this entire .pyz before running it.
 A hash calculated only from a received package does not establish trust.
 python3 -I -S receiver.pyz --help
 python3 -I -S receiver.pyz transport --help
-postgres-verify and migration-verify fix verify mode; export, --run and --destination are rejected.
+postgres-verify, migration-verify and media-set-verify fix verify mode; export, --run and --destination are rejected.
 Other existing CLI arguments and refusal behavior are unchanged. No extraction of
 this tool archive is needed. Python3.12+, Linux and /proc/self/fd must already be
 available; Python, OS, Docker, Compose, PostgreSQL and images are NOT included.
@@ -122,6 +122,8 @@ def sources(root, commit):
     require(constants.get(('offline_migration_image_bundle','IMAGE_SOURCE')) == IMAGE_SOURCE)
     require(constants.get(('offline_migration_image_bundle','REVISION')) == REVISION)
     require(constants.get(('offline_migration_image_bundle','SOURCE_REVISIONS')) == {IMAGE_SOURCE:REVISION})
+    require(constants.get(('offline_joint_media','IMAGE_SOURCE')) == IMAGE_SOURCE)
+    require(constants.get(('offline_joint_media','REVISION')) == REVISION)
     require(git(root,'rev-parse','HEAD').decode().strip() == commit)
     return values
 

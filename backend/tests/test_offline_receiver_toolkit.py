@@ -105,6 +105,31 @@ class ReceiverToolkitTests(unittest.TestCase):
         self.assertEqual(self.cli('assembly','assemble',restored,operator,'--run',*args).returncode,2)
         self.assertEqual(before,fixture.snapshot())
 
+    def test_joint_media_entry_is_independent_and_verify_only(self):
+        import test_offline_joint_media as media
+        fixture=media.JointMediaTests(methodName='runTest');fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        # Substitute only reviewed synthetic PostgreSQL fixture pins in a test repo.
+        import re
+        path=self.repo/'scripts/offline_postgres_image_bundle.py';raw=path.read_text()
+        for name,value in [('IMAGE_ID',fixture.pg.image_id),('CONFIG_SIZE',len(fixture.pg.raw_config)),('LAYER_COUNT',2)]:
+            raw=re.sub(r'^'+name+r' = .*$',name+' = '+repr(value),raw,flags=re.M)
+        path.write_text(raw);self.commit();self.build()
+        before=fixture.snapshot()
+        args=['media-set-verify',*fixture.cli_args()[1:]]
+        result=self.cli(*args)
+        self.assertEqual(result.returncode,0,result.stderr)
+        value=json.loads(result.stdout)
+        self.assertEqual(value['status'],media.joint.STATUS)
+        self.assertEqual(len(value['images']),4)
+        self.assertFalse(value['installation_ready'])
+        for extra in [('export',),('--run',),('--load',),('--upload',)]:
+            self.assertEqual(self.cli(*args,*extra).returncode,2)
+        self.assertEqual(before,fixture.snapshot())
+        with zipfile.ZipFile(self.output) as archive:
+            self.assertIn('offline_joint_media.py',archive.namelist())
+            self.assertNotIn('offline_migration_image_rehearsal.py',archive.namelist())
+
     def test_migration_verify_roundtrip_without_build_dependencies(self):
         import test_offline_migration_image_bundle as migration
         fixture=migration.MigrationBundleTests(methodName='runTest');fixture.setUp()

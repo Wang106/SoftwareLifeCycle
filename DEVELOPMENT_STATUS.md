@@ -1,3 +1,30 @@
+## Current checkpoint — 2026-11-18: joint media verification
+
+Baseline main1ec1b1f8917064df5022a1d943865bf0141a540a (merged PR241).
+Exact main CI44278699966 four jobs passed; same-head Workers passed.
+Actions deploy44280573148 and continuation44280573005 skipped; same-head
+Render dep-dbun6q2jnfac73bph6pg update_failed. No provider changes performed.
+
+Added one filesystem-only joint check for API/Web, PostgreSQL and migration
+handoffs. Three independent trusted manifest receipts retain distinct tool/image
+commit meanings. All13 files stay pinned through existing strict validators and
+final rechecks under one600second budget. Aliases, changed inputs, role/source/
+schema mismatches, duplicate image IDs and aggregate payload over16GiB refuse.
+The four-image index derives from verified bytes/contracts, not declarations.
+Fixed e2038a94/schema0030 and each existing handoff contract remain unchanged.
+Receiver toolkit adds the eighth source module and verify-only media-set-verify.
+No loader, runtime, credentials, network, output files or upload path is added.
+
+Regression-first8 tests failed for the missing capability. Implementation now
+passes22 joint and16 receiver synthetic tests, including isolated zipapp flow.
+Independent code/privacy review passed; exact-head draft CI pending.
+No real media build/export/load/upload, database/API/VM execution or settings
+change performed. The index does not establish content clearance, cost, runtime
+availability, database migration/roles or company acceptance; readiness staysfalse.
+Original public history preserved; new records contain technical information only.
+Business36/44=82%,increment0; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0 unchanged. No ready/merge in this package.
+
 ## Current checkpoint — 2026-11-18: fixed-source migration handoff
 
 Baseline main d103d1900bb6678819d1a1d117a343b66af06ed6 (merged PR240).
