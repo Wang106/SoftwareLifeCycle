@@ -1,3 +1,30 @@
+## Supplemental checkpoint — 2026-11-18: ASR generation-driven rerender
+
+PR245 head3abdf659's earlier tests/builds did not cover same-value React state
+bailouts. Additional review found mount/empty-preview navigation and repeated
+invalid recovery imports could advance the generation without refreshing captured
+handlers, refusing the next input. Earlier candidate acceptance does not establish
+that this defect was fixed. This supplement keeps the same PR and original scope.
+
+Generation invalidation now also records a distinct state revision, refreshing
+callbacks while retaining immediate old-handler refusal and current confirmation.
+The UI harness renders only for state changes, models Object.is bailouts and bounded
+render settling, and no longer forces two mount/navigation renders. Three new
+actual-input regressions failed before repair. After repair,197 affected tests and
+2401 full frontend tests pass with zero failures/skips/cancellations. Next16.4.5 and
+OpenNext production builds plus configuration/disabled-auth checks pass. Independent
+final supplemental code/privacy review approved all seven changed files; new exact-head
+CI remains pending at this source checkpoint.
+
+Original stale-submit rejection, recovery-text revision binding, pending/unknown
+request locking and permanent imported recovery-only capability remain. No API,
+database, dependency, authorization, security or CI gate changed. No deployment,
+VM/company data or runtime-image operation. Historical e2038a94/schema0030 images and
+Next16.4.2 probe remain unpatched by source/build validation; actual media checks are
+still required. Public history below is retained. Business acceptance increment0;
+overall36/44=82%, modules100/100demo/100demo/100/89/60/17 and plans100/100/20/33/40/40/0.
+Next: verify final review and exact new-head CI; no ready/merge without approval.
+
 ## Current checkpoint — 2026-11-18: ASR confirmation and read-only recovery repair
 
 Baseline main7f6af929fd48518796e9cf29e5ae57d88d62dec6; exact main CI44417406899

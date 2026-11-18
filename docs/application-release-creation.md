@@ -190,3 +190,17 @@ or business acceptance. No API, database, dependency, permission or gate changed
 Historical e2038a94/schema0030 images and the16.4.2 probe remain unchanged and are
 not covered by the source/build security patch. Any future runtime media requires
 actual source/version/patch verification; current-ref image compatibility is unproven.
+
+
+### Supplemental generation scheduling regression
+
+A generation ref change must schedule a state update when refreshed callbacks are
+required. Resetting an already-null preview and already-false confirmation can be
+React same-value no-ops. The shared invalidation path therefore advances both the
+ref and a distinct state revision. It retains immediate stale-handler rejection
+while ensuring mount/navigation and repeated invalid imports allow subsequent input.
+The synthetic harness now models Object.is bailouts and state-driven rerenders,
+without an unconditional second mount/navigation render. Three actual-input cases
+failed on the previous PR head, then passed after this correction;197 affected and
+2401 full frontend tests and Next/OpenNext production builds passed. Prior head
+success is not evidence for this correction; new exact-head CI remains required.
