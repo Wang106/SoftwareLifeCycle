@@ -7,53 +7,6 @@
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
         "cpu": [
-          "x64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-win32-x64-msvc",
-        "optional_dependencies": {},
-        "os": [
-          "win32"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-000e1e7725870e4a373424a8d31e86a26b1d8056f4a11d49dcc5d4d5be71b7a151160e00b9cacc3d6dd2d2109effda275343b505ba46401b2aa35af41a77aed6.tgz",
-      "integrity": "sha512-AA4edyWHDko3NCSo0x6GomsdgFb0oR1J3MXU1b5xt6FRFg4AucrMPW3S0hCe/9onU0O1BbpGQBsqo1r0Gneu1g==",
-      "name": "@next/swc-win32-x64-msvc",
-      "packages": [
-        {
-          "cpu": [
-            "x64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-win32-x64-msvc",
-          "optional": true,
-          "os": [
-            "win32"
-          ]
-        }
-      ],
-      "sha512": "000e1e7725870e4a373424a8d31e86a26b1d8056f4a11d49dcc5d4d5be71b7a151160e00b9cacc3d6dd2d2109effda275343b505ba46401b2aa35af41a77aed6",
-      "size_bytes": 36161316,
-      "url": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-16.4.2.tgz",
-      "version": "16.4.2"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
-        "cpu": [
           "arm64"
         ],
         "engines": {
@@ -1179,6 +1132,55 @@
       "size_bytes": 4940,
       "url": "https://registry.npmjs.org/@aws-sdk/middleware-ssec/-/middleware-ssec-3.972.46.tgz",
       "version": "3.972.46"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
+        "cpu": [
+          "arm64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [
+          "glibc"
+        ],
+        "lifecycle_scripts": {},
+        "name": "@next/swc-linux-arm64-gnu",
+        "optional_dependencies": {},
+        "os": [
+          "linux"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-15d45cc8ec79bb93f9d66940a8b07d11775df2364ee5fb1d1ed93804041292a3b2c02b1b4cd37fae6c3e8ceee99e68cd740b6ed801b8e8dcdb08bd853c3aeb83.tgz",
+      "integrity": "sha512-FdRcyOx5u5P51mlAqLB9EXdd8jZO5fsdHtk4BAQSkqOywCsbTNN/rmw+jO7pnmjNdAtu2AG46NzbCL2FPDrrgw==",
+      "name": "@next/swc-linux-arm64-gnu",
+      "packages": [
+        {
+          "cpu": [
+            "arm64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-linux-arm64-gnu",
+          "optional": true,
+          "os": [
+            "linux"
+          ]
+        }
+      ],
+      "sha512": "15d45cc8ec79bb93f9d66940a8b07d11775df2364ee5fb1d1ed93804041292a3b2c02b1b4cd37fae6c3e8ceee99e68cd740b6ed801b8e8dcdb08bd853c3aeb83",
+      "size_bytes": 32760574,
+      "url": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-16.4.5.tgz",
+      "version": "16.4.5"
     },
     {
       "archive_metadata": {
@@ -2391,6 +2393,43 @@
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
         "cpu": [],
+        "engines": {},
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [],
+        "lifecycle_scripts": {},
+        "name": "@next/env",
+        "optional_dependencies": {},
+        "os": [],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-27048fc2976464be55325da303fabe248f0c65dc1e00bdf19b0e7fb5bf72fd32ed992d185d99e6603cd28a1c24f314e3d4e2fe58ce77813a9a8fdeb2b8ba7a5f.tgz",
+      "integrity": "sha512-JwSPwpdkZL5VMl2jA/q+JI8MZdweAL3xmw5/tb9y/TLtmS0YXZnmYDzSihwk8xTj1OL+WM53gTqaj96yuLp6Xw==",
+      "name": "@next/env",
+      "packages": [
+        {
+          "cpu": [],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/env",
+          "optional": false,
+          "os": []
+        }
+      ],
+      "sha512": "27048fc2976464be55325da303fabe248f0c65dc1e00bdf19b0e7fb5bf72fd32ed992d185d99e6603cd28a1c24f314e3d4e2fe58ce77813a9a8fdeb2b8ba7a5f",
+      "size_bytes": 4832,
+      "url": "https://registry.npmjs.org/@next/env/-/env-16.4.5.tgz",
+      "version": "16.4.5"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
+        "cpu": [],
         "engines": {
           "node": ">=0.10.0"
         },
@@ -3211,55 +3250,6 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
-        "cpu": [
-          "x64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [
-          "glibc"
-        ],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-linux-x64-gnu",
-        "optional_dependencies": {},
-        "os": [
-          "linux"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-37d70350e086b64246e4f34a0c5654177c579ddac925ca4ba75db5b801a3206bcefd4da9f6d7dd34e33d86d8fbfb97fbda5d26f2b330fdcbd869c509050a2e76.tgz",
-      "integrity": "sha512-N9cDUOCGtkJG5PNKDFZUF3xXndrJJcpLp121uAGjIGvO/U2p9tfdNOM9htj7+5f72l0m8rMw/cvYacUJBQoudg==",
-      "name": "@next/swc-linux-x64-gnu",
-      "packages": [
-        {
-          "cpu": [
-            "x64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-linux-x64-gnu",
-          "optional": true,
-          "os": [
-            "linux"
-          ]
-        }
-      ],
-      "sha512": "37d70350e086b64246e4f34a0c5654177c579ddac925ca4ba75db5b801a3206bcefd4da9f6d7dd34e33d86d8fbfb97fbda5d26f2b330fdcbd869c509050a2e76",
-      "size_bytes": 35236508,
-      "url": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-16.4.2.tgz",
-      "version": "16.4.2"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {
           "node": ">=16 || 14 >=14.17"
@@ -3373,53 +3363,6 @@
       "size_bytes": 10701,
       "url": "https://registry.npmjs.org/@aws-crypto/sha1-browser/-/sha1-browser-5.2.0.tgz",
       "version": "5.2.0"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
-        "cpu": [
-          "arm64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-darwin-arm64",
-        "optional_dependencies": {},
-        "os": [
-          "darwin"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-38d92116f64d15696c10738cffcd40b71772b893f629160a611d09c4fc2f72ed40b8f30c32070bfb05b696e95d26f32d6702ad531a12902c9c856e7021ea184b.tgz",
-      "integrity": "sha512-ONkhFvZNFWlsEHOM/81AtxdyuJP2KRYKYR0JxPwvcu1AuPMMMgcL+wW2luldJvMtZwKtUxoSkCychW5wIeoYSw==",
-      "name": "@next/swc-darwin-arm64",
-      "packages": [
-        {
-          "cpu": [
-            "arm64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-darwin-arm64",
-          "optional": true,
-          "os": [
-            "darwin"
-          ]
-        }
-      ],
-      "sha512": "38d92116f64d15696c10738cffcd40b71772b893f629160a611d09c4fc2f72ed40b8f30c32070bfb05b696e95d26f32d6702ad531a12902c9c856e7021ea184b",
-      "size_bytes": 32476501,
-      "url": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.4.2.tgz",
-      "version": "16.4.2"
     },
     {
       "archive_metadata": {
@@ -4949,55 +4892,6 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
-        "cpu": [
-          "arm64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [
-          "musl"
-        ],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-linux-arm64-musl",
-        "optional_dependencies": {},
-        "os": [
-          "linux"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-4f53cd99f6cf731af99ddb5650bff7c10b4b5eccfcd3c96aeac7361ab353e64da8aae17b532a9975d1d2b807b01d5b16b065deea7b25f47a0dd5836b8958ee4a.tgz",
-      "integrity": "sha512-T1PNmfbPcxr5ndtWUL/3wQtLXsz808lq6sc2GrNT5k2oquF7UyqZddHSuAewHVsWsGXe6nsl9HoN1YNriVjuSg==",
-      "name": "@next/swc-linux-arm64-musl",
-      "packages": [
-        {
-          "cpu": [
-            "arm64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-linux-arm64-musl",
-          "optional": true,
-          "os": [
-            "linux"
-          ]
-        }
-      ],
-      "sha512": "4f53cd99f6cf731af99ddb5650bff7c10b4b5eccfcd3c96aeac7361ab353e64da8aae17b532a9975d1d2b807b01d5b16b065deea7b25f47a0dd5836b8958ee4a",
-      "size_bytes": 32142478,
-      "url": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-16.4.2.tgz",
-      "version": "16.4.2"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {
           "node": ">= 0.4"
@@ -5796,6 +5690,53 @@
       "size_bytes": 3761833,
       "url": "https://registry.npmjs.org/@esbuild/openharmony-arm64/-/openharmony-arm64-0.28.2.tgz",
       "version": "0.28.2"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
+        "cpu": [
+          "arm64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [],
+        "lifecycle_scripts": {},
+        "name": "@next/swc-darwin-arm64",
+        "optional_dependencies": {},
+        "os": [
+          "darwin"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-5b94e7881cd628049b34dc0767f4bf7f53314145d4fcb76392554c580d148db7e5ed2667533165b38e613b48bfb05ec1c758c9056a7b5969a841a8d7b57fcef0.tgz",
+      "integrity": "sha512-W5TniBzWKASbNNwHZ/S/f1MxQUXU/LdjklVMWA0Ujbfl7SZnUzFls45hO0i/sF7Bx1jJBWp7WWmoQajXtX/O8A==",
+      "name": "@next/swc-darwin-arm64",
+      "packages": [
+        {
+          "cpu": [
+            "arm64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-darwin-arm64",
+          "optional": true,
+          "os": [
+            "darwin"
+          ]
+        }
+      ],
+      "sha512": "5b94e7881cd628049b34dc0767f4bf7f53314145d4fcb76392554c580d148db7e5ed2667533165b38e613b48bfb05ec1c758c9056a7b5969a841a8d7b57fcef0",
+      "size_bytes": 32473813,
+      "url": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.4.5.tgz",
+      "version": "16.4.5"
     },
     {
       "archive_metadata": {
@@ -7722,6 +7663,55 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
+        "cpu": [
+          "arm64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [
+          "musl"
+        ],
+        "lifecycle_scripts": {},
+        "name": "@next/swc-linux-arm64-musl",
+        "optional_dependencies": {},
+        "os": [
+          "linux"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-732be69a0b515d1f1a1954fceb08bd3f2e772257f20b1ecfd9f671b805c0a13ba69839e12ad5328eb31e5df6a9aa9e2a803fa04f946ac860ff55f035ea310aed.tgz",
+      "integrity": "sha512-cyvmmgtRXR8aGVT86wi9Py53IlfyCx7P2fZxuAXAoTummDnhKtUyjrMeXfapqp4qgD+gT5RqyGD/VfA16jEK7Q==",
+      "name": "@next/swc-linux-arm64-musl",
+      "packages": [
+        {
+          "cpu": [
+            "arm64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-linux-arm64-musl",
+          "optional": true,
+          "os": [
+            "linux"
+          ]
+        }
+      ],
+      "sha512": "732be69a0b515d1f1a1954fceb08bd3f2e772257f20b1ecfd9f671b805c0a13ba69839e12ad5328eb31e5df6a9aa9e2a803fa04f946ac860ff55f035ea310aed",
+      "size_bytes": 32134775,
+      "url": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-16.4.5.tgz",
+      "version": "16.4.5"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {
           "node": "4.x || >=6.0.0"
@@ -8190,6 +8180,55 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
+        "cpu": [
+          "x64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [
+          "musl"
+        ],
+        "lifecycle_scripts": {},
+        "name": "@next/swc-linux-x64-musl",
+        "optional_dependencies": {},
+        "os": [
+          "linux"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-81b002604f083ff8e5a6b353a625971dbf0df42a1f3b3a671301f64ab233d5d51b8897f515b0ecb03ba90803de3f54dac5ef26806db4b0665a98923b28539d67.tgz",
+      "integrity": "sha512-gbACYE8IP/jlprNTpiWXHb8N9CofOzpnEwH2SrIz1dUbiJf1FbDssDupCAPeP1Taxe8mgG20sGZamJI7KFOdZw==",
+      "name": "@next/swc-linux-x64-musl",
+      "packages": [
+        {
+          "cpu": [
+            "x64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-linux-x64-musl",
+          "optional": true,
+          "os": [
+            "linux"
+          ]
+        }
+      ],
+      "sha512": "81b002604f083ff8e5a6b353a625971dbf0df42a1f3b3a671301f64ab233d5d51b8897f515b0ecb03ba90803de3f54dac5ef26806db4b0665a98923b28539d67",
+      "size_bytes": 34538700,
+      "url": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-16.4.5.tgz",
+      "version": "16.4.5"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {
           "node": "^10 || ^12 || >=14"
@@ -8262,6 +8301,55 @@
       "size_bytes": 8374,
       "url": "https://registry.npmjs.org/depd/-/depd-2.0.0.tgz",
       "version": "2.0.0"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
+        "cpu": [
+          "x64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [
+          "glibc"
+        ],
+        "lifecycle_scripts": {},
+        "name": "@next/swc-linux-x64-gnu",
+        "optional_dependencies": {},
+        "os": [
+          "linux"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-84f73e165f8ddb60c0bea647ab9e7d3666a65dba0e5f92eef08e569740decdfae14e4d59cf6d4d41e62864398d23f3634dcaddb15c4cef61739f6948f90faf03.tgz",
+      "integrity": "sha512-hPc+Fl+N22DAvqZHq559NmamXboOX5Lu8I5Wl0DezfrhTk1Zz21NQeYoZDmNI/NjTcrdsVxM72Fzn2lI+Q+vAw==",
+      "name": "@next/swc-linux-x64-gnu",
+      "packages": [
+        {
+          "cpu": [
+            "x64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-linux-x64-gnu",
+          "optional": true,
+          "os": [
+            "linux"
+          ]
+        }
+      ],
+      "sha512": "84f73e165f8ddb60c0bea647ab9e7d3666a65dba0e5f92eef08e569740decdfae14e4d59cf6d4d41e62864398d23f3634dcaddb15c4cef61739f6948f90faf03",
+      "size_bytes": 35235225,
+      "url": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-16.4.5.tgz",
+      "version": "16.4.5"
     },
     {
       "archive_metadata": {
@@ -8896,53 +8984,6 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
-        "cpu": [
-          "arm64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-win32-arm64-msvc",
-        "optional_dependencies": {},
-        "os": [
-          "win32"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-8ff02b591207a4c301eb060b321af6a6e4e0b81b7bd25354fc29a397da7a7530c4f031a49d824c3fd3ddc0f93676aa4234bfca217f727e7803bc87acc493e6b2.tgz",
-      "integrity": "sha512-j/ArWRIHpMMB6wYLMhr2puTguBt70lNU/Cmjl9p6dTDE8DGknYJMP9PdwPk2dqpCNL/KIX9yfngDvIesxJPmsg==",
-      "name": "@next/swc-win32-arm64-msvc",
-      "packages": [
-        {
-          "cpu": [
-            "arm64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-win32-arm64-msvc",
-          "optional": true,
-          "os": [
-            "win32"
-          ]
-        }
-      ],
-      "sha512": "8ff02b591207a4c301eb060b321af6a6e4e0b81b7bd25354fc29a397da7a7530c4f031a49d824c3fd3ddc0f93676aa4234bfca217f727e7803bc87acc493e6b2",
-      "size_bytes": 33328595,
-      "url": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-16.4.2.tgz",
-      "version": "16.4.2"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {
           "node": ">=8"
@@ -9318,53 +9359,6 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
-        "cpu": [
-          "x64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-darwin-x64",
-        "optional_dependencies": {},
-        "os": [
-          "darwin"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-96e3c231b3ac0a8685fa45c91148e68e6399835942dc17e586652ef99996e2d06edaf5bfe005da93c24116f78f8b31a4c5598d880c3fafdadafba52f8825ad59.tgz",
-      "integrity": "sha512-luPCMbOsCoaF+kXJEUjmjmOZg1lC3BflhmUu+ZmW4tBu2vW/4AXak8JBFvePizGkxVmNiAw/r9ra+6UviCWtWQ==",
-      "name": "@next/swc-darwin-x64",
-      "packages": [
-        {
-          "cpu": [
-            "x64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-darwin-x64",
-          "optional": true,
-          "os": [
-            "darwin"
-          ]
-        }
-      ],
-      "sha512": "96e3c231b3ac0a8685fa45c91148e68e6399835942dc17e586652ef99996e2d06edaf5bfe005da93c24116f78f8b31a4c5598d880c3fafdadafba52f8825ad59",
-      "size_bytes": 33457031,
-      "url": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-16.4.2.tgz",
-      "version": "16.4.2"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {},
         "gypfile": null,
@@ -9595,43 +9589,6 @@
       "size_bytes": 14251,
       "url": "https://registry.npmjs.org/router/-/router-2.2.0.tgz",
       "version": "2.2.0"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
-        "cpu": [],
-        "engines": {},
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [],
-        "lifecycle_scripts": {},
-        "name": "@next/env",
-        "optional_dependencies": {},
-        "os": [],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-9d3513147ec6e7f27f7e6a648d52de80e92ac8a38fd0212c25c32cc8ee1409878dd6cbbe60c5bf31f69212b9c9b242fb5ccf940cae9a4efb25c6c442cb26bfb0.tgz",
-      "integrity": "sha512-nTUTFH7G5/J/fmpkjVLegOkqyKOP0CEsJcMsyO4UCYeN1su+YMW/MfaSErnJskL7XM+UDK6aTvslxsRCyya/sA==",
-      "name": "@next/env",
-      "packages": [
-        {
-          "cpu": [],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/env",
-          "optional": false,
-          "os": []
-        }
-      ],
-      "sha512": "9d3513147ec6e7f27f7e6a648d52de80e92ac8a38fd0212c25c32cc8ee1409878dd6cbbe60c5bf31f69212b9c9b242fb5ccf940cae9a4efb25c6c442cb26bfb0",
-      "size_bytes": 4832,
-      "url": "https://registry.npmjs.org/@next/env/-/env-16.4.2.tgz",
-      "version": "16.4.2"
     },
     {
       "archive_metadata": {
@@ -10208,6 +10165,53 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
+        "cpu": [
+          "x64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [],
+        "lifecycle_scripts": {},
+        "name": "@next/swc-win32-x64-msvc",
+        "optional_dependencies": {},
+        "os": [
+          "win32"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-a8d663ebaa585e76962e217d47d1946df05dac2bfb902e936997c8c01d8a1f958f73ff2910cde754e8fc86942158953c4bde2b947e4c3c3717d79f91ae05218b.tgz",
+      "integrity": "sha512-qNZj66pYXnaWLiF9R9GUbfBdrCv7kC6TaZfIwB2KH5WPc/8pEM3nVOj8hpQhWJU8S94rlH5MPDcX15+RrgUhiw==",
+      "name": "@next/swc-win32-x64-msvc",
+      "packages": [
+        {
+          "cpu": [
+            "x64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-win32-x64-msvc",
+          "optional": true,
+          "os": [
+            "win32"
+          ]
+        }
+      ],
+      "sha512": "a8d663ebaa585e76962e217d47d1946df05dac2bfb902e936997c8c01d8a1f958f73ff2910cde754e8fc86942158953c4bde2b947e4c3c3717d79f91ae05218b",
+      "size_bytes": 36161113,
+      "url": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-16.4.5.tgz",
+      "version": "16.4.5"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {},
         "gypfile": null,
@@ -10690,6 +10694,55 @@
         "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {
+          "node": ">=20.9.0"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [],
+        "lifecycle_scripts": {},
+        "name": "next",
+        "optional_dependencies": {
+          "@next/swc-darwin-arm64": "16.4.5",
+          "@next/swc-darwin-x64": "16.4.5",
+          "@next/swc-linux-arm64-gnu": "16.4.5",
+          "@next/swc-linux-arm64-musl": "16.4.5",
+          "@next/swc-linux-x64-gnu": "16.4.5",
+          "@next/swc-linux-x64-musl": "16.4.5",
+          "@next/swc-win32-arm64-msvc": "16.4.5",
+          "@next/swc-win32-x64-msvc": "16.4.5",
+          "sharp": "^0.35.5"
+        },
+        "os": [],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-ae675fb16a2c8d350efba4744b72a8928224e8a8f4b160d14def3ab591dda9a587fe85eafee757dffe316fe6108bb6966f2105a20943539e246a27cb09d5db07.tgz",
+      "integrity": "sha512-rmdfsWosjTUO+6R0S3KokoIk6Kj0sWDRTe86tZHdqaWH/oXq/udX3/4xb+YQi7aWbyEFoglDU54kaifLCdXbBw==",
+      "name": "next",
+      "packages": [
+        {
+          "cpu": [],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/next",
+          "optional": false,
+          "os": []
+        }
+      ],
+      "sha512": "ae675fb16a2c8d350efba4744b72a8928224e8a8f4b160d14def3ab591dda9a587fe85eafee757dffe316fe6108bb6966f2105a20943539e246a27cb09d5db07",
+      "size_bytes": 43659658,
+      "url": "https://registry.npmjs.org/next/-/next-16.4.5.tgz",
+      "version": "16.4.5"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
+        "cpu": [],
+        "engines": {
           "node": "^20.19.0 || ^22.12.0 || >=23"
         },
         "gypfile": null,
@@ -10762,55 +10815,6 @@
       "size_bytes": 82447,
       "url": "https://registry.npmjs.org/@smithy/types/-/types-4.19.0.tgz",
       "version": "4.19.0"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
-        "cpu": [],
-        "engines": {
-          "node": ">=20.9.0"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [],
-        "lifecycle_scripts": {},
-        "name": "next",
-        "optional_dependencies": {
-          "@next/swc-darwin-arm64": "16.4.2",
-          "@next/swc-darwin-x64": "16.4.2",
-          "@next/swc-linux-arm64-gnu": "16.4.2",
-          "@next/swc-linux-arm64-musl": "16.4.2",
-          "@next/swc-linux-x64-gnu": "16.4.2",
-          "@next/swc-linux-x64-musl": "16.4.2",
-          "@next/swc-win32-arm64-msvc": "16.4.2",
-          "@next/swc-win32-x64-msvc": "16.4.2",
-          "sharp": "^0.35.5"
-        },
-        "os": [],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-afea012688df79f5233a25a40615e02d2fa28315ffec15b22b9f6e1e7c8eca994c48bb4167e40b3f7a24add6136eb7eb6eb98d4d558b04f6870d7f4a45a22ddf.tgz",
-      "integrity": "sha512-r+oBJojfefUjOiWkBhXgLS+igxX/7BWyK59uHnyOyplMSLtBZ+QLP3okrdYTbrfrbrmNTVWLBPaHDX9KRaIt3w==",
-      "name": "next",
-      "packages": [
-        {
-          "cpu": [],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/next",
-          "optional": false,
-          "os": []
-        }
-      ],
-      "sha512": "afea012688df79f5233a25a40615e02d2fa28315ffec15b22b9f6e1e7c8eca994c48bb4167e40b3f7a24add6136eb7eb6eb98d4d558b04f6870d7f4a45a22ddf",
-      "size_bytes": 43679232,
-      "url": "https://registry.npmjs.org/next/-/next-16.4.2.tgz",
-      "version": "16.4.2"
     },
     {
       "archive_metadata": {
@@ -11422,6 +11426,53 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
+        "cpu": [
+          "x64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [],
+        "lifecycle_scripts": {},
+        "name": "@next/swc-darwin-x64",
+        "optional_dependencies": {},
+        "os": [
+          "darwin"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-b96ab8aa41daa410d2d68165b564b86314dbf692c702d2cd7296ee2ba4a646c79b2d866aa4130bfe3fc2d28a7ee74258193a598152ff0d636dffaa1695a9abaf.tgz",
+      "integrity": "sha512-uWq4qkHapBDS1oFltWS4YxTb9pLHAtLNcpbuK6SmRsebLYZqpBML/j/C0op+50JYGTpZgVL/DWNt/6oWlamrrw==",
+      "name": "@next/swc-darwin-x64",
+      "packages": [
+        {
+          "cpu": [
+            "x64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-darwin-x64",
+          "optional": true,
+          "os": [
+            "darwin"
+          ]
+        }
+      ],
+      "sha512": "b96ab8aa41daa410d2d68165b564b86314dbf692c702d2cd7296ee2ba4a646c79b2d866aa4130bfe3fc2d28a7ee74258193a598152ff0d636dffaa1695a9abaf",
+      "size_bytes": 33451262,
+      "url": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-16.4.5.tgz",
+      "version": "16.4.5"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {},
         "gypfile": null,
@@ -11982,55 +12033,6 @@
         "archive_root": "package",
         "binding_gyp": false,
         "binding_gyp_default_candidate": false,
-        "cpu": [
-          "arm64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [
-          "glibc"
-        ],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-linux-arm64-gnu",
-        "optional_dependencies": {},
-        "os": [
-          "linux"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-c61c054c09dc272682372e4aa8a2ae29a208742cb5ff5655d6ce52d46d21853ef018c9034e57c9e9a41b7d1167206fecdff903af143c6b27157be7394273fca3.tgz",
-      "integrity": "sha512-xhwFTAncJyaCNy5KqKKuKaIIdCy1/1ZV1s5S1G0hhT7wGMkDTlfJ6aQbfRFnIG/s3/kDrxQ8aycVe+c5QnP8ow==",
-      "name": "@next/swc-linux-arm64-gnu",
-      "packages": [
-        {
-          "cpu": [
-            "arm64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-linux-arm64-gnu",
-          "optional": true,
-          "os": [
-            "linux"
-          ]
-        }
-      ],
-      "sha512": "c61c054c09dc272682372e4aa8a2ae29a208742cb5ff5655d6ce52d46d21853ef018c9034e57c9e9a41b7d1167206fecdff903af143c6b27157be7394273fca3",
-      "size_bytes": 32763122,
-      "url": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-16.4.2.tgz",
-      "version": "16.4.2"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
         "cpu": [],
         "engines": {
           "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
@@ -12229,55 +12231,6 @@
       "size_bytes": 2156,
       "url": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-7.2.0.tgz",
       "version": "7.2.0"
-    },
-    {
-      "archive_metadata": {
-        "archive_root": "package",
-        "binding_gyp": false,
-        "binding_gyp_default_candidate": false,
-        "cpu": [
-          "x64"
-        ],
-        "engines": {
-          "node": ">= 10"
-        },
-        "gypfile": null,
-        "has_install_script_evidence": false,
-        "install_script_discrepancies": [],
-        "libc": [
-          "musl"
-        ],
-        "lifecycle_scripts": {},
-        "name": "@next/swc-linux-x64-musl",
-        "optional_dependencies": {},
-        "os": [
-          "linux"
-        ],
-        "version": "16.4.2"
-      },
-      "filename": "sha512-c98dae8756215fab9fb98cb61426f0d5da9b95b848e7b18b60025f0a4a83f5ab93bfaa4bac7ebb51c72373740c2817826001ba96482ed3c131997d5b6e37a38d.tgz",
-      "integrity": "sha512-yY2uh1YhX6ufuYy2FCbw1dqblbhI57GLYAJfCkqD9auTv6pLrH67Uccjc3QMKBeCYAG6lkgu08ExmX1bbjejjQ==",
-      "name": "@next/swc-linux-x64-musl",
-      "packages": [
-        {
-          "cpu": [
-            "x64"
-          ],
-          "dev": false,
-          "devOptional": false,
-          "hasInstallScript": false,
-          "libc": [],
-          "location": "node_modules/@next/swc-linux-x64-musl",
-          "optional": true,
-          "os": [
-            "linux"
-          ]
-        }
-      ],
-      "sha512": "c98dae8756215fab9fb98cb61426f0d5da9b95b848e7b18b60025f0a4a83f5ab93bfaa4bac7ebb51c72373740c2817826001ba96482ed3c131997d5b6e37a38d",
-      "size_bytes": 34536816,
-      "url": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-16.4.2.tgz",
-      "version": "16.4.2"
     },
     {
       "archive_metadata": {
@@ -16013,6 +15966,53 @@
         "install_script_discrepancies": [],
         "libc": [],
         "lifecycle_scripts": {},
+        "name": "@next/swc-win32-arm64-msvc",
+        "optional_dependencies": {},
+        "os": [
+          "win32"
+        ],
+        "version": "16.4.5"
+      },
+      "filename": "sha512-fbc823fbe64ca3c1f6d178768a38cdab2164e4b3cbc34002e05b384eafc6f78ae38d05e13a33788e0496b1628f16cc98dba85f21e7a6248c0ab4cc4eb29e4604.tgz",
+      "integrity": "sha512-+8gj++ZMo8H20Xh2ijjNqyFk5LPLw0AC4Fs4Tq/G94rjjQXhOjN4jgSWsWKPFsyY26hfIeemJIwKtMxOsp5GBA==",
+      "name": "@next/swc-win32-arm64-msvc",
+      "packages": [
+        {
+          "cpu": [
+            "arm64"
+          ],
+          "dev": false,
+          "devOptional": false,
+          "hasInstallScript": false,
+          "libc": [],
+          "location": "node_modules/@next/swc-win32-arm64-msvc",
+          "optional": true,
+          "os": [
+            "win32"
+          ]
+        }
+      ],
+      "sha512": "fbc823fbe64ca3c1f6d178768a38cdab2164e4b3cbc34002e05b384eafc6f78ae38d05e13a33788e0496b1628f16cc98dba85f21e7a6248c0ab4cc4eb29e4604",
+      "size_bytes": 33327601,
+      "url": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-16.4.5.tgz",
+      "version": "16.4.5"
+    },
+    {
+      "archive_metadata": {
+        "archive_root": "package",
+        "binding_gyp": false,
+        "binding_gyp_default_candidate": false,
+        "cpu": [
+          "arm64"
+        ],
+        "engines": {
+          "node": ">= 10"
+        },
+        "gypfile": null,
+        "has_install_script_evidence": false,
+        "install_script_discrepancies": [],
+        "libc": [],
+        "lifecycle_scripts": {},
         "name": "@ast-grep/napi-win32-arm64-msvc",
         "optional_dependencies": {},
         "os": [
@@ -16326,10 +16326,10 @@
   ],
   "format": "slc-offline-npm-artifacts-v1",
   "limitations": "Verified lock-matching bytes and recorded archive metadata, including lock flag discrepancies; not an installation, lifecycle execution, vulnerability audit, source signature or physical-egress acceptance.",
-  "lockfile_sha256": "2b1928116ece5d2902c304e213ee53d3e0a60847c90b63794013b598e3877e3d",
+  "lockfile_sha256": "090b0594b61df638d0a7f0c6eddde2924cded64bb9772aeb1e60f4e5073eece9",
   "package_count": 412,
   "scope": "all-lockfile-packages-including-optional-and-all-platforms",
   "status": "ARTIFACT_BYTES_VERIFIED_METADATA_RECORDED",
-  "total_expanded_bytes": 2427608064,
-  "total_size_bytes": 785874731
+  "total_expanded_bytes": 2427340288,
+  "total_size_bytes": 785835853
 }
