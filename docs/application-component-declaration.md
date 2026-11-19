@@ -173,3 +173,21 @@ late responses and retained old callbacks. An uncertain submission remains locke
 Synthetic tests cover denial, pagination/instance identity, private markers,
 revocation/session checks, malformed transport and UI races. No real identity,
 company write or deployment acceptance is claimed; existing switches stay off.
+
+## Current confirmation and retained callback isolation
+
+A confirmation applies only to the current render generation and prepared command.
+A retained earlier Submit or checkbox callback cannot authorize a newer preview or
+send an older body. Inputs, preparation and cancellation check the current submission
+reference, not a captured unlocked value. Pending/unknown original requests keep
+both their displayed fields and immutable recovery bytes; no replacement is created.
+
+Recovery text has its own revision. A retained Restore callback cannot import a
+previous text value after replacement. Pending context/options/submission operations
+refuse recovery text changes and imports. Imports remain permanently receipt-only
+through the existing controller; this repair does not alter its correct capability.
+Generation changes also update state so repeated invalid imports refresh callbacks
+without requiring an unrelated render. UI tests model Object.is state bailouts and
+render only after actual state changes, including first input and route changes.
+The existing default-off gates, permissions, digest, explicit confirmation, single
+submission attempt, baseline rules and audit receipt contract are unchanged.
