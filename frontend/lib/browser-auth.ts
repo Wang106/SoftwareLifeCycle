@@ -1071,3 +1071,12 @@ export async function handleApplicationComponentDeclaration(request:Request,env:
   }
   return Response.json(result.value,{status:result.status,headers:privateHeaders});
 }
+
+/** Dedicated upload gate; no operational defaults or shared proxy limit changes. */
+export async function privateUploadGate(request:Request,env:Environment) {
+ if(env.PRIVATE_UPLOAD_MODE!=='enabled')return {error:'private_upload_disabled',status:503} as const;
+ let config:AuthConfig|null;try{config=await authConfig(env);}catch{return {error:'private_upload_disabled',status:503} as const;}
+ if(!config||env.PRIVATE_UPLOAD_APPROVED_API_BASE_URL!==config.session.apiBase||env.PRIVATE_UPLOAD_APPROVED_APP_ORIGIN!==config.session.origin)return {error:'private_upload_disabled',status:503} as const;
+ if(!sameOrigin(request,config))return {error:'cross_origin_request',status:403} as const;
+ return {config:config.session,cookie:readCookie(request,SESSION_COOKIE)};
+}

@@ -1,3 +1,44 @@
+## Current checkpoint — 2026-11-19: default-off private upload browser relay
+
+Baseline main48fb52cb9df711602b9d4569b60414980b62d10a; main CI44521725863
+passed and open PRs were empty. This single15-file package adds dedicated
+same-origin context/reserve/binary content/original receipt routes. The old
+32KiB JSON command proxies are unchanged; no file picker, Artifact creation,
+download, dependency, backend contract or operational configuration is added.
+
+Eight initial tests failed for missing implementation. Further regressions
+caught incomplete identity-body timeout and duplicate metadata keys. Independent
+review then identified late short-deadline completion and unowned cancellation;
+three dedicated tests failed before the absolute deadline/own/drain repair.
+Final28 targeted tests and full frontend2455 tests pass with no skips/failures.
+Next16.4.5/OpenNext production build and existing cf/auth checks pass. Actual
+local Next production returns private/no-store503 for all four disabled routes.
+
+The revised local workerd test bundles the actual relay, sends65539 synthetic
+binary bytes to an in-memory API double and verifies exact Content-Length,
+SHA256 and original stored receipt. It explicitly disables Miniflare cf fetching,
+fixes Worker egress to local test wiring and rejects non-loopback Node dispatcher
+requests before transmission, asserting zero external attempts. An earlier
+fixture omitted cf:false and its implicit metadata fetch invalidated zero-egress
+evidence; denied historical result reads were not retried. Simulation is not
+real identity, storage, provider deployment or company acceptance.
+
+Admission is process/isolate-local; owned fetch/read/cancel work retains slots
+until actually settled. Each handler writes at most once; uncertain outcomes
+require original receipt lookup only. Cross-request durable retry prevention is
+not claimed. STORED_PRIVATE is not a scan, distribution or release verdict.
+Independent code reviewers accepted the deadline/cancellation repair; one
+independently reran all3 repair regressions. Final documentation/privacy review
+and exact-head ordinary CI are recorded in the draft PR when available.
+
+Only synthetic content was used. No real configuration, upload, deployment,
+VM/company data or runtime-image operation. Historical e2038a94/schema0030 images
+remain outside the source Next16.4.5 security patch; the earlier Node five-second
+harness timeout root cause remains unknown. Acceptance increment0: overall
+36/44=82%; modules100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0.
+Next: verify this single draft's full exact-head CI; later file-picker UI remains
+a separate slice. No ready/merge. Existing public history below is unchanged.
+
 ## Current checkpoint — 2026-11-19: default-off private upload HTTP ingress
 
 Baseline main6f44d53647f927434465f60d476f3d601fa099f9; main CI44455879923
