@@ -1,3 +1,37 @@
+## Current checkpoint — 2026-11-19: ASRC current-confirmation isolation
+
+Baseline mainacb729ceafbaee1034a9fc6bcda0d149301748b6; main CI44437356559
+attempt1 passed all four jobs, with no open PR at package start. This is the
+component declaration page, separate from the previously repaired ASR creation
+page and its already merged SSR selector.
+
+Read-only memory probes found an old Submit sending v2 after v3 was confirmed,
+an old checkbox confirming a new preview, an old Restore importing replaced
+recovery text, and old input changing a locked unknown request's display.
+State-driven regressions captured these four plus repeated-invalid-restore and
+old-cancel failures:6 failed/14 passed before repair. The harness no longer forces
+two initial/navigation renders and models Object.is state bailouts.
+
+The page now binds callbacks to current generation, recovery text revision and
+live submission locks; invalidation triggers a state update. The existing
+controller's permanent receipt-only import and single-attempt behavior are
+unchanged. Pending context/options/submission work refuses recovery replacement.
+Only component, UI tests, contract and four technical records change. No API,
+database, dependency, permissions, configuration or strict CI gate changes.
+
+Related UI/controller/proxy/i18n208 tests and full frontend2427 tests passed,
+with zero failures/skips/cancellations. Actual Next16.4.5/OpenNext production build
+and configuration/default-off auth checks passed. Exact-head ordinary CI remains
+pending at this source checkpoint; final results are recorded in the draft PR.
+Independent code/privacy review approved the seven-file candidate. Existing public history below is preserved unchanged.
+
+No real identity/business acceptance, deployment, VM/company data or runtime-image
+operation. Historical e2038a94/schema0030 media and Next16.4.2 probe are not patched
+by current source validation. Prior main Node five-second timeout root cause
+remains unknown. Acceptance increment0: overall36/44=82%, modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0.
+Next: complete this single draft package and exact-head ordinary CI; no ready/merge.
+
 ## Current checkpoint — 2026-11-19: authorized SSR selection for ASR creation
 
 Baseline main6d82b22c2d2f8d4cd09e765a7141381c26053236; no open PR at package
