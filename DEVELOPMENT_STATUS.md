@@ -1,3 +1,60 @@
+## Supplemental checkpoint — 2026-11-18: ASR generation-driven rerender
+
+PR245 head3abdf659's earlier tests/builds did not cover same-value React state
+bailouts. Additional review found mount/empty-preview navigation and repeated
+invalid recovery imports could advance the generation without refreshing captured
+handlers, refusing the next input. Earlier candidate acceptance does not establish
+that this defect was fixed. This supplement keeps the same PR and original scope.
+
+Generation invalidation now also records a distinct state revision, refreshing
+callbacks while retaining immediate old-handler refusal and current confirmation.
+The UI harness renders only for state changes, models Object.is bailouts and bounded
+render settling, and no longer forces two mount/navigation renders. Three new
+actual-input regressions failed before repair. After repair,197 affected tests and
+2401 full frontend tests pass with zero failures/skips/cancellations. Next16.4.5 and
+OpenNext production builds plus configuration/disabled-auth checks pass. Independent
+final supplemental code/privacy review approved all seven changed files; new exact-head
+CI remains pending at this source checkpoint.
+
+Original stale-submit rejection, recovery-text revision binding, pending/unknown
+request locking and permanent imported recovery-only capability remain. No API,
+database, dependency, authorization, security or CI gate changed. No deployment,
+VM/company data or runtime-image operation. Historical e2038a94/schema0030 images and
+Next16.4.2 probe remain unpatched by source/build validation; actual media checks are
+still required. Public history below is retained. Business acceptance increment0;
+overall36/44=82%, modules100/100demo/100demo/100/89/60/17 and plans100/100/20/33/40/40/0.
+Next: verify final review and exact new-head CI; no ready/merge without approval.
+
+## Current checkpoint — 2026-11-18: ASR confirmation and read-only recovery repair
+
+Baseline main7f6af929fd48518796e9cf29e5ae57d88d62dec6; exact main CI44417406899
+completed success after PR244. No open PR at package start. This resumes the
+previously reviewed nine-file ASR empty-DRAFT repair on the security-patched
+baseline. Original recorded implementation/test excerpts were recovered; component,
+controller and controller-test blobs match the recorded candidate. The UI test
+statements match recorded excerpts; whole prior candidate byte identity is not
+claimed. Current public history, Next16.4.5 and all dependency locks are preserved.
+
+Current preview generation and confirmation jointly authorize a single new request.
+Edits/navigation/cancel/uncheck invalidate retained submit callbacks; new confirmation
+cannot revive an older callback. Recovery text revisions reject old Restore handlers.
+Recovery cannot replace pending preparation, submission or a locked original request.
+Imported controllers permanently close creation before any receipt lookup and after
+failed/disabled lookups. Existing request digest, confirmation, one-attempt submission
+and original receipt contract remain. Default-off and same-origin controls are unchanged.
+
+Fresh regression-first validation reproduced7 failures on current main, followed by
+194 related tests and2398 complete frontend tests passing with zero skips/cancellations.
+Actual Next16.4.5 and OpenNext production builds, worker configuration and disabled-auth/
+bilingual SSR checks passed. Independent final code/privacy review approved all nine files;
+draft exact-head strict CI pending at this source checkpoint.
+No API/database/dependency/security/branch gate changes; no real identity, company data,
+deployment, VM or runtime-image operations. Fixed e2038a94/schema0030 historical images
+and Next16.4.2 probe are unchanged, not repaired by current source/build validation.
+Future media requires actual source/version/patch evidence, not updated labels.
+Business acceptance increment0; overall36/44=82%; modules100/100demo/100demo/100/89/60/17
+and plans100/100/20/33/40/40/0 unchanged. Complete draft CI; no ready/merge without approval.
+
 ## Current checkpoint — 2026-11-18: minimum Next.js security patch
 
 Baseline main5c4af4fa6d4b0fba4e3950904622a1454f55b416; main CI44346936989

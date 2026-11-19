@@ -40,7 +40,7 @@ export type CreationState=Readonly<{phase:'idle'|'sending'|'checking'|'unknown'|
 /** Original immutable request, one POST attempt only. Recovery is read-only original-audit lookup. */
 export class CreationSubmission{
  readonly command:Command;private attempted=false;private current:CreationState=Object.freeze({phase:'idle',receipt:null});
- constructor(command:unknown,confirmed:boolean){const c=parseCommand(command);if(!c||confirmed!==true)throw Error('invalid_review');this.command=c;}
+ constructor(command:unknown,confirmed:boolean,recoveryOnly=false){const c=parseCommand(command);if(!c||confirmed!==true)throw Error('invalid_review');this.command=c;this.attempted=recoveryOnly;if(recoveryOnly)this.current=Object.freeze({phase:'unknown',receipt:null});}
  get state(){return this.current;}
  send(enabled:boolean,fetcher:typeof fetch=fetch){return this.run(false,enabled,fetcher);}
  recover(enabled:boolean,fetcher:typeof fetch=fetch){return this.run(true,enabled,fetcher);}
