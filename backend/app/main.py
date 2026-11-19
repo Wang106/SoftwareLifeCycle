@@ -1,3 +1,4 @@
+from app.api.private_uploads import router as private_upload_router
 from app.api.application_component_declaration import router as application_component_declaration_router
 from app.api.application_release_creation import router as application_release_creation_router
 from app.api.release_demo import router as release_demo_router
@@ -127,6 +128,7 @@ app.include_router(membership_registration_router)
 app.include_router(global_roles_router)
 app.include_router(application_release_creation_router)
 app.include_router(application_component_declaration_router)
+app.include_router(private_upload_router)
 
 
 @app.middleware("http")
@@ -149,9 +151,10 @@ async def read_only_guard(request: Request, call_next):
     is_asr_creation = path.startswith('/api/v1/application-release-creation/') or (
         request.method == 'POST' and path == '/api/v1/releases/application')
     is_asrc = path.startswith('/api/v1/application-component-declaration/') or path == '/api/v1/application-component-declarations'
-    is_private = is_asrc or is_asr_creation or is_distribution_selection or is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
+    is_upload = path == '/api/v1/private-uploads' or path.startswith('/api/v1/private-uploads/')
+    is_private = is_upload or is_asrc or is_asr_creation or is_distribution_selection or is_identity_read or is_session_control or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval
     private_headers = {"Cache-Control": "private, no-store", "Pragma": "no-cache", "Vary": "Authorization"}
-    if is_asrc:
+    if is_asrc or is_upload:
         private_headers['Vary'] += ', X-Browser-Session'
     if settings.read_only_mode and is_write and not is_session_control:
         return JSONResponse(
@@ -159,6 +162,8 @@ async def read_only_guard(request: Request, call_next):
             content={"detail": "read_only_mode"},
             headers=private_headers if is_private else None,
         )
+    if is_upload and not settings.private_upload_http_enabled:
+        return JSONResponse(status_code=403, content={'detail':'private_upload_disabled'}, headers=private_headers)
     if is_asrc and not settings.application_component_declaration_enabled:
         return JSONResponse(status_code=403, content={'detail':'asrc_disabled'}, headers=private_headers)
     if is_private and settings.auth_mode != "oidc":
@@ -180,7 +185,7 @@ async def read_only_guard(request: Request, call_next):
         vary = response.headers.get("Vary", "")
         if "authorization" not in {part.strip().lower() for part in vary.split(',')}:
             response.headers["Vary"] = (vary + ", Authorization").lstrip(', ')
-        if is_asrc or is_asr_creation or is_distribution_selection or is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval:
+        if is_upload or is_asrc or is_asr_creation or is_distribution_selection or is_identity_read or is_admin_control or is_batch_correction_context or is_changeover_correction_context or is_authorization_approval:
             response.headers['Vary'] += ', X-Browser-Session'
     return response
 

@@ -1,3 +1,12 @@
+## Current HTTP adapter preparation
+
+The default-off HTTP adapter is described in [private-upload-http.md](private-upload-http.md).
+It preserves this coordinator's phase/evidence contract and adds bounded ingress,
+prebody authorization and worker/admission ownership. No Artifact/download,
+production configuration or real-file acceptance is added. The earlier package's
+no-HTTP description below is historical; current exhaustive caller/route review
+must name only the explicitly reviewed adapter before publication.
+
 # Private upload session preparation
 
 This package implements a default-disabled trusted Python coordinator and private

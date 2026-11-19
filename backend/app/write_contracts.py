@@ -363,3 +363,28 @@ ASR_COMPONENT_DECLARATION_CONTRACTS = {
         'Declare independent application component instance',
         precondition='ENABLED_ACTIVE_DEFINITION_DRAFT_ASR_EXACT_UNREVOKED_BASELINE_REVIEWED_CONTEXT'),
 }
+
+
+@dataclass(frozen=True)
+class PrivateUploadContract:
+    operation: str
+    idempotency: str
+    authentication: str = 'OIDC_REQUIRED_UNEXPIRED_TOKEN'
+    authorization: str = 'ACTIVE_USER_PROJECT_CONTRIBUTOR_SOFTWARE_VISIBILITY_EXACT_PRIVATE_COMPONENT'
+    actor_binding: str = 'AUTHENTICATED_PRINCIPAL_ORIGINAL_RESERVING_ACTOR'
+    public_exposure: str = 'DEFAULT_OFF_READ_ONLY_BLOCKED'
+    audit: str = 'ATOMIC_APPEND_PER_DURABLE_PHASE'
+    concurrency: str = 'PER_PROCESS_ADMISSION_ADMIN_GATE_AND_COORDINATOR_ROW_LOCKS'
+    precondition: str = 'EXPLICIT_POLICY_CURRENT_DIGEST_DRAFT_UNREVOKED_PARENTS'
+    recovery: str = 'ORIGINAL_PRIVATE_RECEIPT_NO_AUTOMATIC_RETRANSMISSION'
+
+
+# Separate ingress capability; not an additional ordinary UI command or grant.
+PRIVATE_UPLOAD_CONTRACTS = {
+    ('POST', '/api/v1/private-uploads/reservations'): PrivateUploadContract(
+        'Reserve exact private single-file upload',
+        'REQUEST_UUID_EXACT_CONTENT_CONTEXT_ACTOR_AND_STORAGE_SCOPE'),
+    ('PUT', '/api/v1/private-uploads/{request_id}/content'): PrivateUploadContract(
+        'Receive finite bytes for one existing reservation',
+        'SINGLE_DURABLE_ATTEMPT_NO_RECEIVE_REPLAY'),
+}

@@ -2,7 +2,7 @@ import inspect
 
 from app.main import app
 from app.security_roles import ALL_ROLES
-from app.write_contracts import ASR_COMPONENT_DECLARATION_CONTRACTS, ASR_CREATION_CONTRACTS, WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS
+from app.write_contracts import PRIVATE_UPLOAD_CONTRACTS, ASR_COMPONENT_DECLARATION_CONTRACTS, ASR_CREATION_CONTRACTS, WRITE_CONTRACTS, SESSION_CONTROL_CONTRACTS, ADMIN_CONTROL_CONTRACTS, PRODUCTION_APPROVAL_CONTRACTS
 
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -22,7 +22,9 @@ def test_every_registered_write_route_has_exactly_one_reviewed_contract():
     assert not set(PRODUCTION_APPROVAL_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS))
     assert not set(ASR_CREATION_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS))
     assert not set(ASR_COMPONENT_DECLARATION_CONTRACTS) & (set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS))
-    assert set(ASR_COMPONENT_DECLARATION_CONTRACTS) | set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS) == registered_write_routes()
+    existing = set(ASR_COMPONENT_DECLARATION_CONTRACTS) | set(WRITE_CONTRACTS) | set(SESSION_CONTROL_CONTRACTS) | set(ADMIN_CONTROL_CONTRACTS) | set(PRODUCTION_APPROVAL_CONTRACTS) | set(ASR_CREATION_CONTRACTS)
+    assert not set(PRIVATE_UPLOAD_CONTRACTS) & existing
+    assert existing | set(PRIVATE_UPLOAD_CONTRACTS) == registered_write_routes()
 
 
 def test_current_write_contracts_remain_non_public_and_explicitly_protected():
@@ -141,3 +143,18 @@ def test_asr_creation_is_one_strict_independent_contract():
     assert contract.audit == 'ATOMIC_APPEND'
     assert contract.idempotency == 'REQUEST_UUID_EXACT_CONTENT_CONTEXT_AND_ACTOR'
     assert contract.precondition == 'ACTIVE_PARENTS_UNREVOKED_STANDARD_AND_REVIEWED_CONTEXT'
+
+
+def test_private_upload_contracts_are_exact_and_do_not_add_grants_or_ordinary_commands():
+    assert set(PRIVATE_UPLOAD_CONTRACTS) == {
+        ('POST', '/api/v1/private-uploads/reservations'),
+        ('PUT', '/api/v1/private-uploads/{request_id}/content'),
+    }
+    assert len(WRITE_CONTRACTS) == 21
+    for contract in PRIVATE_UPLOAD_CONTRACTS.values():
+        assert contract.authentication == 'OIDC_REQUIRED_UNEXPIRED_TOKEN'
+        assert contract.authorization == 'ACTIVE_USER_PROJECT_CONTRIBUTOR_SOFTWARE_VISIBILITY_EXACT_PRIVATE_COMPONENT'
+        assert contract.public_exposure == 'DEFAULT_OFF_READ_ONLY_BLOCKED'
+        assert contract.audit == 'ATOMIC_APPEND_PER_DURABLE_PHASE'
+        assert contract.recovery == 'ORIGINAL_PRIVATE_RECEIPT_NO_AUTOMATIC_RETRANSMISSION'
+    assert PRIVATE_UPLOAD_CONTRACTS[('PUT','/api/v1/private-uploads/{request_id}/content')].idempotency == 'SINGLE_DURABLE_ATTEMPT_NO_RECEIVE_REPLAY'

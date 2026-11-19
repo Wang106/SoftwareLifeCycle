@@ -1,3 +1,44 @@
+## Current checkpoint — 2026-11-19: default-off private upload HTTP ingress
+
+Baseline main6f44d53647f927434465f60d476f3d601fa099f9; main CI44455879923
+attempt1 succeeded and open PRs were empty. This single18-file package connects
+private context/reservation/finite one-shot HTTP bytes/original receipt recovery
+to the existing coordinator. No Artifact, download, browser file picker,
+migration, dependency, grants or operational configuration is added.
+
+Initial16 transfer tests failed for the absent adapter, then passed. Two idle
+boundary regressions each failed before repair: empty messages renewed idle time
+and delayed completion escaped elapsed idle time. Byte progress alone renews the
+idle deadline; both elapsed deadlines are checked before and after receive.
+Related161 tests and16 subtests pass. Exact contract/retirement validation adds
+120 passing cases with1 PostgreSQL skip; all original assertions remain intact.
+
+The final locally eligible backend suite passed3562 tests and3567 subtests;
+862 database cases skipped without TEST_POSTGRES_URL. Four modules were explicitly
+excluded locally because they require authorized GitHub CI PostgreSQL:
+test_migration_sql_postgres, test_pg_api_rehearsal_postgres,
+test_pg_catalog_evidence_postgres and test_upload_session_schema_postgres.
+No CI rule, environment identity or test skip guard was changed. Earlier full
+local errors/contract failures were diagnosed; inventories now include the exact
+new contract and every unsafe HTTP method including PUT. Three new PostgreSQL
+cases await ordinary CI. Exact-head PR CI is pending at this source checkpoint;
+final remote results belong in the draft PR, not an invented local acceptance.
+
+Independent code and security/privacy reviews approved the candidate; the
+security reviewer independently passed32 transfer/contract and12 inventory cases.
+Sessions close before network waits; storage rechecks authority and token expiry.
+Cancellation retains admission until the actual worker finishes. Recovery reads
+the original receipt only; STORED_PRIVATE is not scan/distribution/release approval.
+
+Only synthetic fixtures and temporary bytes were used. No real identity/business
+acceptance, deployment, VM/company data, runtime-image or operational setting
+change. Historical e2038a94/schema0030 media is not patched by current source;
+the prior Node five-second timeout root cause remains unknown. Acceptance
+increment0: overall36/44=82%, modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0. Existing public history below is preserved unchanged.
+Next: publish this reviewed draft and verify full exact-head ordinary CI;
+no ready/merge or real-file/runtime operation.
+
 ## Current checkpoint — 2026-11-19: ASRC current-confirmation isolation
 
 Baseline mainacb729ceafbaee1034a9fc6bcda0d149301748b6; main CI44437356559

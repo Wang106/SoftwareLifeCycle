@@ -456,7 +456,7 @@ def test_inspection_rechecks_revocation_after_filesystem_read(upload_db, monkeyp
     assert exc.value.status_code == 403
 
 
-def test_capability_has_no_application_caller_or_http_route():
+def test_capability_has_only_reviewed_default_off_http_adapter_and_no_download():
     from pathlib import Path
     from app.main import app
     root = Path(__file__).resolve().parents[1] / 'app'
@@ -464,9 +464,20 @@ def test_capability_has_no_application_caller_or_http_route():
                if path.name != 'private_upload_sessions.py' and
                ('import PrivateUploadService' in path.read_text() or
                 'from app.services.private_upload_sessions' in path.read_text())]
-    assert imports == []
-    assert not any('upload' in route.path.lower() or 'download' in route.path.lower()
-                   for route in app.routes if hasattr(route, 'path'))
+    assert {path.relative_to(root).as_posix() for path in imports} == {
+        'api/private_uploads.py', 'services/private_upload_http.py',
+    }
+    routes = {(method,route.path) for route in app.routes if hasattr(route,'path')
+              for method in getattr(route,'methods',set())
+              if 'upload' in route.path.lower() or 'download' in route.path.lower()}
+    assert routes == {
+        ('GET','/api/v1/private-uploads/context'),
+        ('POST','/api/v1/private-uploads/reservations'),
+        ('PUT','/api/v1/private-uploads/{request_id}/content'),
+        ('GET','/api/v1/private-uploads/receipts/{request_id}'),
+    }
+    from app.core.config import Settings
+    assert Settings(_env_file=None).private_upload_http_enabled is False
 
 
 def test_explicit_storage_limits_are_required_and_configuration_is_pinned(upload_db):
