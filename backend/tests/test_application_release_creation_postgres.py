@@ -134,3 +134,27 @@ def test_standard_revocation_and_creation_share_release_lock(creation_pg, monkey
         if not revoke_first:
             assert submit(db, ids, values)[0]['applied_status'] == 'DRAFT'
             assert service(db).receipt(values['request_id'], request(db, ids))['applied_status'] == 'DRAFT'
+
+
+def test_standard_options_pg_pagination_rechecks_grants_and_parents(creation_pg):
+    from app.models.security import SoftwareMembership
+    from app.models.core import Customer
+    engine, ids = creation_pg
+    with Session(engine, expire_on_commit=False) as db:
+        extra = Release(software_id=ids['software'], release_type='STANDARD', version='selector-2', status='READY')
+        db.add(extra); db.flush(); db.add(StandardReleaseDetail(release_id=extra.id)); db.commit()
+        first = service(db).standard_options(ids['project'], request(db, ids), limit=1)
+        assert first['next_after'] == first['items'][0]['standard_base_release_id']
+        second = service(db).standard_options(ids['project'], request(db, ids), limit=1, after=uuid.UUID(first['next_after']))
+        assert len(second['items']) == 1 and second['next_after'] is None
+        assert first['items'][0]['standard_base_release_id'] < second['items'][0]['standard_base_release_id']
+        assert {first['items'][0]['standard_base_status'],second['items'][0]['standard_base_status']} == {'DRAFT','READY'}
+        db.get(SoftwareMembership, ids['sm']).status = 'SUSPENDED'; db.commit()
+        with pytest.raises(HTTPException) as exc:
+            service(db).standard_options(ids['project'], request(db, ids), after=uuid.UUID(first['next_after']))
+        assert exc.value.detail == 'invalid_options_cursor'
+        assert service(db).standard_options(ids['project'], request(db, ids))['items'] == []
+        db.get(Customer, ids['customer']).status = 'INACTIVE'; db.commit()
+        with pytest.raises(HTTPException) as exc: service(db).standard_options(ids['project'], request(db, ids))
+        assert exc.value.detail == 'asr_parent_inactive'
+        assert not db.in_transaction()

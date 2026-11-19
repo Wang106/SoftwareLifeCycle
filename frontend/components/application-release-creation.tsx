@@ -3,21 +3,36 @@ import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {Localized} from './localized';
-import {CreationSubmission,parseTarget,parseContext,parseCommand,readCreationResponse,verifyContextDigest,exportCreationRecovery,importCreationRecovery,type Command,type CreationState} from '../lib/application-release-creation';
+import {CreationSubmission,parseOptionsQuery,parseOptionsPage,type OptionsPage,type StandardOption,parseTarget,parseContext,parseCommand,readCreationResponse,verifyContextDigest,exportCreationRecovery,importCreationRecovery,type Command,type CreationState} from '../lib/application-release-creation';
 export default function ApplicationReleaseCreation({enabled=false}:{enabled?:boolean}){
  const pathname=usePathname(),query=useSearchParams();
  const [fields,setFields]=useState({project_id:'',standard_base_release_id:'',version:'',release_notes:'',reason:''});
  const [review,setReview]=useState<Command|null>(null),[confirmed,setConfirmed]=useState(false),[state,setState]=useState<CreationState|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState('');
+ const [options,setOptions]=useState<OptionsPage|null>(null);
  const [,setGenerationRevision]=useState(0);
  const generation=useRef(0),active=useRef(false),submission=useRef<CreationSubmission|null>(null),heading=useRef<HTMLHeadingElement>(null);
  const preparedGeneration=useRef(-1),confirmation=useRef(false),recoveryRevision=useRef(0);
  const renderGeneration=generation.current,renderRecoveryRevision=recoveryRevision.current;
  const locked=!!submission.current;
  function invalidate(){generation.current++;confirmation.current=false;setGenerationRevision(generation.current);}
- useEffect(()=>{invalidate();setReview(null);setConfirmed(false);heading.current?.focus();},[pathname,query]);
+ useEffect(()=>{invalidate();setOptions(null);if(!submission.current)setFields(current=>({...current,standard_base_release_id:''}));setReview(null);setConfirmed(false);heading.current?.focus();},[pathname,query]);
  useEffect(()=>{return()=>{generation.current++;};},[]);
  useEffect(()=>{const prevent=(event:BeforeUnloadEvent)=>{if(submission.current&&submission.current.state.phase!=='confirmed'){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',prevent);return()=>window.removeEventListener('beforeunload',prevent);},[]);
- function change(name:keyof typeof fields,value:string){if(submission.current||generation.current!==renderGeneration)return;invalidate();setFields({...fields,[name]:value});setReview(null);setConfirmed(false);setMessage('');}
+ function change(name:keyof typeof fields,value:string){if(submission.current||generation.current!==renderGeneration)return;invalidate();if(name==='project_id')setOptions(null);setFields({...fields,[name]:value,...(name==='project_id'?{standard_base_release_id:''}:{})});setReview(null);setConfirmed(false);setMessage('');}
+ async function loadOptions(after:string|null=null){
+  if(active.current||submission.current||generation.current!==renderGeneration)return;
+  const q=parseOptionsQuery({project_id:fields.project_id.trim().toLowerCase(),limit:25,after});
+  if(!q){setMessage('Enter an exact project UUID before loading SSR baselines.');return;}
+  if(!enabled){setMessage('Currently cannot save online. The public sample is read-only; real identity is not configured.');return;}
+  invalidate();setReview(null);setConfirmed(false);setOptions(null);const token=generation.current;active.current=true;setBusy(true);
+  try{const response=await fetch('/auth/application-release-options',{method:'POST',body:JSON.stringify(q),headers:{'Content-Type':'application/json',Accept:'application/json'},credentials:'same-origin',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(15000)});
+   const value=await readCreationResponse(response);if(token!==generation.current)return;const page=response.status===200?parseOptionsPage(value,q):null;if(!page)throw Error('options');setOptions(page);setMessage(page.items.length?'Select an exact SSR, then prepare a fresh immutable preview.':'No authorized SSR baselines on this page.');
+  }catch{if(token===generation.current)setMessage('SSR baselines unavailable. Check project, identity and current permissions.');}finally{active.current=false;setBusy(false);}
+ }
+ function chooseOption(row:StandardOption){
+  if(active.current||submission.current||generation.current!==renderGeneration||options?.project_id!==fields.project_id.trim().toLowerCase()||!options.items.includes(row))return;
+  invalidate();setFields({...fields,standard_base_release_id:row.standard_base_release_id});setReview(null);setConfirmed(false);setMessage('Select an exact SSR, then prepare a fresh immutable preview.');
+ }
  async function prepare(){if(active.current||submission.current||generation.current!==renderGeneration)return;confirmation.current=false;setReview(null);setConfirmed(false);const target=parseTarget({project_id:fields.project_id.trim().toLowerCase(),standard_base_release_id:fields.standard_base_release_id.trim().toLowerCase()});
   if(!target||!fields.version.trim()||fields.version.trim().length>100||!fields.reason.trim()||fields.reason.trim().length>4000||fields.release_notes.length>4000){setMessage('Enter exact UUIDs, a version and a reason within the stated limits.');return;}
   if(!enabled){setMessage('Currently cannot save online. The public sample is read-only; real identity is not configured.');return;}
@@ -34,6 +49,12 @@ export default function ApplicationReleaseCreation({enabled=false}:{enabled?:boo
  <form onSubmit={event=>{event.preventDefault();void prepare();}}>
  <fieldset disabled={locked}><legend><Localized>{'Exact creation inputs'}</Localized></legend>
  <Localized>{([['project_id','Project UUID',36],['standard_base_release_id','Standard release UUID',36],['version','Version (maximum 100 characters)',100],['release_notes','Release notes (optional, maximum 4000 characters)',4000],['reason','Reason (maximum 4000 characters)',4000]] as const).map(([name,label,max])=><p key={name}><label htmlFor={'asr-'+name}><Localized>{label}</Localized></label><br/>{name==='reason'||name==='release_notes'?<textarea id={'asr-'+name} value={fields[name]} maxLength={max} required={name==='reason'} onChange={e=>change(name,e.target.value)}/>:<input id={'asr-'+name} value={fields[name]} maxLength={max} required onChange={e=>change(name,e.target.value)}/>}</p>)}</Localized>
+ <section aria-label="Authorized SSR baselines"><h2><Localized>{'Authorized SSR baselines'}</Localized></h2>
+ <p><Localized>{'Candidates reflect current project and software access, not approval or delivery permission.'}</Localized></p>
+ <button type="button" disabled={!enabled||busy||locked} onClick={()=>void loadOptions()}><Localized>{'Load authorized SSR baselines'}</Localized></button>
+ <Localized>{options&&<><ul>{options.items.map(row=><li key={row.standard_base_release_id}>{row.software_code} · {row.software_name} · {row.standard_base_version} · {row.standard_base_status} · {row.standard_base_release_id} <button type="button" disabled={busy||locked} onClick={()=>chooseOption(row)}><Localized>{'Select this SSR'}</Localized></button></li>)}</ul>
+ {options.next_after&&<button type="button" disabled={busy||locked} onClick={()=>void loadOptions(options.next_after)}><Localized>{'Next SSR page'}</Localized></button>}</>}</Localized>
+ </section>
  <button type="submit" disabled={busy}><Localized>{'Prepare immutable preview'}</Localized></button></fieldset></form>
  <p role="status" aria-live="polite"><Localized>{message}</Localized></p>
  <Localized>{review&&<section aria-label="Creation review"><h2><Localized>{'Immutable creation preview'}</Localized></h2><dl>{Object.entries(review.context.context).map(([key,value])=><div key={key}><dt><Localized>{key}</Localized></dt><dd>{value}</dd></div>)}</dl>

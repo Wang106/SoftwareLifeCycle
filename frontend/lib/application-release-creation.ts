@@ -67,3 +67,18 @@ export function importCreationRecovery(raw:string,origin:string):Command|null{
  if(new TextEncoder().encode(raw).length>32768)return null;
  try{const value=record(JSON.parse(raw));if(!value||!exactFields(value,['version','app_origin','command'])||value.version!==1||value.app_origin!==origin)return null;return parseCommand(value.command);}catch{return null;}
 }
+
+export type OptionsQuery=Readonly<{project_id:string;limit:number;after:string|null}>;
+export type StandardOption=Readonly<{standard_base_release_id:string;software_id:string;software_code:string;software_name:string;standard_base_version:string;standard_base_status:string}>;
+export type OptionsPage=Readonly<{version:1;project_id:string;items:readonly StandardOption[];next_after:string|null}>;
+export function parseOptionsQuery(value:unknown):OptionsQuery|null{
+ const q=record(value);return q&&exactFields(q,['project_id','limit','after'])&&id(q.project_id)&&typeof q.limit==='number'&&Number.isInteger(q.limit)&&q.limit>=1&&q.limit<=50&&(q.after===null||id(q.after))?Object.freeze({project_id:q.project_id,limit:q.limit,after:q.after}):null;
+}
+export function parseOptionsPage(value:unknown,input:OptionsQuery):OptionsPage|null{
+ const q=parseOptionsQuery(input),p=record(value);
+ if(!q||!p||!exactFields(p,['version','project_id','items','next_after'])||p.version!==1||p.project_id!==q.project_id||!Array.isArray(p.items)||p.items.length>q.limit)return null;
+ let previous=q.after;const items:StandardOption[]=[];
+ for(const value of p.items){const r=record(value);if(!r||!exactFields(r,['standard_base_release_id','software_id','software_code','software_name','standard_base_version','standard_base_status'])||!id(r.standard_base_release_id)||!id(r.software_id)||(previous!==null&&r.standard_base_release_id<=previous)||!['software_code','software_name','standard_base_version','standard_base_status'].every(k=>canonical(r[k],1000))||r.standard_base_status==='REVOKED')return null;previous=r.standard_base_release_id;items.push(Object.freeze({...r}) as StandardOption);}
+ if(p.next_after!==null&&(items.length!==q.limit||p.next_after!==previous||!id(p.next_after)))return null;
+ return Object.freeze({version:1,project_id:q.project_id,items:Object.freeze(items),next_after:p.next_after as string|null});
+}

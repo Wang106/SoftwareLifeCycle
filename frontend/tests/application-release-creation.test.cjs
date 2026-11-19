@@ -15,3 +15,13 @@ test('recovery permanently closes write capability even for missing lost or disa
 test('preflight rejects lone surrogates and control characters without normalizing valid Unicode',()=>{const a=load();for(const [key,value] of [['version','x\n'],['version','a\tb'],['version','v\u0001x'],['version','v\ud800x'],['reason','a\u0001b'],['reason','a\ud800b'],['release_notes','a\u000db'],['release_notes','a\udfffb']]){const c=command();c.body[key]=value;assert.equal(a.parseCommand(c),null,key+JSON.stringify(value));}const c=command();c.body.version='版本😀';c.body.reason='原因\n保留\t😀';c.body.release_notes='\n说明\t😀';const parsed=a.parseCommand(c);assert.ok(parsed);assert.equal(parsed.body.reason,c.body.reason);assert.equal(parsed.body.release_notes,c.body.release_notes);});
 
 test('recovery-only controller closes create before lookup and through every failed lookup',async()=>{const a=load();for(const mode of ['before','missing','lost','disabled']){const s=new a.CreationSubmission(command(),true,true);let writes=0;const f=async url=>{if(url.endsWith('-create'))writes++;if(mode==='lost')throw Error('lost');return Response.json({error:'target_not_found'},{status:404});};if(mode!=='before')await s.recover(mode!=='disabled',f);await s.send(true,f);assert.equal(writes,0,mode);}});
+
+test('SSR options bind exact project, bounded cursor and ordered visible identities',()=>{
+ const a=load(),q={project_id:id(1),limit:25,after:null};
+ assert.deepEqual(a.parseOptionsQuery(q),q);
+ for(const bad of [{...q,limit:51},{...q,limit:true},{...q,after:'bad'},{...q,software_id:id(4)}])assert.equal(a.parseOptionsQuery(bad),null);
+ const row={standard_base_release_id:id(2),software_id:id(4),software_code:'S',software_name:'Software',standard_base_version:'1',standard_base_status:'DRAFT'};
+ const page={version:1,project_id:id(1),items:[row],next_after:null};assert.ok(a.parseOptionsPage(page,q));
+ for(const bad of [{...page,project_id:id(8)},{...page,items:[row,row]},{...page,items:[{...row,standard_base_status:'REVOKED'}]},{...page,next_after:id(2)},{...page,items:[{...row,secret:'hidden'}]}])assert.equal(a.parseOptionsPage(bad,q),null);
+ assert.equal(a.parseOptionsPage(page,{...q,after:id(2)}),null);
+});

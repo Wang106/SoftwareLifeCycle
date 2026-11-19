@@ -1,3 +1,43 @@
+## Current checkpoint — 2026-11-19: authorized SSR selection for ASR creation
+
+Baseline main6d82b22c2d2f8d4cd09e765a7141381c26053236; no open PR at package
+start. Main CI44426568714 attempt2 passed all four jobs. Attempt1 had a Node
+memory-harness five-second timeout with no stdout/stderr; its root cause remains
+unknown. This package does not change that timeout, test or CI gate.
+
+ASR creation now offers bounded project-scoped SSR candidates with software
+code/name, version, status and exact UUID. The server reuses current USER/session,
+project CONTRIBUTOR and software visibility checks, active parents and recorded
+revocation refusal. Pagination rejects invalid/hidden cursors and noncanonical,
+duplicate or extra query fields. Each returned candidate receives fresh parent
+validation; no grants, audit writes or creation occur during selection.
+
+The existing default-off switch and approved same-origin/API binding remain.
+Selection fills only the exact SSR ID; final context digest, confirmation and
+single-attempt creation remain mandatory. Project/route changes discard editable
+selection and stale callbacks; locked original requests/recovery stay intact.
+Non-RELEASED baselines remain eligible for draft association with the existing
+warning. No project selector, migration, dependency or permission change.
+
+Regression-first evidence:14 backend cases and5 frontend cases failed before
+implementation. Strict-query coverage was added before endpoint hardening.
+Final related backend101 tests, frontend/i18n/proxy199 tests and full frontend2414 tests pass. Independent
+code review approved the scoped trust boundary after a locked-display regression
+was fixed; technical-record privacy review also approved the19-file diff. Final CI is
+recorded in the draft PR before acceptance. Next16.4.5/OpenNext production build and
+existing configuration/default-off auth checks pass. Full local backend:3515 passed,3567 subtests,859 skipped and13 setup errors: all13
+refused outside authorized repository GitHub CI before database access. No CI
+environment was spoofed or guard changed. Full PostgreSQL/exact-head CI results
+will be recorded in the PR; this checkpoint does not claim pending gates.
+
+No real identity/business acceptance, deployment, VM/company environment or
+runtime-image operation. Historical e2038a94/schema0030 media and Next16.4.2 probe
+remain unpatched by current source/build evidence. Existing public history below
+is preserved. Business acceptance increment0; overall36/44=82%, modules
+100/100demo/100demo/100/89/60/17 and plans100/100/20/33/40/40/0.
+Next: complete exact-head ordinary CI on codex/asr-ssr-baseline-selector draft PR;
+no ready transition or merge without separate approval.
+
 ## Supplemental checkpoint — 2026-11-18: ASR generation-driven rerender
 
 PR245 head3abdf659's earlier tests/builds did not cover same-value React state

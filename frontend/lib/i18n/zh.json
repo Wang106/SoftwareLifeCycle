@@ -2569,5 +2569,14 @@
   "No eligible components in this baseline page.": "此基线页面没有可选组件。",
   "Baseline unavailable or changed. Check identity, permissions and exact ASR.": "基线不可用或已变化，请检查身份、权限及精确 ASR。",
   "Baseline IDs selected. Choose UNCHANGED or MODIFIED explicitly; version and reason remain your declaration.": "已选定基线标识。请明确选择 UNCHANGED 或 MODIFIED；版本和理由仍由你声明。",
-  "SSR baseline components": "SSR 基线组件"
+  "SSR baseline components": "SSR 基线组件",
+  "Enter an exact project UUID before loading SSR baselines.": "请先输入精确项目 UUID，再读取 SSR 基线。",
+  "Select an exact SSR, then prepare a fresh immutable preview.": "选择精确 SSR，然后重新准备不可变预览。",
+  "No authorized SSR baselines on this page.": "本页没有当前获授权的 SSR 基线。",
+  "SSR baselines unavailable. Check project, identity and current permissions.": "SSR 基线不可用，请检查项目、身份及当前权限。",
+  "Authorized SSR baselines": "获授权的 SSR 基线",
+  "Candidates reflect current project and software access, not approval or delivery permission.": "候选项仅反映当前项目和软件访问权限，不代表批准或交付许可。",
+  "Load authorized SSR baselines": "读取获授权的 SSR 基线",
+  "Select this SSR": "选择此 SSR",
+  "Next SSR page": "下一页 SSR"
 }
