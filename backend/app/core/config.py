@@ -1,8 +1,21 @@
+import uuid
+import math
 from typing import Literal
 from urllib.parse import urlsplit
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+def validate_upload_policy(root, scope, max_bytes, total_seconds, idle_seconds, transfers):
+    if (type(root) is not str or not root.startswith('/') or root == '/'
+            or any(part in ('', '.', '..') for part in root.split('/')[1:])
+            or '\x00' in root or type(scope) is not uuid.UUID or not scope.int
+            or type(max_bytes) is not int or not 1 <= max_bytes <= 8 * 1024 * 1024
+            or type(transfers) is not int or not 1 <= transfers <= 4
+            or any(type(v) not in (int,float) or not math.isfinite(v) or v <= 0
+                   for v in (total_seconds,idle_seconds))
+            or not idle_seconds <= total_seconds <= 120):
+        raise ValueError('invalid private upload HTTP policy')
 
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://slc:slc_dev_password@localhost:5432/software_lifecycle"
@@ -11,6 +24,13 @@ class Settings(BaseSettings):
     read_only_mode: bool = False
     auth_mode: Literal["disabled", "oidc"] = "disabled"
     application_component_declaration_enabled: bool = False
+    private_upload_http_enabled: bool = False
+    private_upload_root: str | None = None
+    private_upload_scope_id: uuid.UUID | None = None
+    private_upload_max_bytes: int | None = None
+    private_upload_total_seconds: float | None = None
+    private_upload_idle_seconds: float | None = None
+    private_upload_transfers: int | None = None
     request_telemetry_enabled: bool = False
     admin_operator_enabled: bool = False
     oidc_issuer_url: str | None = None
@@ -20,6 +40,14 @@ class Settings(BaseSettings):
     oidc_leeway_seconds: int = Field(default=30, ge=0, le=300)
     oidc_jwks_timeout_seconds: int = Field(default=5, ge=1, le=30)
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @model_validator(mode="after")
+    def validate_private_upload_configuration(self):
+        if self.private_upload_http_enabled:
+            validate_upload_policy(self.private_upload_root, self.private_upload_scope_id,
+                self.private_upload_max_bytes, self.private_upload_total_seconds,
+                self.private_upload_idle_seconds, self.private_upload_transfers)
+        return self
 
     @field_validator("database_url")
     @classmethod
