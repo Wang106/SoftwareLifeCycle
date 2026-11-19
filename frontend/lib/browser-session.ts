@@ -1318,3 +1318,14 @@ export async function readApplicationReleaseOptions(config:SessionConfig,cookie:
  const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',409:'context_conflict',422:'invalid_request'};
  return result&&denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'outcome_unknown'}};
 }
+
+/** Server-only capability: neither token nor session envelope leaves this module. */
+export async function privateUploadSession(config:SessionConfig,cookie:string|undefined,fetcher:typeof fetch) {
+ const identity=await resolveSession(config,cookie,fetcher);if(!identity)return null;
+ const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+ return {identity,request:async(path:string,method:'GET'|'POST'|'PUT'='GET',body?:string|Uint8Array)=>{
+  if(envelope.expires<=Math.floor(Date.now()/1000))throw Error('session_expired');
+  if(!/^\/api\/v1\/private-uploads\/(?:context\?component_id=[0-9a-f-]{36}|reservations|receipts\/[0-9a-f-]{36}|[0-9a-f-]{36}\/content)$/.test(path))throw Error('invalid_upload_path');
+  return fetcher(config.apiBase+path,{method,body:body as BodyInit|undefined,headers:{Authorization:`Bearer ${envelope.token}`,'X-Browser-Session':envelope.sid,Accept:'application/json',...(body!==undefined?{'Content-Type':typeof body==='string'?'application/json':'application/octet-stream'}:{})},cache:'no-store',redirect:'manual'});
+ }};
+}
