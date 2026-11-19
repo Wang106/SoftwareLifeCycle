@@ -6,6 +6,8 @@ from app.core.config import settings
 
 
 @pytest.mark.parametrize('method,path', [
+    ('GET','/api/v1/application-release-creation/standard-options'),
+    ('HEAD','/api/v1/application-release-creation/standard-options/'),
     ('GET','/api/v1/application-release-creation/context'),
     ('HEAD','/api/v1/application-release-creation/context/'),
     ('GET','/api/v1/application-release-creation/receipts/00000000-0000-0000-0000-000000000001'),
@@ -33,3 +35,26 @@ def test_read_only_rejects_before_provider(monkeypatch):
         response = client.post('/api/v1/releases/application', json={})
     assert response.status_code == 403 and response.json()['detail'] == 'read_only_mode'
     assert response.headers['cache-control'] == 'private, no-store'
+
+
+@pytest.mark.parametrize('query', [
+    'project_id=12345678-1234-1234-1234-123456789abc&extra=x',
+    'project_id=12345678-1234-1234-1234-123456789abc&project_id=12345678-1234-1234-1234-123456789abc',
+    'project_id=00000000-0000-0000-0000-000000000000',
+    'project_id=12345678-1234-1234-1234-123456789ABC',
+    'project_id=12345678123412341234123456789abc',
+    'project_id=12345678-1234-1234-1234-123456789abc&limit=01',
+    'project_id=12345678-1234-1234-1234-123456789abc&limit=51',
+    'project_id=12345678-1234-1234-1234-123456789abc&after=',
+    'project_id=12345678-1234-1234-1234-123456789abc&limit=1.0',
+])
+def test_options_query_is_exact_before_service(query, monkeypatch):
+    from starlette.requests import Request
+    from fastapi import HTTPException
+    from app.api.application_release_creation import standard_options
+    from app.services.application_release_creation import ApplicationReleaseCreationService
+    def forbidden(*args, **kwargs): raise AssertionError('invalid query must not reach service')
+    monkeypatch.setattr(ApplicationReleaseCreationService, 'standard_options', forbidden)
+    req = Request({'type':'http','method':'GET','path':'/','query_string':query.encode(),'headers':[]})
+    with pytest.raises(HTTPException) as exc: standard_options(req, db=None)
+    assert exc.value.status_code == 422

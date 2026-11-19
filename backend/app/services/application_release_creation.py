@@ -148,6 +148,47 @@ class ApplicationReleaseCreationService:
                 'standard_base_release_id': str(standard.id), 'standard_base_version': standard.version,
                 'standard_base_status': standard.status}
 
+    def standard_options(self, project_id, request, *, limit=25, after=None):
+        """Read-only candidates, never creation authority; reauthorize every page."""
+        try:
+            actor = self._actor(request, False)
+            if type(limit) is not int or not 1 <= limit <= 50 or (after is not None and
+                    (not isinstance(after, uuid.UUID) or after.int == 0)):
+                fail('invalid_options_query', 422)
+            grant = self.db.scalar(select(ProjectMembership).where(
+                ProjectMembership.principal_id == actor.id, ProjectMembership.project_id == project_id,
+                ProjectMembership.role == 'CONTRIBUTOR', ProjectMembership.status == 'ACTIVE')
+                .with_for_update().execution_options(populate_existing=True))
+            if grant is None:
+                fail('project_contributor_required', 403)
+            project = self._locked(Project, project_id)
+            customer = self._locked(Customer, project.customer_id) if project else None
+            if project is None or customer is None or project.status != 'ACTIVE' or customer.status != 'ACTIVE':
+                fail('asr_parent_inactive')
+            visible = select(SoftwareMembership.id).where(
+                SoftwareMembership.principal_id == actor.id,
+                SoftwareMembership.software_id == Release.software_id,
+                SoftwareMembership.status == 'ACTIVE',
+                SoftwareMembership.role.in_(('SOFTWARE_VIEWER', 'SOFTWARE_MAINTAINER'))).exists()
+            eligible = select(Release.id).join(SoftwareProduct, SoftwareProduct.id == Release.software_id).join(
+                StandardReleaseDetail, StandardReleaseDetail.release_id == Release.id).where(
+                visible, SoftwareProduct.status == 'ACTIVE', Release.release_type == 'STANDARD',
+                Release.status != 'REVOKED', ~select(ReleaseChainRevocation.id).where(
+                    ReleaseChainRevocation.release_id == Release.id).exists())
+            if after is not None and self.db.scalar(eligible.where(Release.id == after)) is None:
+                fail('invalid_options_cursor', 422)
+            candidates = list(self.db.scalars((eligible.where(Release.id > after) if after else eligible)
+                .order_by(Release.id).limit(limit + 1)))
+            items = []
+            for candidate in candidates[:limit]:
+                ctx = self._parents(project_id, candidate, actor, fresh=True)
+                items.append({k: ctx[k] for k in ('standard_base_release_id', 'software_id',
+                    'software_code', 'software_name', 'standard_base_version', 'standard_base_status')})
+            return {'version': 1, 'project_id': str(project_id), 'items': items,
+                    'next_after': str(candidates[limit - 1]) if len(candidates) > limit else None}
+        finally:
+            self.db.rollback()
+
     def context(self, project_id, standard_base_release_id, request):
         try:
             actor = self._actor(request, False)

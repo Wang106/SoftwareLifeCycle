@@ -1170,7 +1170,7 @@ export async function recoverAdminStatus(config:SessionConfig,cookie:string|unde
  return receipt?{status:200,value:receipt}:unknown;
 }
 
-/** Exact pair only: no broad private selection catalog. The API checks both scoped roles. */
+/** Exact pair context: the API checks both scoped roles again before creation. */
 export async function readApplicationReleaseCreationContext(config:SessionConfig,cookie:string|undefined,
   input:import('./application-release-creation').Target,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
   const {parseTarget,parseContext,verifyContextDigest}=await import('./application-release-creation');
@@ -1236,7 +1236,7 @@ export async function executeApplicationReleaseCreation(config:SessionConfig,coo
   return receipt?{status:200,value:receipt}:unknown;
 }
 
-/** Exact pair only: no broad private selection catalog. The API checks both scoped roles. */
+/** Exact pair context: the API checks both scoped roles again before creation. */
 export async function readApplicationComponentDeclarationContext(config:SessionConfig,cookie:string|undefined,
   input:import('./application-component-declaration').Target,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}> {
   const {parseTarget,parseContext,verifyContextDigest}=await import('./application-component-declaration');
@@ -1303,4 +1303,18 @@ export async function readApplicationComponentOptions(config:SessionConfig,cooki
  if(result?.status===200){const value=parseBaselineOptions(result.value,q);if(value)return {status:200,value};}
  const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',409:'context_conflict',422:'invalid_request'};
  return result&&denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'options_unavailable'}};
+}
+
+/** Project-scoped, bounded candidates; never grants permission or creates a draft. */
+export async function readApplicationReleaseOptions(config:SessionConfig,cookie:string|undefined,
+ input:import('./application-release-creation').OptionsQuery,fetcher:typeof fetch=fetch):Promise<{status:number;value:unknown}>{
+ const {parseOptionsQuery,parseOptionsPage}=await import('./application-release-creation');const q=parseOptionsQuery(input);
+ if(!q)return {status:400,value:{error:'invalid_request'}};
+ const identity=await resolveSession(config,cookie,fetcher);if(!identity)return {status:401,value:{error:'session_required'}};
+ const envelope=await openCookie(config,SESSION_COOKIE,cookie) as Envelope;
+ const path='/api/v1/application-release-creation/standard-options?project_id='+encodeURIComponent(q.project_id)+'&limit='+q.limit+(q.after?'&after='+encodeURIComponent(q.after):'');
+ const result=await privateRequest(config,path,envelope.token,asrJsonFetcher(fetcher),{},envelope.sid,32768);
+ if(result?.status===200){const page=parseOptionsPage(result.value,q);if(page)return {status:200,value:page};}
+ const denied:Record<number,string>={401:'session_required',403:'submission_forbidden',404:'target_not_found',409:'context_conflict',422:'invalid_request'};
+ return result&&denied[result.status]?{status:result.status,value:{error:denied[result.status]}}:{status:502,value:{error:'outcome_unknown'}};
 }

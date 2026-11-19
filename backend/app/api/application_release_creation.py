@@ -1,11 +1,31 @@
 """Dedicated OIDC-only creation boundary, separate from legacy command contracts."""
 import uuid
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Request, Response, HTTPException
 from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.services.application_release_creation import ApplicationReleaseCreationService, CreateApplicationRelease
 
 router = APIRouter(prefix='/api/v1', tags=['application release creation'])
+
+
+@router.get('/application-release-creation/standard-options')
+def standard_options(request: Request, db: Session = Depends(get_db)):
+    try:
+        pairs = list(request.query_params.multi_items())
+        values = dict(pairs)
+        if len(pairs) != len(values) or set(values) - {'project_id', 'limit', 'after'}:
+            raise ValueError('unexpected query fields')
+        project_id = uuid.UUID(str(CreateApplicationRelease.canonical_uuid(values.get('project_id'))))
+        raw_limit = values.get('limit', '25')
+        if not raw_limit.isascii() or not raw_limit.isdecimal() or str(int(raw_limit)) != raw_limit:
+            raise ValueError('invalid limit')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 50: raise ValueError('limit out of bounds')
+        after = values.get('after')
+        if after is not None: after = uuid.UUID(str(CreateApplicationRelease.canonical_uuid(after)))
+    except (TypeError, ValueError):
+        raise HTTPException(422, 'invalid_options_query')
+    return ApplicationReleaseCreationService(db).standard_options(project_id, request, limit=limit, after=after)
 
 
 @router.get('/application-release-creation/context')

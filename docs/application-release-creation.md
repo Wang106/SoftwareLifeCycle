@@ -26,6 +26,37 @@ approval records are copied or created. An empty draft cannot pass the existing
 snapshot service's artifact requirement. Previous-application relationships,
 component editing and binary upload remain separate work.
 
+## Authorized SSR selection
+
+The optional selector reads `GET /api/v1/application-release-creation/standard-options`
+through the same-origin POST `/auth/application-release-options` proxy. It uses the
+existing creation switch and approved API/origin binding; disabled configuration
+makes no network request. A project UUID remains an explicit input; this is not a
+project selector or a global software catalog.
+
+Every page rechecks the authenticated USER/browser session, active project
+CONTRIBUTOR membership, active project/customer and active software visibility
+(VIEWER or MAINTAINER). Only active software's STANDARD releases with details and
+without recorded revocation are candidates. DRAFT/READY and other non-REVOKED
+statuses remain eligible: the existing non-RELEASED warning and draft-only rule
+are unchanged. Rows show exact SSR UUID, software identity/name, version and status.
+
+Queries have only project_id, limit (default25, maximum50), and optional after.
+Duplicate/unknown fields, noncanonical/nil UUIDs, invalid limits and cursors absent
+from the currently authorized candidate set are rejected. IDs sort ascending;
+next_after is the last returned ID only when a further candidate exists. Each page
+is private/no-store; the proxy bounds UTF-8 JSON to32KiB and rejects wrong-project,
+extra-field, unordered, duplicate or malformed rows. Selection is not authority:
+creation still obtains a fresh exact-pair context/digest and explicit confirmation.
+
+Selection fills only the exact baseline ID. Project changes clear baseline/options,
+preview and confirmation. Route changes clear editable selection; locked original
+requests and recovery bytes stay intact. Generation checks discard late pages and
+old Load/Next/Select callbacks. Pending or uncertain submission and permanently
+read-only imported recovery cannot load/select a replacement or resubmit. No
+background catalog fetch, auto-selection, draft creation or grant configuration
+is introduced.
+
 ## Exact context and request
 
 Routes:

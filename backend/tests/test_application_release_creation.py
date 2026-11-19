@@ -338,3 +338,104 @@ def test_existing_application_catalogue_remains_public(creation_client, monkeypa
         assert response.json()['replacements'] == ['/api/v1/release-catalog/application']
     catalog = client.get('/api/v1/release-catalog/application')
     assert catalog.status_code == 200 and 'items' in catalog.json()
+
+
+def options(db, ids, **kw):
+    return service(db).standard_options(ids['project'], request(db, ids), **kw)
+
+
+def test_standard_options_pagination_visibility_and_no_writes(creation_db):
+    db, ids = creation_db
+    # DRAFT is deliberately eligible; status is information, not release authority.
+    for n in range(3):
+        r = Release(software_id=ids['software'], release_type='STANDARD', version='page-'+str(n), status='READY')
+        db.add(r); db.flush(); db.add(StandardReleaseDetail(release_id=r.id))
+    hidden = SoftwareProduct(supplier_id=db.get(SoftwareProduct, ids['software']).supplier_id, code='HIDDEN', name='Private')
+    db.add(hidden); db.flush()
+    secret = Release(software_id=hidden.id, release_type='STANDARD', version='secret', status='RELEASED')
+    db.add(secret); db.flush(); db.add(StandardReleaseDetail(release_id=secret.id)); db.commit()
+    page = options(db, ids, limit=2)
+    assert page['project_id'] == str(ids['project']) and len(page['items']) == 2
+    assert page['next_after'] == page['items'][-1]['standard_base_release_id']
+    second = options(db, ids, limit=2, after=uuid.UUID(page['next_after']))
+    all_items = page['items'] + second['items']
+    assert second['next_after'] is None
+    assert len({r['standard_base_release_id'] for r in all_items}) == 4
+    assert all(r['software_id'] == str(ids['software']) for r in all_items)
+    assert any(r['standard_base_status'] == 'DRAFT' for r in all_items)
+    assert all(r['software_name'] == 'Software' for r in all_items)
+    for cursor in (secret.id, uuid.uuid4()):
+        with pytest.raises(HTTPException) as exc: options(db, ids, after=cursor)
+        assert exc.value.detail == 'invalid_options_cursor'
+    assert db.scalar(select(func.count()).select_from(AuditEvent)) == 0
+
+
+@pytest.mark.parametrize('kind', ['project_grant', 'project', 'customer', 'software', 'software_grant', 'standard', 'detail', 'principal'])
+def test_standard_options_rechecks_current_authority_and_parents(creation_db, kind):
+    db, ids = creation_db
+    assert len(options(db, ids)['items']) == 1
+    if kind == 'detail': db.delete(db.get(StandardReleaseDetail, ids['standard']))
+    else:
+        model, key, status = {'project_grant':(ProjectMembership,'pm','SUSPENDED'), 'project':(Project,'project','INACTIVE'),
+            'customer':(Customer,'customer','INACTIVE'), 'software':(SoftwareProduct,'software','INACTIVE'),
+            'software_grant':(SoftwareMembership,'sm','SUSPENDED'), 'standard':(Release,'standard','REVOKED'),
+            'principal':(SecurityPrincipal,'actor','DISABLED')}[kind]
+        db.get(model, ids[key]).status = status
+    db.commit()
+    if kind in ('project_grant','project','customer','principal'):
+        with pytest.raises(HTTPException): options(db, ids)
+    else:
+        assert options(db, ids)['items'] == []
+        with pytest.raises(HTTPException) as exc: options(db, ids, after=ids['standard'])
+        assert exc.value.detail == 'invalid_options_cursor'
+    assert not db.in_transaction()
+
+
+@pytest.mark.parametrize('limit', [0,51,-1,True,'2'])
+def test_standard_options_reject_invalid_limit(creation_db, limit):
+    db, ids = creation_db
+    with pytest.raises(HTTPException) as exc: options(db, ids, limit=limit)
+    assert exc.value.status_code == 422
+
+
+def test_standard_options_no_cross_project_grant_or_nonstandard_leak(creation_db):
+    db, ids = creation_db
+    other = db.scalar(select(ProjectMembership).where(ProjectMembership.project_id == ids['other']))
+    other.status = 'SUSPENDED'
+    wrong = Release(software_id=ids['software'], release_type='APPLICATION', version='not-SSR', status='DRAFT')
+    missing = Release(software_id=ids['software'], release_type='STANDARD', version='no-detail', status='DRAFT')
+    db.add_all([wrong, missing]); db.flush(); db.add(StandardReleaseDetail(release_id=wrong.id)); db.commit()
+    assert [x['standard_base_release_id'] for x in options(db, ids)['items']] == [str(ids['standard'])]
+    with pytest.raises(HTTPException) as exc:
+        service(db).standard_options(ids['other'], request(db, ids))
+    assert exc.value.status_code == 403
+    with pytest.raises(HTTPException): service(db).standard_options(uuid.uuid4(), request(db, ids))
+
+
+def test_standard_options_chain_revocation_without_status_change(creation_db):
+    from app.services.revocation import RevocationService
+    db, ids = creation_db; formal_standard(db, ids)
+    RevocationService(db).revoke('RELEASE', ids['standard'], 'Synthetic revocation', request_id=uuid.uuid4())
+    assert db.get(Release, ids['standard']).status == 'DRAFT'
+    assert options(db, ids)['items'] == []
+
+
+def test_standard_options_missing_browser_session_is_denied(creation_db):
+    db, ids = creation_db
+    with pytest.raises(HTTPException) as exc:
+        service(db).standard_options(ids['project'], request(db, ids, uuid.uuid4()))
+    assert exc.value.status_code == 401
+    assert not db.in_transaction()
+
+
+@pytest.mark.parametrize('kind', ['revoked', 'expired', 'token', 'principal'])
+def test_standard_options_rechecks_browser_session(creation_db, kind):
+    db, ids = creation_db
+    now = datetime.now(timezone.utc); sid = uuid.uuid4()
+    db.add(BrowserSession(id=sid, principal_id=uuid.uuid4() if kind == 'principal' else ids['actor'],
+        token_digest=hashlib.sha256((TOKEN+'x' if kind == 'token' else TOKEN).encode()).hexdigest(),
+        created_at=now-timedelta(minutes=5), expires_at=now+timedelta(minutes=-1 if kind == 'expired' else 5),
+        revoked_at=now if kind == 'revoked' else None)); db.commit()
+    with pytest.raises(HTTPException) as exc:
+        service(db).standard_options(ids['project'], request(db, ids, sid))
+    assert exc.value.status_code == 401 and not db.in_transaction()

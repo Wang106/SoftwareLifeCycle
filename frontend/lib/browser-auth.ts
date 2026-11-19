@@ -993,8 +993,8 @@ export function applicationReleaseCreationConfigured(env:Environment,config:Auth
     env.APPLICATION_RELEASE_CREATION_APPROVED_APP_ORIGIN === config.session.origin;
 }
 export async function handleApplicationReleaseCreation(request:Request,env:Environment,
-  mode:'context'|'submit'|'recover',fetcher:typeof fetch=fetch):Promise<Response> {
-  if (!['context','submit','recover'].includes(mode)) return json('invalid_request',400);
+  mode:'context'|'submit'|'recover'|'options',fetcher:typeof fetch=fetch):Promise<Response> {
+  if (!['context','submit','recover','options'].includes(mode)) return json('invalid_request',400);
   if (request.method !== 'POST') { const response=json('method_not_allowed',405);response.headers.set('Allow','POST');return response; }
   if (env.APPLICATION_RELEASE_CREATION_MODE !== 'enabled') return json('application_release_creation_disabled',503);
   let config:AuthConfig|null;
@@ -1013,10 +1013,13 @@ export async function handleApplicationReleaseCreation(request:Request,env:Envir
     for (const chunk of chunks) { bytes.set(chunk,offset);offset+=chunk.length; }
     value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
   } catch { return json('invalid_request',400); } finally { reader.releaseLock(); }
-  const {parseTarget,parseCommand}=await import('./application-release-creation');
-  const {readApplicationReleaseCreationContext,executeApplicationReleaseCreation}=await import('./browser-session');
+  const {parseTarget,parseCommand,parseOptionsQuery}=await import('./application-release-creation');
+  const {readApplicationReleaseCreationContext,executeApplicationReleaseCreation,readApplicationReleaseOptions}=await import('./browser-session');
   let result:{status:number;value:unknown};
-  if (mode === 'context') {
+  if (mode === 'options') {
+    const q=parseOptionsQuery(value);if(!q)return json('invalid_request',400);
+    result=await readApplicationReleaseOptions(config.session,readCookie(request,SESSION_COOKIE),q,fetcher);
+  } else if (mode === 'context') {
     const target=parseTarget(value);if (!target) return json('invalid_request',400);
     result=await readApplicationReleaseCreationContext(config.session,readCookie(request,SESSION_COOKIE),target,fetcher);
   } else {
