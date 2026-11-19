@@ -2,8 +2,9 @@
 import {useEffect,useRef,useState} from 'react';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {Localized} from './localized';
+import PrivateUploadPicker from './private-upload-picker';
 import {CreationSubmission,parseTarget,parseContext,parseCommand,readCreationResponse,verifyContextDigest,exportCreationRecovery,importCreationRecovery,parseOptionsQuery,parseBaselineOptions,type BaselineOptions,type Command,type CreationState} from '../lib/application-component-declaration';
-export default function ApplicationComponentDeclaration({enabled=false,releaseId=""}:{enabled?:boolean;releaseId?:string}){
+export default function ApplicationComponentDeclaration({enabled=false,releaseId="",uploadEnabled=false}:{enabled?:boolean;releaseId?:string;uploadEnabled?:boolean}){
  const pathname=usePathname(),query=useSearchParams();
  const [fields,setFields]=useState({release_id:releaseId,component_definition_id:'',base_component_id:'',version:'',delta_type:'ADDED',reason:''});
  const [review,setReview]=useState<Command|null>(null),[confirmed,setConfirmed]=useState(false),[state,setState]=useState<CreationState|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState('');
@@ -50,7 +51,7 @@ export default function ApplicationComponentDeclaration({enabled=false,releaseId
  async function send(recover=false){if(active.current||!enabled)return;let controller=submission.current;if(!controller){if(!review||!confirmed||!confirmation.current||generation.current!==renderGeneration||preparedGeneration.current!==generation.current||recover)return;controller=new CreationSubmission(review,true);submission.current=controller;}active.current=true;setBusy(true);const pending=recover?controller.recover(enabled):controller.send(enabled);setState(controller.state);try{setState(await pending);}finally{active.current=false;setBusy(false);}}
  return <section><h1 tabIndex={-1} ref={heading}><Localized>{'Declare application release component'}</Localized></h1>
  <p><Localized>{'Declarations are not binary equivalence, approval or delivery permission.'}</Localized></p>
- <p><Localized>{'Declare one component on an existing DRAFT ASR. File upload is not implemented here.'}</Localized></p>
+ <p><Localized>{'Declare one component on an existing DRAFT ASR. Private upload is a separate confirmed step.'}</Localized></p>
  <Localized>{!enabled&&<p role="status"><Localized>{'Currently cannot save online. The public sample is read-only; real identity is not configured.'}</Localized></p>}</Localized>
  <p><Localized>{'No baseline link requires ADDED. An exact baseline link requires UNCHANGED or MODIFIED. Multiple versions of a component type are allowed; the ASR keeps one SSR.'}</Localized></p>
  <form onSubmit={event=>{event.preventDefault();void prepare();}}>
@@ -78,5 +79,6 @@ export default function ApplicationComponentDeclaration({enabled=false,releaseId
  {state.error&&<p><Localized>{state.error}</Localized></p>}
  {['unknown','rejected'].includes(state.phase)&&<button type="button" disabled={busy||!enabled} onClick={()=>void send(true)}><Localized>{'Check original audit receipt'}</Localized></button>}
  {state.receipt&&<section><h2><Localized>{'Verified private component declaration receipt'}</Localized></h2><p><Localized>{'This original receipt is the result. Public component pages do not display these private declarations.'}</Localized></p><dl>{Object.entries(state.receipt).map(([key,value])=><div key={key}><dt><Localized>{key}</Localized></dt><dd>{value??'—'}</dd></div>)}</dl></section>}</div>}</Localized>
+ <PrivateUploadPicker key={state?.receipt?.component_id??'recovery'} componentId={state?.phase==='confirmed'?state.receipt?.component_id:undefined} enabled={uploadEnabled}/>
  </section>;
 }
