@@ -139,16 +139,16 @@ jobs:
           python3 ../scripts/ci/prepare_pkg_browser.py | tee browser-results/runner-browser.txt
       - name: Build isolated production app
         run: npm run build
+      - name: Run isolated upload browser storage journeys and strict report
+        run: |
+          node node_modules/@playwright/test/cli.js test --config=upload-browser/playwright.config.cjs
+          node scripts/check-upload-browser-report.cjs browser-results/upload/results.json
       - name: Run real-browser synthetic read-only journey
         run: npm run test:browser
       - name: Run isolated component browser journeys and strict report
         run: |
           node node_modules/@playwright/test/cli.js test --config=component-browser/playwright.config.cjs
           node scripts/check-component-browser-report.cjs component-browser-results/results.json
-      - name: Run isolated upload browser storage journeys and strict report
-        run: |
-          node node_modules/@playwright/test/cli.js test --config=upload-browser/playwright.config.cjs
-          node scripts/check-upload-browser-report.cjs browser-results/upload/results.json
       - name: Save synthetic browser evidence
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
