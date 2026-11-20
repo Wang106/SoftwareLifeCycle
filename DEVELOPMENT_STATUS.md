@@ -16,6 +16,9 @@ See docs/linux-process-sampling.md for exact interface and limitations.
 
 Initial regression failed before implementation;12 synthetic test methods pass.
 All151 browser-contract tests and the progress ledger check pass.
+Initial PR CI44766181785 exposed a root-directory import assumption before
+backend execution. The same backend-directory invocation reproduced it; new
+module/test imports now resolve fixed sibling source paths without changing CI.
 Independent review and full exact-head ordinary CI are recorded in the draft PR
 when complete. No live proc access, Chrome/process exercise, install/download,
 production/workflow/dependency/security/permission change or deployment.

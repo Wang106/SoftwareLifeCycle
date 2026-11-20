@@ -1,6 +1,13 @@
 """Synthetic handles only: no proc access, processes, or network."""
 import unittest
-from scripts.ci.linux_process_sampling import SampleOnce, SamplingRejected
+import importlib.util
+from pathlib import Path
+
+SPEC = importlib.util.spec_from_file_location(
+    'process_sampling', Path(__file__).parents[1] / 'linux_process_sampling.py')
+MODULE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MODULE)
+SampleOnce, SamplingRejected = MODULE.SampleOnce, MODULE.SamplingRejected
 from test_linux_proc_observations import stat, status, namespaces
 
 

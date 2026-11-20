@@ -1,6 +1,13 @@
 """Injected one-shot sampling protocol. No live adapters or process operations."""
 from typing import Protocol
-from scripts.ci.linux_proc_observations import adapt, parse_stat
+import importlib.util
+from pathlib import Path
+
+_SPEC = importlib.util.spec_from_file_location(
+    'sampling_proc_parser', Path(__file__).with_name('linux_proc_observations.py'))
+_PARSER = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_PARSER)
+adapt, parse_stat = _PARSER.adapt, _PARSER.parse_stat
 
 
 class BoundDirectory(Protocol):
