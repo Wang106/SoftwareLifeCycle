@@ -1,3 +1,30 @@
+## Current checkpoint — 2026-11-20: Linux sandbox observation consistency preparation
+
+Baseline e285e92c1f73196fbd442a9afe9a8defe664a1e9 includes merged PR253.
+CI44707991621 attempt2 passed:4463 backend+3567 subtests,410 PG cases without
+skips,schema0030; frontend2505 and signed macOS4+16+16 reused attempt1 success.
+Deployment44733789608/continuation44733789672 skipped. Attempt1 backend was
+cancelled near20 minutes/99%; performance root cause remains unproven.
+
+This package adds a bounded offline JSON observation consistency checker and
+synthetic tests, not a collector, browser launcher or runner qualification.
+It checks exact platform/paths, non-root identities, namespace/seccomp agreement,
+PID reuse, loopback records and cleanup. Publisher signature and runner qualified
+remain explicitly false even when supplied observations are consistent. Input
+truthfulness and complete network isolation require a future reviewed collector.
+See docs/linux-chrome-sandbox-evidence.md for the exact contract and limitations.
+
+Regression-first import failed before implementation. Independent review then
+found an impossible ancestor start-time relation: its regression failed before
+repair. All132 browser-contract tests now pass, including6 new test methods.
+Independent review and exact-head ordinary CI are recorded in the draft PR when
+complete. No Linux Chrome launch/download/install, new workflow, production code,
+dependency, security setting or deployment change. Existing macOS gates retained.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0.
+Existing public history below is preserved; no ready/merge in this package.
+
 ## Current checkpoint — 2026-11-20: real loopback private-upload test preparation
 
 Baseline642309490ca6c06e6ecedd83518c61480adefcd8 includes merged PR252.
