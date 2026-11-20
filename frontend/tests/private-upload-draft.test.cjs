@@ -19,3 +19,15 @@ test('journal preserves only version and request ID and no reset API',async()=>{
 test('actual journal adapter serializes competing claims with exclusive lock',async()=>{load();const {browserUploadJournal}=require(path.join(out,'private-upload-journal.js'));let raw=null,queue=Promise.resolve(),writes=0;const storage={getItem:()=>raw,setItem:(k,v)=>{writes++;raw=v}},locks={request(k,o,fn){assert.equal(o.mode,'exclusive');const task=queue.then(fn);queue=task.catch(()=>{});return task}};const a=browserUploadJournal(storage,locks),b=browserUploadJournal(storage,locks);assert.deepEqual(await Promise.all([a.claim(id(1)),b.claim(id(2))]),[true,false]);assert.equal(writes,1)});
 test('cancel while claim is pending leaves durable original ID but sends no request',async()=>{const f=fixture();let finish;const journal={read:()=>f.journal.value,claim:id=>new Promise(r=>finish=()=>{f.journal.value=id;r(true)})};const d=new(load().UploadDraft)(id(8),true,journal,f.fetcher);await d.prepare(f.file,'synthetic');d.confirm(d.revision,true);const pending=d.send(d.revision);d.clear();finish();await pending;assert.equal(d.state.phase,'unknown');assert.equal(f.calls.length,1);assert.equal(f.journal.value,d.state.requestId)});
 test('receipt refusal or malformed status never unlocks or claims success',async()=>{for(const value of [{error:'target_not_found'},{version:1,state:'STORED_PRIVATE',revision:4,reservation:{},stored_receipt:{}}]){const f=fixture();f.journal.value=id(1);let calls=0;const d=new(load().UploadDraft)(id(8),true,f.journal,async(u)=>{calls++;assert.ok(u.endsWith('receipt'));return Response.json(value)});await d.recover();await d.prepare(f.file,'new');await d.send(d.revision);assert.equal(d.state.phase,'unknown');assert.equal(calls,1)}});
+
+for(const lost of [false,true])test(`receiver-sensitive fetch supports context reserve content and original recovery (lost=${lost})`,async()=>{
+ const f=fixture({lost});let attempts=0;
+ const fetcher=function(input,init){'use strict';attempts++;assert.equal(this,globalThis,'host fetch must receive its global object');return f.fetcher(input,init)};
+ const d=new(load().UploadDraft)(id(8),true,f.journal,fetcher);
+ await d.prepare(f.file,'synthetic');assert.equal(d.state.phase,'review');d.confirm(d.revision,true);await d.send(d.revision);
+ assert.equal(d.state.phase,lost?'unknown':'stored');const original=f.journal.value;
+ const recovered=new(load().UploadDraft)(id(8),true,f.journal,fetcher);assert.equal(recovered.state.requestId,original);await recovered.recover();
+ assert.equal(recovered.state.phase,'stored');assert.equal(recovered.state.receipt.reservation.request_id,original);
+ await recovered.prepare(f.file,'new');await recovered.send(recovered.revision);
+ assert.equal(attempts,4);assert.deepEqual(f.calls.map(([url])=>url.split('?')[0]),['/auth/private-upload-context','/auth/private-upload-reserve','/auth/private-upload-content','/auth/private-upload-receipt']);assert.equal(f.reads,1);
+});

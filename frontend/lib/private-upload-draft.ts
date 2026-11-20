@@ -9,7 +9,7 @@ export class UploadDraft {
  revision=0;state:UploadState={phase:'idle',confirmed:false,requestId:null};
  private command:Reserve|null=null;private bytes:Uint8Array|null=null;private reservation:Reservation|null=null;
  private consumed=false;private busy=false;private aborter:AbortController|null=null;
- constructor(readonly component:string,readonly enabled:boolean,private journal:UploadJournal,private fetcher:typeof fetch=fetch,private changed:()=>void=()=>{}){if(enabled)this.sync();}
+ constructor(readonly component:string,readonly enabled:boolean,private journal:UploadJournal,private fetcher:typeof fetch=fetch,private changed:()=>void=()=>{}){this.fetcher=fetcher.bind(globalThis);if(enabled)this.sync();}
  private update(value:UploadState){this.state=Object.freeze(value);this.changed();}
  sync(){if(this.consumed)return;try{const id=this.journal.read();if(id){if(!uploadId(id))throw Error();this.consumed=true;this.revision++;this.bytes=null;this.command=null;this.update({phase:'unknown',confirmed:false,requestId:id});}}catch{this.consumed=true;this.update({phase:'blocked',confirmed:false,requestId:null});}}
  get locked(){return this.consumed;}
