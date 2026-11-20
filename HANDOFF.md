@@ -1,3 +1,42 @@
+## Current checkpoint — 2026-11-20: real loopback private-upload test preparation
+
+Baseline642309490ca6c06e6ecedd83518c61480adefcd8 includes merged PR252.
+Main CI44699434753 passed all four jobs:4437 backend+3567 subtests,405 PG
+cases without skips,schema0030 round trip,2505 frontend and signed Chrome4+16+16.
+Same-head Workers passed; deployment44701048464/continuation44701048399 skipped.
+This supersedes the older pending publication/main entries preserved below.
+
+This test-only package joins production FastAPI/auth/Uvicorn HTTP with a unique
+migrated PostgreSQL schema and real Linux LocalArtifactStorage files. Only the
+existing disposable loopback PG endpoint is allowed; URL query target overrides
+are rejected. Synthetic signed identities and token-bound sessions remain inside
+fixtures. The normal and lost-response cases use65539 synthetic binary bytes,
+independent DB/file SHA-256 and original UUID/component/actor/audit witnesses.
+Only after complete STORED_PRIVATE and closed-file verification is the client
+response truncated. A fresh client only reads the original receipt; reservation,
+PUT and actual storage commit stay1/1/1. The existing retained.part/.blob hard-link
+pair is checked explicitly. No production logic, dependencies/configuration or
+macOS signed Chrome4+16+16 gates change. See docs/private-upload-http-loopback.md.
+
+Initial helper regression collection failed before the helper existed. Review
+then caught partial startup cleanup, target override and implicit schema-finalizer
+risks. Six and seven new regression failures were captured before those repairs.
+Current local evidence:177 related tests plus16 subtests passed, including21
+helper refusals/lifecycle cases and5 SQLite real-loopback diagnostic cases.
+The5 PostgreSQL cases skipped locally because TEST_POSTGRES_URL is absent; no
+local PostgreSQL database was created. Only exact-head ordinary CI can supply PG acceptance;
+its results and independent review are recorded in the draft PR when complete.
+
+Cleanup requires stopped owned listener/tasks/connections, released storage permit
+and zero borrowed DB connections before exact-owned file/schema removal. Unknown
+files, changed identities or active work fail explicitly without broad cleanup.
+This is not browser refresh, real OIDC/TLS, company storage, scanning/distribution,
+multi-version upload or deployment acceptance. No real files or provider settings.
+Historicale2038a94 images remain outside Next16.4.5 source-patch coverage; earlier
+Node5-second timeout root cause remains unknown. Overall36/44=82%; modules
+100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0; acceptance increment0.
+No ready/merge. Existing public history below is preserved byte-for-byte.
+
 ## Current checkpoint — 2026-11-20: bilingual Create private-upload guidance
 
 Baseline e4f82a6d5e9cb438d63d8f7ccca9ce946dd74c99 includes merged PR251.
