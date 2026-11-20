@@ -1,3 +1,39 @@
+## Current checkpoint — 2026-11-19: default-off single-file private upload UI
+
+Baseline be4f76b94dfc992c12bd68a24c53cefb0e0acbd4; PR249 merged and main
+CI44533885637 attempt1 passed all four jobs. Open PRs were empty. This bounded
+package connects only the verified ASRC receipt component_id to a single-file
+picker, exact preview/confirmation and original request receipt recovery.
+Definition and SSR baseline UUIDs are deliberately distinct in synthetic tests.
+Trusted context admission and the8MiB hard cap precede file reading and hashing.
+
+Six initial regression tests failed before implementation. Independent reviewers
+identified misleading cross-component recovery display; a dedicated UI regression
+failed, then passed after showing the original receipt component and mismatch.
+Current callback generations, cancelled/late work, single reserve/PUT, persistent
+claim and original receipt-only recovery are covered with synthetic fixtures.
+The journal stores only version/random request ID and never resets this attempt,
+including after success. Web Locks serialize participating same-origin tabs;
+missing/corrupt storage or locks fail closed. Clearing storage or another browser
+is outside this local guard, not a server-level global exactly-once guarantee.
+
+No settings, backend/API, dependencies, migrations or CI gates change. Actual
+browser-to-relay-to-temporary-storage wiring is deferred to a separate slice;
+mocked binary fidelity and UI tests are not real storage/identity acceptance.
+STORED_PRIVATE does not mean scanned, distributable or release ready. No real
+file disclosure, operational upload, deployment, VM or runtime-image execution.
+Historical e2038a94/schema0030 images remain outside Next16.4.5 source security
+patch coverage; the earlier Node five-second timeout root cause remains unknown.
+
+Final frontend2476 tests pass with zero skips/failures; related43 and localization
+checks pass. Actual Next16.4.5/OpenNext build and production cf/auth checks pass.
+The original default-off no-file-input guard caught disabled DOM rendering; the
+UI was hidden while disabled, retaining the gate. Two independent code/privacy
+reviews accepted the repairs. Exact-head draft CI remains to be recorded in the
+PR; no ready or merge is authorized. Acceptance increment0: overall
+36/44=82%; modules100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0.
+See docs/private-upload-picker.md. Existing public history below is unchanged.
+
 ## Current checkpoint — 2026-11-19: default-off private upload browser relay
 
 Baseline main48fb52cb9df711602b9d4569b60414980b62d10a; main CI44521725863

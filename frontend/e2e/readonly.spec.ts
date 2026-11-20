@@ -163,7 +163,7 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   await page.getByRole('button', { name: 'Prepare immutable preview', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Submit component declaration', exact: true })).toHaveCount(0);
   await expect(page.locator('input[type="file"]')).toHaveCount(0);
-  await expect(page.getByText('Declare one component on an existing DRAFT ASR. File upload is not implemented here.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Declare one component on an existing DRAFT ASR. Private upload is a separate confirmed step.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '中文', exact: true }).click();
   await expect(page.getByRole('heading', { name: '声明应用发布组件', exact: true })).toBeVisible();
   await expect(page.locator('#asr-version')).toHaveValue('SYNTHETIC-COMPONENT');
