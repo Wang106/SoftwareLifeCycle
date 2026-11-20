@@ -1,3 +1,38 @@
+## Current checkpoint — 2026-11-20: isolated private-upload browser storage evidence
+
+Baseline f1a5672ab8baf9916ff6dfa07fa66faf2d6f94c4; PR250 merged and main
+CI44683556695 attempt1 passed all four jobs. This test-only package adds four
+browser journeys alongside the unchanged16+16:65539-byte synthetic selection
+through the actual picker and relay into an exclusive temporary file; loss of
+browser response after complete relay success and independent disk verification,
+then explicit original-request receipt recovery after refresh; disabled picker;
+and lower trusted admission refusal. Production code, dependencies and runtime
+configuration are unchanged. Normal signed Chrome/sandbox/zero-retry gates remain.
+
+The test API closes/syncs the owned file before independent length/SHA-256 and
+request UUID verification. Reserve/PUT/write remain1/1/1. Relay receipt GETs are
+2 normally and3 after explicit recovery; refresh itself performs no query.
+Identity/context queries are counted independently:4/3 normally,5/3 on recovery.
+Logical origin is exact HTTPS; real transport is loopback HTTP. This does not
+verify TLS, real OIDC, FastAPI, company data, malware scanning or release readiness.
+STORED_PRIVATE remains private storage evidence only. No upload is enabled.
+
+Regression-first evidence: missing fixture/report tests failed before creation;
+response-loss placement and setup cleanup regressions failed before correction.
+25 targeted tests and2501 full frontend tests passed; TypeScript and actual
+Next16.4.5/OpenNext production build passed.
+Independent code and security/privacy review found and then cleared query-count
+and setup-cleanup defects. Strict report rejects missing/skipped/retried cases,
+wrong disk evidence, duplicate writes and incomplete cleanup. Real signed-browser
+execution and exact-head ordinary CI remain pending draft publication; these
+local checks are not browser or real business acceptance. See
+`docs/private-upload-browser-storage.md` for the test protocol and boundaries.
+
+Ledger unchanged: overall36/44(82%); modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0. Business acceptance increment0. Historical e2038a94
+runtime images are not covered by the Next16.4.5 source patch. The earlier Node
+5-second harness timeout's root cause remains unknown. No ready/merge/deployment.
+
 ## Current checkpoint — 2026-11-19: default-off single-file private upload UI
 
 Baseline be4f76b94dfc992c12bd68a24c53cefb0e0acbd4; PR249 merged and main
