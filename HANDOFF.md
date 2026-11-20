@@ -1,3 +1,29 @@
+## Current checkpoint — 2026-11-20: synthetic proc observation adapter
+
+Baseline fc2b79da6d6053294f7298f765d2cec45f797224 includes merged PR254.
+Main CI44737792072 first attempt passed all four jobs; Workers passed.
+Deployment44739804109 and continuation44739804237 skipped.
+
+This package adds bounded pure parsers for supplied stat/status/namespace bytes
+and a partial process adapter. It refuses malformed/duplicate fields, PID reuse,
+identity mismatch and root/mixed UIDs, without reading real proc or launching
+Chrome. Seccomp values are preserved, never promoted to sandbox qualification.
+Runner, publisher and input authenticity verification flags remain false.
+See docs/linux-proc-observation-parser.md for the contract and future stable-proc
+FD/identity binding requirement. Full argv, ancestry, collection authenticity,
+network enforcement and actual Linux runtime acceptance remain unverified.
+
+Regression-first import failed before implementation; seven synthetic test
+methods pass. A review-led namespace range regression failed before alignment
+with the existing checker. All139 contract tests pass. Independent review and
+full exact-head CI are recorded in the
+draft PR when complete. No production/workflow/dependency/security change.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage.
+Earlier CI44707991621 first-attempt cancellation cause remains unproven.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0.
+Existing public history below is preserved; no ready/merge in this package.
+
 ## Current checkpoint — 2026-11-20: Linux sandbox observation consistency preparation
 
 Baseline e285e92c1f73196fbd442a9afe9a8defe664a1e9 includes merged PR253.
