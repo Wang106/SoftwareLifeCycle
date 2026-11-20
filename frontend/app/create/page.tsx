@@ -20,7 +20,7 @@ export default function Page() {
       <div className="eyebrow"><Localized>{'CREATE'}</Localized></div>
       <h1><Localized>{'Create lifecycle record'}</Localized></h1>
       <p className="muted"><Localized>{'Available forms prepare requests. Submission still requires an approved signed-in environment; the public demo remains read-only.'}</Localized></p>
-      <p className="muted"><Localized>{'File upload is not implemented. Resource references do not upload or store files.'}</Localized></p>
+      <p className="muted"><Localized>{'Start at Create → Application Release. After a successful component declaration, separately confirm private file upload in an approved, signed-in environment with upload enabled. Resource references do not upload or store files.'}</Localized></p>
     </div></div>
     <div className="creategrid"><Localized>{forms.map(item =>
       <Link className="createcard" href={item.href} prefetch={false} key={item.title}>

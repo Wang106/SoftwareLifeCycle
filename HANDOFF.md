@@ -1,3 +1,38 @@
+## Current checkpoint — 2026-11-20: bilingual Create private-upload guidance
+
+Baseline e4f82a6d5e9cb438d63d8f7ccca9ce946dd74c99 includes merged PR251.
+Main CI44692297221 attempt1 passed all four jobs:4437 backend plus3567
+subtests,405 PostgreSQL-module cases without skips,schema0030 round trip,
+2503 frontend tests and signed Chrome158 sandbox=true browser4+16+16.
+Same-commit Workers passed; Actions deployment44694452062 and continuation
+44694451963 skipped. These supersede the older pending checkpoints below.
+
+This package replaces only the outdated Create upload notice and its Chinese
+translation. It points from Create to Application Release, then successful
+component declaration and a separate private-upload confirmation in an approved,
+signed-in environment with upload enabled. Resource references do not upload or
+store files; public sample operation remains read-only. No generic upload entry
+or inferred component target is introduced. The existing receipt component_id,
+permissions, upload logic, dependencies, configuration and CI gates are unchanged.
+
+Two new English/Chinese rendered-copy regressions failed before the copy fix;
+169 related/Create/localization tests pass afterward. Existing five form links,
+three unavailable cards, no file input/submit controls and default-off command
+preparation assertions remain. Only the two exact text expectations change in
+the existing real-browser navigation/language-switch journey; its no-write and
+no-file-control guards are retained. All2505 frontend tests passed without skips/failures. Independent code and
+privacy review accepted all eight files and verified public-history preservation.
+Production build and exact-head CI are pending and will be recorded in the draft
+PR after verification; no ready transition or merge.
+
+No real identity, file, storage, deployment or target-machine action occurred.
+Real backend acceptance and multi-version continuous upload remain separate.
+Historical e2038a94/schema0030 runtime images are not covered by the Next16.4.5
+source patch; the earlier Node five-second timeout root cause remains unknown.
+Overall remains36/44=82%; modules100/100demo/100demo/100/89/60/17 and plans
+100/100/20/33/40/40/0. Business acceptance increment0. Existing public history
+below is preserved byte-for-byte.
+
 ## Current checkpoint — 2026-11-20: private-upload browser evidence and native fetch correction
 
 Baseline f1a5672ab8baf9916ff6dfa07fa66faf2d6f94c4; main CI44683556695 passed.

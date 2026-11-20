@@ -54,18 +54,31 @@ for (const [label, href] of unavailable) {
     }
   });
 }
-test('create center separates preparation, authorized submission and unavailable upload in both languages', () => {
+test('create center separates preparation, authorized submission and resource references in both languages', () => {
   for (const locale of ['en', 'zh']) {
     const html = center(locale);
     assert.ok(html.includes(locale === 'en'
       ? 'Available forms prepare requests. Submission still requires an approved signed-in environment; the public demo remains read-only.'
       : '已有表单可填写并准备请求；提交仍需获准且已登录的环境，公开演示保持只读。'));
     assert.ok(html.includes(locale === 'en'
-      ? 'File upload is not implemented. Resource references do not upload or store files.'
-      : '文件上传尚未实现；资源引用不会上传或存储文件。'));
+      ? 'Resource references do not upload or store files.'
+      : '资源引用不会上传或存储文件。'));
     assert.doesNotMatch(html, /<form\b|type="file"|<button[^>]*type="submit"/);
   }
 });
+
+for (const locale of ['en', 'zh']) {
+  test(locale + ': Create explains receipt-gated private upload without a generic upload entry', () => {
+    const html = center(locale);
+    const guidance = locale === 'en'
+      ? 'Start at Create → Application Release. After a successful component declaration, separately confirm private file upload in an approved, signed-in environment with upload enabled. Resource references do not upload or store files.'
+      : '从创建 → 应用发布开始。组件声明成功后，仅在已启用上传且获准的已登录环境中另行确认私有文件上传。资源引用不会上传或存储文件。';
+    assert.ok(html.includes(guidance));
+    assert.doesNotMatch(html, /File upload is not implemented|文件上传尚未实现/);
+    assert.equal((html.match(/class="createcard"/g) || []).length, 5);
+    assert.doesNotMatch(html, /<form\b|type="file"|<button[^>]*type="submit"|href="[^"]*(?:upload|components\/new)/);
+  });
+}
 function nodes(node) {
   return Array.isArray(node) ? node.flatMap(nodes) : node && typeof node === 'object'
     ? [node, ...nodes(node.props?.children)] : [];

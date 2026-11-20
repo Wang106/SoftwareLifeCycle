@@ -127,7 +127,7 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   await expect(page.locator('article.createcard-unavailable')).toHaveCount(3);
   await expect(page.locator('article.createcard-unavailable').filter({ hasText: 'Software Change Request' }))
     .toContainText('Creation form not implemented');
-  await expect(page.getByText('File upload is not implemented. Resource references do not upload or store files.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Start at Create → Application Release. After a successful component declaration, separately confirm private file upload in an approved, signed-in environment with upload enabled. Resource references do not upload or store files.', { exact: true })).toBeVisible();
   await page.locator('.creategrid a[href="/releases/application/new"]').click();
   await expect(page.getByRole('heading', { name: 'Create application release draft', exact: true })).toBeVisible();
   await expect(page.getByText('Currently cannot save online. The public sample is read-only; real identity is not configured.', { exact: true })).toBeVisible();
@@ -204,7 +204,7 @@ test('real DOM preserves recorded versus corrected evidence through navigation a
   await page.getByRole('button', { name: '中文', exact: true }).click();
   await expect(page.locator('article.createcard-unavailable').filter({ hasText: '软件变更申请' })).toContainText('新建表单尚未实现');
   await expect(page.locator('.creategrid a[href="/releases/application/new"]').filter({ hasText: '应用发布' })).toContainText('打开填写表单');
-  await expect(page.getByText('文件上传尚未实现；资源引用不会上传或存储文件。', { exact: true })).toBeVisible();
+  await expect(page.getByText('从创建 → 应用发布开始。组件声明成功后，仅在已启用上传且获准的已登录环境中另行确认私有文件上传。资源引用不会上传或存储文件。', { exact: true })).toBeVisible();
   await page.locator('.creategrid a[href="/commands?operation=test-release"]').click();
   await expect(page.locator('form.commandform select').first()).toHaveValue('test-release');
   await page.reload();
