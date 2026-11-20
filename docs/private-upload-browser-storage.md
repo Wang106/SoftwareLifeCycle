@@ -1,7 +1,9 @@
 # Isolated private-upload browser storage validation
 
 This package adds four test-only journeys to ordinary CI. It does not enable
-private upload, change production code or install a test authentication bypass.
+private upload or install a test authentication bypass. A separately confirmed
+minimal production correction binds the upload controller's fetch function to
+its global receiver; it changes no requests, locks, permissions or limits.
 The existing signed macOS ARM64 Chrome preparation, sandbox and both16-case
 suites remain required. The additional suite inherits their browser configuration,
 zero retries and service-worker/download restrictions.
@@ -64,3 +66,23 @@ is a test double, not FastAPI, real OIDC, company storage or deployment. Private
 storage success says nothing about scanning, distribution or business approval.
 No creation-page copy changes, continuous multi-version uploads, download path,
 production configuration, dependencies or permissions are included.
+
+## Confirmed native fetch receiver correction
+
+Initial head `37e7ce67146c309fb536522eb03b52690870bfe5`, run44687313896,
+passed the original16+16 but only1/4 new cases. Context was never requested in
+the enabled cases. Diagnostic head `e30d02b43de7902754509221850d385e84e35d2b`,
+run44688798640/job136129380240, used signed Chrome158.0.8127.37 with sandbox
+enabled and zero retries. Untouched native fetch with a pre-aborted signal
+returned AbortError for Window, but TypeError / Illegal invocation for a
+controller-shaped receiver. Neither diagnostic intentionally sends a request.
+
+Only after that direct evidence, the controller constructor binds fetch to
+globalThis. Two receiver-sensitive regressions failed before the correction
+and cover context, reserve, content and original receipt recovery after both
+normal and lost responses. The browser diagnostic remains native; no fixture
+replacement fetch hides the defect. The new suite runs before the original
+16+16 tail so the existing exact workflow contract is unchanged. A failed new
+suite stops subsequent browser steps; skipped steps are never reported passed.
+The corrected candidate still requires complete exact-head CI and actual
+browser-to-disk success; diagnosis alone is not successful upload acceptance.

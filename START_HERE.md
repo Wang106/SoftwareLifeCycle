@@ -1,37 +1,42 @@
-## Current checkpoint — 2026-11-20: isolated private-upload browser storage evidence
+## Current checkpoint — 2026-11-20: private-upload browser evidence and native fetch correction
 
-Baseline f1a5672ab8baf9916ff6dfa07fa66faf2d6f94c4; PR250 merged and main
-CI44683556695 attempt1 passed all four jobs. This test-only package adds four
-browser journeys alongside the unchanged16+16:65539-byte synthetic selection
-through the actual picker and relay into an exclusive temporary file; loss of
-browser response after complete relay success and independent disk verification,
-then explicit original-request receipt recovery after refresh; disabled picker;
-and lower trusted admission refusal. Production code, dependencies and runtime
-configuration are unchanged. Normal signed Chrome/sandbox/zero-retry gates remain.
+Baseline f1a5672ab8baf9916ff6dfa07fa66faf2d6f94c4; main CI44683556695 passed.
+Draft PR251 initial head37e7ce67146c309fb536522eb03b52690870bfe5 failed
+CI44687313896: frontend2501 and original signed Chrome16+16 passed; new
+browser cases1/4 passed. Backend stopped at the exact workflow-tail contract;
+migrations/full backend were not executed. This failure is preserved, not retried.
 
-The test API closes/syncs the owned file before independent length/SHA-256 and
-request UUID verification. Reserve/PUT/write remain1/1/1. Relay receipt GETs are
-2 normally and3 after explicit recovery; refresh itself performs no query.
-Identity/context queries are counted independently:4/3 normally,5/3 on recovery.
-Logical origin is exact HTTPS; real transport is loopback HTTP. This does not
-verify TLS, real OIDC, FastAPI, company data, malware scanning or release readiness.
-STORED_PRIVATE remains private storage evidence only. No upload is enabled.
+Diagnostic head e30d02b43de7902754509221850d385e84e35d2b moved only the new
+step before the old16+16 tail; all126 existing browser contracts passed locally.
+Run44688798640/job136129380240 directly verified signed Chrome158.0.8127.37,
+sandbox=true/retries=0: untouched native fetch with a pre-aborted signal returns
+AbortError for Window and TypeError / Illegal invocation for a controller-shaped
+receiver. No replacement fetch or real upstream was used for that diagnosis.
+The diagnostic browser cases still fail because production remained unchanged;
+its later original16+16 steps are skipped, not passed.
 
-Regression-first evidence: missing fixture/report tests failed before creation;
-response-loss placement and setup cleanup regressions failed before correction.
-25 targeted tests and2501 full frontend tests passed; TypeScript and actual
-Next16.4.5/OpenNext production build passed.
-Independent code and security/privacy review found and then cleared query-count
-and setup-cleanup defects. Strict report rejects missing/skipped/retried cases,
-wrong disk evidence, duplicate writes and incomplete cleanup. Real signed-browser
-execution and exact-head ordinary CI remain pending draft publication; these
-local checks are not browser or real business acceptance. See
-`docs/private-upload-browser-storage.md` for the test protocol and boundaries.
+Only after direct evidence, UploadDraft now binds fetch to globalThis once in
+its constructor. This is the sole production change. Two receiver-sensitive
+regressions failed before it; normal and lost-response paths now cover context,
+reserve, content and original-request recovery without rereading or retransmission.
+41 related and2503 complete frontend tests pass. Independent code/security/privacy
+reviews accept the minimal correction. Actual Next16.4.5/OpenNext production
+build passed; corrected exact-head CI remains pending. No ready/merge is authorized.
 
-Ledger unchanged: overall36/44(82%); modules100/100demo/100demo/100/89/60/17;
-plans100/100/20/33/40/40/0. Business acceptance increment0. Historical e2038a94
-runtime images are not covered by the Next16.4.5 source patch. The earlier Node
-5-second harness timeout's root cause remains unknown. No ready/merge/deployment.
+The four synthetic browser journeys retain65539-byte independent temporary-disk
+verification, loss after complete relay success, disabled picker and lower trusted
+admission. Reserve/PUT/write remain1/1/1; identity/context/receipt are4/3/2 normally,
+5/3/3 after explicit recovery. Refresh makes no automatic request. Strict reports
+reject skipped/retried/missing cases, invalid bytes/hash/UUID and cleanup failure.
+See docs/private-upload-browser-storage.md for the executable test boundaries.
+Logical HTTPS uses fixed loopback transport; this is not real TLS/OIDC/FastAPI,
+company storage, scanning, distribution or business acceptance. Upload stays off.
+Dependencies, runtime configuration, permissions, limits and all gates are unchanged.
+
+Ledger remains overall36/44(82%); modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; real business acceptance increment0. Historical
+e2038a94 images are not covered by the Next16.4.5 source patch. Earlier Node
+5-second timeout root cause remains unknown. No deployment or target-machine work.
 
 ## Current checkpoint — 2026-11-19: default-off single-file private upload UI
 
