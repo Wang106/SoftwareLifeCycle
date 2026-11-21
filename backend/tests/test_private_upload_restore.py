@@ -78,3 +78,78 @@ def test_historical_stored_receipt_does_not_prove_restored_bytes(upload_db,tmp_p
         verify_restored(svc,command['request_id'],request(db,ids),stored,root)
     assert svc.receipt(command['request_id'],request(db,ids))['stored_receipt']==stored
     assert source.joinpath(stored['object_id']+'.blob').read_bytes()==DATA
+
+
+@pytest.mark.parametrize('uncertain',[False,True])
+def test_finished_worker_bytes_do_not_override_committed_restore_contract(upload_db,monkeypatch,uncertain):
+    import asyncio
+    import copy
+    import threading
+    from sqlalchemy.orm import sessionmaker
+    from app.services.local_artifact_storage import LocalArtifactStorage, StorageError
+    from app.services.private_upload_http import owned_worker
+    from private_upload_loopback import inspect_disk
+    db,ids,root=upload_db
+    command,reservation=reserve(service(db,root),db,ids)
+    db.rollback()
+    sessions=sessionmaker(bind=db.get_bind(),expire_on_commit=False)
+    original_commit=LocalArtifactStorage.commit
+    commits=[];finished=threading.Event();main_thread=threading.get_ident()
+    def commit(storage,descriptor):
+        assert descriptor.object_id==reservation['object_id']
+        original_commit(storage,descriptor)
+        commits.append(descriptor.object_id)
+        if uncertain: raise StorageError('synthetic lost acknowledgement')
+    monkeypatch.setattr(LocalArtifactStorage,'commit',commit)
+    def worker():
+        assert threading.get_ident()!=main_thread
+        try:
+            with sessions() as worker_db:
+                return service(worker_db,root).receive(command['request_id'],io.BytesIO(DATA),request(worker_db,ids))
+        finally: finished.set()
+    async def run():
+        if uncertain:
+            with pytest.raises(StorageError,match='synthetic lost acknowledgement'):
+                await owned_worker(worker)
+            return None
+        return await owned_worker(worker)
+    stored=asyncio.run(run())
+    assert finished.is_set() and commits==[reservation['object_id']]
+    def files():
+        result={}
+        for suffix in ('.part','.blob'):
+            path=root/(reservation['object_id']+suffix)
+            payload=path.read_bytes();info=path.stat()
+            assert payload==DATA and hashlib.sha256(payload).hexdigest()==command['sha256']
+            result[path.name]=(payload,info.st_dev,info.st_ino,info.st_nlink,info.st_mode,info.st_size,info.st_mtime_ns)
+        assert {p.name for p in root.iterdir()}==set(result)
+        assert len({value[1:3] for value in result.values()})==1
+        assert all(value[3]==2 for value in result.values())
+        return result
+    before_files=files()
+    disk=inspect_disk(root,reservation['object_id'],len(DATA),command['sha256'])
+    assert disk['bytes']==len(DATA) and disk['sha256']==command['sha256']
+    def snapshot():
+        with sessions() as fresh:
+            row=fresh.get(PrivateUploadSession,command['request_id'])
+            values=copy.deepcopy({column.name:getattr(row,column.name) for column in row.__table__.columns})
+            audits=sorted((str(a.id),a.event_no) for a in fresh.scalars(select(AuditEvent)).all())
+            receipt=service(fresh,root).receipt(command['request_id'],request(fresh,ids))
+            return values,audits,copy.deepcopy(receipt)
+    before=snapshot();row,_,receipt=before
+    assert row['release_component_id']==ids['component'] and str(row['object_id'])==reservation['object_id']
+    assert row['state']==('RECONCILIATION_REQUIRED' if uncertain else 'STORED_PRIVATE')
+    assert row['stored_receipt_json']==stored and receipt['stored_receipt']==stored
+    assert receipt['reservation']==reservation
+    with sessions() as fresh:
+        svc=service(fresh,root)
+        observed=svc.inspect(command['request_id'],request(fresh,ids))
+        assert observed['bytes']=={'stage':'verified','object':'verified'}
+        assert observed['status']==receipt
+        if uncertain:
+            with pytest.raises(AssertionError):
+                verify_restored(svc,command['request_id'],request(fresh,ids),stored,root)
+        else:
+            evidence=verify_restored(svc,command['request_id'],request(fresh,ids),stored,root)
+            assert evidence['sha256']==command['sha256']
+    assert snapshot()==before and files()==before_files

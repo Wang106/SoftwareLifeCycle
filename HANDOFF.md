@@ -1,3 +1,31 @@
+## Current checkpoint — 2026-11-21: uncertain bytes committed-restore refusal
+
+Baseline2c49f3938974b1a0083a8f592646a24452034e4b includes merged PR267.
+Main CI44901057526 first attempt four jobs passed; same-head Workers passed.
+Actions deployment44902054219/continuation44902054210 skipped. Same-head Render
+automatic event update_failed, cause unverified; active version unconfirmed.
+No provider operation in this package.
+
+One parametrized synthetic regression joins the existing post-storage-commit
+failure seam to the unchanged committed-attachment verifier, with a success
+control. Awaited real owned_worker closes its Session; fresh Sessions verify
+RECONCILIATION_REQUIRED and no success receipt. Independent .part/.blob reads
+verify actual bytes/hash/link facts. Existing verify_restored refuses uncertainty
+even though byte inspection passes. Full row, receipt, audit identities and file
+content/metadata remain unchanged. This is correct refusal, not a production bug.
+
+Initial acceptance probe:1pass/1fail at existing committed-state assertion.
+Final related134tests passed, no skips,24.92s. Independent review and exact-head
+ordinary CI are recorded in the draft PR. Only test/doc/checkpoint changes;
+production classification, repair, cleanup and permissions remain untouched.
+Original owned root only: no actual relocation, backup, restoration, deployment,
+company data, configuration, workflow, dependency or fee change. Retention and
+reconciliation policy and real target restore acceptance remain unverified.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage;
+prior CI timing causes remain unknown. Existing public history is preserved.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; businessdelta0. Draft only.
+
 ## Current checkpoint — 2026-11-21: session writer scope boundary
 
 Baselinee4467b8ec832e14aa0e193841ca719aa1c29a5c7 includes merged PR266.

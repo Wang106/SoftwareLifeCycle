@@ -50,3 +50,31 @@ DB/media snapshots, supported restoration format, target filesystem, retention,
 crash recovery and company installation remain unverified. Historical e2038a94
 images remain outside Next16.4.5 source-patch coverage; old CI timing causes are
 not claimed fixed. Business acceptance remains36/44 (82%), increment0.
+
+## Completed worker with published bytes but no successful receipt
+
+A synthetic integrated control now reuses the failure seam from
+`test_published_bytes_after_uncertain_ack_do_not_become_success`: real storage
+commit finishes, then a StorageError is raised before the final successful DB
+transition. Production code and the committed-only verifier remain unchanged.
+Both the ordinary success and uncertain case run the real coordinator in the
+existing owned_worker with its own Session. The caller awaits actual worker
+completion and Session closure before opening new observation Sessions.
+
+The uncertain case persists RECONCILIATION_REQUIRED with no stored receipt. Both
+.part and .blob still independently match synthetic bytes and SHA-256, share the
+actual device/inode and have link count two. The read-only service inspect reports
+both aliases verified. Nevertheless the existing verify_restored rejects this
+case at its committed-state contract; the success control passes. An initial
+unguarded acceptance probe yielded one pass and one failure at that existing
+assertion. This demonstrates correct refusal, not an existing rule that let bad
+facts pass. Final related local suite:134 passed, no skips,24.92s.
+
+Before/after observation compares all upload-row columns, the original receipt,
+audit identities, exact names, bytes, inode/link/mode/size and mtime. Access-time
+changes from reading are excluded. No state, receipt or retained file is repaired,
+removed or reclassified. Tests use the original owned root: no directory is moved,
+no database dump/restore or actual media restoration takes place. Awaited worker
+completion and verified bytes do not create a success receipt. Even a successful
+private storage receipt is not publication, scanning or distribution approval.
+Independent review and exact-head ordinary CI are recorded in the draft PR.
