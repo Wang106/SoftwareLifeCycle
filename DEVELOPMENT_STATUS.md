@@ -1,3 +1,29 @@
+## Current checkpoint — 2026-11-21: private upload restored-root evidence
+
+Baseline649eda97340f1b868503b2827b3ad9777a4255dc includes merged PR260.
+Main CI44865218278 first attempt all four jobs passed; same-head Workers passed.
+Deployment44866234528/continuation44866234406 skipped. No deployment action here.
+
+The old single-link software restore fixtures do not represent uploads retaining
+hard-linked .part/.blob aliases. This test-only slice reconstructs synthetic
+bytes in a fresh owned root and checks actual service inspect, independent disk
+length/hash and original request/object/component/actor/scope associations.
+Empty or invalid media cannot pass on a historical STORED_PRIVATE receipt alone.
+Both linked-pair and independent-copy restoration follow existing storage rules;
+no inode-preservation, database restore, scanning or production-readiness claim.
+See docs/private-upload-restore-evidence.md for exact boundaries.
+
+Missing-verifier regression preceded implementation. New local tests:8 passed,
+1 PostgreSQL case skipped because the local test service is absent; normal CI
+must execute it in the existing migrated disposable schema. Independent review,
+related suite and exact-head CI results are recorded in the draft PR.
+No production/storage semantics, permissions, workflow/config/dependency changes,
+Docker/company/Render exercise, real data, feature activation or deployment.
+Public history preserved. Historical e2038a94 images remain outside Next16.4.5
+source-patch coverage; previous CI timing causes remain unproven.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0. Draft only.
+
 ## Current checkpoint — 2026-11-21: synthetic bounded-byte coordination
 
 Baseline1ccf03854795a0fee8e7aa5fb6b0c02aac1924b8 includes merged PR259.
