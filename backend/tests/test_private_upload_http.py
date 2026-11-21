@@ -194,3 +194,101 @@ def test_sessions_created_used_and_closed_in_same_worker_before_network(upload_d
     req._receive=receive
     assert asyncio.run(runtime.receive(values['request_id'],req))['state']=='STORED_PRIVATE'
     assert [kind for kind,_ in events]==['open','close','open','close']
+
+
+class FrozenTestIngress:
+    """Single-loop test entry only, not a production or cross-writer barrier."""
+    def __init__(self,runtime):
+        self.runtime=runtime; self.frozen=False; self.active=0
+
+    async def receive(self,key,req):
+        if self.frozen: raise RuntimeError('test ingress frozen')
+        self.active+=1
+        try: return await self.runtime.receive(key,req)
+        finally: self.active-=1
+
+    def freeze(self): self.frozen=True
+
+    def capture(self,callback):
+        if not self.frozen or self.active: raise RuntimeError('test ingress not drained')
+        callback()
+
+
+def test_frozen_entry_counts_body_wait_after_preflight_session_closed(upload_db):
+    import threading
+    from sqlalchemy.orm import Session
+    from private_upload_loopback import inspect_disk
+    db,ids,root=upload_db
+    a,ar=reserve(service(db,root),db,ids)
+    b,br=reserve(service(db,root),db,ids)
+    assert a['request_id']!=b['request_id'] and ar['object_id']!=br['object_id']
+    def make_request():
+        req=request(db,ids);req.state.token_expires=time.time()+120
+        req.scope['headers'] += [(b'content-type',b'application/octet-stream'),
+            (b'content-length',str(len(DATA)).encode())]
+        return req
+    ra,rb=make_request(),make_request();db.rollback()
+    events=[];main_thread=threading.get_ident()
+    class Tracked(Session):
+        def __init__(self,*args,**kwargs):
+            self.owner=threading.get_ident();events.append(('open',self.owner))
+            super().__init__(*args,**kwargs)
+        def close(self):
+            assert threading.get_ident()==self.owner!=main_thread
+            assert not self.in_transaction()
+            super().close();events.append(('close',self.owner))
+    # Two slots deliberately leave capacity for B; rejection must be the test gate.
+    runtime=UploadHTTP(UploadPolicy(str(root),SCOPE,1024,60,30,2),
+        sessionmaker(bind=db.get_bind(),class_=Tracked,expire_on_commit=False))
+    gate=FrozenTestIngress(runtime); captures=[];b_reads=[]
+    async def scenario():
+        waiting=asyncio.Event();release=asyncio.Event();a_reads=[]
+        async def body_a():
+            a_reads.append(1)
+            assert [kind for kind,_ in events]==['open','close']
+            if len(a_reads)==1:
+                return {'type':'http.request','body':DATA[:3],'more_body':True}
+            waiting.set();await release.wait()
+            return {'type':'http.request','body':DATA[3:],'more_body':False}
+        async def body_b():
+            b_reads.append(1)
+            raise AssertionError('frozen B must not read body')
+        ra._receive=body_a;rb._receive=body_b
+        task=asyncio.create_task(gate.receive(a['request_id'],ra))
+        try:
+            await asyncio.wait_for(waiting.wait(),5)
+            assert not task.done() and gate.active==1 and not db.in_transaction()
+            assert [kind for kind,_ in events]==['open','close']
+            assert list(root.iterdir())==[]
+            gate.freeze()
+            with pytest.raises(RuntimeError,match='not drained'):
+                gate.capture(lambda:captures.append('captured'))
+            assert captures==[]
+            assert runtime.permits.acquire(False)  # B has spare real runtime capacity
+            runtime.permits.release()
+            with pytest.raises(RuntimeError,match='frozen'):
+                await gate.receive(b['request_id'],rb)
+            assert b_reads==[] and [kind for kind,_ in events]==['open','close']
+            assert list(root.iterdir())==[] and gate.active==1
+            release.set()
+            stored=await asyncio.wait_for(asyncio.shield(task),5)
+            assert stored['request_id']==str(a['request_id'])
+            assert stored['object_id']==ar['object_id'] and stored['state']=='STORED_PRIVATE'
+            assert gate.active==0 and len(a_reads)==2
+            assert [kind for kind,_ in events]==['open','close','open','close']
+            recovered=service(db,root).receipt(a['request_id'],request(db,ids))
+            assert recovered['stored_receipt']==stored and recovered['reservation']==ar
+            witness=inspect_disk(root,stored['object_id'],len(DATA),hashlib.sha256(DATA).hexdigest())
+            assert witness['sha256']==stored['sha256']
+            assert (root/(stored['object_id']+'.blob')).read_bytes()==DATA
+            other=service(db,root).receipt(b['request_id'],request(db,ids))
+            assert other['state']=='RESERVED' and other['reservation']==br
+            assert other['stored_receipt'] is None
+            assert not (root/(br['object_id']+'.part')).exists()
+            assert not (root/(br['object_id']+'.blob')).exists()
+            gate.capture(lambda:captures.append('captured'))
+            assert captures==['captured'] and gate.frozen
+        finally:
+            release.set()
+            await asyncio.wait_for(asyncio.shield(task),5)
+    asyncio.run(scenario())

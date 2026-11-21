@@ -1,3 +1,30 @@
+## Current checkpoint — 2026-11-21: pending upload body drain witness
+
+Baselinee06cb48b7c24cb11cf1d53d5447a613243e7047a includes merged PR264.
+Main CI44881616891 first attempt four jobs passed; same-head Workers passed.
+Actions deployment44882852774/continuation44882852770 skipped. Prior Render
+readonly evidence: automatic update_failed; active version unconfirmed.
+No provider operation in this package.
+
+One event-controlled test uses real UploadHTTP.receive, tracked Session closure,
+synthetic SQLite and owned temporary bytes. A waits for its last body fragment
+after preflight closes. A test-only frozen entry refuses capture and rejects B,
+whose independent valid reservation has spare runtime capacity, before any body
+read or new Session. After A finishes, original receipt and actual disk bytes/hash
+are verified before the drained capture marker executes. No snapshot is made.
+See docs/upload-ingress-drain.md for the single-instance/entry-only boundary.
+
+Regression without active ingress capture guard failed; minimal test-only guard
+and related148 tests pass with no skips. Independent review and exact-head ordinary
+CI recorded in draft PR. No production, permissions, dependency, workflow or
+configuration change; no real server/backup/restore/company/Render operation.
+Other writers, multi-instance barriers and storage-worker cancellation are not
+newly covered. All-writer enforcement and lifecycle/capture integration remain open.
+Historical e2038a94 images are outside Next16.4.5 source security patch; prior CI
+runtime causes remain unknown. New records preserve existing public history.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; businessdelta0. Draft only.
+
 ## Current checkpoint — 2026-11-21: synthetic capture window ordering
 
 Baseline0bddf9c9747402766cfea1dc3db1954b69eec21c includes merged PR263.
