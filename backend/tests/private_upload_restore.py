@@ -16,3 +16,33 @@ def verify_restored(service, request_id, request, expected, root):
     # LocalArtifactStorage allows either a linked pair or two independent files;
     # do not invent an inode-preservation guarantee for a byte-copy restore.
     return inspect_disk(root, expected['object_id'], expected['expected_bytes'], expected['sha256'])
+
+
+def verify_scope_restored(db, service, request, scope, root):
+    """Complete committed set in a quiescent synthetic target scope only.
+
+    No media manifest selects records. Not a scalable production catalogue or
+    atomic backup proof: the fixture owns the DB and forbids concurrent writes.
+    """
+    import copy
+    from sqlalchemy import select
+    from app.models.upload import PrivateUploadSession
+
+    def expected_records():
+        rows = db.scalars(select(PrivateUploadSession).where(
+            PrivateUploadSession.storage_scope_id == scope,
+            PrivateUploadSession.state == 'STORED_PRIVATE',
+        ).order_by(PrivateUploadSession.id).execution_options(populate_existing=True)).all()
+        return [(row.id, copy.deepcopy(row.stored_receipt_json)) for row in rows]
+
+    assert scope == service.storage_scope_id
+    expected = expected_records()
+    assert expected, 'no committed synthetic target records'
+    db.rollback()
+    evidence = {}
+    for request_id, receipt in expected:
+        evidence[request_id] = verify_restored(service, request_id, request, receipt, root)
+    # Detect observed changes, without claiming sequential reads are atomic.
+    assert expected_records() == expected
+    db.rollback()
+    return evidence  # no partial evidence escapes when any required object fails
