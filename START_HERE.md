@@ -1,3 +1,26 @@
+## Current checkpoint — 2026-11-21: synthetic diagnostic copy contract
+
+Baseline7739baa939f57753f7e5859210c1e5b9f5902be6 includes merged PR268.
+Main CI44904522812 four jobs passed; same-head Workers passed. Actions deployment
+44905573760 and continuation44905573801 skipped. Render automatic update_failed;
+cause and active version unconfirmed. No provider operation in this package.
+
+Two test-owned in-memory members use an independently obtained expected inventory
+and byte readback. Missing/conflicting/incomplete copies cannot report completion;
+state promotion and successful-receipt invention remain forbidden. Completion is
+only synthetic diagnostic copy completeness, never attachment commitment,
+distribution, bootable backup or durability. PR268's actual-worker/file evidence
+and immutable state regression remain unchanged. No production format or API.
+
+Initial new-test collection failed for missing implementation; final related
+146passed/no skips,25.50s. Independent review and exact-head CI are recorded in the draft
+PR. Retention location, access, real-data inclusion, duration and expected-inventory
+custody remain unadopted operational decisions. No real backup/restore, deployment,
+configuration, permission, dependency, workflow or fee change. Public history kept.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage; prior
+CI timing causes remain unknown. Overall36/44=82%, businessdelta0;
+modules100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0. Draft only.
+
 ## Current checkpoint — 2026-11-21: uncertain bytes committed-restore refusal
 
 Baseline2c49f3938974b1a0083a8f592646a24452034e4b includes merged PR267.
