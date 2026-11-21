@@ -1,3 +1,33 @@
+## Current checkpoint — 2026-11-20: injected process identity sampling
+
+Baseline6af69acfcddecd7e72ebb98479df67181cdc90c3 includes merged PR255.
+Main CI44762932007 first attempt all four jobs passed; Workers passed.
+Deployment44765110896 and continuation44765110888 skipped.
+
+This package prepares a one-shot injected sampling protocol, not a live adapter.
+It checks an opaque shared directory/exit-probe association before and after each
+bounded read, rejects exit/unknown/errors, validates the expected PID generation,
+and never reacquires a numeric PID or returns a partial sample. Caller retains
+resource ownership and cleanup. Synthetic tokens do not prove kernel identity;
+pidfd association, bounded live I/O and proc-directory lifetime remain future work.
+Results explicitly remain untrusted, unqualified and non-atomic. Full argv,
+launcher side effects, provenance and network enforcement remain unverified.
+See docs/linux-process-sampling.md for exact interface and limitations.
+
+Initial regression failed before implementation;12 synthetic test methods pass.
+All151 browser-contract tests and the progress ledger check pass.
+Initial PR CI44766181785 exposed a root-directory import assumption before
+backend execution. The same backend-directory invocation reproduced it; new
+module/test imports now resolve fixed sibling source paths without changing CI.
+Independent review and full exact-head ordinary CI are recorded in the draft PR
+when complete. No live proc access, Chrome/process exercise, install/download,
+production/workflow/dependency/security/permission change or deployment.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage.
+Earlier main CI cancellation/performance cause remains unproven.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0.
+Existing public history below is preserved. No ready/merge in this package.
+
 ## Current checkpoint — 2026-11-20: synthetic proc observation adapter
 
 Baseline fc2b79da6d6053294f7298f765d2cec45f797224 includes merged PR254.
