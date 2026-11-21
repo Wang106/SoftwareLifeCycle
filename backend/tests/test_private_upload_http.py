@@ -292,3 +292,90 @@ def test_frozen_entry_counts_body_wait_after_preflight_session_closed(upload_db)
             release.set()
             await asyncio.wait_for(asyncio.shield(task),5)
     asyncio.run(scenario())
+
+
+def test_frozen_entry_waits_for_cancelled_real_storage_worker(upload_db,monkeypatch):
+    import threading
+    from sqlalchemy.orm import Session
+    from app.services.local_artifact_storage import LocalArtifactStorage
+    from private_upload_loopback import inspect_disk
+    db,ids,root=upload_db
+    values,reservation=reserve(service(db,root),db,ids)
+    req=request(db,ids);req.state.token_expires=time.time()+120;db.rollback()
+    req.scope['headers'] += [(b'content-type',b'application/octet-stream'),
+        (b'content-length',str(len(DATA)).encode())]
+    sessions=[];main_thread=threading.get_ident();body_reads=[];storage_reads=[]
+    class Tracked(Session):
+        def __init__(self,*args,**kwargs):
+            self.owner=threading.get_ident();sessions.append('open')
+            super().__init__(*args,**kwargs)
+        def close(self):
+            assert threading.get_ident()==self.owner!=main_thread
+            assert not self.in_transaction()
+            super().close();sessions.append('close')
+    runtime=UploadHTTP(UploadPolicy(str(root),SCOPE,1024,60,30,1),
+        sessionmaker(bind=db.get_bind(),class_=Tracked,expire_on_commit=False))
+    gate=FrozenTestIngress(runtime);captures=[];release=threading.Event()
+    original_stage=LocalArtifactStorage.stage
+    async def scenario():
+        loop=asyncio.get_running_loop();entered=asyncio.Event()
+        def stage(storage,descriptor,source):
+            assert descriptor.object_id==reservation['object_id']
+            class GatedReader:
+                def read(self,count):
+                    storage_reads.append(count)
+                    if len(storage_reads)==1:
+                        assert threading.get_ident()!=main_thread
+                        assert body_reads==[len(DATA)]
+                        loop.call_soon_threadsafe(entered.set)
+                        assert release.wait(5), 'test storage barrier timed out'
+                    return source.read(count)
+            return original_stage(storage,descriptor,GatedReader())
+        monkeypatch.setattr(LocalArtifactStorage,'stage',stage)
+        async def body():
+            assert sessions==['open','close']
+            body_reads.append(len(DATA))
+            return {'type':'http.request','body':DATA,'more_body':False}
+        req._receive=body
+        task=asyncio.create_task(gate.receive(values['request_id'],req))
+        try:
+            await asyncio.wait_for(entered.wait(),5)
+            # Actual stage has opened its exclusive .part, after HTTP digest validation.
+            assert sessions==['open','close','open'] and gate.active==1
+            part=root/(reservation['object_id']+'.part')
+            assert part.is_file() and part.stat().st_size==0
+            gate.freeze();assert task.cancel()
+            # FIFO loop checkpoint: cancellation is delivered before this callback.
+            # Worker progress itself is controlled solely by the threading Event.
+            delivered=asyncio.Event();loop.call_soon(delivered.set)
+            await asyncio.wait_for(delivered.wait(),5)
+            assert not task.done() and task.cancelling()==1 and gate.active==1
+            assert not runtime.permits.acquire(False)
+            with pytest.raises(RuntimeError,match='not drained'):
+                gate.capture(lambda:captures.append('captured'))
+            assert captures==[] and sessions==['open','close','open']
+            assert part.stat().st_size==0 and len(storage_reads)==1
+            release.set()
+            with pytest.raises(asyncio.CancelledError):
+                await asyncio.wait_for(asyncio.shield(task),5)
+            assert task.cancelled() and gate.active==0
+            assert sessions==['open','close','open','close']
+            assert runtime.permits.acquire(False);runtime.permits.release()
+            recovered=service(db,root).receipt(values['request_id'],request(db,ids))
+            stored=recovered['stored_receipt']
+            assert recovered['state']=='STORED_PRIVATE' and recovered['reservation']==reservation
+            assert stored['request_id']==str(values['request_id'])
+            assert stored['object_id']==reservation['object_id']
+            row=db.get(PrivateUploadSession,values['request_id'])
+            assert row.state=='STORED_PRIVATE' and row.release_component_id==ids['component']
+            witness=inspect_disk(root,stored['object_id'],len(DATA),hashlib.sha256(DATA).hexdigest())
+            assert witness['sha256']==stored['sha256']
+            assert (root/(stored['object_id']+'.blob')).read_bytes()==DATA
+            assert body_reads==[len(DATA)]
+            gate.capture(lambda:captures.append('captured'))
+            assert captures==['captured'] and gate.frozen
+        finally:
+            release.set()
+            try: await asyncio.wait_for(asyncio.shield(task),5)
+            except asyncio.CancelledError: pass
+    asyncio.run(scenario())
