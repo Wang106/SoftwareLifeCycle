@@ -1,3 +1,31 @@
+## Current checkpoint — 2026-11-21: session writer scope boundary
+
+Baselinee4467b8ec832e14aa0e193841ca719aa1c29a5c7 includes merged PR266.
+Main CI44896235266 first attempt four jobs passed; same-head Workers passed.
+Actions deployment44897168904/continuation44897168982 skipped. Same-head Render
+automatic event update_failed; active version unconfirmed. No provider action here.
+
+The capture writer inventory now explicitly separates own browser-session creation
+and first revocation. One signed identity_client regression uses the same test
+Session factory as an idle frozen UploadHTTP test entry. First revoke persists
+revoked_at and exactly one actor/session-linked audit while that entry stays
+empty. Fresh database Sessions prove the change; an idempotent response is not
+accepted as new-write evidence. No actual upload or production pause is claimed.
+
+A negative probe assuming revoked_at remained NULL failed. Final related local
+suite85passed/16skipped: the skips require existing CI PostgreSQL. Independent
+review and exact-head ordinary CI are recorded in the draft PR. Only tests,
+writer inventory and technical records change; existing public history retained.
+Attachment-writer quiet is not whole-database quiet. A normal session commit is
+NOT evidence of a broken pg_dump snapshot or inconsistent attachments. Existing
+login/logout, read-only exceptions, permissions and production behavior remain.
+No backup/restore, live environment, company data, deployment, configuration,
+workflow, dependency or fee change. Real capture scope and writer policy remain
+unaccepted. Historical e2038a94 images remain outside Next16.4.5 source-patch
+coverage; prior CI timing causes remain unknown.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; businessdelta0. Draft only.
+
 ## Current checkpoint — 2026-11-21: cancelled upload worker drain witness
 
 Baseline5fd4f1f7af02888fe1881f6fca9b863cdb42c193 includes merged PR265.

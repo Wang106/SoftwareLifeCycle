@@ -158,3 +158,47 @@ def test_audit_failure_rolls_back_session_change(identity_client, monkeypatch, o
         row = db.get(BrowserSession, uuid.UUID(value['id']))
         assert (row is None) if operation == 'create' else row.revoked_at is None
         assert count(db, AuditEvent) == before
+
+
+def test_first_revoke_writes_while_upload_test_entry_is_drained(identity_client,tmp_path):
+    from app.services.private_upload_http import UploadHTTP, UploadPolicy
+    from test_private_upload_http import FrozenTestIngress
+    client,sessions,ids,key,engine=identity_client
+    root=tmp_path/'unused-upload-root';root.mkdir()
+    runtime=UploadHTTP(UploadPolicy(str(root),uuid.uuid4(),1024,60,30,1),sessions)
+    assert runtime.sessions.kw['bind'] is engine
+    gate=FrozenTestIngress(runtime)
+    gate.freeze();markers=[]
+    gate.capture(lambda:markers.append('upload-entry-drained'))
+    assert gate.frozen and gate.active==0 and main.settings.read_only_mode
+    value,authorization=register(client,key)
+    sid=uuid.UUID(value['id'])
+    with sessions() as db:
+        row=db.get(BrowserSession,sid)
+        assert row.principal_id==ids['principal'] and row.revoked_at is None
+        before=count(db,AuditEvent)
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(
+            AuditEvent.entity_id==sid,AuditEvent.event_type=='BROWSER_SESSION_REVOKED'))==0
+    # First revoke, not an idempotent replay: the before-state is unrevoked.
+    response=client.post(ROOT+'/'+str(sid)+'/revoke',headers=authorization)
+    assert response.status_code==200 and response.json()=={'id':str(sid),'status':'revoked'}
+    private(response)
+    with sessions() as db:
+        row=db.get(BrowserSession,sid)
+        assert row.revoked_at is not None and row.principal_id==ids['principal']
+        assert count(db,AuditEvent)==before+1
+        events=db.scalars(select(AuditEvent).where(AuditEvent.entity_id==sid,
+            AuditEvent.event_type=='BROWSER_SESSION_REVOKED')).all()
+        assert len(events)==1
+        audit=events[0]
+        assert audit.entity_type=='BROWSER_SESSION' and audit.entity_ref==str(sid)
+        assert audit.actor_principal_id==ids['principal'] and audit.action=='REVOKED'
+        assert audit.payload_json=={'expires_at':value['expires_at']}
+        assert db.scalar(select(func.count()).select_from(AuditEvent).where(
+            AuditEvent.entity_id==sid,AuditEvent.event_type=='BROWSER_SESSION_CREATED'))==1
+    assert gate.frozen and gate.active==0 and main.settings.read_only_mode
+    gate.capture(lambda:markers.append('upload-entry-still-drained'))
+    assert markers==['upload-entry-drained','upload-entry-still-drained']
+    assert list(root.iterdir())==[]
+    assert runtime.permits.acquire(False);runtime.permits.release()
+    # An entry-only marker is intentionally never returned as whole-DB evidence.
