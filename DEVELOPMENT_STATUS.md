@@ -1,3 +1,31 @@
+## Current checkpoint — 2026-11-21: synthetic resource ownership contract
+
+Baseline ed97dd1ab8ecadce7b3ebd9cd746f9a9f5b9033e includes PR257.
+Main CI44851563297 first attempt passed all four jobs; Workers production passed.
+Deployment44852785550/continuation44852785571 skipped. Prior read-only Render
+lookup found no PR257 record; newest remained PR253 update_failed. No provider action.
+
+This package pins the future resource broker's ownership, common proc PID-view
+and fresh-record prerequisites in docs/linux-resource-ownership-contract.md.
+A test-only reference state machine models internally issued exclusive leases,
+ordered nonreplayed receipts, FD/generation/view invalidation, exit/unknown/error
+refusal and exact owned close attempts. Inner NSpid aliases cannot match the
+expected proc-view PID. No live backend, raw fdinfo parser or sampler integration
+is implemented; MODEL_PROTOCOL_COMPLETE retains all verification flags false.
+Model events cannot authenticate kernel facts or prove actual FD lifetime,
+byte freshness, atomicity, sandbox or runner qualification. Real resource
+acquisition and independent backend acceptance remain the next missing gate.
+
+The initial regression failed because the model did not exist. All13 synthetic
+model tests and all181 contract tests pass from the CI backend directory.
+Independent code/privacy review and exact-head ordinary CI are recorded in the
+draft PR when complete. No live proc/process/browser, downloads/installs,
+workflow/security/production changes or deployment. No ready/merge in this package.
+Existing public history is preserved. Historical e2038a94 images remain outside
+Next16.4.5 source-patch coverage; prior CI timing causes remain unproven.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0.
+
 ## Current checkpoint — 2026-11-21: injected owned-descriptor adapter
 
 Baseline6af467515686b21e6c063a4fa87a18fea76452df includes merged PR256.
