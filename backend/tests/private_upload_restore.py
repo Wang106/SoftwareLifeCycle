@@ -46,3 +46,42 @@ def verify_scope_restored(db, service, request, scope, root):
     assert expected_records() == expected
     db.rollback()
     return evidence  # no partial evidence escapes when any required object fails
+
+
+def verify_closed_scope_restored(db, service, request, scope, root):
+    """Stricter opt-in witness for an exclusively owned, committed-only fixture.
+
+    Extra retained bytes can be legitimate in production. This is not a cleanup
+    policy or a general restore validator. The caller owns the entire synthetic
+    root and DB, allows no concurrent mutation and has no other storage users.
+    """
+    import copy
+    from pathlib import Path
+    from sqlalchemy import select
+    from app.models.upload import PrivateUploadSession
+
+    assert scope == service.storage_scope_id
+    assert Path(service._storage.root) == root
+
+    def snapshot():
+        rows = db.scalars(select(PrivateUploadSession).where(
+            PrivateUploadSession.storage_scope_id == scope,
+        ).order_by(PrivateUploadSession.id).execution_options(populate_existing=True)).all()
+        assert rows and all(row.state == 'STORED_PRIVATE' for row in rows), 'committed-only fixture required'
+        result = [(row.id, str(row.object_id), copy.deepcopy(row.stored_receipt_json)) for row in rows]
+        db.rollback()  # dedicated fixture Session, never caller pending writes
+        return result
+
+    expected = snapshot()
+    names = {object_id + suffix for _, object_id, _ in expected for suffix in ('.part', '.blob')}
+    assert len(names) == 2 * len(expected)
+
+    def check_names():
+        # Enumerate names only; never read/follow an unknown entry or delete it.
+        assert {entry.name for entry in root.iterdir()} == names, 'closed synthetic media set differs'
+
+    check_names()
+    evidence = verify_scope_restored(db, service, request, scope, root)
+    assert snapshot() == expected
+    check_names()
+    return evidence  # no partial acceptance on any mismatch; not an atomic scan

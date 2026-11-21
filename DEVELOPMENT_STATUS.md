@@ -1,3 +1,29 @@
+## Current checkpoint — 2026-11-21: closed synthetic upload media
+
+Baseline f2df3cc65bd9f5fd3e490a8dbd344bfcb0cbdec9 includes merged PR262.
+Main CI44874938795 first attempt four jobs passed; same-head Workers passed.
+Actions deployment44875958756 and continuation44875958651 skipped. Independent
+Render automatic event failed; active version unconfirmed. No provider action here.
+
+This test-only slice rejects old A database/new A+B media in an exclusively owned,
+quiescent, committed-only synthetic root. Expected names come from all database
+scope rows, not a media listing. It reuses the real read-only byte witness and
+returns no partial success. Extra entries remain untouched. Noncommitted records
+are unsupported, not an orphan verdict: production legitimately retains failed
+bytes and stage aliases. Existing validators/storage semantics are unchanged.
+See docs/private-upload-closed-media.md for exact assumptions and boundaries.
+
+Original-witness regression:7 failed,1 passed. New and related synthetic suite:
+129 passed+16 subtests. Independent review and exact-head CI recorded in draft PR.
+No actual backup/restore command, new service, production data, real Linux exercise,
+permission, dependency, workflow, configuration, billing or deployment changes.
+New records are technical only; existing public history preserved. Not an atomic
+backup, provenance, cleanup authorization or company acceptance claim.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage;
+prior CI timing causes remain unknown. Actual consistent capture/restore is open.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0. Draft only.
+
 ## Current checkpoint — 2026-11-21: synthetic cross-time upload content
 
 Baselineed782ff3feda67e851ed404aeec4ad6edcedd08f includes merged PR261.
