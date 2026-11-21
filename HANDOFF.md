@@ -1,3 +1,31 @@
+## Current checkpoint — 2026-11-21: synthetic bounded-byte coordination
+
+Baseline1ccf03854795a0fee8e7aa5fb6b0c02aac1924b8 includes merged PR259.
+Main CI44860898829 first attempt all four jobs passed; same-head Workers passed.
+Deployment44862036616/continuation44862036696 skipped. No deployment action here.
+
+This test-only integration reuses OwnedDirectory, fdinfo/stat parsers and the
+existing ownership model. Ordered fdinfo/stat/fdinfo/original-token exit checks
+short-circuit on incomplete reads, mismatches, view/generation faults and unknown
+or exited observations. Only owned fixture resources are closed once; cleanup
+failure cannot produce success. No live backend or sampler activation is added.
+All authenticity, binding, common-view, freshness, atomicity and qualification
+flags stay false. See docs/linux-binding-fixture.md for assumptions and limits.
+
+Missing-module regression preceded implementation;11 new synthetic tests and
+all205 contract tests pass. Independent review found a replaceable public exit
+token; its failing regression preceded the read-only-property/original-token fix. An initial sandbox attempt lacked temporary-directory
+write access; the permitted run passed without code changes. Independent review
+and exact-head ordinary CI are recorded in the draft PR when complete.
+No live proc/pidfd/process/browser exercise, workflow/security/production changes,
+install/download, activation or deployment. Existing public history is preserved.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage;
+prior CI timing causes remain unproven. Trusted resource acquisition, exclusive
+lifetimes, proc-view and fresh kernel observations remain the next missing gate.
+Future live evidence must distinguish runner and guest kernel/architecture.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0. Draft only.
+
 ## Current checkpoint — 2026-11-21: pure pidfd fdinfo parsing
 
 Baseline fa8fcd1f6b21b7ea8b1879d32f89137d0f6e854f includes merged PR258.
