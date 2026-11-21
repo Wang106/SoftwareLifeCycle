@@ -1,3 +1,30 @@
+## Current checkpoint — 2026-11-21: injected owned-descriptor adapter
+
+Baseline6af467515686b21e6c063a4fa87a18fea76452df includes merged PR256.
+Main CI44843874184 first attempt all four jobs passed; Workers production passed.
+Deployment44845786460/continuation44845786500 skipped. Separate read-only Render
+lookup found no matching PR256 deploy; newest remained PR253 e285e92c update_failed.
+No provider action occurred; preview/build success is not company installation.
+
+This package adds an injected directory adapter feeding the existing sampler.
+Fixed relative reads handle positive short chunks through EOF and detect limit+1
+without exposing partial records. Namespace link capacity is separate from EOF;
+alive same-UID permission denial stops before any later namespace read. Unique
+opaque handles exclude numeric-FD aliases; only owned tokens are closed once.
+Cleanup failure is explicit and never blindly retried. Kernel generation/pidfd
+binding, hard I/O deadlines, live proc/Chrome and actual isolation remain unverified.
+See docs/linux-owned-descriptor.md. No production/workflow/security change.
+
+Missing-module regression preceded implementation. Traceback privacy and value-
+handle alias regressions failed before their announced minimal corrections.
+17 new synthetic tests and all168 contract tests pass from the CI backend cwd.
+Independent review and exact-head CI are recorded in the draft PR when complete.
+Existing public history below is preserved; no ready/merge in this package.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage;
+prior cancellation/performance causes remain unproven.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0.
+
 ## Current checkpoint — 2026-11-20: injected process identity sampling
 
 Baseline6af69acfcddecd7e72ebb98479df67181cdc90c3 includes merged PR255.
