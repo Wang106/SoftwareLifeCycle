@@ -1,3 +1,32 @@
+## Current checkpoint — 2026-11-21: cancelled upload worker drain witness
+
+Baseline5fd4f1f7af02888fe1881f6fca9b863cdb42c193 includes merged PR265.
+Main CI44884602163 first attempt four jobs passed; same-head Workers passed.
+Actions deployment44885707660/continuation44885707659 skipped. Prior readonly
+Render automatic event update_failed; active version unconfirmed. No provider
+operation in this package.
+
+One additional event-controlled synthetic test reuses real UploadHTTP.receive,
+coordinator and LocalArtifactStorage.stage with isolated SQLite/temporary files.
+After full HTTP body/digest validation, an event blocks stage's first source read
+with its exclusive empty .part already open. Cancelling the outer request cannot
+drain the test entry, release its permit or close its worker Session early.
+After release the outer task reports cancellation; the original receipt, database
+component/state and independent closed disk bytes/hash prove actual STORED_PRIVATE.
+Only then is the test capture marker allowed; no snapshot is produced.
+
+Negative control removing the test active guard failed at capture. A new assertion
+initially used a nonexistent component_id field; announced correction uses the
+existing release_component_id. Related tests and independent review are recorded
+in the draft PR along with exact-head ordinary CI. Production code is unchanged.
+See docs/upload-worker-drain.md. No real HTTP server, PG instance, backup/restore,
+company environment, runtime configuration, permission, workflow or dependency
+change. Multiple writers/instances and actual capture policy remain unverified.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage; prior
+CI timing causes remain unknown. New records preserve public history.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; businessdelta0. Draft only.
+
 ## Current checkpoint — 2026-11-21: pending upload body drain witness
 
 Baselinee06cb48b7c24cb11cf1d53d5447a613243e7047a includes merged PR264.
