@@ -1,3 +1,29 @@
+## Current checkpoint — 2026-11-21: synthetic diagnostic final-sync contract
+
+Baseline7d6c04ef8dec71278d82ea8355dc71c4b3d665c2 includes merged PR269.
+Main CI44956177053 first attempt four jobs passed; same-head Workers passed.
+Actions deployment44957691858/continuation44957691879 skipped. Render automatic
+update_failed; cause and active version unconfirmed. No provider action here.
+
+A test-only temporary-file adapter copies two owned synthetic members against an
+independently held inventory. Stage/owned-parent identity targets one-shot EIO after
+members and marker are visible. The original error propagates with no receipt,
+retry, overwrite or cleanup. Early failure and success controls remain separate.
+Independent readback only verifies current member equality and cannot upgrade the
+failed call or original RECONCILIATION_REQUIRED/null receipt. Source/target evidence
+is retained unchanged. Existing PR268/269 contracts and production code unchanged.
+
+Initial missing-adapter collection failed; an in-memory retry mutation was caught
+by the final-parent regression. Related149passed/no skips,18.86s. Independent code
+review found no blocking issue; final privacy/history review and exact-head CI are
+recorded in the draft PR. This assumes exclusively owned fixture paths, not hostile
+replacement; no power-loss durability or all simultaneous close-error proof.
+No real backup/restore, DB, deployment, company data, settings, permission, workflow,
+dependency or fee changes. Retention lifecycle and trusted inventory custody remain
+unadopted. Historical e2038a94 images are outside Next16.4.5 source-patch coverage;
+prior CI timing causes remain unknown. Overall36/44=82%, businessdelta0;
+modules100/100demo/100demo/100/89/60/17; plans100/100/20/33/40/40/0. Draft only.
+
 ## Current checkpoint — 2026-11-21: synthetic diagnostic copy contract
 
 Baseline7739baa939f57753f7e5859210c1e5b9f5902be6 includes merged PR268.
