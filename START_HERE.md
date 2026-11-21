@@ -1,3 +1,30 @@
+## Current checkpoint — 2026-11-21: synthetic cross-time upload content
+
+Baselineed782ff3feda67e851ed404aeec4ad6edcedd08f includes merged PR261.
+Main CI44868119205 first attempt four jobs passed; same-head Workers passed.
+Deployment44869027646/continuation44869027653 skipped. Existing Render automatic
+update failed with contemporaneous retired DB DNS errors; no provider action here.
+
+The existing joint pairing/hash gates remain unchanged. This test-only slice
+uses an old A media target and newer A+B synthetic database records, each with
+independently retained integrity digests. A's real read-only byte/scope witness
+passes, but complete-scope content acceptance rejects missing committed B.
+Expected entries come from every STORED_PRIVATE row in the fixture storage scope,
+never from media listings. Aligned A+B passes; empty media and empty committed
+sets reject. Failure does not repair, retransmit or return partial success.
+See docs/private-upload-time-skew.md for the quiescent synthetic target boundary.
+
+Missing-witness regression preceded implementation. Four new cases and related
+suite121 tests+16 subtests pass. Independent review and exact-head normal CI
+are recorded in the draft PR. No actual backup/restore commands or new services
+were run locally. No production, workflow, permission, configuration, billing,
+Render/intranet operation or dependency change. Existing public history preserved.
+Not a DB dump/restore, atomic backup, provenance or company acceptance claim.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage;
+previous CI timing causes remain unproven. Consistent capture/restore remains open.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0. Draft only.
+
 ## Current checkpoint — 2026-11-21: private upload restored-root evidence
 
 Baseline649eda97340f1b868503b2827b3ad9777a4255dc includes merged PR260.
