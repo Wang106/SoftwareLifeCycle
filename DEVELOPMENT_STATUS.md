@@ -1,3 +1,34 @@
+## Current checkpoint — 2026-11-21: synthetic capture window ordering
+
+Baseline0bddf9c9747402766cfea1dc3db1954b69eec21c includes merged PR263.
+Main CI44878280282 first attempt four jobs passed; same-head Workers passed.
+Actions deployment44879288785/continuation44879288816 skipped. Prior readonly
+Render verification: automatic update_failed, active version unconfirmed.
+No provider operation in this package.
+
+Known HTTP/coordinator/storage and related domain/operator DB writers are
+inventoried in docs/synthetic-capture-window.md. Existing per-process admission
+and owned-server cleanup do not prove a maintenance barrier across all writers.
+A test-only owned fake-writer model checks exact coverage, admission closure,
+old work drain, DB then media capture, verification and release ordering.
+Late changes, premature release or errors fail closed in the synthetic world.
+Production pause, actual capture and atomicity flags always remain false.
+No operator declaration, timestamp or flag is accepted as real enforcement.
+
+Missing-module regression preceded implementation. Ownership/error regressions
+then exposed4 failures. Exclusive model ownership survives callback unwind;
+fresh windows can reacquire a failed pause without reopening admission.25 pure
+tests and the related154 tests+16 subtests pass.
+Independent code/privacy rereview passed; draft publication triggers ordinary CI.
+Exact-head remote results are recorded in the PR when complete. No production,
+workflow, security, permission, dependency or configuration change. No real
+backup/restore, process, Linux/browser exercise, company/Render operation or fee.
+New technical records preserve public history; no private scheduling/delivery data.
+Real writer enforcement/drain, capture semantics and lifecycle policy remain open.
+Historical e2038a94 images are not covered by Next16.4.5 source security patch;
+prior CI timing causes remain unknown. Overall36/44=82%,businessdelta0;
+modules100/100demo/100demo/100/89/60/17;plans100/100/20/33/40/40/0. Draft only.
+
 ## Current checkpoint — 2026-11-21: closed synthetic upload media
 
 Baseline f2df3cc65bd9f5fd3e490a8dbd344bfcb0cbdec9 includes merged PR262.
