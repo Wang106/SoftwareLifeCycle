@@ -16,6 +16,8 @@ cross-writer pause/capture sequence was found in current main0bddf9c9.
 | Coordinator | `private_upload_sessions.py` receive/_transition/_uncertain/_record: RECEIVING, STAGED, PUBLISHING, STORED_PRIVATE or reconciliation state, audit commits | Direct trusted callers must use the same enforced boundary; per-instance `_busy` is insufficient |
 | Byte primitive | `local_artifact_storage.py` stage creates retained .part; commit links .blob and fsyncs | Cover all instances/processes using a root; no delete/GC path currently exists; failed bytes remain |
 | Related DB writers | `application_component_declaration.py` creates ReleaseComponent; `snapshot.py` copies SnapshotArtifact; release/governance/security writers change parent state, authority or audit; `write_contracts.py` inventories registered write routes | Whole-database capture requires inventory and exclusion of all DB writers, not only private upload routes |
+| Own browser-session registration | `app/api/browser_sessions.py` POST `/api/v1/security/me/browser-sessions`: authenticated active USER creates BrowserSession and BROWSER_SESSION_CREATED audit in one commit; exact replay does not create a second row | Separate database writer, explicitly allowed by `main.py` read-only-mode exception; upload admission does not cover it |
+| Own browser-session first revocation | POST `/api/v1/security/me/browser-sessions/{session_id}/revoke`: exact principal/token binding, first revoke sets revoked_at and commits BROWSER_SESSION_REVOKED audit; replay returns success without another mutation | Separate database writer; measure fresh pre/post durable state, not merely successful replay response; preserve normal logout/security semantics |
 | Operator paths | `seed.py`, `seed_release_demo.py`, `seed_release_evidence.py` create Artifact/component rows; Alembic/schema/operator/direct SQL or same-UID file tools can bypass HTTP | Disable/exclude seed, migrations, maintenance, scheduled workers and external writers for the window with independently verifiable enforcement |
 
 Private upload does not create Artifact or distribute bytes. Frontend
@@ -100,3 +102,31 @@ Final25 synthetic tests; related154 tests+16 subtests. Remote CI and draft PR no
 yet performed. Current workflow automatically runs on main push or PR, not feature
 push. Publication order is now confirmed: create a draft to trigger ordinary CI,
 then verify its exact head and update the PR evidence; no manual dispatch needed.
+
+## Upload-entry quiet versus database quiet
+
+The test `test_first_revoke_writes_while_upload_test_entry_is_drained` reuses the
+signed identity_client fixture (SQLite locally, existing isolated PostgreSQL in
+ordinary CI) and its same Session factory for a real UploadHTTP instance. Its
+existing test-only entry starts with no admitted uploads, is frozen, and accepts
+an entry-drained marker. It does not pretend an upload ran or install a production
+pause. Session registration and first revocation go through the unchanged signed
+HTTP routes and the same database while read_only_mode remains true.
+
+Before the first revoke, a new database Session observes revoked_at NULL and zero
+matching revoke audits. Afterwards another Session sees revoked_at set, exactly
+one new total audit and exactly one revoke audit linked to that session and actor.
+The creation audit remains singular. The upload entry remains frozen/empty, its
+permit is free and its temporary root is empty. No replay is used as write proof.
+An initial negative probe expecting revoked_at to remain NULL failed, disproving
+the all-database-quiescence inference; final regression asserts the actual write.
+This is a scope counterexample, not a production bug or a new maintenance lock.
+
+The six-lane fake World above is unchanged and does not gain runtime coverage by
+this inventory addition. An uncovered session writer cannot be counted as paused
+or drained for a whole-database-no-writes claim. Attachment-writer quiet is a
+narrower claim. A normal session commit does NOT by itself invalidate a pg_dump
+MVCC snapshot or prove attachment inconsistency. No dump/restore/snapshot is run,
+and this package does not block login/logout or broaden any permission. Future
+capture design must specify whether whole-DB quiet is required and how legitimate
+session operations are handled; no policy is selected by this synthetic test.
