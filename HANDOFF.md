@@ -1,3 +1,30 @@
+## Current checkpoint — 2026-11-21: pure pidfd fdinfo parsing
+
+Baseline fa8fcd1f6b21b7ea8b1879d32f89137d0f6e854f includes merged PR258.
+Main CI44856262265 first attempt passed all four jobs; same-head Workers passed.
+Deployment44857534858/continuation44857534863 skipped. No deployment action here.
+
+This package adds bounded supplied-byte pidfd fdinfo parsing and conditional
+same-proc-view PID number comparison. It rejects missing/duplicate/unknown or
+contradictory fields, invalid syntax and bounds, and inner NSpid aliases.
+Zero/-1 classify supplied unavailable/detached records but cannot match.
+The strict Linux6.8/6.12 x64 CONFIG_PID_NS profile is documented in
+docs/linux-pidfd-fdinfo-parser.md. Parsing does not authenticate the source,
+common view, FD lifetime, freshness, liveness, atomicity or sandbox. All match
+verification flags stay false; no OS adapter or sampler integration is added.
+
+Initial regression failed before implementation. All13 new synthetic tests and
+all194 contract tests pass from CI's backend directory. Independent code/privacy
+review and exact-head ordinary CI are recorded in the draft PR when complete.
+No actual proc/pidfd/process/browser exercise, permissions/production/config/
+workflow/dependency changes, install/download or deployment. Existing strict
+macOS browser gates remain intact. Existing public history is preserved.
+Historical e2038a94 images remain outside Next16.4.5 source-patch coverage;
+prior CI timing causes remain unproven. Trusted resource acquisition, view and
+fresh-byte provenance plus pidfd liveness remain the next missing gate.
+Overall36/44=82%; modules100/100demo/100demo/100/89/60/17;
+plans100/100/20/33/40/40/0; business acceptance increment0. Draft only.
+
 ## Current checkpoint — 2026-11-21: synthetic resource ownership contract
 
 Baseline ed97dd1ab8ecadce7b3ebd9cd746f9a9f5b9033e includes PR257.
