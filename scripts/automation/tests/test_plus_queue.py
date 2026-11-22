@@ -24,13 +24,13 @@ class PlusQueueTests(unittest.TestCase):
     def queue(self):
         return json.loads((launcher.ROOT / "docs/automation/plus-tasks.json").read_text())
 
-    def test_current_queue_has_evidence_and_one_scoped_review(self):
+    def test_current_queue_has_merged_evidence_and_no_pending_task(self):
         tasks = launcher.load_plus_tasks()
-        self.assertEqual([t["evidence"]["pr"] for t in tasks if t["status"] == "completed"], [47, 48])
-        pending = [t for t in tasks if t["status"] == "pending"]
-        self.assertEqual(len(pending), 1)
-        self.assertEqual(pending[0]["id"], "impact-withdrawal-design-review")
-        self.assertIn("impact-withdrawal-design-review", launcher.task_summary(tasks)[-2])
+        self.assertEqual([t["evidence"]["pr"] for t in tasks if t["status"] == "completed"], [47, 48, 54])
+        self.assertEqual([t for t in tasks if t["status"] == "pending"], [])
+        summary = launcher.task_summary(tasks)
+        self.assertIn("impact-withdrawal-design-review", summary[2])
+        self.assertIn("无；停止并报告阻塞或队列完成。", summary[-2])
 
     def test_invalid_completion_or_dependency_cannot_start(self):
         for mutation in ("evidence", "dependency", "duplicate", "mode"):
@@ -49,7 +49,10 @@ class PlusQueueTests(unittest.TestCase):
     def test_review_cannot_expand_to_migration_or_unsafe_paths(self):
         for path in ("backend/alembic/versions/0023_impact.py", "docs/../secrets.md", "docs/*.md", "/docs/review.md", ".github/workflows/ci.yml"):
             data = self.queue()
-            data["tasks"][-1]["allowed_paths"] = [path]
+            review = data["tasks"][-1]
+            review["status"] = "pending"
+            review.pop("evidence", None)
+            review["allowed_paths"] = [path]
             with self.subTest(path=path), self.assertRaises(ValueError):
                 self.load(data)
 

@@ -6,21 +6,21 @@
 User / reviewer
       |
       v
-Next.js 15 + React 19
+Next.js 16.4.5 + React 19.3.1
 Cloudflare Worker (OpenNext) or local web container
       |
       | server-side HTTP, API_BASE_URL
       v
-FastAPI 0.18.31
+Application version 0.18.50 on FastAPI 0.115.6
 OIDC identity + scoped write authorization + read-only guard
       |
       | SQLAlchemy 2 + Alembic
       v
-PostgreSQL 16
+PostgreSQL 16 in local Compose and in CI
 formal lifecycle records + append-only history
 ```
 
-GitHub `main` is the engineering source of truth. Cloudflare and Render are deployment targets; their live state must be checked independently of repository configuration.
+GitHub `main` is the engineering source of truth. Cloudflare and Render are deployment targets; their live state must be checked independently of repository configuration. The diagram above matches code at baseline `717bf54c2440fec91734d5b0cf706257c4f679e5`: application version `0.18.50`, Next.js `16.4.5`, and Alembic head `0030_private_upload_sessions`. A database note once recorded Render inventory as PostgreSQL 18; that live inventory was not rechecked for this baseline. Actions deployment of this baseline was skipped, and the live version is unknown.
 
 ## Repository boundaries
 

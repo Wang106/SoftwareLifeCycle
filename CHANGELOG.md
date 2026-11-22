@@ -1,5 +1,11 @@
 # Changelog
 
+## Status documents reconciled — 2026-11-22
+
+- Align the current status entries with baseline `717bf54c2440fec91734d5b0cf706257c4f679e5` and CI run `44960639202`. Older checkpoints keep their original wording.
+- Record one next step: determine the controlled pilot identity provider and environment. Leave private-upload retention undecided.
+- Keep roadmap 36/44 and the seven plan denominators. Mark the Plus impact-withdrawal design review completed with merged PR #54. No application, dependency, CI, or deployment change.
+
 ## Private upload session preparation — 2026-11-14
 - Add default-off, non-HTTP private upload reservation/phase/recovery coordination with synthetic byte tests; no Artifact or real file transfer.
 - Add schema0030 recovery metadata and synchronized current offline/health checks while retaining historical0029 evidence.

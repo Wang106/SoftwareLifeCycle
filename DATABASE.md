@@ -2,10 +2,10 @@
 
 ## Current baseline
 
-- Engine: PostgreSQL 16 in the local Compose environment; current Render inventory reports PostgreSQL 18. The local real-concurrency regression uses 16.15.
+- Engine: PostgreSQL 16 in local Compose and in CI (`postgres:16` on baseline `717bf54c2440fec91734d5b0cf706257c4f679e5`). The local real-concurrency regression uses 16.15. The previous wording of this bullet recorded a Render inventory of PostgreSQL 18; that live inventory was not rechecked on 2026-11-22.
 - ORM: SQLAlchemy 2.
 - Migration tool: Alembic.
-- Required schema revision: `0030_private_upload_sessions` (code contract; no real database migration is performed by this package).
+- Required schema revision in code: `0030_private_upload_sessions`. CI on the baseline above ran an ephemeral migration round trip. No deployed database was queried, and this documentation pass applies no migration.
 - Local demo startup: migrations, optional idempotent Seed, then API.
 - Production/company rule: use a fresh database and `SEED_ON_STARTUP=false`.
 
@@ -20,7 +20,7 @@ State, nonnegative counters, required JSON, stored-receipt pairing, unique objec
 and restrictive parent references are constrained. Service transitions also validate
 the complete retained audit chain and current scope. Existing rows are untouched;
 downgrade refuses retained upload records. No Artifact or byte data enters this
-table, and no HTTP upload or production writer is enabled. The coordinated database
+table, and the migration does not enable an HTTP upload or production writer. As of baseline `717bf54c2440fec91734d5b0cf706257c4f679e5`, default-off HTTP ingress code exists (`backend/app/services/private_upload_http.py`; `private_upload_http_enabled` defaults false). The 2026-11-14 session package note remains the history of that package. The coordinated database
 and filesystem recovery limitations are recorded in [the contract](docs/private-upload-sessions.md).
 
 
@@ -108,8 +108,7 @@ Foreign keys and stored UUIDs are the trace authority. Display numbers, versions
 
 Revision `0015` stores only external identity references and grants. It deliberately contains no password, token or client-secret columns, and no Seed identities or grants are created. Revision `0016` adds nullable actor identity columns so historical/seed audit events remain unchanged while new OIDC-mode events can reference the exact local principal and preserve the request's declared name separately.
 
-The current code contract is API `0.18.45` with the single Alembic head
-`0026_release_chain_revocation`; online deployment state must be verified separately.
+Reconciled on 2026-11-22 against baseline `717bf54c2440fec91734d5b0cf706257c4f679e5`, the code contract is application version `0.18.50` and Alembic head `0030_private_upload_sessions`. Online deployment of that revision was not verified. Dated sections below state the head at the time of each package, including older “current head” sentences, and stay historical.
 
 Never edit an applied migration to change history. Add a new ordered revision, import its model metadata in Alembic as required, and update `required_db_revision` in `backend/app/core/config.py` together with deployment documentation and readiness tests.
 
