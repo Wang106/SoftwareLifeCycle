@@ -1,5 +1,39 @@
 # Project Status
 
+## Current fact — reconciled 2026-11-22
+
+Reviewed baseline: `main` `717bf54c2440fec91734d5b0cf706257c4f679e5` (merge of PR #270). This section does not name the documentation commit that adds it. Fetch `origin/main` again before the next code change; a later push can move the branch.
+
+### Implemented and tested at this baseline
+
+- Application version string `0.18.50` in `backend/app/main.py`. The FastAPI package is `0.115.6`. Frontend dependencies include Next.js `16.4.5` and React `19.3.1`.
+- Code-required Alembic head: `0030_private_upload_sessions` (`backend/app/core/config.py`). CI on this baseline ran the migration round trip against ephemeral PostgreSQL. No deployed database was queried.
+- [CI run 44960639202](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/44960639202) succeeded on the first attempt. Frontend `npm test`: 2505 passed, 0 failed, 0 skipped. Backend JUnit `tests` attribute: 8097, with 0 failures, 0 errors and 0 skips. `scripts/ci/check_backend_report.py` on that run’s `backend.xml` reported `4530 passed, 411 PostgreSQL-module cases, no skips`. These numbers are test counts, not coverage.
+- The same run’s browser job used Chrome `158.0.8127.37` with the sandbox enabled: 4 upload journeys, 16 read-only journeys and 16 component journeys, all synthetic. The project browser stage remains 1/4.
+- Roadmap checkboxes remain 36/44 (82%): phases 5/5, 5/5 demo, 5/5 demo, 9/9, 8/9, 3/5, 1/6. Seven plans remain 10/10, 4/4, 1/5, 2/6, 2/5, 2/5, 0/6. The merged diagnostic-copy package has business acceptance increment 0.
+- The tree contains 80 `frontend/app/**/page.tsx` files. This pass did not re-test bilingual coverage. The 2026-10-06 snapshot below recorded 64 pages.
+- Default-off private HTTP upload code is in the tree (`private_upload_http_enabled` defaults to false). Grant, principal, session and impact-withdrawal code also exist, including design-review PR #54 merged as `1615ab72c0b11deea21674f2bfe8a91dde3c8197`. Plan 3 stays 1/5 and plan 6 stays 2/5.
+
+### Real environment not accepted
+
+No issuer, audience, JWKS, callback, pilot environment or operator has been selected. The public sample remains documented as read-only with OIDC disabled. `.env.example` still defaults `READ_ONLY_MODE=false`, `AUTH_MODE=disabled` and `SEED_ON_STARTUP=true` for local development.
+
+### Deployment unknown for this baseline
+
+[Actions deployment 44961710349](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/44961710349) and [continuation 44961710468](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/44961710468) concluded skipped. This review did not call Cloudflare or Render.
+
+### Single next step
+
+Determine the controlled pilot identity provider and environment. The open inputs are issuer, audience, JWKS, callback, an environment isolated from the public sample, and who may configure them. This document does not choose those values, and it does not authorize later submission, correction acceptance or operations drills.
+
+### Related blocker, parameters not selected
+
+Private-upload retention location, access, whether real data is included, duration, and custody of the trusted inventory remain undecided. That blocker is recorded separately from the next step above.
+
+## Historical review snapshot — 2026-10-06
+
+The wording from here through the 2026-10-06 gaps is that review. It is preserved, not rewritten into the baseline above. Later dated sections in this file are historical package notes.
+
 - Last reviewed: 2026-10-06 (Asia/Shanghai)
 - Repository: `Wang106/SoftwareLifeCycle`
 - Branch: `main`
@@ -7,7 +41,7 @@
 
 The current Git `HEAD` is always authoritative; run `git log -1 --oneline` before continuing because this document is updated in a later commit than the repository baseline it reviews.
 
-## Current phase
+## Phase note recorded 2026-10-06
 
 API0.18.35 adds default-disabled offline first-administrator bootstrap and exact existing-administrator recovery on migration0020. Recovery atomically revokes target browser sessions and appends audit; shared PostgreSQL transaction locking coordinates operator and API administration. Existing global/scoped roles, principal lifecycle, private administrator reads and bilingual account page remain implemented. Approved provider configuration, real browser/admin/operator acceptance and bilingual grant administration UI remain pending. Public sample remains read-only/OIDC-disabled, with no live operator capability enabled.
 
@@ -59,13 +93,13 @@ This finer counter does not change ROADMAP acceptance-item accounting or certify
 
 - All 14 command forms implement request preparation with confirmed immutable exports and expected audit/business links. Frontend tests pass 541 cases; authenticated submission remains pending.
 
-## In progress
+## In progress recorded 2026-10-06
 
 - Approved OIDC provider configuration remains open. Phase 6 now has five safety slices; retry/concurrency roadmap items are complete for current keyed routes. UI, broader corrections and result confirmation/trace remain.
 - All five safety packages have implementation/test/deployment evidence; provider configuration and remaining UI/correction/result scope are next.
 - The unrelated `frontend/app/activity/page 2.tsx` was not present in this clean cloud checkout and was not recreated, adopted or deleted.
 
-## Next stage
+## Next stage recorded 2026-10-06
 
 1. Configure an approved identity provider, browser session and controlled write target; the fixed read-consumer/compatibility scope and CI are complete.
 2. Integrate approved identity/session and authenticated submission with uncertain-result recovery for the first forms.
@@ -76,7 +110,7 @@ This finer counter does not change ROADMAP acceptance-item accounting or certify
 Roadmap progress is **36/44 (82%)**, Phase 6 **3/5 (60%)**; these are implemented
 scope counts, not production-readiness certification. See [ROADMAP.md](ROADMAP.md).
 
-## Deployment status
+## Deployment status recorded 2026-10-06
 
 | Layer | Configured target | Verified 2026-10-06 | Qualification |
 | --- | --- | --- | --- |
@@ -100,7 +134,7 @@ application change was made to resolve that in-progress timeout.
 
 The live URLs are volatile operational state. Recheck them rather than copying this table into a future report.
 
-## Database and API status
+## Database and API status recorded 2026-10-06
 
 - Repository and verified online API version: `0.18.29`. Current rollout evidence is recorded below.
 - Required and verified online schema revision: `0019_browser_sessions`.
@@ -109,7 +143,7 @@ The live URLs are volatile operational state. Recheck them rather than copying t
 - The API has both newer bounded catalog endpoints and older unbounded compatibility lists. Consumers should prefer bounded catalogs for directories and history review.
 - OpenAPI is available at `/docs` when the API is running.
 
-## Known gaps and issues
+## Known gaps recorded 2026-10-06
 
 - OIDC authentication and scoped authorization exist, but there is no configured identity provider or browser login/session flow.
 - There is no security-principal/grant management API or audited grant lifecycle yet; migration `0015` creates no identities or permissions.

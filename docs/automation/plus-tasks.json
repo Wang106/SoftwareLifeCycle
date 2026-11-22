@@ -20,8 +20,10 @@
     {
       "id": "impact-withdrawal-design-review",
       "title": "Impact 撤销模型与迁移方案审查（仅文档）",
-      "status": "pending",
+      "status": "completed",
       "depends_on": ["acceptance-correction-recovery-ui"],
+      "evidence": {"pr": 54, "merge_sha": "1615ab72c0b11deea21674f2bfe8a91dde3c8197"},
+      "history_note": "Design-review scope retained below. Completion is PR #54 only. Later withdrawal code does not raise plan 6. As of baseline 717bf54 this queue has no pending task.",
       "allowed_paths": [
         "docs/impact-withdrawal-design-review.md",
         "DEVELOPMENT_STATUS.md",

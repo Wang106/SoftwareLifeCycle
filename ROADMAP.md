@@ -83,7 +83,7 @@ Exit gate: an operational readiness review confirms repeatable deploy/rollback, 
 
 Use `规划：<目标>` to agree on scope and acceptance criteria. A roadmap item moves to complete only when its implementation and verification are present in `main`; discussion, demo data or a UI label alone is insufficient.
 
-## Current measurable progress and remaining sequence
+## Current measurable progress
 
 Checked roadmap items are now 36/44 (82%): Phase 1 5/5, Phase 2 5/5 (demo),
 Phase 3 5/5 (demo), Phase 4 9/9, Phase 5 8/9, Phase 6 3/5 (60%) and Phase 7 1/6.
@@ -93,6 +93,16 @@ remain compatible and weaker. Default-disabled UI, historical confirmation/trace
 bounded correction/revocation implementations now exist; unchecked milestones still
 require their approved target end-to-end and operational acceptance. Percentages are
 checked acceptance scope, not coding hours, provider configuration or production readiness.
+
+### Current next step — reconciled 2026-11-22 to baseline 717bf54
+
+One step: determine the controlled pilot identity provider and environment. Open inputs are issuer, audience, JWKS, callback, an environment isolated from the public sample, and who may configure them. This roadmap does not choose those values.
+
+Separate undecided blocker, not this step: private-upload retention location, access, whether real data is included, duration, and custody of the trusted inventory.
+
+### Historical remaining sequence — 2026-10-28
+
+The numbered items below are that date’s sequence. They are not a second current step. Later records show P8’s technical verification merged with PR #168 and P7A chosen as a documentation closeout; those later records do not raise 36/44.
 
 1. Complete the bounded P8 synthetic joined-flow regression and current-document reconciliation; do not invent an unlimited feature queue.
 2. Resolve P7's explicit operational/channel choice. Existing offline evaluation does not send notifications or prove delivery/acknowledgment; no channel is configured by assumption.
@@ -619,3 +629,7 @@ It adds no HTTP file transfer, Artifact, download, formal publication or writabl
 deployment. Company file/retention decisions and exact-candidate PostgreSQL/normal
 CI remain required. All acceptance denominators and percentages stay unchanged.
 See [private upload sessions](docs/private-upload-sessions.md).
+
+### Later code fact — baseline 717bf54
+
+Default-off HTTP ingress for one reserved private upload is in `backend/app/services/private_upload_http.py`, with `private_upload_http_enabled` defaulting to false. The 2026-11-14 paragraph above remains the record of the session-preparation package. This note does not enable upload, choose retention, or accept stored bytes. Business percentage remains 36/44.

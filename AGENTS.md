@@ -36,8 +36,10 @@ controller's codex-state reservation protocol or structured patch output schema.
 Resume an existing unfinished PR before starting duplicate work. For Plus local sessions,
 use docs/automation/plus-tasks.json: verify completed PR evidence and execute only pending
 scoped tasks. The queued Impact withdrawal design review and backend/read implementation are
-already completed; check newer merged PR/HANDOFF evidence before repeating them. After the
-current withdrawal browser package, review the release-review history replacement scope next.
+already completed; check newer merged PR/HANDOFF evidence before repeating them. The single
+current next step is in `PROJECT_STATUS.md`: determine the controlled pilot identity provider
+and environment. Private-upload retention is a separate undecided blocker. Historical checkpoint
+“next” sentences are not the current step.
 Stop on plan quota/login/conflicts or completed queue. docs/automation/tasks.json is the
 inactive legacy API queue; do not switch modes or enable it from a Plus session.
 The launcher does not establish a real user login or guarantee an uninterrupted session.

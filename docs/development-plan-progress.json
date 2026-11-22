@@ -1,8 +1,25 @@
 {
   "schema_version": 1,
   "as_of_api": "0.18.50",
-  "baseline_commit": "af8c0241edb06d4f742197dc443e155dc19924f2",
+  "baseline_commit": "717bf54c2440fec91734d5b0cf706257c4f679e5",
   "maintenance_checkpoint": {
+    "owner": "status_document_reconciliation",
+    "business_acceptance_increment": 0,
+    "browser_stage_closed_packages": 1,
+    "browser_stage_total_packages": 4,
+    "previous_finite_plan_closed_packages": 8,
+    "previous_finite_plan_total_packages": 8,
+    "package": "status-document-reconciliation",
+    "branch": "cursor/unify-status-docs-2850",
+    "state": "Documents only. Reviewed baseline 717bf54. This record does not name the reconciliation commit.",
+    "evidence": "PROJECT_STATUS.md",
+    "selected_scope": "Current-status wording only. Percentages unchanged.",
+    "current_pr_ci": "Documentation pull request is for review. Its CI is not claimed in this record.",
+    "current_main_ci": "717bf54c2440fec91734d5b0cf706257c4f679e5 CI 44960639202 success. Frontend 2505 passed, 0 failed, 0 skipped. Backend JUnit tests attribute 8097 with 0 failures, errors and skips. check_backend_report.py: 4530 passed, 411 PostgreSQL-module cases, no skips. Counts are not coverage.",
+    "current_deployment": "Actions deployment 44961710349 skipped; continuation 44961710468 skipped. Live Cloudflare and Render were not probed.",
+    "next_package": "Determine the controlled pilot identity provider and environment. Private-upload retention location, access, real-data inclusion, duration and trusted-inventory custody stay undecided and are not selected here.",
+    "superseded_top_level_baseline_commit": "af8c0241edb06d4f742197dc443e155dc19924f2",
+    "previous_checkpoint": {
     "owner": "current_ChatGPT_Work_cloud_task",
     "business_acceptance_increment": 0,
     "browser_stage_closed_packages": 1,
@@ -1262,6 +1279,7 @@
       "Render": "latest_PR206_update_failed_no_PR207_deploy_observed"
     },
     "historical_local_checks": "Automation52,CIguards126,offline+storage972/3175 subtests passed. Initial broad backend3122 passed/843 skipped/3 failed/12 CI-only errors; two inventory failures and -I environment failure fixed, affected185 passed. Broad final local rerun pending; no PG bypass."
+    }
   },
   "method": "equally_weighted_acceptance_milestones; independent_work_groups; not_effort_or_production_readiness",
   "groups": [

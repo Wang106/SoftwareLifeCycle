@@ -1,4 +1,18 @@
-## Current checkpoint — 2026-11-21: synthetic diagnostic final-sync contract
+## Current checkpoint — 2026-11-22: status documents reconciled to baseline 717bf54
+
+Reviewed `main` `717bf54c2440fec91734d5b0cf706257c4f679e5`, the merge of PR #270 (`test: preserve diagnostic copy final-sync failures`). This checkpoint does not name the documentation commit that adds it.
+
+CI run [44960639202](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/44960639202) on that baseline succeeded on the first attempt. Frontend `npm test` reported 2505 passed, 0 failed, 0 skipped. Backend JUnit `tests` was 8097 with 0 failures, 0 errors and 0 skips; `scripts/ci/check_backend_report.py` on the saved `backend.xml` reported `4530 passed, 411 PostgreSQL-module cases, no skips`. These are test counts, not coverage. The browser job used Chrome 158.0.8127.37 with the sandbox enabled and passed 4 upload, 16 read-only and 16 component synthetic journeys. Browser stage remains 1/4. Actions deployment [44961710349](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/44961710349) and continuation [44961710468](https://github.com/Wang106/SoftwareLifeCycle/actions/runs/44961710468) skipped. Cloudflare and Render were not probed, so the live version of this baseline is unknown.
+
+Code at this baseline reports application version `0.18.50` and required Alembic revision `0030_private_upload_sessions`. Default-off private HTTP upload code is present. Real OIDC, a pilot environment, multi-user browser acceptance and company operations remain unaccepted. Overall remains 36/44=82%, business delta 0; modules 100/100 demo/100 demo/100/89/60/17; plans 100/100/20/33/40/40/0.
+
+Single next step: determine the controlled pilot identity provider and environment. The open inputs are the issuer, audience, JWKS, callback, an environment isolated from the public sample, and who may configure them. This checkpoint does not choose those values.
+
+Separate undecided blocker: private-upload retention location, access, whether real data is included, duration, and custody of the trusted inventory. Those parameters are not selected here.
+
+Entries below keep their original wording, including “Draft only” and older next steps.
+
+## Historical checkpoint — 2026-11-21: synthetic diagnostic final-sync contract
 
 Baseline7d6c04ef8dec71278d82ea8355dc71c4b3d665c2 includes merged PR269.
 Main CI44956177053 first attempt four jobs passed; same-head Workers passed.

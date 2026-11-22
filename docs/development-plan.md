@@ -73,8 +73,11 @@ API0.18.27 已完成全部9族和53项闭环；ROADMAP 对应项随证据完成�
 | 6 | 追加式更正和撤销 | 定义历史替代/撤销规则、权限、原因和对下游的约束，扩展现有实际报告更正 | 不覆写旧判断/批次；保留前后记录和审计；幂等、并发及下游一致性测试通过 | 各业务状态与撤销政策须确定；不把撤销解释为实体刷写回滚 |
 | 7 | 生产运营与公司迁移 | 环境隔离、非演示禁 seed、备份恢复演练、结构化日志、告警、回滚手册及批准网络 | 可重复部署/回滚和真实恢复演练；审批后才导入公司数据；权限与数据隔离通过验收 | 公司网络、数据隐私、安全、保留政策及负责人 |
 
-兼容读取治理和 CI 已完成；下一步先推进可独立验证的授权管理，身份配置的外部依赖不阻止仓库内开发。
-后续 VIN/车辆级追溯作为另行定义的数据与权限扩展，不提前混入本轮范围。
+兼容读取治理和 CI 已完成。2026-11-22 对照基线 `717bf54c2440fec91734d5b0cf706257c4f679e5` 后，唯一当前下一步是确定受控试点的身份提供方与运行环境。待定输入是 issuer、audience、JWKS、回调地址、与公网样例隔离的环境，以及谁可以配置。本文不选择这些值，也不批准后续提交、更正验收或运营演练。
+
+私有上传的保留位置、访问范围、是否包含真实数据、期限和可信清单保管是单独的未决阻塞，不在这里选定参数。
+
+下文带日期的“下一步”和“当前后续顺序”保留原句，表示当时的记录。VIN/车辆级追溯仍是另行定义的数据与权限扩展，不提前混入 44 项分母。
 
 ## 估算与完成规则
 
@@ -187,7 +190,7 @@ milestones are broader than adding CI. Read consumers17/17 and53=50+3 remain.
 API0.18.27/schema0018 and public sample read-only remain; deployment health and
 Cloudflare build evidence are recorded separately below.
 
-Next: approved OIDC provider/controlled target configuration, browser session and
+Next recorded in this 2026-10-05 section: approved OIDC provider/controlled target configuration, browser session and
 audited grant administration, then first authenticated submissions/recovery/results;
 all14 commands, broader append-only corrections and operational acceptance follow.
 No approved provider or company target is inferred from CI success. Backup/restore,
@@ -210,7 +213,9 @@ Cookie 并提示重试。远端后端1285、前端541、迁移往返及 Preview/
 真实提供方及实际浏览器凭据/恢复验收仍缺失，identity-session 保持未完成；
 七项计划100/100/20/33/40/20/0，本次增量0。细节见 oidc-browser-auth.md。
 
-## 当前后续顺序 — 2026-10-06
+## 后续顺序记录 — 2026-10-06
+
+本节标题中的“当前”已去掉。唯一当前下一步见上文 2026-11-22 段落。下表原文保留。
 
 前两工作组已完成，不再重复开发。API0.18.30 本轮实现项目/软件已有角色
 暂停与恢复；这不是整个授权管理里程碑完成。公共站保持样例只读。
@@ -227,7 +232,7 @@ Cookie 并提示重试。远端后端1285、前端541、迁移往返及 Preview/
 | 8 | 公司服务器与数据迁移及上线接受 | 批准网络/数据范围、权限和隐私检查，非演示禁seed，完成公司发布验收 |
 | 9 | VIN/车辆级追溯（另定范围、最后处理） | 确定必要数据、权限与保留规则，不提前扩大当前44项分母 |
 
-步骤1可继续独立开发，步骤2的配置准备可同时推进；真实提供方验收是步骤3–5
+2026-10-06 当时的推进说明：步骤1可继续独立开发，步骤2的配置准备可同时推进；真实提供方验收是步骤3–5
 的依赖。运营工具可提前实现，真实演练须在批准目标执行。每个步骤可能分成
 多轮开发，不能把8个步骤解释为再发8次“继续”即可上线；暂不承诺固定完成日期。
 各轮自动提交/部署，按精确提交核验CI与运行状态，仅在里程碑完整验收后更新百分比。
