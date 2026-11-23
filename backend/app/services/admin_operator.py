@@ -46,6 +46,19 @@ class OperatorRequest(AuditedRequest):
         return value
 
 
+class EmailBootstrapAdmin(OperatorRequest):
+    """First administrator for the configured company mailbox. The mailbox itself stays in settings."""
+    display_name: str = Field(min_length=1, max_length=200)
+    email_fingerprint: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+    @field_validator('display_name')
+    @classmethod
+    def exact_name(cls, value):
+        if value != value.strip() or not value or any(ord(c) < 32 or ord(c) == 127 for c in value):
+            raise ValueError('Bounded printable exact identity values required')
+        return value
+
+
 class BootstrapAdmin(OperatorRequest):
     subject: str = Field(min_length=1, max_length=500)
     display_name: str = Field(min_length=1, max_length=200)
@@ -120,11 +133,14 @@ def plan(db):
     effective = effective_admins(db)
     historical = db.scalar(select(func.count()).select_from(GlobalRoleAssignment)
                           .where(GlobalRoleAssignment.role == 'PLATFORM_ADMIN'))
-    return {'target_fingerprint': target, 'schema_revision': settings.required_db_revision,
+    result = {'target_fingerprint': target, 'schema_revision': settings.required_db_revision,
             'issuer_fingerprint': digest(settings.oidc_issuer_url), 'effective_admin_count': effective,
             'admin_assignment_count': historical, 'bootstrap_available': historical == 0,
             'recovery_available': effective == 0 and historical > 0,
             'authorization_source': 'LOCAL_OPERATOR_PROCESS_NOT_OIDC_HUMAN'}
+    if settings.intranet_pilot and settings.intranet_pilot_bootstrap_email:
+        result['bootstrap_email_fingerprint'] = digest(settings.intranet_pilot_bootstrap_email)
+    return result
 
 
 def receipt(principal, grant, body, repeated, revoked):
@@ -132,6 +148,73 @@ def receipt(principal, grant, body, repeated, revoked):
             'applied_principal_status': 'ACTIVE', 'applied_grant_status': 'ACTIVE',
             'current_principal_status': principal.status, 'current_grant_status': grant.status,
             'replayed': repeated, 'revoked_browser_sessions': revoked, 'audit_event_no': body.event_no}
+
+
+def apply_email_bootstrap(db, body: EmailBootstrapAdmin):
+    """Create the unbound first administrator from INTRANET_PILOT_BOOTSTRAP_EMAIL."""
+    from app.intranet_pilot import pending_subject
+    try:
+        preconditions()
+        if not settings.intranet_pilot:
+            raise OperatorError('intranet_pilot_disabled')
+        email = settings.intranet_pilot_bootstrap_email
+        if digest(email) != body.email_fingerprint:
+            raise OperatorError('operator_email_mismatch')
+        admin_write_gate(db)
+        target, operator = database_context(db)
+        if target != body.target_fingerprint:
+            raise OperatorError('operator_target_mismatch')
+        subject = pending_subject(email)
+        binding = {'operation': 'BOOTSTRAP_EMAIL', 'issuer': settings.oidc_issuer_url,
+                   'email': email, **body.model_dump(mode='json')}
+        request_digest = digest(binding)
+        event = db.scalars(select(AuditEvent).where(AuditEvent.event_no == body.event_no)).first()
+        if event is not None:
+            payload = event.payload_json or {}
+            if (event.event_type != 'ADMIN_OPERATOR_BOOTSTRAP_EMAIL' or payload.get('request_digest') != request_digest):
+                raise OperatorError('operator_replay_conflict')
+            principal = db.get(SecurityPrincipal, body.principal_id)
+            grant = db.get(GlobalRoleAssignment, body.grant_id)
+            if principal is None or grant is None:
+                raise OperatorError('operator_replay_state_missing')
+            response = receipt(principal, grant, body, True, payload.get('revoked_browser_sessions', 0))
+            db.commit()
+            return response
+        if effective_admins(db) != 0 or db.scalar(select(GlobalRoleAssignment.id).where(
+                GlobalRoleAssignment.role == 'PLATFORM_ADMIN').limit(1)):
+            raise OperatorError('historical_admin_requires_recovery')
+        if db.scalar(select(SecurityPrincipal.id).where(
+                (SecurityPrincipal.id == body.principal_id) |
+                ((SecurityPrincipal.issuer == settings.oidc_issuer_url) &
+                 ((SecurityPrincipal.subject == subject) | (SecurityPrincipal.email == email))))):
+            raise OperatorError('operator_principal_conflict')
+        principal = SecurityPrincipal(id=body.principal_id, issuer=settings.oidc_issuer_url, subject=subject,
+            email=email, principal_type='USER', display_name=body.display_name, status='ACTIVE')
+        db.add(principal)
+        db.flush()
+        grant = GlobalRoleAssignment(id=body.grant_id, principal_id=principal.id, role='PLATFORM_ADMIN', status='ACTIVE')
+        db.add(grant)
+        db.flush()
+        payload = {'principal_id': str(principal.id), 'grant_id': str(grant.id), 'operation': 'BOOTSTRAP_EMAIL',
+            'applied_principal_status': 'ACTIVE', 'applied_grant_status': 'ACTIVE', 'request_digest': request_digest,
+            'operator_context': operator, 'authorization_source': 'LOCAL_OPERATOR_PROCESS_NOT_OIDC_HUMAN',
+            'approval_ref': body.approval_ref, 'reason': body.reason, 'revoked_browser_sessions': 0}
+        AuditEventService(db).record(event_no=body.event_no, event_type='ADMIN_OPERATOR_BOOTSTRAP_EMAIL',
+            action='BOOTSTRAP_EMAIL', entity_type='GLOBAL_ROLE', entity_id=grant.id, entity_ref=str(grant.id),
+            actor_name='LocalOperator/'+operator[:20], actor_principal_id=None,
+            summary='Offline company-email administrator bootstrap', payload=payload)
+        response = receipt(principal, grant, body, False, 0)
+        db.commit()
+        return response
+    except OperatorError:
+        db.rollback()
+        raise
+    except (IntegrityError, AuditEventError):
+        db.rollback()
+        raise OperatorError('operator_write_conflict') from None
+    except Exception:
+        db.rollback()
+        raise
 
 
 def apply(db, body: BootstrapAdmin | RecoverAdmin):

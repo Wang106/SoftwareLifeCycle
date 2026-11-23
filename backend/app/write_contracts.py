@@ -287,6 +287,10 @@ ADMIN_CONTROL_CONTRACTS = {
         AdminControlContract('Register a disabled local identity without grants',
             concurrency='ADMIN_TRANSACTION_GATE_AND_ADMIN_PRINCIPAL_GRANT_LOCK_AND_IDENTITY_UNIQUENESS',
             precondition='CONFIGURED_ISSUER_AND_NEW_UUID_AND_SUBJECT'),
+    ('POST', '/api/v1/security/admin/principals/email'):
+        AdminControlContract('Pre-register a company mailbox without grants or an Entra oid',
+            concurrency='ADMIN_TRANSACTION_GATE_AND_ADMIN_PRINCIPAL_GRANT_LOCK_AND_IDENTITY_UNIQUENESS',
+            precondition='INTRANET_PILOT_COMPANY_DOMAIN_AND_NEW_EMAIL'),
     ('POST', '/api/v1/security/admin/principals/{principal_id}/status'):
         AdminControlContract('Enable or disable a non-platform-admin local principal',
             concurrency='ADMIN_TRANSACTION_GATE_AND_ADMIN_GRANT_AND_TARGET_PRINCIPAL_ROW_LOCK',
@@ -313,6 +317,9 @@ class OperatorControlContract:
 # Offline operator controls are intentionally outside the exhaustive HTTP inventory.
 OPERATOR_CONTROL_CONTRACTS = {
     'bootstrap': OperatorControlContract('Create first local USER administrator only without any prior admin assignments'),
+    'bootstrap-email': OperatorControlContract(
+        'Create the first administrator from the configured company mailbox, unbound until Entra login',
+        precondition='INTRANET_PILOT_CONFIGURED_BOOTSTRAP_EMAIL_AND_ZERO_ADMINS'),
     'recover': OperatorControlContract('Restore an existing local USER administrator only while no effective admin remains'),
 }
 

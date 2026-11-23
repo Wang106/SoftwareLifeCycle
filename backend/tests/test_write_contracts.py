@@ -79,7 +79,7 @@ def test_session_controls_have_explicit_self_authentication_and_atomic_audit_con
 
 
 def test_admin_status_contract_is_independently_authenticated_audited_and_read_only_blocked():
-    assert len(ADMIN_CONTROL_CONTRACTS) == 6
+    assert len(ADMIN_CONTROL_CONTRACTS) == 7
     for contract in ADMIN_CONTROL_CONTRACTS.values():
         assert contract.authentication == 'OIDC_REQUIRED'
         assert contract.authorization == 'ACTIVE_PLATFORM_ADMIN'
@@ -92,6 +92,7 @@ def test_admin_status_contract_is_independently_authenticated_audited_and_read_o
         '/api/v1/security/admin/memberships/{scope}': 'ACTIVE_CONFIGURED_ISSUER_NON_ADMIN_RECIPIENT_AND_NEW_EXACT_ROLE',
         '/api/v1/security/admin/memberships/{scope}/{membership_id}/status': 'EXPECTED_MEMBERSHIP_STATUS',
         '/api/v1/security/admin/principals': 'CONFIGURED_ISSUER_AND_NEW_UUID_AND_SUBJECT',
+        '/api/v1/security/admin/principals/email': 'INTRANET_PILOT_COMPANY_DOMAIN_AND_NEW_EMAIL',
         '/api/v1/security/admin/principals/{principal_id}/status': 'EXPECTED_PRINCIPAL_STATUS_AND_NO_PLATFORM_ADMIN_GRANT',
     }
     for route in app.routes:
@@ -104,7 +105,7 @@ def test_admin_status_contract_is_independently_authenticated_audited_and_read_o
 def test_operator_protocol_is_separate_from_http_and_explicitly_infrastructure_authorized():
     from pathlib import Path
     from app.write_contracts import OPERATOR_CONTROL_CONTRACTS
-    assert set(OPERATOR_CONTROL_CONTRACTS)=={'bootstrap','recover'}
+    assert set(OPERATOR_CONTROL_CONTRACTS)=={'bootstrap','bootstrap-email','recover'}
     for contract in OPERATOR_CONTROL_CONTRACTS.values():
         assert contract.public_exposure=='NO_HTTP_ROUTE_OR_STARTUP_INVOCATION'
         assert contract.authentication=='INFRASTRUCTURE_CONTEXT_NOT_OIDC_HUMAN'
@@ -133,7 +134,7 @@ def test_asr_creation_is_one_strict_independent_contract():
     # Fourteen UI command families already span twenty-one legacy HTTP routes.
     assert len(WRITE_CONTRACTS) == 21
     assert len(SESSION_CONTROL_CONTRACTS) == 2
-    assert len(ADMIN_CONTROL_CONTRACTS) == 6
+    assert len(ADMIN_CONTROL_CONTRACTS) == 7
     assert set(ASR_CREATION_CONTRACTS) == {('POST', '/api/v1/releases/application')}
     contract = ASR_CREATION_CONTRACTS[('POST', '/api/v1/releases/application')]
     assert contract.authentication == 'OIDC_REQUIRED'

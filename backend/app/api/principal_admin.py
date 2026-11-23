@@ -37,6 +37,19 @@ class AuditedRequest(BaseModel):
         return value
 
 
+class RegisterCompanyEmail(AuditedRequest):
+    principal_id: uuid.UUID
+    email: str = Field(min_length=3, max_length=320)
+    display_name: str = Field(min_length=1, max_length=200)
+
+    @field_validator('display_name')
+    @classmethod
+    def printable_name(cls, value):
+        if value != value.strip() or any(ord(char) < 32 or ord(char) == 127 for char in value):
+            raise ValueError('A bounded printable value without surrounding whitespace is required')
+        return value
+
+
 class RegisterPrincipal(AuditedRequest):
     principal_id: uuid.UUID
     subject: str = Field(min_length=1, max_length=500)
@@ -82,6 +95,58 @@ def result(row, status, body, replayed, revoked=0):
     return {'principal_id': row.id, 'applied_status': status, 'current_status': row.status,
             'replayed': replayed, 'audit_event_no': body.event_no,
             'revoked_browser_sessions': revoked}
+
+
+@router.post('/email')
+def register_company_email(body: RegisterCompanyEmail, request: Request, db: Session = Depends(get_db)):
+    """Pre-register a company mailbox. Roles are assigned later; login binds oid once."""
+    try:
+        if not settings.intranet_pilot:
+            raise HTTPException(404, 'intranet_pilot_disabled')
+        from app.intranet_pilot import normalize_mailbox, parse_email_domains, pending_subject
+        administrator = active_admin(request, db)
+        issuer = settings.oidc_issuer_url
+        if not issuer:
+            raise HTTPException(503, 'configured_issuer_required')
+        try:
+            email = normalize_mailbox(body.email, parse_email_domains(settings.oidc_email_domains))
+        except ValueError:
+            raise HTTPException(422, 'email_domain_rejected') from None
+        subject = pending_subject(email)
+        payload = {'principal_id': str(body.principal_id), 'email': email, 'status': 'DISABLED',
+                   'reason': body.reason, 'display_name': body.display_name}
+        existing = db.scalars(select(AuditEvent).where(AuditEvent.event_no == body.event_no)).first()
+        if existing is not None:
+            if not matches(existing, administrator, body.principal_id, 'COMPANY_EMAIL_REGISTERED', payload):
+                raise HTTPException(409, 'audit_event_conflict')
+            row = db.get(SecurityPrincipal, body.principal_id)
+            if row is None or (row.email or '').lower() != email:
+                raise HTTPException(409, 'principal_registration_conflict')
+            response = result(row, 'DISABLED', body, True)
+            db.commit()
+            return response
+        if db.scalar(select(SecurityPrincipal.id).where(
+                (SecurityPrincipal.id == body.principal_id) |
+                ((SecurityPrincipal.issuer == issuer) & (SecurityPrincipal.subject == subject)) |
+                ((SecurityPrincipal.issuer == issuer) & (SecurityPrincipal.email == email)))):
+            raise HTTPException(409, 'principal_registration_conflict')
+        row = SecurityPrincipal(id=body.principal_id, issuer=issuer, subject=subject, email=email,
+            principal_type='USER', display_name=body.display_name, status='DISABLED')
+        db.add(row)
+        db.flush()
+        AuditEventService(db).record(event_no=body.event_no, event_type='COMPANY_EMAIL_REGISTERED',
+            action='REGISTER', entity_type='SECURITY_PRINCIPAL', entity_id=row.id, entity_ref=str(row.id),
+            summary='Company mailbox registered disabled without grants', payload=payload,
+            **resolve_actor(request).audit_fields())
+        response = result(row, 'DISABLED', body, False)
+        db.commit()
+        return response
+    except (IntegrityError, AuditEventError):
+        db.rollback()
+        raise HTTPException(409, 'principal_registration_conflict')
+    except Exception:
+        db.rollback()
+        raise
 
 
 @router.post('')

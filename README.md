@@ -60,6 +60,8 @@ docker compose up --build
 
 Open the web application at `http://localhost:3000` and the API documentation at `http://localhost:8000/docs`.
 
+公司内网试点使用 Microsoft Entra ID，并且只在单独的 compose 覆盖层里打开。公网样例命令不变。配置步骤、占位符和验收清单见 [内网试点配置指南](docs/intranet-pilot-guide.md)。
+
 The API container performs these steps in order:
 
 1. applies every Alembic migration;

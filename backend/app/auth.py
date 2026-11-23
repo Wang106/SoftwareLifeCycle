@@ -72,12 +72,17 @@ def decode_oidc_token(token: str, settings: Settings) -> dict:
 def authenticate_write_request(request: Request, settings: Settings) -> AuthenticatedPrincipal:
     claims = decode_oidc_token(bearer_token(request), settings)
     with SessionLocal() as db:
-        row = db.scalars(
-            select(SecurityPrincipal).where(
-                SecurityPrincipal.issuer == claims["iss"],
-                SecurityPrincipal.subject == claims["sub"],
-            )
-        ).first()
+        if settings.intranet_pilot:
+            from app.intranet_pilot import resolve_pilot_principal
+            row = resolve_pilot_principal(db, claims, settings)
+            db.commit()
+        else:
+            row = db.scalars(
+                select(SecurityPrincipal).where(
+                    SecurityPrincipal.issuer == claims["iss"],
+                    SecurityPrincipal.subject == claims["sub"],
+                )
+            ).first()
         if row is None:
             raise AuthenticationError("unknown_principal")
         if row.status != "ACTIVE":
