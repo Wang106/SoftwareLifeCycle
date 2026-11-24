@@ -318,7 +318,7 @@ class OperatorControlContract:
 OPERATOR_CONTROL_CONTRACTS = {
     'bootstrap': OperatorControlContract('Create first local USER administrator only without any prior admin assignments'),
     'bootstrap-email': OperatorControlContract(
-        'Create the first administrator from the configured company mailbox, unbound until Entra login',
+        'Create the first administrator from the configured company mailbox; oid is not an access key',
         precondition='INTRANET_PILOT_CONFIGURED_BOOTSTRAP_EMAIL_AND_ZERO_ADMINS'),
     'recover': OperatorControlContract('Restore an existing local USER administrator only while no effective admin remains'),
 }

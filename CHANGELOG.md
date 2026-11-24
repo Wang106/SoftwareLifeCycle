@@ -3,7 +3,7 @@
 ## Intranet Entra email pilot — 2026-11-23
 
 - Add an opt-in intranet pilot profile for Microsoft Entra ID. Default compose behavior is unchanged.
-- Pre-register company mailboxes, match them case-insensitively within configured domains, and bind `tid`+`oid` on first login. A reused mailbox with a different `oid` does not inherit roles.
+- Pre-register company mailboxes and match them case-insensitively within the configured domains and Entra tenant. Access does not depend on `oid`; a seen `oid` may be audited only.
 - Reject placeholder tenant, client, and domain values at startup. No live tenant is contacted by configuration checks.
 
 ## Private upload session preparation — 2026-11-14

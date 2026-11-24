@@ -1,7 +1,8 @@
-"""Intranet Entra ID pilot: company-email registration and oid binding.
+"""Intranet Entra ID pilot: access follows a pre-registered company mailbox.
 
 Generic OIDC still uses the token subject. This module runs only when
-INTRANET_PILOT is enabled. It does not contact Microsoft.
+INTRANET_PILOT is enabled. It does not contact Microsoft. An oid in the token
+may be copied into an audit event; it never selects or rejects the account.
 """
 import hashlib
 import re
@@ -19,7 +20,6 @@ _DOMAIN = re.compile(
 )
 _LOCAL = re.compile(r"^[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}$")
 PENDING = "pending-email:"
-BOUND = "entra-oid:"
 
 
 def parse_email_domains(value: str) -> list[str]:
@@ -51,10 +51,6 @@ def derived_urls(issuer: str) -> dict[str, str]:
 
 def pending_subject(email: str) -> str:
     return PENDING + email
-
-
-def bound_subject(tid: str, oid: str) -> str:
-    return f"{BOUND}{tid}:{oid}"
 
 
 def _placeholder(value: str) -> bool:
@@ -136,32 +132,40 @@ def presented_mailboxes(claims: dict, domains: list[str]) -> set[str]:
     return found
 
 
+def observe_oid(db: Session, row, claims: dict) -> None:
+    """Record oid for traceability. Absence or a later change does not affect access."""
+    from sqlalchemy import select
+    from app.models.audit import AuditEvent
+    from app.services.audit import AuditEventService
+    oid = claims.get("oid")
+    if not isinstance(oid, str) or not _UUID.fullmatch(oid) or oid == NIL_TENANT:
+        return
+    digest = hashlib.sha256(f"{row.id}:{oid}".encode()).hexdigest()[:32]
+    event_no = f"OBS{digest}"
+    if db.scalars(select(AuditEvent).where(AuditEvent.event_no == event_no)).first() is not None:
+        return
+    tid = claims.get("tid") if isinstance(claims.get("tid"), str) else None
+    AuditEventService(db).record(
+        event_no=event_no, event_type="ENTRA_OID_OBSERVED", action="OBSERVE",
+        entity_type="SECURITY_PRINCIPAL", entity_id=row.id, entity_ref=str(row.id),
+        actor_name="EntraEmailTrace", actor_principal_id=row.id, actor_display_name=row.display_name,
+        summary="Observed Entra oid for a registered mailbox; not used for access",
+        payload={"principal_id": str(row.id), "oid": oid, "tid": tid, "authorizes": False},
+    )
+
+
 def resolve_pilot_principal(db: Session, claims: dict, settings):
-    """Match a pre-registered mailbox, bind tid+oid once, then require that oid."""
+    """Grant the pre-registered mailbox. oid is not an access key."""
     from sqlalchemy import func, select
     from app.auth import AuthenticationError
     from app.models.security import SecurityPrincipal
-    from app.services.audit import AuditEventService
     if claims.get("iss") != settings.oidc_issuer_url:
         raise AuthenticationError("untrusted_tenant")
     tenant = tenant_id(settings.oidc_issuer_url)
     if claims.get("tid") != tenant:
         raise AuthenticationError("untrusted_tenant")
-    oid = claims.get("oid")
-    if not isinstance(oid, str) or not _UUID.fullmatch(oid) or oid == NIL_TENANT:
-        raise AuthenticationError("entra_identity_required")
     mailboxes = presented_mailboxes(claims, parse_email_domains(settings.oidc_email_domains))
-    bound = bound_subject(tenant, oid)
     issuer = settings.oidc_issuer_url
-    current = db.scalars(select(SecurityPrincipal).where(
-        SecurityPrincipal.issuer == issuer, SecurityPrincipal.subject == bound,
-    ).with_for_update()).first()
-    if current is not None:
-        if (current.email or "").strip().lower() not in mailboxes:
-            raise AuthenticationError("email_binding_mismatch")
-        if current.status != "ACTIVE":
-            raise AuthenticationError("disabled_principal")
-        return current
     rows = db.scalars(select(SecurityPrincipal).where(
         SecurityPrincipal.issuer == issuer,
         func.lower(SecurityPrincipal.email).in_(list(mailboxes)),
@@ -173,17 +177,11 @@ def resolve_pilot_principal(db: Session, claims: dict, settings):
         raise AuthenticationError("email_registration_ambiguous")
     row = matches[0]
     if row.subject != pending_subject((row.email or "").strip().lower()):
-        raise AuthenticationError("email_reused")
+        raise AuthenticationError("unregistered_email")
     if row.status != "ACTIVE":
         raise AuthenticationError("disabled_principal")
-    row.subject = bound
-    db.flush()
-    digest = hashlib.sha256(f"{row.id}:{bound}".encode()).hexdigest()[:32]
-    AuditEventService(db).record(
-        event_no=f"BIND{digest}"[:50], event_type="ENTRA_EMAIL_OID_BOUND", action="BIND",
-        entity_type="SECURITY_PRINCIPAL", entity_id=row.id, entity_ref=str(row.id),
-        actor_name="EntraEmailBind", actor_principal_id=row.id, actor_display_name=row.display_name,
-        summary="Company mailbox bound to Entra tid and oid",
-        payload={"principal_id": str(row.id), "bound": True},
-    )
+    try:
+        observe_oid(db, row, claims)
+    except Exception:
+        db.rollback()
     return row

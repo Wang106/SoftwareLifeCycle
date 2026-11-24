@@ -47,7 +47,7 @@ class OperatorRequest(AuditedRequest):
 
 
 class EmailBootstrapAdmin(OperatorRequest):
-    """First administrator for the configured company mailbox. The mailbox itself stays in settings."""
+    """First administrator for the configured company mailbox. Access stays on that mailbox, not an oid."""
     display_name: str = Field(min_length=1, max_length=200)
     email_fingerprint: str = Field(pattern=r'^[a-f0-9]{64}$')
 

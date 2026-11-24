@@ -11,7 +11,7 @@ from app.auth import AuthenticationError
 from app.core.config import Settings
 from app.core.db import Base
 from app.intranet_pilot import (
-    bound_subject, derived_urls, pending_subject, presented_mailboxes, resolve_pilot_principal,
+    derived_urls, pending_subject, presented_mailboxes, resolve_pilot_principal,
 )
 from app.models.security import SecurityPrincipal
 
@@ -82,6 +82,34 @@ def test_pilot_rejects_placeholders_seed_and_public_origin():
     assert "00000000-0000-0000-0000-000000000000" not in guide or "占位" in guide
 
 
+def test_observed_oid_is_audit_only():
+    recorded = {}
+    class Query:
+        def first(self):
+            return None
+    class Database:
+        def scalars(self, _statement):
+            return Query()
+    class Service:
+        def __init__(self, _db):
+            pass
+        def record(self, **kwargs):
+            recorded.update(kwargs)
+    import app.services.audit as audit
+    import app.intranet_pilot as pilot_module
+    original = audit.AuditEventService
+    audit.AuditEventService = Service
+    try:
+        row = type("Row", (), {"id": uuid.uuid4(), "display_name": "Admin"})()
+        pilot_module.observe_oid(Database(), row, {"oid": OID, "tid": TENANT})
+        pilot_module.observe_oid(Database(), row, {"oid": "not-an-oid"})
+    finally:
+        audit.AuditEventService = original
+    assert recorded["event_type"] == "ENTRA_OID_OBSERVED"
+    assert recorded["payload"]["authorizes"] is False
+    assert recorded["payload"]["oid"] == OID
+
+
 def test_mailbox_match_is_case_insensitive_and_domain_limited():
     domains = ["corp.example"]
     assert presented_mailboxes({"preferred_username": "Admin@Corp.Example"}, domains) == {"admin@corp.example"}
@@ -112,34 +140,31 @@ def add_mailbox(sessions, email, status="ACTIVE"):
     return identifier
 
 
-def test_first_login_binds_oid_and_reused_mailbox_does_not_inherit_roles(monkeypatch):
-    class QuietAudit:
-        def __init__(self, _db):
-            pass
-        def record(self, **_kwargs):
-            return None
-    monkeypatch.setattr("app.services.audit.AuditEventService", QuietAudit)
+def test_registered_mailbox_authorizes_without_binding_oid(monkeypatch):
+    seen = []
+    monkeypatch.setattr("app.intranet_pilot.observe_oid", lambda _db, row, token: seen.append((row.subject, token.get("oid"))))
     sessions = database()
     settings = pilot()
     identifier = add_mailbox(sessions, "person@corp.example")
+    original = pending_subject("person@corp.example")
     with sessions() as db:
         row = resolve_pilot_principal(db, claims(), settings)
         assert row.id == identifier
-        assert row.subject == bound_subject(TENANT, OID)
+        assert row.subject == original
         db.commit()
+    other = "12121212-3434-4545-8686-787878787878"
     with sessions() as db:
-        again = resolve_pilot_principal(db, claims(email="Person@corp.example"), settings)
+        again = resolve_pilot_principal(db, claims(email="Person@corp.example", oid=other), settings)
         assert again.id == identifier
-    with pytest.raises(AuthenticationError, match="email_reused"):
-        with sessions() as db:
-            resolve_pilot_principal(db, claims(oid="12121212-3434-4545-8686-787878787878"), settings)
+        assert again.subject == original
+    assert seen == [(original, OID), (original, other)]
     with pytest.raises(AuthenticationError, match="unregistered_email"):
         with sessions() as db:
             resolve_pilot_principal(db, claims(email="other@corp.example", oid="13131313-1313-4131-8131-131313131313"), settings)
     with pytest.raises(AuthenticationError, match="untrusted_tenant"):
         with sessions() as db:
             resolve_pilot_principal(db, claims(tid="22222222-2222-4222-8222-222222222222"), settings)
-    with pytest.raises(AuthenticationError, match="email_binding_mismatch"):
+    with pytest.raises(AuthenticationError, match="unregistered_email"):
         with sessions() as db:
             resolve_pilot_principal(db, claims(email="renamed@corp.example"), settings)
     with pytest.raises(AuthenticationError, match="disabled_principal"):
