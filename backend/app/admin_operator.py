@@ -8,7 +8,9 @@ from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.db import SessionLocal
-from app.services.admin_operator import BootstrapAdmin, RecoverAdmin, OperatorError, apply, plan, preconditions
+from app.services.admin_operator import (
+    BootstrapAdmin, EmailBootstrapAdmin, RecoverAdmin, OperatorError, apply, apply_email_bootstrap, plan, preconditions,
+)
 
 
 class SafeParser(argparse.ArgumentParser):
@@ -18,7 +20,7 @@ class SafeParser(argparse.ArgumentParser):
 
 def main(argv=None):
     parser = SafeParser(description=__doc__)
-    parser.add_argument('operation', choices=['plan', 'bootstrap', 'recover'])
+    parser.add_argument('operation', choices=['plan', 'bootstrap', 'bootstrap-email', 'recover'])
     parser.add_argument('--request', type=Path, help='Reviewed JSON request file for mutation')
     try:
         args = parser.parse_args(argv)
@@ -35,12 +37,17 @@ def main(argv=None):
                 content = stream.read(16385)
             if len(content) > 16384:
                 raise OperatorError('operator_request_too_large')
-            model = BootstrapAdmin if args.operation == 'bootstrap' else RecoverAdmin
-            body = model.model_validate_json(content)
+            models = {'bootstrap': BootstrapAdmin, 'bootstrap-email': EmailBootstrapAdmin, 'recover': RecoverAdmin}
+            body = models[args.operation].model_validate_json(content)
         with SessionLocal() as db:
             if db.get_bind().dialect.name != 'postgresql':
                 raise OperatorError('operator_postgresql_required')
-            result = plan(db) if body is None else apply(db, body)
+            if body is None:
+                result = plan(db)
+            elif args.operation == 'bootstrap-email':
+                result = apply_email_bootstrap(db, body)
+            else:
+                result = apply(db, body)
         print(json.dumps(result, default=str, ensure_ascii=False))
         return 0
     except OperatorError as exc:

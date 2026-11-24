@@ -1,5 +1,11 @@
 # Changelog
 
+## Intranet Entra email pilot — 2026-11-23
+
+- Add an opt-in intranet pilot profile for Microsoft Entra ID. Default compose behavior is unchanged.
+- Pre-register company mailboxes and match them case-insensitively within the configured domains and Entra tenant. Access does not depend on `oid`; a seen `oid` may be audited only.
+- Reject placeholder tenant, client, and domain values at startup. No live tenant is contacted by configuration checks.
+
 ## Private upload session preparation — 2026-11-14
 - Add default-off, non-HTTP private upload reservation/phase/recovery coordination with synthetic byte tests; no Artifact or real file transfer.
 - Add schema0030 recovery metadata and synchronized current offline/health checks while retaining historical0029 evidence.

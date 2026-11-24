@@ -84,6 +84,8 @@ No public write form or non-read-only deployment should be enabled before the re
 
 Set `AUTH_MODE=oidc` together with `OIDC_ISSUER_URL`, `OIDC_AUDIENCE` and an explicit `OIDC_JWKS_URL`. Optional settings are `OIDC_ALGORITHMS` (approved asymmetric algorithms only), `OIDC_LEEWAY_SECONDS` and `OIDC_JWKS_TIMEOUT_SECONDS`. URLs must use HTTPS and cannot contain credentials, query strings or fragments.
 
+The intranet pilot (`INTRANET_PILOT=true`) is a separate Entra ID profile. It keeps the generic `sub` login unchanged when the flag is off. When the flag is on, access follows a pre-registered company mailbox in the configured tenant; `oid` is not an access key. See [the intranet pilot guide](docs/intranet-pilot-guide.md).
+
 The JWKS URL is operator configuration, never a token-provided URL. Invalid/missing tokens, invalid claims, unknown principals and disabled principals fail with HTTP 401 and a Bearer challenge. `READ_ONLY_MODE=true` takes precedence and returns the existing HTTP 403 without contacting the identity provider.
 
 ## Snapshot and Batch retry trust boundary

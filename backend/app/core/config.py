@@ -1,5 +1,6 @@
 import uuid
 import math
+import re
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -33,9 +34,17 @@ class Settings(BaseSettings):
     private_upload_transfers: int | None = None
     request_telemetry_enabled: bool = False
     admin_operator_enabled: bool = False
+    intranet_pilot: bool = False
+    seed_on_startup: bool = False
+    seed_zfi_demo: bool = False
     oidc_issuer_url: str | None = None
     oidc_audience: str | None = None
     oidc_jwks_url: str | None = None
+    oidc_client_id: str | None = None
+    oidc_authorization_url: str | None = None
+    oidc_token_url: str | None = None
+    oidc_email_domains: str = ""
+    intranet_pilot_bootstrap_email: str = ""
     oidc_algorithms: str = "RS256"
     oidc_leeway_seconds: int = Field(default=30, ge=0, le=300)
     oidc_jwks_timeout_seconds: int = Field(default=5, ge=1, le=30)
@@ -58,8 +67,18 @@ class Settings(BaseSettings):
             return "postgresql+psycopg://" + value[len("postgresql://"):]
         return value
 
+    @field_validator("oidc_email_domains")
+    @classmethod
+    def email_domains_are_exact(cls, value: str) -> str:
+        from app.intranet_pilot import parse_email_domains
+        parse_email_domains(value)
+        return value
+
     @model_validator(mode="after")
     def validate_oidc_configuration(self):
+        if self.intranet_pilot:
+            from app.intranet_pilot import validate_pilot
+            validate_pilot(self)
         if self.auth_mode == "disabled":
             return self
         required = {
